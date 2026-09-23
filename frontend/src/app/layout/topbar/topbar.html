@@ -1,4 +1,4 @@
-<mat-toolbar class="topbar">
+<header class="topbar">
   <button matIconButton class="hamburger" aria-label="Open navigation menu" (click)="menuToggle.emit()">
     <mat-icon>menu</mat-icon>
   </button>
@@ -8,13 +8,20 @@
   <span class="spacer"></span>
 
   <!-- Placeholder: wire to /notifications when Dev C ships it. -->
-  <button matIconButton aria-label="Notifications" matTooltip="Notifications (coming soon)">
+  <button
+    matIconButton
+    class="round"
+    aria-label="Notifications"
+    matTooltip="Notifications (coming soon)"
+  >
     <mat-icon>notifications</mat-icon>
   </button>
 
   @if (auth.user(); as user) {
-    <button matIconButton aria-label="Profile menu" [matMenuTriggerFor]="profileMenu">
-      <mat-icon>account_circle</mat-icon>
+    <button class="chip" type="button" aria-label="Profile menu" [matMenuTriggerFor]="profileMenu">
+      <app-user-avatar [name]="user.name" [size]="32" />
+      <span class="chip-name">{{ user.name }}</span>
+      <mat-icon class="chip-caret" aria-hidden="true">expand_more</mat-icon>
     </button>
     <mat-menu #profileMenu="matMenu" xPosition="before">
       <div class="menu-header">
@@ -27,8 +34,8 @@
       </a>
       <button mat-menu-item (click)="auth.logout()">
         <mat-icon>logout</mat-icon>
-        <span>Logout</span>
+        <span>Log out</span>
       </button>
     </mat-menu>
   }
-</mat-toolbar>
+</header>

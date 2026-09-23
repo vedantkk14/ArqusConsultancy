@@ -1,0 +1,55 @@
+@if (user(); as u) {
+  <section class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">{{ roleLabels[u.role] }}</span>
+      <h1>{{ greeting }}, {{ firstName() }}</h1>
+      <p>Everything you can work on is below. Pick a workspace to get started.</p>
+    </div>
+    <app-brand-art class="art" />
+  </section>
+
+  <h2 class="section">Your workspace</h2>
+  <ul class="tiles">
+    @for (tile of tiles(); track tile.route) {
+      <li>
+        <a class="tile card" [routerLink]="tile.route">
+          <span class="tile-icon"><mat-icon aria-hidden="true">{{ tile.icon }}</mat-icon></span>
+          <span class="tile-body">
+            <strong>{{ tile.label }}</strong>
+            <span>{{ tile.description }}</span>
+          </span>
+          <span class="tile-foot">
+            <span class="label">{{ tile.pages }} {{ tile.pages === 1 ? 'page' : 'pages' }}</span>
+            <mat-icon class="go" aria-hidden="true">arrow_forward</mat-icon>
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+
+  <h2 class="section">How a deal flows</h2>
+  <ol class="flow card">
+    @for (step of steps(); track step.number) {
+      <li class="step" [class.locked]="!step.route">
+        @if (step.route) {
+          <a [routerLink]="step.route" class="step-link">
+            <span class="num">{{ step.number }}</span>
+            <span class="step-text">
+              <strong>{{ step.title }}</strong>
+              <span>{{ step.caption }}</span>
+            </span>
+          </a>
+        } @else {
+          <div class="step-link">
+            <span class="num">{{ step.number }}</span>
+            <span class="step-text">
+              <strong>{{ step.title }}</strong>
+              <span>{{ step.caption }}</span>
+              <span class="restricted">Not available for your role</span>
+            </span>
+          </div>
+        }
+      </li>
+    }
+  </ol>
+}

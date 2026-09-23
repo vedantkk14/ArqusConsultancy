@@ -1,11 +1,16 @@
+// Soft, translucent bar that floats over the canvas while the page scrolls under it.
 .topbar {
   position: sticky;
   top: 0;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   height: var(--topbar-height);
   padding: 0 var(--space-2);
-  gap: var(--space-2);
-  border-bottom: 1px solid var(--line);
+  background: rgba(242, 245, 248, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .emblem {
@@ -19,14 +24,50 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   font-stretch: var(--font-wide);
+  letter-spacing: -0.01em;
 }
 
 .spacer {
   flex: 1;
+}
+
+// Bell: a round white button with a hairline.
+.round {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+
+// Profile chip: avatar + name in a white pill.
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 44px;
+  padding: 0 var(--space-2) 0 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--ink);
+}
+
+.chip-name {
+  display: none;
+}
+
+.chip-caret {
+  color: var(--ink-3);
 }
 
 .menu-header {
@@ -43,13 +84,20 @@
 
 // Desktop: the sidebar is permanent and carries the full logo, so the hamburger and emblem go away.
 @media (min-width: 960px) {
+  .topbar {
+    padding: 0 var(--space-5);
+  }
+
   .hamburger,
   .emblem {
     display: none;
   }
 
   .page-title {
-    margin-left: var(--space-2);
-    font-size: 1.125rem;
+    font-size: 1.375rem;
+  }
+
+  .chip-name {
+    display: inline;
   }
 }

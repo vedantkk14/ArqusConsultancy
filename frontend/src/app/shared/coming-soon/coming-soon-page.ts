@@ -10,9 +10,25 @@ import { EmptyState } from '../empty-state/empty-state';
   template: `
     <app-empty-state
       icon="construction"
-      [title]="'Coming soon: ' + name"
-      message="This page is a placeholder. Replace its route with a real component."
-    />
+      [title]="name"
+      message="We're still building this page. It will appear here soon."
+    >
+      <span class="badge">In development</span>
+    </app-empty-state>
+  `,
+  styles: `
+    .badge {
+      margin-top: var(--space-2);
+      padding: 4px var(--space-3);
+      border-radius: var(--radius-pill);
+      background: var(--ink);
+      color: var(--brand);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      font-stretch: var(--font-wide);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
   `,
 })
 export class ComingSoonPage {

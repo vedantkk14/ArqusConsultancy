@@ -1,70 +1,169 @@
-// Sidebar sits on --plate so the transparent logo PNG blends in. Cyan appears only as the 2px active bar.
+// White sidebar. The logo keeps its natural colours on white. Active = black pill with a cyan icon.
 :host {
-  display: block;
-  min-height: 100%;
-  background: var(--plate);
-  padding-bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
 }
 
 .logo {
   display: block;
-  padding: var(--space-4) var(--space-3) var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
 }
 
 .logo img {
   display: block;
   width: 100%;
-  max-width: 168px;
+  max-width: 150px;
   height: auto;
 }
 
-a[mat-list-item] {
-  --mat-list-list-item-container-shape: 0;
-  --mat-list-list-item-label-text-color: var(--ink);
-  --mat-list-list-item-leading-icon-color: var(--ink);
-  --mat-list-list-item-selected-container-color: transparent;
-  --mat-list-active-indicator-color: transparent; // no filled pill behind the active item
-  --mat-list-active-indicator-shape: 0;
-  --mat-list-list-item-hover-state-layer-opacity: 0;
-  --mat-list-list-item-focus-state-layer-opacity: 0;
-  border-left: 2px solid transparent; // reserved so the active bar never shifts the layout
+.nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-3);
 }
 
-a[mat-list-item]:hover {
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li + li {
+  margin-top: 2px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 46px;
+  padding: 0 var(--space-3) 0 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.item mat-icon {
+  flex: none;
+  color: var(--ink-3);
+  transition: color 0.15s ease;
+}
+
+.text {
+  flex: 1;
+  text-align: left;
+}
+
+.item:hover {
   background: var(--brand-tint);
+  color: var(--ink);
 }
 
-// Ring drawn inside the row so the drawer edge cannot clip it.
-a[mat-list-item]:focus-visible {
-  outline-offset: -2px;
-}
-
-// Active item: ink text (bolder) + a 2px cyan bar. No filled pill.
-a[mat-list-item].mdc-list-item--activated {
-  border-left-color: var(--brand);
-}
-
-a[mat-list-item].mdc-list-item--activated .mdc-list-item__primary-text {
+.item.has-active {
+  color: var(--ink);
   font-weight: 700;
 }
 
-// Group labels: small, wide, quiet.
-a[mat-list-item].group {
-  --mat-list-list-item-label-text-color: var(--ink-3);
-  --mat-list-list-item-leading-icon-color: var(--ink-3);
+.item.has-active mat-icon {
+  color: var(--brand-deep);
 }
 
-.group-title {
+.item.active {
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: 700;
+}
+
+.item.active mat-icon {
+  color: var(--brand);
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+}
+
+[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.sub {
+  margin: 2px 0 var(--space-2) 22px;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--line);
+}
+
+.sub-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-stretch: var(--font-wide);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
 }
 
-.child {
-  padding-left: var(--space-4);
+.sub-item:hover {
+  background: var(--brand-tint);
+  color: var(--ink);
+}
+
+.sub-item.active {
+  background: var(--brand-tint);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+
+@media (pointer: coarse) {
+  .sub-item {
+    min-height: 44px;
+  }
+}
+
+.item:focus-visible,
+.sub-item:focus-visible {
+  outline-offset: -2px; // drawn inside the row so the scroll container cannot clip it
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.who {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.who strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+.who span {
+  color: var(--ink-3);
+  font-size: 0.75rem;
 }

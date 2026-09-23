@@ -1,51 +1,124 @@
+// Mobile-first: form only. From 960px a dark brand panel appears beside it.
 .login {
   min-height: 100dvh;
   display: grid;
-  place-items: center;
-  padding: var(--space-3);
-  background: var(--paper);
+  grid-template-columns: 1fr;
+  background: var(--surface);
 }
 
-// --plate panel: the transparent logo blends in. The 2px cyan line is the login accent.
-.card {
+.hero {
+  display: none;
+}
+
+.panel {
+  display: grid;
+  place-items: center;
+  padding: var(--space-5) var(--space-3);
+  // a faint cyan wash at the top on phones, where the dark panel is hidden
+  background: radial-gradient(70% 40% at 50% 0%, rgba(50, 197, 243, 0.16), transparent 70%), var(--surface);
+}
+
+.form-wrap {
   width: 100%;
   max-width: 400px;
-  padding: var(--space-3);
-  background: var(--plate);
-  --mat-card-outlined-container-color: var(--plate);
-  --mat-card-outlined-container-shape: 2px;
-  --mat-card-outlined-outline-width: 0;
-  border-top: 2px solid var(--brand);
 }
 
 .logo {
   display: block;
   width: 100%;
-  max-width: 220px;
+  max-width: 160px;
   height: auto;
-  margin: var(--space-3) auto var(--space-2);
+  margin-bottom: var(--space-5);
 }
 
 .title {
   margin: 0;
-  text-align: center;
-  font-size: 1rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-2);
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding-top: var(--space-3);
+  padding-top: var(--space-5);
 }
 
 .error {
-  margin: 0 0 var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 12px var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--negative-bg);
   color: var(--negative);
+  font-weight: 500;
 }
 
 .submit {
-  height: 48px;
+  width: 100%;
+  margin-top: var(--space-1);
+}
+
+@media (min-width: 960px) {
+  .login {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+
+  .panel {
+    background: var(--surface);
+    padding: var(--space-6);
+  }
+
+  .hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: var(--space-6);
+    background: var(--glow-brand), var(--ink);
+    color: var(--on-ink);
+  }
+
+  .eyebrow {
+    color: var(--brand);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-stretch: var(--font-wide);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .tagline {
+    margin: var(--space-5) 0;
+    font-size: clamp(2.5rem, 4.6vw, 4.25rem);
+    font-weight: 800;
+    font-stretch: var(--font-wide);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+  }
+
+  .tagline em {
+    font-style: normal;
+    color: var(--brand);
+  }
+
+  .art {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: var(--space-4);
+  }
+
+  .hero-note {
+    margin: 0;
+    max-width: 34ch;
+    color: var(--on-ink-2);
+  }
 }

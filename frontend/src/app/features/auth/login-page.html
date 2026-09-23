@@ -1,15 +1,27 @@
 <main class="login">
-  <mat-card class="card" appearance="outlined">
-    <mat-card-content>
+  <section class="hero" aria-hidden="true">
+    <span class="eyebrow">Sports Consultancy</span>
+    <p class="tagline">
+      Idealize.<br />
+      Innovate.<br />
+      <em>Achieve.</em>
+    </p>
+    <app-brand-art class="art" />
+    <p class="hero-note">One place for leads, projects, payments and margin.</p>
+  </section>
+
+  <section class="panel">
+    <div class="form-wrap">
       <img
         class="logo"
         src="brand/arqus-logo.png"
         alt="ARQUS Sports Consultancy"
-        width="220"
-        height="129"
+        width="160"
+        height="94"
         decoding="async"
       />
-      <h1 class="title">Sign in</h1>
+      <h1 class="title">Welcome back</h1>
+      <p class="subtitle">Sign in to your workspace.</p>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="form" novalidate>
         <mat-form-field appearance="outline">
@@ -43,17 +55,20 @@
         </mat-form-field>
 
         @if (error(); as message) {
-          <p class="error" role="alert">{{ message }}</p>
+          <p class="error" role="alert">
+            <mat-icon aria-hidden="true">error</mat-icon>
+            <span>{{ message }}</span>
+          </p>
         }
 
         <button matButton="filled" type="submit" class="submit" [disabled]="loading()">
           @if (loading()) {
-            <mat-spinner diameter="20" />
+            <mat-spinner diameter="22" />
           } @else {
             Sign in
           }
         </button>
       </form>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </section>
 </main>

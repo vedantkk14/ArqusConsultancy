@@ -1,6 +1,6 @@
-// ARQUS brand tokens: the single source of truth for colour and type.
-// scripts/check-contrast.mjs parses this file, so keep one `--name: #hex;` per line.
-// Rules: docs/DESIGN.md. Cyan is a signal, never a text colour or a large fill.
+// ARQUS brand tokens: the single source of truth for colour, shape and type.
+// scripts/check-contrast.mjs parses this file, so keep one `--name: #hex;` per line for colours.
+// The palette is the logo's: ink black, cyan, white. Everything else is a neutral tint of those.
 
 :root {
   // ink (text)
@@ -8,17 +8,18 @@
   --ink-2: #3a4147; // secondary text
   --ink-3: #565e66; // muted text
   --on-ink: #ffffff; // text on an --ink fill
+  --on-ink-2: #b9c2c9; // secondary text on an --ink fill
 
   // surfaces
-  --paper: #f4f5f6; // page background
-  --surface: #ffffff; // bordered panels, top bar
-  --plate: #e6e6e6; // sidebar + login panel (logo sits on it)
-  --line: #d9dcdf; // decorative hairlines and dividers
-  --line-strong: #6b737b; // borders of form fields and outlined buttons (>= 3:1)
+  --paper: #f2f5f8; // app canvas
+  --surface: #ffffff; // cards, sidebar, top bar
+  --plate: #e6e9ec; // neutral chips, quiet fills
+  --line: #e2e6ea; // hairlines and dividers
+  --line-strong: #6b737b; // borders of form controls (>= 3:1)
 
   // brand
-  --brand: #32c5f3; // sampled from the logo. Signal only; text on it is --ink
-  --brand-deep: #086f92; // links, icons, focus rings on light backgrounds
+  --brand: #32c5f3; // logo cyan. Buttons, accents, glow. Text on it is always --ink
+  --brand-deep: #086f92; // cyan used for text, links, icons and focus rings on light backgrounds
   --brand-tint: #e3f6fd; // hover and selected backgrounds
 
   // semantic (text-safe foregrounds and their tinted backgrounds)
@@ -29,7 +30,18 @@
   --warning: #7a4b00;
   --warning-bg: #fdefcf;
 
+  // shape
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  // elevation: soft and low, used for cards and floating bits only
+  --shadow-sm: 0 1px 2px rgba(11, 13, 15, 0.05);
+  --shadow-md: 0 1px 2px rgba(11, 13, 15, 0.04), 0 14px 32px -12px rgba(11, 13, 15, 0.18);
+  --glow-brand: radial-gradient(60% 80% at 100% 0%, rgba(50, 197, 243, 0.38), transparent 70%);
+
   // type
   --font-body: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-wide: 125%; // font-stretch for page titles and small labels
+  --font-wide: 125%; // font-stretch for titles and small labels
 }

@@ -3,12 +3,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ROLE_LABELS } from '../../core/models';
+import { UserAvatar } from '../../shared/user-avatar/user-avatar';
 
 /** Deepest active route: its `title` is the page name. */
 const leaf = (route: ActivatedRouteSnapshot): ActivatedRouteSnapshot =>
@@ -16,7 +16,7 @@ const leaf = (route: ActivatedRouteSnapshot): ActivatedRouteSnapshot =>
 
 @Component({
   selector: 'app-topbar',
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, MatToolbarModule, MatTooltipModule, RouterLink],
+  imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, RouterLink, UserAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',

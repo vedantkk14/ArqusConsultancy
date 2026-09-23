@@ -63,23 +63,34 @@ html {
   --mat-sys-inverse-primary: var(--brand);
   --mat-sys-scrim: #000;
 
-  // ---- Buttons: primary = ink fill, secondary = surface with an ink hairline -----------------
-  --mat-button-filled-container-color: var(--ink);
-  --mat-button-filled-label-text-color: var(--on-ink);
+  // ---- Buttons: primary = cyan with ink text, secondary = white with an ink hairline ---------
+  --mat-button-filled-container-color: var(--brand);
+  --mat-button-filled-label-text-color: var(--ink);
+  --mat-button-filled-label-text-weight: 700;
+  --mat-button-filled-container-height: 48px;
+  --mat-button-filled-container-shape: var(--radius-md);
   --mat-button-outlined-outline-color: var(--ink);
   --mat-button-outlined-label-text-color: var(--ink);
+  --mat-button-outlined-container-height: 48px;
+  --mat-button-outlined-container-shape: var(--radius-md);
   --mat-button-text-label-text-color: var(--ink);
   --mat-icon-button-icon-color: var(--ink);
 
-  // ---- Panels and fields ----------------------------------------------------------------------
-  --mat-card-outlined-container-color: var(--surface);
-  --mat-card-outlined-outline-color: var(--line);
-  --mat-toolbar-container-background-color: var(--surface);
-  --mat-toolbar-container-text-color: var(--ink);
+  // ---- Fields: tall, rounded, white; cyan-deep on focus ---------------------------------------
+  --mat-form-field-container-height: 56px;
+  --mat-form-field-container-vertical-padding: 16px;
+  --mat-form-field-outlined-container-shape: var(--radius-md);
   --mat-form-field-outlined-outline-color: var(--line-strong);
   --mat-form-field-outlined-hover-outline-color: var(--ink);
   --mat-form-field-outlined-focus-outline-color: var(--brand-deep);
   --mat-form-field-outlined-focus-label-text-color: var(--brand-deep);
+
+  // ---- Panels, menus, dialogs -----------------------------------------------------------------
+  --mat-card-outlined-container-color: var(--surface);
+  --mat-card-outlined-outline-color: var(--line);
+  --mat-card-outlined-container-shape: var(--radius-lg);
+  --mat-menu-container-shape: var(--radius-md);
+  --mat-dialog-container-shape: var(--radius-lg);
 }
 
 :root {
@@ -91,12 +102,12 @@ html {
   --space-5: 32px;
   --space-6: 48px;
 
-  --radius: 8px;
+  --radius: var(--radius-md);
   --radius-pill: 999px;
 
   // layout
-  --topbar-height: 56px;
-  --sidebar-width: 280px;
+  --topbar-height: 64px;
+  --sidebar-width: 272px;
   --page-max-width: 1200px;
   --page-padding: var(--space-3);
 }
@@ -104,7 +115,7 @@ html {
 // Mobile-first: bigger paddings only as the screen grows.
 @media (min-width: 600px) {
   :root {
-    --topbar-height: 64px;
+    --topbar-height: 72px;
     --page-padding: var(--space-4);
   }
 }
@@ -125,21 +136,24 @@ body {
   color-scheme: light;
   background-color: var(--paper);
   color: var(--ink);
-  font: var(--mat-sys-body-medium);
   font-family: var(--font-body);
+  font-size: 0.9375rem; // 15px
+  line-height: 1.5;
   font-variant-numeric: tabular-nums; // digits line up in tables, totals and amounts
   margin: 0;
   height: 100%;
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
 }
 
-// Page titles use Archivo's wide setting; body text and numbers stay at normal width.
+// Titles use Archivo's wide setting; body text and numbers stay at normal width.
 h1,
 h2,
 h3 {
   font-family: var(--font-body);
   font-stretch: var(--font-wide);
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--ink);
   overflow-wrap: anywhere;
 }
@@ -147,11 +161,19 @@ h3 {
 // Small uppercase labels (wide setting). Use on captions, section labels, table headers.
 .label {
   font-stretch: var(--font-wide);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
+}
+
+// Reusable white card.
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 // Links on light backgrounds use --brand-deep (cyan never carries text).
@@ -166,7 +188,7 @@ html :focus-visible:not(.mat-mdc-input-element) {
   outline-offset: 2px;
 }
 
-// Secondary buttons sit on a --surface fill even when placed on a --plate panel.
+// Secondary buttons sit on a white fill even when placed on a tinted panel.
 .mat-mdc-outlined-button:not(:disabled) {
   background-color: var(--surface);
 }

@@ -26,13 +26,24 @@ frontend/dist/
 frontend/.angular/
 frontend/coverage/
 frontend/out-tsc/
+frontend/tmp/
+frontend/typings/
+.sass-cache/
+testem.log
+__screenshots__/
 npm-debug.log*
 yarn-error.log*
 
 # --- IDE / OS ---
 .idea/
-.vscode/*
-!.vscode/extensions.json
+.project
+.classpath
+.c9/
+.settings/
+*.sublime-workspace
+.history/
+**/.vscode/*
+!**/.vscode/extensions.json
 *.swp
 .DS_Store
 Thumbs.db

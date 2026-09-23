@@ -85,17 +85,21 @@ Nothing else moves.
 ## Shell
 
 - **Sidebar (>= 1024px)**, driven by `core/config/sidebar.config.ts` and filtered by role; state in `LayoutService`.
-  - Expanded 256px: full logo, rows with icon + label, groups are accordions (one open at a time; the group holding
-    the current page opens by itself).
+  - Header is 64px, the same as the top bar, so their bottom borders form one line: emblem + "ARQUS / Sports
+    Consultancy" in type (the full logo's tagline is unreadable at sidebar size; the full logo stays on login).
+  - Expanded 256px: 36px rows with 2px gaps; groups are accordions (one open at a time; the group holding the current
+    page opens by itself and reads bold). Children are 32px, 13px text, on a 1px guide line under the parent icon.
+    A closed group takes exactly 0px (the accordion clip has no padding).
   - Rail 72px: emblem, icons only. Every icon has a tooltip on hover and keyboard focus. Groups open a CDK-menu
     flyout beside the icon; arrow keys move, Escape closes and returns focus to the icon.
-  - Toggle: round chevron button on the sidebar edge (`aria-expanded`, `aria-controls="app-sidebar"`, label
+  - Toggle: panel icon button in the header (in the rail: just below the emblem) (`aria-expanded`, `aria-controls="app-sidebar"`, label
     "Collapse sidebar" / "Expand sidebar") and **Ctrl/Cmd+B**. Saved in `localStorage` (`crm.sidebar.collapsed`,
     wrapped in try/catch). First visit: expanded at >= 1280px, rail at 1024-1279px.
   - Content follows `--sidebar-w` (set on the shell), animated.
   - Active item: `--brand-tint` background, ink text weight 600, 3px `--brand` bar with a rounded end on the left.
-    In the rail, the active icon sits on a `--brand-tint` square. Hover: light grey.
-  - Bottom: user chip (initials avatar, name, role, log-out). In the rail: the avatar opens an account menu.
+    Active child: tint + ink 600, and its stretch of the guide line turns `--brand`. In the rail, the active icon sits
+    on a `--brand-tint` square. Hover: light grey. Chevrons are 16px in `--line-strong`.
+  - Bottom: flat user row with a top hairline (initials avatar, name, role, log-out). In the rail: the avatar opens an account menu.
 - **Below 1024px:** no rail and no toggle. Top bar + bottom tab bar (the first four role-visible sections + "More",
   which opens a bottom sheet with every page and Log out). Active tab: ink icon and label, 3px cyan bar above.
 - **Top bar:** flat white, 1px bottom border, 64px. Page title (the page's `h1`, 24px/600) with an optional subtitle

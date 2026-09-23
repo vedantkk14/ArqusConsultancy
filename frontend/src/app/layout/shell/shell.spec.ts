@@ -64,12 +64,13 @@ describe('Shell and sidebar', () => {
     expect(layout.collapsed()).toBe(false);
   });
 
-  it('clicking the edge toggle collapses to a rail with the emblem', () => {
+  it('clicking the header toggle collapses to a rail with the emblem', () => {
     const { fixture, el } = render();
     el.querySelector<HTMLButtonElement>('.toggle')!.click();
     fixture.detectChanges();
     expect(el.querySelector('app-sidebar')!.classList).toContain('rail');
-    expect(el.querySelector<HTMLImageElement>('.logo img')!.src).toContain('arqus-emblem.png');
+    expect(el.querySelector('.brand-text')).toBeNull(); // rail shows the emblem only
+    expect(el.querySelector('.rail-toggle .toggle')).not.toBeNull();
   });
 
   it('rail icons carry an accessible name and a tooltip with the label', () => {

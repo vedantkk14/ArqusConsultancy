@@ -1,5 +1,5 @@
+// Rhythm: every top-level row is 36px with 2px between rows; children are 32px on a guide line.
 :host {
-  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -7,22 +7,22 @@
   border-right: 1px solid var(--line);
 }
 
+mat-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  font-size: 18px;
+}
+
+// ---- Header: same 64px as the top bar, so their bottom borders form one line -------------------------
 .head {
   display: flex;
   align-items: center;
-  height: 88px;
-  padding: 0 20px;
+  gap: var(--space-2);
+  height: var(--topbar-h);
+  padding: 0 var(--space-3) 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
   flex: none;
-}
-
-.logo {
-  display: block;
-  line-height: 0;
-  border-radius: var(--radius-sm);
-}
-
-.logo img {
-  height: auto;
 }
 
 :host(.rail) .head {
@@ -30,79 +30,102 @@
   padding: 0;
 }
 
-// Edge toggle: a small round button that sits on the sidebar border.
-.toggle {
-  position: absolute;
-  top: 32px;
-  right: -12px;
-  z-index: 3;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink-3);
-  box-shadow: var(--shadow-card);
-  cursor: pointer;
-  transition:
-    color var(--dur-fast) ease,
-    border-color var(--dur-fast) ease;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  text-decoration: none;
+}
 
-  mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
+:host(.rail) .brand {
+  flex: none;
+}
+
+.mark {
+  width: 36px;
+  height: auto;
+  flex: none;
+}
+
+.brand-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1.15;
+
+  strong {
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 
-  &:hover {
-    color: var(--ink);
-    border-color: var(--line-strong);
+  span {
+    overflow: hidden;
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.rail-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+
+// ---- Nav ----------------------------------------------------------------------------------------------
 .nav {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
   overflow-x: hidden;
-  padding: var(--space-2) var(--space-3);
+  overflow-y: auto;
+  padding: var(--space-3);
 }
 
 :host(.rail) .nav {
-  padding: var(--space-2) 0;
+  padding: var(--space-3) 0;
 }
 
 ul {
-  list-style: none;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 li + li {
   margin-top: 2px;
 }
 
-mat-icon {
-  width: 20px;
-  height: 20px;
-  font-size: 20px;
-  flex: none;
-}
-
-// ---- Expanded rows -----------------------------------------------------------------------------
 .item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  min-height: 40px;
-  padding: 0 10px 0 12px;
+  height: 36px;
+  padding: 0 8px 0 10px;
   border: 0;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink-2);
   font: inherit;
@@ -112,7 +135,9 @@ mat-icon {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--dur-fast) ease;
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast);
 
   mat-icon {
     color: var(--ink-3);
@@ -130,11 +155,17 @@ mat-icon {
   text-overflow: ellipsis;
 }
 
+// A group that holds the current page reads as "you are here" even when closed.
 .item.has-active {
   color: var(--ink);
+  font-weight: 600;
+
+  mat-icon:not(.chevron) {
+    color: var(--ink);
+  }
 }
 
-// Active: tint + ink 600 + a 3px cyan bar with a rounded end on the left edge.
+// Active page: tint + ink 600 + a 3px cyan bar with a rounded end on the left edge.
 .item.active {
   background: var(--brand-tint);
   color: var(--ink);
@@ -156,7 +187,12 @@ mat-icon {
   }
 }
 
-.chevron {
+// Quiet chevron: small and muted, only a hint.
+.item mat-icon.chevron {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  color: var(--line-strong);
   transition: transform var(--dur-base) var(--ease-out);
 }
 
@@ -164,7 +200,8 @@ mat-icon {
   transform: rotate(180deg);
 }
 
-// Accordion: animate height with the grid 0fr -> 1fr trick.
+// Accordion: animate height with the grid 0fr -> 1fr trick. The clip has no padding, so a closed
+// group takes exactly 0px (spacing lives on the inner list).
 .sub-wrap {
   display: grid;
   grid-template-rows: 0fr;
@@ -173,30 +210,77 @@ mat-icon {
   &.open {
     grid-template-rows: 1fr;
   }
+}
 
-  > .sub {
-    min-height: 0;
-    overflow: hidden;
+.sub-clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+// Children hang off a guide line aligned with the parent's icon.
+.sub {
+  margin: 2px 0 6px 18px;
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+
+  li + li {
+    margin-top: 0;
   }
 }
 
-.sub {
-  padding: 2px 0 6px;
-}
-
 .sub-item {
-  min-height: 36px;
-  padding-left: 44px;
-  font-size: var(--text-base);
-  font-weight: 400;
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast);
+
+  &:hover {
+    background: var(--subtle);
+    color: var(--ink);
+  }
+
+  // Active child: tint + ink, and the guide line lights up cyan beside it.
+  &.active {
+    background: var(--brand-tint);
+    color: var(--ink);
+    font-weight: 600;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      left: -11px;
+      width: 2px;
+      border-radius: 2px;
+      background: var(--brand);
+    }
+  }
 }
 
-// ---- Rail --------------------------------------------------------------------------------------
+@media (pointer: coarse) {
+  .item,
+  .sub-item {
+    height: 44px;
+  }
+}
+
+// ---- Rail and header toggle --------------------------------------------------------------------------------------------
 .rail-item {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   margin: 0 auto;
   padding: 0;
   border: 0;
@@ -204,14 +288,11 @@ mat-icon {
   background: transparent;
   color: var(--ink-3);
   cursor: pointer;
-  transition:
-    background-color var(--dur-fast) ease,
-    color var(--dur-fast) ease;
 
-  &:hover,
-  &[aria-expanded='true'] {
-    background: var(--subtle);
-    color: var(--ink);
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
   }
 
   &.active {
@@ -220,81 +301,21 @@ mat-icon {
   }
 }
 
-// ---- User chip ---------------------------------------------------------------------------------
-.user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: var(--space-2) var(--space-3) var(--space-3);
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  flex: none;
+.toggle,
+.rail-item {
+  transition: background-color var(--dur-fast), color var(--dur-fast);
 }
 
-:host(.rail) .user {
-  justify-content: center;
-  margin: var(--space-2) 0 var(--space-3);
-  padding: 0;
-  border: 0;
-}
-
-.who {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-  line-height: 1.3;
-
-  strong {
-    overflow: hidden;
-    color: var(--ink);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  span {
-    color: var(--ink-3);
-    font-size: var(--text-xs);
-  }
-}
-
-.icon-btn,
-.avatar-btn {
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.icon-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  color: var(--ink-3);
-
-  mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-  }
-
-  &:hover {
-    background: var(--subtle);
-    color: var(--ink);
-  }
-}
-
-.avatar-btn {
-  border-radius: 50%;
+.toggle:hover,
+.rail-item:hover,
+.rail-item[aria-expanded='true'] {
+  background: var(--subtle);
+  color: var(--ink);
 }
 
 .item:focus-visible,
-.rail-item:focus-visible {
+.sub-item:focus-visible,
+.rail-item:focus-visible,
+.toggle:focus-visible {
   outline-offset: -2px;
 }
-

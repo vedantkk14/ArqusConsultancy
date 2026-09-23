@@ -1,4 +1,5 @@
 import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
+import { NgTemplateOutlet } from '@angular/common';
 import { ConnectedPosition } from '@angular/cdk/overlay';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -8,9 +9,9 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { filter } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { NavItem, SIDEBAR_CONFIG, filterNavByRole } from '../../core/config/sidebar.config';
-import { ROLE_LABELS } from '../../core/models';
-import { UserAvatar } from '../../shared/user-avatar/user-avatar';
 import { LayoutService } from '../layout.service';
+import { MOD_KEY_LABEL } from '../topbar/topbar';
+import { SidebarUser } from './sidebar-user';
 
 /** Flyouts open to the right of the rail icon, aligned to its top (or bottom, near the screen edge). */
 const FLYOUT_POSITIONS: ConnectedPosition[] = [
@@ -26,9 +27,10 @@ const FLYOUT_POSITIONS: ConnectedPosition[] = [
     CdkMenuTrigger,
     MatIconModule,
     MatTooltipModule,
+    NgTemplateOutlet,
     RouterLink,
     RouterLinkActive,
-    UserAvatar,
+    SidebarUser,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.html',
@@ -39,8 +41,8 @@ export class Sidebar {
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
   protected readonly layout = inject(LayoutService);
-  protected readonly roleLabels = ROLE_LABELS;
   protected readonly flyoutPositions = FLYOUT_POSITIONS;
+  protected readonly modKey = MOD_KEY_LABEL;
 
   protected readonly items = computed(() => filterNavByRole(SIDEBAR_CONFIG, this.auth.role()));
 

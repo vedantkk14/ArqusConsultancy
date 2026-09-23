@@ -1,27 +1,37 @@
 <div class="head">
-  <a class="logo" routerLink="/" [attr.aria-label]="layout.collapsed() ? 'ARQUS home' : null">
-    @if (layout.collapsed()) {
-      <img src="brand/arqus-emblem.png" alt="" width="40" height="20" decoding="async" />
-    } @else {
-      <img src="brand/arqus-logo.png" alt="ARQUS Sports Consultancy, home" width="112" height="66" decoding="async" />
+  <a class="brand" routerLink="/" [attr.aria-label]="layout.collapsed() ? 'ARQUS home' : null">
+    <img class="mark" src="brand/arqus-emblem.png" alt="" width="36" height="18" decoding="async" />
+    @if (!layout.collapsed()) {
+      <span class="brand-text">
+        <strong>ARQUS</strong>
+        <span>Sports Consultancy</span>
+      </span>
     }
   </a>
+  @if (!layout.collapsed()) {
+    <ng-container *ngTemplateOutlet="toggle" />
+  }
 </div>
 
-<button
-  type="button"
-  class="toggle"
-  aria-controls="app-sidebar"
-  [attr.aria-expanded]="!layout.collapsed()"
-  [attr.aria-label]="layout.collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-  [matTooltip]="(layout.collapsed() ? 'Expand' : 'Collapse') + ' (Ctrl+B)'"
-  matTooltipPosition="right"
-  (click)="layout.toggleSidebar()"
->
-  <mat-icon aria-hidden="true">{{ layout.collapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
-</button>
+<ng-template #toggle>
+  <button
+    type="button"
+    class="toggle"
+    aria-controls="app-sidebar"
+    [attr.aria-expanded]="!layout.collapsed()"
+    [attr.aria-label]="layout.collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+    [matTooltip]="(layout.collapsed() ? 'Expand' : 'Collapse') + ' sidebar (' + modKey + '+B)'"
+    matTooltipPosition="right"
+    (click)="layout.toggleSidebar()"
+  >
+    <mat-icon aria-hidden="true">{{ layout.collapsed() ? 'left_panel_open' : 'left_panel_close' }}</mat-icon>
+  </button>
+</ng-template>
 
 <nav class="nav" aria-label="Main">
+  @if (layout.collapsed()) {
+    <div class="rail-toggle"><ng-container *ngTemplateOutlet="toggle" /></div>
+  }
   <ul>
     @for (item of items(); track item.route) {
       <li>
@@ -82,23 +92,24 @@
             >
               <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
               <span class="text">{{ item.label }}</span>
-              <mat-icon class="chevron" aria-hidden="true">expand_more</mat-icon>
+              <mat-icon class="chevron" aria-hidden="true">keyboard_arrow_down</mat-icon>
             </button>
-            <div class="sub-wrap" [class.open]="openGroup() === item.route" [attr.inert]="openGroup() === item.route ? null : ''">
-              <ul class="sub" [id]="slug(item)">
-                @for (child of item.children; track child.route) {
-                  <li>
-                    <a
-                      class="item sub-item"
-                      [routerLink]="child.route"
-                      routerLinkActive="active"
-                      ariaCurrentWhenActive="page"
-                    >
-                      {{ child.label }}
-                    </a>
-                  </li>
-                }
-              </ul>
+            <div
+              class="sub-wrap"
+              [class.open]="openGroup() === item.route"
+              [attr.inert]="openGroup() === item.route ? null : ''"
+            >
+              <div class="sub-clip">
+                <ul class="sub" [id]="slug(item)">
+                  @for (child of item.children; track child.route) {
+                    <li>
+                      <a class="sub-item" [routerLink]="child.route" routerLinkActive="active" ariaCurrentWhenActive="page">
+                        {{ child.label }}
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
             </div>
           } @else {
             <a class="item" [routerLink]="item.route" routerLinkActive="active" ariaCurrentWhenActive="page">
@@ -112,41 +123,4 @@
   </ul>
 </nav>
 
-@if (auth.user(); as user) {
-  <div class="user">
-    @if (layout.collapsed()) {
-      <button
-        type="button"
-        class="avatar-btn"
-        aria-label="Account menu"
-        [matTooltip]="user.name"
-        matTooltipPosition="right"
-        [cdkMenuTriggerFor]="account"
-        [cdkMenuPosition]="flyoutPositions"
-      >
-        <app-user-avatar [name]="user.name" [size]="36" />
-      </button>
-      <ng-template #account>
-        <div class="flyout" cdkMenu aria-label="Account">
-          <div class="flyout-user" aria-hidden="true">
-            <strong>{{ user.name }}</strong>
-            <span>{{ roleLabels[user.role] }}</span>
-          </div>
-          <a cdkMenuItem class="flyout-item" routerLink="/settings/profile">Profile</a>
-          <button cdkMenuItem type="button" class="flyout-item" (cdkMenuItemTriggered)="auth.logout()">
-            Log out
-          </button>
-        </div>
-      </ng-template>
-    } @else {
-      <app-user-avatar [name]="user.name" [size]="36" />
-      <div class="who">
-        <strong>{{ user.name }}</strong>
-        <span>{{ roleLabels[user.role] }}</span>
-      </div>
-      <button type="button" class="icon-btn" aria-label="Log out" matTooltip="Log out" (click)="auth.logout()">
-        <mat-icon aria-hidden="true">logout</mat-icon>
-      </button>
-    }
-  </div>
-}
+<app-sidebar-user [rail]="layout.collapsed()" [positions]="flyoutPositions" />

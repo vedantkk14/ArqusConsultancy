@@ -1,0 +1,38 @@
+<div class="legend" aria-hidden="true">
+  <span><i class="sw collected"></i>Collected</span>
+  <span><i class="sw spent"></i>Spent</span>
+</div>
+
+@if (isEmpty()) {
+  <p class="empty">No data for this period</p>
+} @else {
+  <svg [attr.viewBox]="'0 0 ' + W() + ' ' + H" [attr.width]="W()" [attr.height]="H" role="img" [attr.aria-label]="summary()">
+    @for (g of gridlines(); track g.y) {
+      <line class="grid" [attr.x1]="PAD.left" [attr.x2]="W() - PAD.right" [attr.y1]="g.y" [attr.y2]="g.y" />
+      <text class="axis" [attr.x]="PAD.left - 8" [attr.y]="g.y + 4" text-anchor="end">{{ g.label }}</text>
+    }
+    @for (b of bars(); track b.month) {
+      <rect class="collected" [attr.x]="b.collected.x" [attr.y]="b.collected.y" [attr.width]="b.collected.w"
+            [attr.height]="b.collected.h" rx="3" />
+      <rect class="spent" [attr.x]="b.spent.x" [attr.y]="b.spent.y" [attr.width]="b.spent.w"
+            [attr.height]="b.spent.h" rx="3" />
+      <text class="axis" [attr.x]="b.labelX" [attr.y]="H - 8" text-anchor="middle">{{ monthLabel(b.month) }}</text>
+    }
+  </svg>
+}
+
+<table class="sr-only">
+  <caption>Revenue vs expenses by month</caption>
+  <thead>
+    <tr><th scope="col">Month</th><th scope="col">Collected</th><th scope="col">Spent</th></tr>
+  </thead>
+  <tbody>
+    @for (month of months(); track month; let i = $index) {
+      <tr>
+        <th scope="row">{{ month }}</th>
+        <td>{{ collected()[i] | inr }}</td>
+        <td>{{ spent()[i] | inr }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

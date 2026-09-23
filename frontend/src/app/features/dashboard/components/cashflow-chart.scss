@@ -1,0 +1,66 @@
+:host {
+  display: block;
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.sw {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+
+  &.collected {
+    background: var(--brand);
+    box-shadow: inset 0 0 0 1px var(--brand-deep);
+  }
+
+  &.spent {
+    background: var(--ink);
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+.grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.axis {
+  fill: var(--ink-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+rect.collected {
+  fill: var(--brand);
+  stroke: var(--brand-deep);
+  stroke-width: 1;
+}
+
+rect.spent {
+  fill: var(--ink);
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  margin: 0;
+  color: var(--ink-3);
+}

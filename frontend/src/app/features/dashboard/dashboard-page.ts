@@ -1,80 +1,197 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject, catchError, combineLatest, map, of, startWith, switchMap } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { findNavItem } from '../../core/config/route-helpers';
-import { SIDEBAR_CONFIG, filterNavByRole } from '../../core/config/sidebar.config';
-import { ROLE_LABELS, Role } from '../../core/models';
+import { Role } from '../../core/models';
+import { LayoutService } from '../../layout/layout.service';
+import { DataColumn, DataList, DataRow } from '../../shared/data-list/data-list';
+import { EmptyState } from '../../shared/empty-state/empty-state';
+import { ErrorState } from '../../shared/error-state/error-state';
+import { InrCompactPipe, InrPipe, formatInrCompact } from '../../shared/money/inr.pipe';
+import { Skeleton } from '../../shared/skeleton/skeleton';
+import { AttentionPanel } from './components/attention-panel';
+import { BarList, BarRow } from './components/bar-list';
+import { CashflowChart } from './components/cashflow-chart';
+import { CountUp } from './components/count-up';
+import { monthLabel } from './components/month-label';
+import { PeriodSwitcher } from './components/period-switcher';
+import { Sparkline } from './components/sparkline';
+import { SplitBar } from './components/split-bar';
+import {
+  AdminDashboard,
+  PERIOD_COMPARISON,
+  PERIOD_NOUN,
+  Period,
+  toPeriod,
+} from './dashboard.models';
+import { DashboardService } from './dashboard.service';
 
-/** One line per workspace, shown on its tile. */
-const DESCRIPTIONS: Record<string, string> = {
-  '/leads': 'Capture prospects, follow up and win deals.',
-  '/projects': 'Turn won deals into projects and see them through.',
-  '/accounts': 'Ledgers, payments and pending collections.',
-  '/expenses': 'Track spend against each project budget.',
-  '/reports': 'Sales, financial health and margin.',
-  '/team': 'People, roles, commission and assignments.',
-  '/communication': 'Templates, message log and notifications.',
-  '/settings': 'Master data, audit log and your profile.',
-};
+type LoadState =
+  | { status: 'loading'; data: AdminDashboard | null }
+  | { status: 'ready'; data: AdminDashboard }
+  | { status: 'error'; data: AdminDashboard | null };
 
-/** The business flow. Each step links to the first candidate page the user's role may open. */
-const FLOW = [
-  { title: 'Lead', caption: 'A prospect enters the pipeline', pages: ['/leads/all'] },
-  { title: 'Won deal', caption: 'The lead is won and finalised', pages: ['/leads/won-awaiting'] },
-  { title: 'Project', caption: 'Delivery starts', pages: ['/projects/running'] },
-  {
-    title: 'Payments & expenses',
-    caption: 'Money in, money out',
-    pages: ['/accounts/payments', '/expenses/all'],
-  },
-  { title: 'Margin', caption: 'What the project earned', pages: ['/reports/project-margin'] },
+const QUICK_ACTIONS = [
+  { label: 'Add lead', icon: 'person_add', route: '/leads/new' },
+  { label: 'Record payment', icon: 'payments', route: '/accounts/payments' },
+  { label: 'Convert won lead', icon: 'transform', route: '/projects/convert' },
+  { label: 'Add user', icon: 'group_add', route: '/team/users' },
+];
+
+const PAYMENT_COLUMNS: DataColumn[] = [
+  { key: 'date', label: 'Date', type: 'date' },
+  { key: 'client', label: 'Client' },
+  { key: 'reference', label: 'Reference', hideOnMobile: true },
+  { key: 'amount', label: 'Amount', type: 'money' },
+];
+const EXPENSE_COLUMNS: DataColumn[] = [
+  { key: 'date', label: 'Date', type: 'date' },
+  { key: 'project', label: 'Project' },
+  { key: 'category', label: 'Category', hideOnMobile: true },
+  { key: 'amount', label: 'Amount', type: 'money' },
+];
+const ACTIVITY_COLUMNS: DataColumn[] = [
+  { key: 'when', label: 'When', type: 'date' },
+  { key: 'actor', label: 'Who' },
+  { key: 'action', label: 'What' },
 ];
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [MatIconModule, RouterLink],
+  imports: [
+    AttentionPanel,
+    BarList,
+    CashflowChart,
+    CountUp,
+    DataList,
+    EmptyState,
+    ErrorState,
+    InrCompactPipe,
+    InrPipe,
+    MatButtonModule,
+    MatIconModule,
+    MatTabsModule,
+    MatTooltipModule,
+    PeriodSwitcher,
+    RouterLink,
+    Skeleton,
+    Sparkline,
+    SplitBar,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly service = inject(DashboardService);
   private readonly auth = inject(AuthService);
+  private readonly layout = inject(LayoutService);
 
-  protected readonly user = this.auth.user;
-  protected readonly roleLabels = ROLE_LABELS;
+  protected readonly paymentColumns = PAYMENT_COLUMNS;
+  protected readonly expenseColumns = EXPENSE_COLUMNS;
+  protected readonly activityColumns = ACTIVITY_COLUMNS;
 
-  protected readonly greeting = (() => {
-    const hour = new Date().getHours();
-    return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-  })();
+  /** The admin endpoint is admin-only; other roles get their own dashboards later. */
+  protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
 
-  protected readonly firstName = computed(() => this.user()?.name.split(' ')[0] ?? '');
+  protected readonly quickActions = computed(() => {
+    const role = this.auth.role();
+    return QUICK_ACTIONS.filter((a) => role && findNavItem(a.route)?.roles.includes(role));
+  });
 
-  /** Workspaces the user's role can open (everything except the Dashboard itself). */
-  protected readonly tiles = computed(() =>
-    filterNavByRole(SIDEBAR_CONFIG, this.auth.role())
-      .filter((item) => item.children?.length)
-      .map((item) => ({
-        label: item.label,
-        icon: item.icon,
-        description: DESCRIPTIONS[item.route] ?? '',
-        pages: item.children?.length ?? 0,
-        route: item.children?.[0].route ?? item.route,
-      })),
+  /** The period lives in the URL (?period=quarter) so it survives reloads and can be shared. */
+  protected readonly period = toSignal(this.route.queryParamMap.pipe(map((p) => toPeriod(p.get('period')))), {
+    initialValue: toPeriod(this.route.snapshot.queryParamMap.get('period')),
+  });
+
+  private readonly reload$ = new Subject<void>();
+  protected readonly state = signal<LoadState>({ status: 'loading', data: null });
+  protected readonly data = computed(() => this.state().data);
+  protected readonly refreshing = computed(() => this.state().status === 'loading' && !!this.state().data);
+
+  // ---- Derived display values --------------------------------------------------------------------
+  protected readonly comparison = computed(() => PERIOD_COMPARISON[this.period()]);
+  protected readonly periodNoun = computed(() => PERIOD_NOUN[this.period()]);
+
+  /** "+12.4%" / "-3.1%", or null when there is no comparison (All, or nothing last period). */
+  protected readonly delta = computed(() => {
+    const pct = this.data()?.kpis.received_delta_pct;
+    if (pct === null || pct === undefined) {
+      return null;
+    }
+    const negative = pct.startsWith('-');
+    return { text: `${negative ? '' : '+'}${pct}%`, negative };
+  });
+
+  protected readonly receivedSparkLabel = computed(() => this.trendLabel('Received', this.data()?.trends.received, true));
+  protected readonly leadsSparkLabel = computed(() => this.trendLabel('New leads', this.data()?.trends.leads_new, false));
+
+  protected readonly funnelRows = computed<BarRow[]>(() =>
+    (this.data()?.funnel ?? []).map((s) => ({ label: s.label, value: s.count, display: String(s.count) })),
   );
 
-  protected readonly steps = computed(() => {
-    const role = this.auth.role();
-    return FLOW.map((step, index) => ({
-      number: index + 1,
-      title: step.title,
-      caption: step.caption,
-      route: step.pages.find((page) => canOpen(page, role)) ?? null,
-    }));
-  });
-}
+  protected readonly salesRows = computed<BarRow[]>(() =>
+    (this.data()?.sales_by_exec ?? []).map((s) => ({
+      label: s.name,
+      value: Number(s.won_value) || 0,
+      display: `${formatInrCompact(s.won_value)} · ${s.won_count} won`,
+    })),
+  );
 
-function canOpen(route: string, role: Role | null): boolean {
-  return !!role && !!findNavItem(route)?.roles.includes(role);
+  protected readonly recentPayments = computed(() => (this.data()?.recent.payments ?? []) as unknown as DataRow[]);
+  protected readonly recentExpenses = computed(() => (this.data()?.recent.expenses ?? []) as unknown as DataRow[]);
+  protected readonly recentActivity = computed(() => (this.data()?.recent.activity ?? []) as unknown as DataRow[]);
+
+  constructor() {
+    const today = new Date();
+    this.layout.subtitle.set(
+      today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    );
+    inject(DestroyRef).onDestroy(() => this.layout.subtitle.set(''));
+
+    combineLatest([toObservable(this.period), this.reload$.pipe(startWith(undefined))])
+      .pipe(
+        switchMap(([period]) => {
+          if (!this.isAdmin()) {
+            return of<LoadState>({ status: 'loading', data: null });
+          }
+          return this.service.loadAdmin(period).pipe(
+            map((data): LoadState => ({ status: 'ready', data })),
+            catchError(() => of<LoadState>({ status: 'error', data: null })),
+            startWith<LoadState>({ status: 'loading', data: this.state().data }),
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((s) => this.state.set(s));
+  }
+
+  protected setPeriod(period: Period): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { period: period === 'month' ? null : period },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  protected reload(): void {
+    this.reload$.next();
+  }
+
+  private trendLabel(name: string, values: (string | number)[] | undefined, money: boolean): string {
+    const months = this.data()?.trends.months ?? [];
+    const parts = (values ?? []).map(
+      (v, i) => `${monthLabel(months[i] ?? '')} ${money ? formatInrCompact(String(v)) : v}`,
+    );
+    return `${name} per month, last ${parts.length} months: ${parts.join(', ')}`;
+  }
 }

@@ -5,7 +5,6 @@ import { AuthService } from '../../core/auth/auth.service';
 import { findNavItem } from '../../core/config/route-helpers';
 import { SIDEBAR_CONFIG, filterNavByRole } from '../../core/config/sidebar.config';
 import { ROLE_LABELS, Role } from '../../core/models';
-import { BrandArt } from '../../shared/brand-art/brand-art';
 
 /** One line per workspace, shown on its tile. */
 const DESCRIPTIONS: Record<string, string> = {
@@ -34,7 +33,7 @@ const FLOW = [
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [BrandArt, MatIconModule, RouterLink],
+  imports: [MatIconModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',

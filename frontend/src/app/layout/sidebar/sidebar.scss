@@ -1,28 +1,78 @@
-// White sidebar. The logo keeps its natural colours on white. Active = black pill with a cyan icon.
 :host {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  height: 88px;
+  padding: 0 20px;
+  flex: none;
 }
 
 .logo {
   display: block;
-  padding: var(--space-4) var(--space-4) var(--space-3);
+  line-height: 0;
+  border-radius: var(--radius-sm);
 }
 
 .logo img {
-  display: block;
-  width: 100%;
-  max-width: 150px;
   height: auto;
+}
+
+:host(.rail) .head {
+  justify-content: center;
+  padding: 0;
+}
+
+// Edge toggle: a small round button that sits on the sidebar border.
+.toggle {
+  position: absolute;
+  top: 32px;
+  right: -12px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-3);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &:hover {
+    color: var(--ink);
+    border-color: var(--line-strong);
+  }
 }
 
 .nav {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: var(--space-2) var(--space-3);
+}
+
+:host(.rail) .nav {
+  padding: var(--space-2) 0;
 }
 
 ul {
@@ -35,117 +85,158 @@ li + li {
   margin-top: 2px;
 }
 
+mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  flex: none;
+}
+
+// ---- Expanded rows -----------------------------------------------------------------------------
 .item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  height: 46px;
-  padding: 0 var(--space-3) 0 12px;
+  min-height: 40px;
+  padding: 0 10px 0 12px;
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--ink-2);
   font: inherit;
+  font-size: var(--text-base);
   font-weight: 500;
+  text-align: left;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
+  transition: background-color var(--dur-fast) ease;
 
-.item mat-icon {
-  flex: none;
-  color: var(--ink-3);
-  transition: color 0.15s ease;
+  mat-icon {
+    color: var(--ink-3);
+  }
+
+  &:hover {
+    background: var(--subtle);
+    color: var(--ink);
+  }
 }
 
 .text {
   flex: 1;
-  text-align: left;
-}
-
-.item:hover {
-  background: var(--brand-tint);
-  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .item.has-active {
   color: var(--ink);
-  font-weight: 700;
 }
 
-.item.has-active mat-icon {
-  color: var(--brand-deep);
-}
-
+// Active: tint + ink 600 + a 3px cyan bar with a rounded end on the left edge.
 .item.active {
-  background: var(--ink);
-  color: var(--on-ink);
-  font-weight: 700;
-}
-
-.item.active mat-icon {
-  color: var(--brand);
-}
-
-.chevron {
-  transition: transform 0.2s ease;
-}
-
-[aria-expanded='true'] .chevron {
-  transform: rotate(180deg);
-}
-
-.sub {
-  margin: 2px 0 var(--space-2) 22px;
-  padding-left: var(--space-2);
-  border-left: 2px solid var(--line);
-}
-
-.sub-item {
-  display: flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  color: var(--ink-2);
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color 0.15s ease;
-}
-
-.sub-item:hover {
   background: var(--brand-tint);
   color: var(--ink);
-}
+  font-weight: 600;
 
-.sub-item.active {
-  background: var(--brand-tint);
-  color: var(--ink);
-  font-weight: 700;
-  box-shadow: inset 3px 0 0 var(--brand);
-}
+  mat-icon {
+    color: var(--ink);
+  }
 
-@media (pointer: coarse) {
-  .sub-item {
-    min-height: 44px;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--brand);
   }
 }
 
-.item:focus-visible,
-.sub-item:focus-visible {
-  outline-offset: -2px; // drawn inside the row so the scroll container cannot clip it
+.chevron {
+  transition: transform var(--dur-base) var(--ease-out);
 }
 
+[aria-expanded='true'] > .chevron {
+  transform: rotate(180deg);
+}
+
+// Accordion: animate height with the grid 0fr -> 1fr trick.
+.sub-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-out);
+
+  &.open {
+    grid-template-rows: 1fr;
+  }
+
+  > .sub {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.sub {
+  padding: 2px 0 6px;
+}
+
+.sub-item {
+  min-height: 36px;
+  padding-left: 44px;
+  font-size: var(--text-base);
+  font-weight: 400;
+}
+
+// ---- Rail --------------------------------------------------------------------------------------
+.rail-item {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+
+  &:hover,
+  &[aria-expanded='true'] {
+    background: var(--subtle);
+    color: var(--ink);
+  }
+
+  &.active {
+    background: var(--brand-tint);
+    color: var(--ink);
+  }
+}
+
+// ---- User chip ---------------------------------------------------------------------------------
 .user {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: var(--space-3);
-  border-top: 1px solid var(--line);
+  gap: 10px;
+  margin: var(--space-2) var(--space-3) var(--space-3);
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  flex: none;
+}
+
+:host(.rail) .user {
+  justify-content: center;
+  margin: var(--space-2) 0 var(--space-3);
+  padding: 0;
+  border: 0;
 }
 
 .who {
@@ -154,16 +245,56 @@ li + li {
   min-width: 0;
   flex-direction: column;
   line-height: 1.3;
+
+  strong {
+    overflow: hidden;
+    color: var(--ink);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+  }
 }
 
-.who strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.875rem;
+.icon-btn,
+.avatar-btn {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.who span {
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
   color: var(--ink-3);
-  font-size: 0.75rem;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: var(--subtle);
+    color: var(--ink);
+  }
 }
+
+.avatar-btn {
+  border-radius: 50%;
+}
+
+.item:focus-visible,
+.rail-item:focus-visible {
+  outline-offset: -2px;
+}
+

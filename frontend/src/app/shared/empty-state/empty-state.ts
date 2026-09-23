@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
-/** Centered icon + title + message on a white card. Project content into it for action buttons. */
+/** Centered icon + title + message. Set `bordered` to render it as a card. Project actions into it. */
 @Component({
   selector: 'app-empty-state',
   imports: [MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="empty card">
-      <span class="empty-icon"><mat-icon aria-hidden="true">{{ icon() }}</mat-icon></span>
+    <div class="empty" [class.card]="bordered()">
+      <mat-icon class="icon" aria-hidden="true">{{ icon() }}</mat-icon>
       <h2>{{ title() }}</h2>
       @if (message()) {
         <p>{{ message() }}</p>
@@ -21,34 +21,24 @@ import { MatIconModule } from '@angular/material/icon';
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 6px;
+      padding: 48px 20px;
       text-align: center;
-      gap: var(--space-2);
-      padding: var(--space-6) var(--space-3);
-      color: var(--ink-2);
     }
-    .empty-icon {
-      display: grid;
-      place-items: center;
-      width: 72px;
-      height: 72px;
-      margin-bottom: var(--space-2);
-      border-radius: 50%;
-      background: var(--brand-tint);
-      color: var(--ink);
-    }
-    .empty-icon mat-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
+    .icon {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 6px;
+      font-size: 24px;
+      color: var(--ink-3);
     }
     h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      line-height: 1.3;
+      font-size: var(--text-md);
     }
     p {
+      max-width: 44ch;
       margin: 0;
-      max-width: 42ch;
+      color: var(--ink-3);
     }
   `,
 })
@@ -56,4 +46,5 @@ export class EmptyState {
   readonly icon = input('inbox');
   readonly title = input.required<string>();
   readonly message = input('');
+  readonly bordered = input(true);
 }

@@ -1,4 +1,3 @@
-// Soft, translucent bar that floats over the canvas while the page scrolls under it.
 .topbar {
   position: sticky;
   top: 0;
@@ -6,98 +5,154 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  height: var(--topbar-height);
-  padding: 0 var(--space-2);
-  background: rgba(242, 245, 248, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  height: var(--topbar-h);
+  padding: 0 var(--gutter);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
 
 .emblem {
   display: block;
   width: auto;
-  height: 28px;
+  height: 22px;
+  margin-right: var(--space-1);
+}
+
+.titles {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1.2;
 }
 
 .page-title {
-  min-width: 0;
   overflow: hidden;
+  color: var(--ink);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  font-stretch: var(--font-wide);
-  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spacer {
   flex: 1;
 }
 
-// Bell: a round white button with a hairline.
-.round {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 50%;
-}
-
-// Profile chip: avatar + name in a white pill.
-.chip {
+.search {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  height: 44px;
-  padding: 0 var(--space-2) 0 6px;
+  width: 240px;
+  height: 36px;
+  margin-right: var(--space-2);
+  padding: 0 6px 0 10px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-control);
   background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.chip:hover {
-  border-color: var(--ink);
-}
-
-.chip-name {
-  display: none;
-}
-
-.chip-caret {
   color: var(--ink-3);
+  font: inherit;
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease;
+
+  span {
+    flex: 1;
+    text-align: left;
+  }
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  kbd {
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--subtle);
+    color: var(--ink-3);
+    font-family: inherit;
+    font-size: var(--text-xs);
+  }
+
+  &:hover {
+    border-color: var(--line-strong);
+  }
 }
 
-.menu-header {
+.icon-btn,
+.avatar-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--subtle);
+    color: var(--ink);
+  }
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+}
+
+.avatar-btn {
+  border-radius: 50%;
+}
+
+.dot {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--negative);
+}
+
+.menu-user {
   display: flex;
   flex-direction: column;
-  padding: var(--space-2) var(--space-3);
+  padding: 8px 16px 10px;
+  margin-bottom: 4px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: var(--space-1);
 
-  small {
-    color: var(--ink-2);
+  strong {
+    color: var(--ink);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  span {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
   }
 }
 
-// Desktop: the sidebar is permanent and carries the full logo, so the hamburger and emblem go away.
-@media (min-width: 960px) {
-  .topbar {
-    padding: 0 var(--space-5);
-  }
-
-  .hamburger,
-  .emblem {
-    display: none;
-  }
-
+@media (min-width: 1024px) {
   .page-title {
-    font-size: 1.375rem;
-  }
-
-  .chip-name {
-    display: inline;
+    font-size: var(--text-xl);
   }
 }

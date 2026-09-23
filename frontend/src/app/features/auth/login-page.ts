@@ -8,12 +8,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/models';
-import { BrandArt } from '../../shared/brand-art/brand-art';
 
 @Component({
   selector: 'app-login-page',
   imports: [
-    BrandArt,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,

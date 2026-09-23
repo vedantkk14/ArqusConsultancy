@@ -1,52 +1,40 @@
-// Mobile-first: form only. From 960px a dark brand panel appears beside it.
 .login {
-  min-height: 100dvh;
   display: grid;
-  grid-template-columns: 1fr;
-  background: var(--surface);
-}
-
-.hero {
-  display: none;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--space-6) var(--space-4);
+  background: var(--paper);
 }
 
 .panel {
-  display: grid;
-  place-items: center;
-  padding: var(--space-5) var(--space-3);
-  // a faint cyan wash at the top on phones, where the dark panel is hidden
-  background: radial-gradient(70% 40% at 50% 0%, rgba(50, 197, 243, 0.16), transparent 70%), var(--surface);
-}
-
-.form-wrap {
   width: 100%;
   max-width: 400px;
+  padding: var(--space-8) var(--space-6) var(--space-6);
 }
 
 .logo {
   display: block;
-  width: 100%;
-  max-width: 160px;
+  width: 136px;
   height: auto;
-  margin-bottom: var(--space-5);
+  margin: 0 auto var(--space-6);
 }
 
 .title {
-  margin: 0;
-  font-size: 1.75rem;
-  line-height: 1.15;
+  font-size: var(--text-xl);
+  text-align: center;
 }
 
 .subtitle {
   margin: var(--space-1) 0 0;
-  color: var(--ink-2);
+  color: var(--ink-3);
+  text-align: center;
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding-top: var(--space-5);
+  margin-top: var(--space-6);
 }
 
 .error {
@@ -54,71 +42,21 @@
   align-items: center;
   gap: var(--space-2);
   margin: 0 0 var(--space-3);
-  padding: 12px var(--space-3);
-  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
   background: var(--negative-bg);
   color: var(--negative);
+  font-size: var(--text-sm);
   font-weight: 500;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
 }
 
 .submit {
   width: 100%;
-  margin-top: var(--space-1);
-}
-
-@media (min-width: 960px) {
-  .login {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  }
-
-  .panel {
-    background: var(--surface);
-    padding: var(--space-6);
-  }
-
-  .hero {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
-    padding: var(--space-6);
-    background: var(--glow-brand), var(--ink);
-    color: var(--on-ink);
-  }
-
-  .eyebrow {
-    color: var(--brand);
-    font-size: 0.75rem;
-    font-weight: 700;
-    font-stretch: var(--font-wide);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .tagline {
-    margin: var(--space-5) 0;
-    font-size: clamp(2.5rem, 4.6vw, 4.25rem);
-    font-weight: 800;
-    font-stretch: var(--font-wide);
-    line-height: 1.02;
-    letter-spacing: -0.02em;
-  }
-
-  .tagline em {
-    font-style: normal;
-    color: var(--brand);
-  }
-
-  .art {
-    width: 100%;
-    max-width: 480px;
-    margin-bottom: var(--space-4);
-  }
-
-  .hero-note {
-    margin: 0;
-    max-width: 34ch;
-    color: var(--on-ink-2);
-  }
+  margin-top: var(--space-2);
 }

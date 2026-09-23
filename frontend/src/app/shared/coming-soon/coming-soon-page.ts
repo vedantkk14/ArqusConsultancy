@@ -10,24 +10,22 @@ import { EmptyState } from '../empty-state/empty-state';
   template: `
     <app-empty-state
       icon="construction"
-      [title]="name"
-      message="We're still building this page. It will appear here soon."
+      [title]="name + ' is on the way'"
+      message="This page hasn't been built yet. It will appear here once it's ready."
     >
-      <span class="badge">In development</span>
+      <span class="chip">In development</span>
     </app-empty-state>
   `,
   styles: `
-    .badge {
-      margin-top: var(--space-2);
-      padding: 4px var(--space-3);
+    .chip {
+      margin-top: 10px;
+      padding: 2px 10px;
+      border: 1px solid var(--line);
       border-radius: var(--radius-pill);
-      background: var(--ink);
-      color: var(--brand);
-      font-size: 0.6875rem;
-      font-weight: 700;
-      font-stretch: var(--font-wide);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      background: var(--subtle);
+      color: var(--ink-2);
+      font-size: var(--text-xs);
+      font-weight: 500;
     }
   `,
 })

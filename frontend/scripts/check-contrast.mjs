@@ -27,30 +27,29 @@ const TEXT = 4.5;
 const GRAPHIC = 3;
 const pairs = [
   // primary text
-  ...['paper', 'surface', 'plate', 'brand-tint', 'brand'].map((bg) => ['ink', bg, TEXT, `text on ${bg}`]),
-  ['on-ink', 'ink', TEXT, 'text on ink (hero, active nav)'],
-  ['on-ink-2', 'ink', TEXT, 'secondary text on ink'],
-  // secondary and muted text
-  ...['paper', 'surface', 'plate', 'brand-tint'].map((bg) => ['ink-2', bg, TEXT, `secondary text on ${bg}`]),
-  ...['paper', 'surface', 'plate', 'brand-tint'].map((bg) => ['ink-3', bg, TEXT, `muted text on ${bg}`]),
-  // blue text, links, icons
-  ...['paper', 'surface', 'plate', 'brand-tint'].map((bg) => ['brand-deep', bg, TEXT, `link/icon on ${bg}`]),
+  ...['paper', 'surface', 'subtle', 'plate', 'brand-tint', 'brand'].map((bg) => ['ink', bg, TEXT, `heading/text on ${bg}`]),
+  ['on-ink', 'ink', TEXT, 'text on ink (primary button, tooltip)'],
+  // body and muted text
+  ...['paper', 'surface', 'subtle', 'brand-tint'].map((bg) => ['ink-2', bg, TEXT, `body text on ${bg}`]),
+  ...['paper', 'surface', 'subtle', 'brand-tint'].map((bg) => ['ink-3', bg, TEXT, `muted text on ${bg}`]),
+  // readable cyan: links and icons
+  ...['paper', 'surface', 'subtle', 'brand-tint'].map((bg) => ['brand-deep', bg, TEXT, `link on ${bg}`]),
   // semantic text
   ...['positive', 'negative', 'warning'].flatMap((n) => [
     [n, `${n}-bg`, TEXT, `${n} chip text`],
     [n, 'surface', TEXT, `${n} text on surface`],
   ]),
-  // focus rings and meaningful graphics
-  ...['paper', 'surface', 'plate', 'brand-tint'].map((bg) => ['brand-deep', bg, GRAPHIC, `focus ring on ${bg}`]),
-  ...['surface', 'plate', 'paper'].map((bg) => ['ink', bg, GRAPHIC, `outline button border on ${bg}`]),
-  ['brand', 'ink', GRAPHIC, 'cyan icon / art on ink (active nav icon, hero)'],
-  ...['paper', 'surface'].map((bg) => ['ink-3', bg, GRAPHIC, `inactive nav icon on ${bg}`]),
-  ...['surface', 'plate', 'paper'].map((bg) => ['line-strong', bg, GRAPHIC, `form field border on ${bg}`]),
+  // focus rings, control borders and meaningful graphics
+  ...['paper', 'surface', 'subtle', 'brand-tint'].map((bg) => ['brand-deep', bg, GRAPHIC, `focus ring on ${bg}`]),
+  ...['paper', 'surface', 'subtle'].map((bg) => ['ink-3', bg, GRAPHIC, `nav / card icon on ${bg}`]),
+  ...['paper', 'surface'].map((bg) => ['line-strong', bg, GRAPHIC, `input border on ${bg}`]),
+  ['ink', 'surface', GRAPHIC, 'Spent bars, lost segment on surface'],
+  ['brand-deep', 'surface', GRAPHIC, 'Collected bar outline on surface'],
 ];
 
-// Cyan on light surfaces is decorative only (borders, glows, avatar fill). Reported, not gated:
-// meaning is always carried by ink text, weight or position, never by the cyan alone.
-const decorative = ['paper', 'surface'].map((bg) => ['brand', bg, `cyan accent on ${bg}`]);
+// Cyan on light surfaces is never the only carrier of meaning: the active item is also bold with a tinted
+// background, chart bars have a --brand-deep outline, and every figure is written out. Reported, not gated.
+const decorative = ['paper', 'surface', 'brand-tint'].map((bg) => ['brand', bg, `cyan accent on ${bg}`]);
 
 const missing = [...pairs.flatMap((p) => [p[0], p[1]]), ...decorative.flatMap((p) => [p[0], p[1]])].filter(
   (n) => !tokens[n],

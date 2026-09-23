@@ -1,17 +1,16 @@
-<mat-sidenav-container class="container">
-  <mat-sidenav
-    #drawer
-    class="sidenav"
-    [mode]="isMobile() ? 'over' : 'side'"
-    [opened]="!isMobile()"
-  >
-    <app-sidebar (navigated)="isMobile() && drawer.close()" />
-  </mat-sidenav>
+@if (layout.isDesktop()) {
+  <aside id="app-sidebar" class="sidebar">
+    <app-sidebar />
+  </aside>
+}
 
-  <mat-sidenav-content class="main">
-    <app-topbar (menuToggle)="drawer.toggle()" />
-    <main class="content">
-      <router-outlet />
-    </main>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<div class="main">
+  <app-topbar (searchOpen)="openPalette()" />
+  <main class="content" id="main-content">
+    <router-outlet />
+  </main>
+</div>
+
+@if (!layout.isDesktop()) {
+  <app-tabbar />
+}

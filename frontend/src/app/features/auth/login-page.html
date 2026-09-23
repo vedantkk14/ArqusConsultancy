@@ -1,74 +1,54 @@
 <main class="login">
-  <section class="hero" aria-hidden="true">
-    <span class="eyebrow">Sports Consultancy</span>
-    <p class="tagline">
-      Idealize.<br />
-      Innovate.<br />
-      <em>Achieve.</em>
-    </p>
-    <app-brand-art class="art" />
-    <p class="hero-note">One place for leads, projects, payments and margin.</p>
-  </section>
+  <div class="card panel">
+    <img class="logo" src="brand/arqus-logo.png" alt="ARQUS Sports Consultancy" width="136" height="80" decoding="async" />
+    <h1 class="title">Sign in</h1>
+    <p class="subtitle">Welcome back. Enter your details to continue.</p>
 
-  <section class="panel">
-    <div class="form-wrap">
-      <img
-        class="logo"
-        src="brand/arqus-logo.png"
-        alt="ARQUS Sports Consultancy"
-        width="160"
-        height="94"
-        decoding="async"
-      />
-      <h1 class="title">Welcome back</h1>
-      <p class="subtitle">Sign in to your workspace.</p>
-
-      <form [formGroup]="form" (ngSubmit)="submit()" class="form" novalidate>
-        <mat-form-field appearance="outline">
-          <mat-label>Username</mat-label>
-          <input matInput formControlName="username" autocomplete="username" />
-          @if (form.controls.username.hasError('required')) {
-            <mat-error>Username is required</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Password</mat-label>
-          <input
-            matInput
-            formControlName="password"
-            autocomplete="current-password"
-            [type]="hidePassword() ? 'password' : 'text'"
-          />
-          <button
-            matIconButton
-            matSuffix
-            type="button"
-            [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
-            (click)="hidePassword.set(!hidePassword())"
-          >
-            <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
-          </button>
-          @if (form.controls.password.hasError('required')) {
-            <mat-error>Password is required</mat-error>
-          }
-        </mat-form-field>
-
-        @if (error(); as message) {
-          <p class="error" role="alert">
-            <mat-icon aria-hidden="true">error</mat-icon>
-            <span>{{ message }}</span>
-          </p>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form" novalidate>
+      <mat-form-field appearance="outline">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" autocomplete="username" />
+        @if (form.controls.username.hasError('required')) {
+          <mat-error>Username is required</mat-error>
         }
+      </mat-form-field>
 
-        <button matButton="filled" type="submit" class="submit" [disabled]="loading()">
-          @if (loading()) {
-            <mat-spinner diameter="22" />
-          } @else {
-            Sign in
-          }
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          formControlName="password"
+          autocomplete="current-password"
+          [type]="hidePassword() ? 'password' : 'text'"
+        />
+        <button
+          matIconButton
+          matSuffix
+          type="button"
+          [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
+          (click)="hidePassword.set(!hidePassword())"
+        >
+          <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
         </button>
-      </form>
-    </div>
-  </section>
+        @if (form.controls.password.hasError('required')) {
+          <mat-error>Password is required</mat-error>
+        }
+      </mat-form-field>
+
+      @if (error(); as message) {
+        <p class="error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>{{ message }}</span>
+        </p>
+      }
+
+      <button matButton="filled" type="submit" class="submit" [disabled]="loading()">
+        @if (loading()) {
+          <mat-spinner diameter="18" aria-label="Signing in" />
+        } @else {
+          Sign in
+        }
+      </button>
+    </form>
+  </div>
 </main>

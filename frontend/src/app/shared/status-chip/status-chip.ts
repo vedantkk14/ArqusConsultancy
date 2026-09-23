@@ -16,27 +16,34 @@ const STATUS_TONES: Record<string, StatusTone> = {
   CANCELLED: 'danger',
 };
 
-/** Always shows the status as text, so colour is never the only signal. */
+/** Pill with a dot and the status as text, so colour is never the only signal. */
 @Component({
   selector: 'app-status-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<span class="chip" [class]="'tone-' + resolvedTone()">{{ text() }}</span>`,
+  template: `<span class="chip" [class]="'tone-' + resolvedTone()"><i aria-hidden="true"></i>{{ text() }}</span>`,
   styles: `
     .chip {
-      display: inline-block;
-      padding: 2px var(--space-2);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 22px;
+      padding: 0 8px;
       border-radius: var(--radius-pill);
-      font-size: 0.75rem;
-      font-weight: 600;
-      font-stretch: var(--font-wide);
-      letter-spacing: 0.02em;
+      font-size: var(--text-xs);
+      font-weight: 500;
       white-space: nowrap;
+    }
+    i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
     }
     .tone-success { background: var(--positive-bg); color: var(--positive); }
     .tone-warning { background: var(--warning-bg); color: var(--warning); }
     .tone-danger { background: var(--negative-bg); color: var(--negative); }
     .tone-info { background: var(--brand-tint); color: var(--brand-deep); }
-    .tone-neutral { background: var(--plate); color: var(--ink-2); }
+    .tone-neutral { background: var(--subtle); color: var(--ink-2); }
   `,
 })
 export class StatusChip {
@@ -48,11 +55,8 @@ export class StatusChip {
   protected readonly resolvedTone = computed(
     () => this.tone() ?? STATUS_TONES[this.status().toUpperCase()] ?? 'neutral',
   );
-  protected readonly text = computed(() =>
-    this.status()
-      .toLowerCase()
-      .split('_')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' '),
-  );
+  protected readonly text = computed(() => {
+    const words = this.status().toLowerCase().split('_').join(' ');
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  });
 }

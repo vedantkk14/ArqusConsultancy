@@ -11,7 +11,7 @@ export function initials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-/** Round cyan avatar with ink initials (ink on cyan is 9.7:1). */
+/** Round avatar: ink initials on the cyan tint. Decorative; the name is always shown or labelled nearby. */
 @Component({
   selector: 'app-user-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,12 +24,11 @@ export function initials(name: string): string {
       height: var(--size, 36px);
       flex: none;
       border-radius: 50%;
-      background: var(--brand);
+      background: var(--brand-tint);
+      box-shadow: inset 0 0 0 1px rgba(8, 111, 146, 0.18);
       color: var(--ink);
-      font-size: calc(var(--size, 36px) * 0.38);
-      font-weight: 700;
-      font-stretch: var(--font-wide);
-      letter-spacing: 0.02em;
+      font-size: calc(var(--size, 36px) * 0.36);
+      font-weight: 600;
       line-height: 1;
     }
   `,

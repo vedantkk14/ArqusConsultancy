@@ -1,0 +1,87 @@
+// Global styles: Angular Material theme + mobile-first design tokens (CSS variables).
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+:root {
+  // spacing scale (4px base)
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+
+  --radius: 8px;
+  --radius-pill: 999px;
+
+  // layout
+  --topbar-height: 56px;
+  --sidebar-width: 280px;
+  --page-max-width: 1200px;
+  --page-padding: var(--space-3);
+
+  // status colours (used by app-status-chip)
+  --status-success-bg: #dff3e4;
+  --status-success-fg: #14532d;
+  --status-warning-bg: #fdf1d3;
+  --status-warning-fg: #713f12;
+  --status-danger-bg: #fbe0dd;
+  --status-danger-fg: #7f1d1d;
+  --status-info-bg: #dbeafe;
+  --status-info-fg: #1e3a8a;
+}
+
+// Mobile-first: bigger paddings only as the screen grows.
+@media (min-width: 600px) {
+  :root {
+    --topbar-height: 64px;
+    --page-padding: var(--space-4);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --page-padding: var(--space-5);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+  margin: 0;
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,
+h2,
+h3 {
+  overflow-wrap: anywhere;
+}
+
+// Wide tables scroll inside their own box instead of breaking the page on phones.
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

@@ -1,0 +1,50 @@
+<nav aria-label="Main navigation">
+  <mat-nav-list>
+    @for (item of items(); track item.route) {
+      @if (item.children) {
+        <a
+          mat-list-item
+          role="button"
+          tabindex="0"
+          [attr.aria-expanded]="isOpen(item)"
+          (click)="toggle(item)"
+          (keydown.enter)="toggle(item)"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle class="group-title">
+            {{ item.label }}
+            <mat-icon aria-hidden="true">{{ isOpen(item) ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </span>
+        </a>
+        @if (isOpen(item)) {
+          @for (child of item.children; track child.route) {
+            <a
+              mat-list-item
+              class="child"
+              [routerLink]="child.route"
+              routerLinkActive
+              #rla="routerLinkActive"
+              [activated]="rla.isActive"
+              (click)="navigated.emit()"
+            >
+              <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+              <span matListItemTitle>{{ child.label }}</span>
+            </a>
+          }
+        }
+      } @else {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [activated]="rla.isActive"
+          (click)="navigated.emit()"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    }
+  </mat-nav-list>
+</nav>

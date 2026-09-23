@@ -1,0 +1,32 @@
+<mat-toolbar class="topbar">
+  <button matIconButton class="hamburger" aria-label="Open navigation menu" (click)="menuToggle.emit()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span class="brand">CRM &middot; PM</span>
+  <span class="spacer"></span>
+
+  <!-- Placeholder: wire to /notifications when Dev C ships it. -->
+  <button matIconButton aria-label="Notifications" matTooltip="Notifications (coming soon)">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  @if (auth.user(); as user) {
+    <button matIconButton aria-label="Profile menu" [matMenuTriggerFor]="profileMenu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #profileMenu="matMenu" xPosition="before">
+      <div class="menu-header">
+        <strong>{{ user.name }}</strong>
+        <small>{{ roleLabels[user.role] }}</small>
+      </div>
+      <a mat-menu-item routerLink="/settings/profile">
+        <mat-icon>person</mat-icon>
+        <span>Profile</span>
+      </a>
+      <button mat-menu-item (click)="auth.logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  }
+</mat-toolbar>

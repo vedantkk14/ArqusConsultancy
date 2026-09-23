@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  padding: var(--space-2) 0;
+}
+
+.child {
+  padding-left: var(--space-4);
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

@@ -1,0 +1,16 @@
+# Runtime
+Django==5.2.17
+djangorestframework==3.18.1
+djangorestframework-simplejwt==5.5.1
+drf-spectacular==0.30.0
+django-cors-headers==4.9.0
+django-filter==26.1
+django-environ==0.14.0
+Pillow==12.3.0
+PyMySQL==1.2.3
+cryptography==50.0.1  # needed by PyMySQL for MySQL 8 caching_sha2_password
+
+# Testing / lint
+pytest==9.1.1
+pytest-django==4.14.0
+ruff==0.16.8

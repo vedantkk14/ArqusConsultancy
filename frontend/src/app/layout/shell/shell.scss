@@ -1,0 +1,21 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.container {
+  flex: 1;
+  min-height: 0;
+}
+
+.sidenav {
+  width: var(--sidebar-width);
+  max-width: 85vw;
+}
+
+.content {
+  padding: var(--page-padding);
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+}

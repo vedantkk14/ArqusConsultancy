@@ -81,4 +81,50 @@ PM sees only own projects and only the sanctioned budget (see privacy shield).
 
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| 🔲 | `GET /dashboard/admin` | A | KPIs for the admin dashboard |
+| ✅ | `GET /dashboard/admin?period=month\|quarter\|year\|all` | A | Admin home. 401 anonymous, 403 other roles, 400 bad period |
+
+Response (money = string with 2 decimals; counts = integers; `received_delta_pct` = string or `null`):
+
+```json
+{
+  "period": "month",
+  "range": {"start": "2026-09-01", "end": "2026-09-24", "prev_start": "2026-08-01", "prev_end": "2026-08-31"},
+  "data_sources": {"leads": false, "projects": false, "accounts": false, "expenses": false},
+  "kpis": {
+    "received": "0.00", "received_prev": "0.00", "received_delta_pct": null,
+    "outstanding": "0.00", "outstanding_clients": 0, "outstanding_overdue": "0.00",
+    "leads_total": 0, "leads_new": 0, "leads_new_prev": 0,
+    "open_count": 0, "open_value": "0.00",
+    "won_count": 0, "lost_count": 0, "win_rate_pct": "0.0",
+    "projects_running": 0, "projects_completed": 0
+  },
+  "trends": {"months": ["2026-04", "…", "2026-09"], "leads_new": [0, 0, 0, 0, 0, 0], "received": ["0.00", "…"]},
+  "cashflow": {"months": ["2026-04", "…"], "collected": ["0.00", "…"], "spent": ["0.00", "…"]},
+  "attention": [{"key": "overdue_payments", "label": "Payments overdue", "count": 4, "severity": "high", "route": "/accounts/pending"}],
+  "funnel": [{"status": "NEW", "label": "New", "count": 64}],
+  "sales_by_exec": [{"user_id": 3, "name": "Eva Exec", "won_count": 7, "won_value": "3240000.00"}],
+  "recent": {
+    "payments": [{"date": "2026-09-23", "client": "…", "reference": "…", "amount": "250000.00"}],
+    "expenses": [{"date": "2026-09-22", "project": "…", "category": "…", "amount": "185000.00"}],
+    "activity": [{"when": "2026-09-24T09:40:00Z", "actor": "…", "action": "…"}]
+  }
+}
+```
+
+Definitions (each is one named function/constant in `apps/reports/services.py`):
+
+- **Periods** follow the Indian financial year (April-March): month / FY quarter / FY year to date, compared with
+  the full previous period of the same kind. `all` has no comparison.
+- **Open lead** (active opportunity) = status not `WON` and not `LOST`; `open_value` = sum of `proposed_amount`
+  (missing = 0).
+- `win_rate_pct` = won / (won + lost) in the period, one decimal; `"0.0"` when nothing was decided.
+- `received_delta_pct` = % change vs the previous period; `null` when the previous value is 0 or period is `all`.
+- Projects running = status not Completed; completed = Completed. Snapshots, not period-based.
+- Outstanding figures are snapshots as of now; **overdue** = ledger older than 30 days (`OVERDUE_AFTER_DAYS`).
+- `leads_total` is the all-time snapshot; `leads_new` is the period figure.
+- `attention` lists only counts above zero, most severe first.
+
+**Status:** the endpoint, shape and definitions are implemented and tested. The figures are real zeros until the
+`leads.Lead`, `projects.Project/Expense` and `accounts.Ledger/Payment` models exist (`data_sources` says which are
+connected). Each block has a `TODO(depends on …)` in `services.py` describing the aggregate to add. The frontend
+dev build uses a typed fixture (`environment.useMocks`) meanwhile.

@@ -4,12 +4,25 @@
   z-index: 2;
   height: var(--topbar-height);
   padding: 0 var(--space-2);
-  gap: var(--space-1);
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--line);
 }
 
-.brand {
-  font: var(--mat-sys-title-medium);
-  margin-left: var(--space-1);
+.emblem {
+  display: block;
+  width: auto;
+  height: 28px;
+}
+
+.page-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  font-stretch: var(--font-wide);
 }
 
 .spacer {
@@ -20,17 +33,23 @@
   display: flex;
   flex-direction: column;
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  border-bottom: 1px solid var(--line);
   margin-bottom: var(--space-1);
 
   small {
-    color: var(--mat-sys-on-surface-variant);
+    color: var(--ink-2);
   }
 }
 
-// Mobile-first: the hamburger is visible by default and hidden once the sidebar is permanent.
+// Desktop: the sidebar is permanent and carries the full logo, so the hamburger and emblem go away.
 @media (min-width: 960px) {
-  .hamburger {
+  .hamburger,
+  .emblem {
     display: none;
+  }
+
+  .page-title {
+    margin-left: var(--space-2);
+    font-size: 1.125rem;
   }
 }

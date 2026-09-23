@@ -1,0 +1,35 @@
+// ARQUS brand tokens: the single source of truth for colour and type.
+// scripts/check-contrast.mjs parses this file, so keep one `--name: #hex;` per line.
+// Rules: docs/DESIGN.md. Cyan is a signal, never a text colour or a large fill.
+
+:root {
+  // ink (text)
+  --ink: #0b0d0f;
+  --ink-2: #3a4147; // secondary text
+  --ink-3: #565e66; // muted text
+  --on-ink: #ffffff; // text on an --ink fill
+
+  // surfaces
+  --paper: #f4f5f6; // page background
+  --surface: #ffffff; // bordered panels, top bar
+  --plate: #e6e6e6; // sidebar + login panel (logo sits on it)
+  --line: #d9dcdf; // decorative hairlines and dividers
+  --line-strong: #6b737b; // borders of form fields and outlined buttons (>= 3:1)
+
+  // brand
+  --brand: #32c5f3; // sampled from the logo. Signal only; text on it is --ink
+  --brand-deep: #086f92; // links, icons, focus rings on light backgrounds
+  --brand-tint: #e3f6fd; // hover and selected backgrounds
+
+  // semantic (text-safe foregrounds and their tinted backgrounds)
+  --positive: #17663a;
+  --positive-bg: #ddf1e4;
+  --negative: #a82a1e;
+  --negative-bg: #fbe4e1;
+  --warning: #7a4b00;
+  --warning-bg: #fdefcf;
+
+  // type
+  --font-body: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-wide: 125%; // font-stretch for page titles and small labels
+}

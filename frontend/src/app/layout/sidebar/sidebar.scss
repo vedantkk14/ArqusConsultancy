@@ -1,14 +1,70 @@
+// Sidebar sits on --plate so the transparent logo PNG blends in. Cyan appears only as the 2px active bar.
 :host {
   display: block;
-  padding: var(--space-2) 0;
+  min-height: 100%;
+  background: var(--plate);
+  padding-bottom: var(--space-3);
 }
 
-.child {
-  padding-left: var(--space-4);
+.logo {
+  display: block;
+  padding: var(--space-4) var(--space-3) var(--space-3);
+}
+
+.logo img {
+  display: block;
+  width: 100%;
+  max-width: 168px;
+  height: auto;
+}
+
+a[mat-list-item] {
+  --mat-list-list-item-container-shape: 0;
+  --mat-list-list-item-label-text-color: var(--ink);
+  --mat-list-list-item-leading-icon-color: var(--ink);
+  --mat-list-list-item-selected-container-color: transparent;
+  --mat-list-active-indicator-color: transparent; // no filled pill behind the active item
+  --mat-list-active-indicator-shape: 0;
+  --mat-list-list-item-hover-state-layer-opacity: 0;
+  --mat-list-list-item-focus-state-layer-opacity: 0;
+  border-left: 2px solid transparent; // reserved so the active bar never shifts the layout
+}
+
+a[mat-list-item]:hover {
+  background: var(--brand-tint);
+}
+
+// Ring drawn inside the row so the drawer edge cannot clip it.
+a[mat-list-item]:focus-visible {
+  outline-offset: -2px;
+}
+
+// Active item: ink text (bolder) + a 2px cyan bar. No filled pill.
+a[mat-list-item].mdc-list-item--activated {
+  border-left-color: var(--brand);
+}
+
+a[mat-list-item].mdc-list-item--activated .mdc-list-item__primary-text {
+  font-weight: 700;
+}
+
+// Group labels: small, wide, quiet.
+a[mat-list-item].group {
+  --mat-list-list-item-label-text-color: var(--ink-3);
+  --mat-list-list-item-leading-icon-color: var(--ink-3);
 }
 
 .group-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  font-stretch: var(--font-wide);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.child {
+  padding-left: var(--space-4);
 }

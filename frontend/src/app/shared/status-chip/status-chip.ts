@@ -16,6 +16,7 @@ const STATUS_TONES: Record<string, StatusTone> = {
   CANCELLED: 'danger',
 };
 
+/** Always shows the status as text, so colour is never the only signal. */
 @Component({
   selector: 'app-status-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,14 +26,17 @@ const STATUS_TONES: Record<string, StatusTone> = {
       display: inline-block;
       padding: 2px var(--space-2);
       border-radius: var(--radius-pill);
-      font: var(--mat-sys-label-medium);
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-stretch: var(--font-wide);
+      letter-spacing: 0.02em;
       white-space: nowrap;
     }
-    .tone-success { background: var(--status-success-bg); color: var(--status-success-fg); }
-    .tone-warning { background: var(--status-warning-bg); color: var(--status-warning-fg); }
-    .tone-danger { background: var(--status-danger-bg); color: var(--status-danger-fg); }
-    .tone-info { background: var(--status-info-bg); color: var(--status-info-fg); }
-    .tone-neutral { background: var(--mat-sys-surface-variant); color: var(--mat-sys-on-surface-variant); }
+    .tone-success { background: var(--positive-bg); color: var(--positive); }
+    .tone-warning { background: var(--warning-bg); color: var(--warning); }
+    .tone-danger { background: var(--negative-bg); color: var(--negative); }
+    .tone-info { background: var(--brand-tint); color: var(--brand-deep); }
+    .tone-neutral { background: var(--plate); color: var(--ink-2); }
   `,
 })
 export class StatusChip {

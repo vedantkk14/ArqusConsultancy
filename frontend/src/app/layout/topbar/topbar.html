@@ -2,7 +2,9 @@
   <button matIconButton class="hamburger" aria-label="Open navigation menu" (click)="menuToggle.emit()">
     <mat-icon>menu</mat-icon>
   </button>
-  <span class="brand">CRM &middot; PM</span>
+  <!-- Emblem only on mobile; the full logo lives in the sidebar/drawer. -->
+  <img class="emblem" src="brand/arqus-emblem.png" alt="ARQUS" width="56" height="28" decoding="async" />
+  <span class="page-title">{{ pageTitle() }}</span>
   <span class="spacer"></span>
 
   <!-- Placeholder: wire to /notifications when Dev C ships it. -->

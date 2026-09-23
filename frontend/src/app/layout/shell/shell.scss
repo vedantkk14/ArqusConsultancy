@@ -7,11 +7,16 @@
 .container {
   flex: 1;
   min-height: 0;
+  --mat-sidenav-content-background-color: var(--paper);
 }
 
 .sidenav {
   width: var(--sidebar-width);
   max-width: 85vw;
+  --mat-sidenav-container-background-color: var(--plate);
+  --mat-sidenav-container-text-color: var(--ink);
+  --mat-sidenav-container-shape: 0;
+  --mat-sidenav-container-divider-color: var(--line);
 }
 
 .content {

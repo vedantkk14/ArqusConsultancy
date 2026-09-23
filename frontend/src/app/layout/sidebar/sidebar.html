@@ -1,9 +1,20 @@
+<a class="logo" routerLink="/" (click)="navigated.emit()">
+  <img
+    src="brand/arqus-logo.png"
+    alt="ARQUS Sports Consultancy, home"
+    width="168"
+    height="99"
+    decoding="async"
+  />
+</a>
+
 <nav aria-label="Main navigation">
   <mat-nav-list>
     @for (item of items(); track item.route) {
       @if (item.children) {
         <a
           mat-list-item
+          class="group"
           role="button"
           tabindex="0"
           [attr.aria-expanded]="isOpen(item)"
@@ -25,6 +36,7 @@
               routerLinkActive
               #rla="routerLinkActive"
               [activated]="rla.isActive"
+              [attr.aria-current]="rla.isActive ? 'page' : null"
               (click)="navigated.emit()"
             >
               <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
@@ -39,6 +51,7 @@
           routerLinkActive
           #rla="routerLinkActive"
           [activated]="rla.isActive"
+          [attr.aria-current]="rla.isActive ? 'page' : null"
           (click)="navigated.emit()"
         >
           <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>

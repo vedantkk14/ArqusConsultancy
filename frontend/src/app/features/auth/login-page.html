@@ -1,11 +1,16 @@
 <main class="login">
   <mat-card class="card" appearance="outlined">
-    <mat-card-header>
-      <mat-card-title>CRM &middot; PM</mat-card-title>
-      <mat-card-subtitle>Sign in to continue</mat-card-subtitle>
-    </mat-card-header>
-
     <mat-card-content>
+      <img
+        class="logo"
+        src="brand/arqus-logo.png"
+        alt="ARQUS Sports Consultancy"
+        width="220"
+        height="129"
+        decoding="async"
+      />
+      <h1 class="title">Sign in</h1>
+
       <form [formGroup]="form" (ngSubmit)="submit()" class="form" novalidate>
         <mat-form-field appearance="outline">
           <mat-label>Username</mat-label>

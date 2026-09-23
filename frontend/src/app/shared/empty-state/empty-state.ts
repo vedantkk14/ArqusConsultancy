@@ -24,17 +24,18 @@ import { MatIconModule } from '@angular/material/icon';
       text-align: center;
       gap: var(--space-2);
       padding: var(--space-6) var(--space-3);
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--ink-2);
     }
     .empty-icon {
       font-size: 48px;
       width: 48px;
       height: 48px;
+      color: var(--ink-3);
     }
     h2 {
       margin: 0;
-      font: var(--mat-sys-title-large);
-      color: var(--mat-sys-on-surface);
+      font-size: 1.25rem;
+      line-height: 1.3;
     }
     p {
       margin: 0;

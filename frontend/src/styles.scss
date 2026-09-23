@@ -1,18 +1,85 @@
-// Global styles: Angular Material theme + mobile-first design tokens (CSS variables).
+// Global styles: ARQUS brand tokens, Angular Material mapped onto them, mobile-first layout tokens.
+// Rules and the contrast table live in docs/DESIGN.md.
 @use '@angular/material' as mat;
+@use 'sass:string';
+@use '@fontsource-variable/archivo/wdth.css';
+@use './styles/tokens';
 
 html {
   height: 100%;
+  // Cyan seeds the tonal palettes so any Material token we forget still lands on-brand.
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$cyan-palette,
+        tertiary: mat.$cyan-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: string.unquote('Archivo Variable, system-ui, -apple-system, Segoe UI, sans-serif'),
+        brand-family: string.unquote('Archivo Variable, system-ui, -apple-system, Segoe UI, sans-serif'),
+        bold-weight: 700,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
       density: 0,
     )
   );
+
+  // ---- Material colour roles -> ARQUS tokens ------------------------------------------------
+  --mat-sys-primary: var(--ink);
+  --mat-sys-on-primary: var(--on-ink);
+  --mat-sys-primary-container: var(--brand-tint);
+  --mat-sys-on-primary-container: var(--ink);
+  --mat-sys-secondary: var(--ink-2);
+  --mat-sys-on-secondary: var(--on-ink);
+  --mat-sys-secondary-container: var(--brand-tint);
+  --mat-sys-on-secondary-container: var(--ink);
+  --mat-sys-tertiary: var(--brand-deep);
+  --mat-sys-on-tertiary: var(--on-ink);
+  --mat-sys-tertiary-container: var(--brand-tint);
+  --mat-sys-on-tertiary-container: var(--ink);
+  --mat-sys-error: var(--negative);
+  --mat-sys-on-error: var(--on-ink);
+  --mat-sys-error-container: var(--negative-bg);
+  --mat-sys-on-error-container: var(--negative);
+  --mat-sys-background: var(--paper);
+  --mat-sys-on-background: var(--ink);
+  --mat-sys-surface: var(--paper);
+  --mat-sys-surface-dim: var(--paper);
+  --mat-sys-surface-bright: var(--surface);
+  --mat-sys-surface-container-lowest: var(--surface);
+  --mat-sys-surface-container-low: var(--surface);
+  --mat-sys-surface-container: var(--surface);
+  --mat-sys-surface-container-high: var(--surface);
+  --mat-sys-surface-container-highest: var(--plate);
+  --mat-sys-surface-variant: var(--plate);
+  --mat-sys-surface-tint: transparent; // no elevation tint
+  --mat-sys-on-surface: var(--ink);
+  --mat-sys-on-surface-variant: var(--ink-2);
+  --mat-sys-outline: var(--line-strong);
+  --mat-sys-outline-variant: var(--line);
+  --mat-sys-inverse-surface: var(--ink);
+  --mat-sys-inverse-on-surface: var(--on-ink);
+  --mat-sys-inverse-primary: var(--brand);
+  --mat-sys-scrim: #000;
+
+  // ---- Buttons: primary = ink fill, secondary = surface with an ink hairline -----------------
+  --mat-button-filled-container-color: var(--ink);
+  --mat-button-filled-label-text-color: var(--on-ink);
+  --mat-button-outlined-outline-color: var(--ink);
+  --mat-button-outlined-label-text-color: var(--ink);
+  --mat-button-text-label-text-color: var(--ink);
+  --mat-icon-button-icon-color: var(--ink);
+
+  // ---- Panels and fields ----------------------------------------------------------------------
+  --mat-card-outlined-container-color: var(--surface);
+  --mat-card-outlined-outline-color: var(--line);
+  --mat-toolbar-container-background-color: var(--surface);
+  --mat-toolbar-container-text-color: var(--ink);
+  --mat-form-field-outlined-outline-color: var(--line-strong);
+  --mat-form-field-outlined-hover-outline-color: var(--ink);
+  --mat-form-field-outlined-focus-outline-color: var(--brand-deep);
+  --mat-form-field-outlined-focus-label-text-color: var(--brand-deep);
 }
 
 :root {
@@ -32,16 +99,6 @@ html {
   --sidebar-width: 280px;
   --page-max-width: 1200px;
   --page-padding: var(--space-3);
-
-  // status colours (used by app-status-chip)
-  --status-success-bg: #dff3e4;
-  --status-success-fg: #14532d;
-  --status-warning-bg: #fdf1d3;
-  --status-warning-fg: #713f12;
-  --status-danger-bg: #fbe0dd;
-  --status-danger-fg: #7f1d1d;
-  --status-info-bg: #dbeafe;
-  --status-info-fg: #1e3a8a;
 }
 
 // Mobile-first: bigger paddings only as the screen grows.
@@ -66,22 +123,67 @@ html {
 
 body {
   color-scheme: light;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--paper);
+  color: var(--ink);
   font: var(--mat-sys-body-medium);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums; // digits line up in tables, totals and amounts
   margin: 0;
   height: 100%;
   -webkit-text-size-adjust: 100%;
 }
 
+// Page titles use Archivo's wide setting; body text and numbers stay at normal width.
 h1,
 h2,
 h3 {
+  font-family: var(--font-body);
+  font-stretch: var(--font-wide);
+  font-weight: 700;
+  color: var(--ink);
   overflow-wrap: anywhere;
+}
+
+// Small uppercase labels (wide setting). Use on captions, section labels, table headers.
+.label {
+  font-stretch: var(--font-wide);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+// Links on light backgrounds use --brand-deep (cyan never carries text).
+a:not([class*='mat-']) {
+  color: var(--brand-deep);
+}
+
+// The one focus ring: 2px --brand-deep with a 2px offset. `html` raises specificity above Material's
+// button reset. Text inputs are skipped because their notched outline turns --brand-deep on focus.
+html :focus-visible:not(.mat-mdc-input-element) {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: 2px;
+}
+
+// Secondary buttons sit on a --surface fill even when placed on a --plate panel.
+.mat-mdc-outlined-button:not(:disabled) {
+  background-color: var(--surface);
 }
 
 // Wide tables scroll inside their own box instead of breaking the page on phones.
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

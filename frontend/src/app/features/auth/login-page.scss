@@ -3,13 +3,35 @@
   display: grid;
   place-items: center;
   padding: var(--space-3);
-  background: var(--mat-sys-surface-container);
+  background: var(--paper);
 }
 
+// --plate panel: the transparent logo blends in. The 2px cyan line is the login accent.
 .card {
   width: 100%;
   max-width: 400px;
-  padding: var(--space-2);
+  padding: var(--space-3);
+  background: var(--plate);
+  --mat-card-outlined-container-color: var(--plate);
+  --mat-card-outlined-container-shape: 2px;
+  --mat-card-outlined-outline-width: 0;
+  border-top: 2px solid var(--brand);
+}
+
+.logo {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  margin: var(--space-3) auto var(--space-2);
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .form {
@@ -21,7 +43,7 @@
 
 .error {
   margin: 0 0 var(--space-2);
-  color: var(--mat-sys-error);
+  color: var(--negative);
 }
 
 .submit {

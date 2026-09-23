@@ -14,23 +14,28 @@ import { ROLE_LABELS } from '../../core/models';
       <mat-card appearance="outlined">
         <mat-card-content>
           <p class="greeting">Welcome, {{ user.name }}</p>
-          <p class="role">Role: {{ roleLabels[user.role] }}</p>
+          <p class="role"><span class="label">Role</span> {{ roleLabels[user.role] }}</p>
         </mat-card-content>
       </mat-card>
     }
   `,
   styles: `
     h1 {
-      font: var(--mat-sys-headline-medium);
+      font-size: 1.5rem;
+      line-height: 1.2;
       margin: 0 0 var(--space-3);
     }
     .greeting {
-      font: var(--mat-sys-title-large);
+      font-size: 1.25rem;
+      font-weight: 600;
       margin: var(--space-2) 0 var(--space-1);
     }
     .role {
       margin: 0 0 var(--space-2);
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--ink-2);
+    }
+    .label {
+      margin-right: var(--space-1);
     }
   `,
 })

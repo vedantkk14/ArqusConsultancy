@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
+from .dashboard_exec_views import SalesExecDashboardView
 from .dashboard_manager_views import SalesManagerDashboardView
 from .views import LeadViewSet
 
@@ -12,5 +13,10 @@ urlpatterns = router.urls + [
         "dashboard/sales-manager",
         SalesManagerDashboardView.as_view(),
         name="dashboard-sales-manager",
+    ),
+    path(
+        "dashboard/sales-exec",
+        SalesExecDashboardView.as_view(),
+        name="dashboard-sales-exec",
     ),
 ]

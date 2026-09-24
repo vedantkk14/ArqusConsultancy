@@ -35,6 +35,7 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
               <span>{{ roleLabels[user.role] }}</span>
             </div>
             <a cdkMenuItem class="flyout-item" routerLink="/settings/profile">Profile</a>
+            <a cdkMenuItem class="flyout-item" routerLink="/account/change-password">Change password</a>
             <button cdkMenuItem type="button" class="flyout-item" (cdkMenuItemTriggered)="auth.logout()">
               Log out
             </button>

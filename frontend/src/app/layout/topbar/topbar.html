@@ -44,6 +44,10 @@
         <mat-icon>person</mat-icon>
         <span>Profile</span>
       </a>
+      <a mat-menu-item routerLink="/account/change-password">
+        <mat-icon>lock</mat-icon>
+        <span>Change password</span>
+      </a>
       <button mat-menu-item (click)="auth.logout()">
         <mat-icon>logout</mat-icon>
         <span>Log out</span>

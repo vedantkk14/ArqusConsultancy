@@ -159,10 +159,12 @@ def test_admin_gets_every_field_with_the_right_types(client, django_assert_max_n
 
 @pytest.mark.django_db
 def test_real_zeros_while_source_models_do_not_exist(client):
-    """leads/projects/accounts have no models yet: real zeros, no invented numbers, empty lists."""
+    """projects/accounts have no models yet: real zeros, no invented numbers, empty lists."""
     client.force_authenticate(_user("ADMIN"))
     body = client.get(URL).json()
-    assert not any(body["data_sources"].values())
+    sources = body["data_sources"]
+    assert sources["leads"] is True  # the leads model exists; no leads yet
+    assert not any(v for k, v in sources.items() if k != "leads")
     assert body["kpis"]["win_rate_pct"] == "0.0"
     assert body["kpis"]["received_delta_pct"] is None  # previous period is empty
     assert body["attention"] == []  # only counts above zero are sent

@@ -99,6 +99,7 @@ class Command(BaseCommand):
         users = self._seed_users()
         self._seed_forced_change_user()
         self._seed_leads(users)
+        self._seed_notifications(users)
         self._seed_projects(users)
         self._seed_ledgers(users)
         self._seed_payments(users)
@@ -228,6 +229,89 @@ class Command(BaseCommand):
             created_count += 1
         self.stdout.write(f"  leads: {created_count} created ({Lead.objects.count()} in total)")
         # Ledgers for won leads are Dev C's (accounts.Ledger does not exist yet).
+
+    def _seed_notifications(self, users):
+        """18 notifications over two weeks for the demo users, some read. Runs once (data.demo)."""
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.notifications.models import Notification
+        from apps.notifications.services import create_notification
+
+        if Notification.objects.filter(data__demo=True).exists():
+            return
+        admin, manager, exec_, pm = (
+            users[r] for r in ("ADMIN", "SALES_MANAGER", "SALES_EXEC", "PROJECT_MANAGER")
+        )
+        plan = [
+            (
+                admin,
+                "lead_won",
+                {
+                    "lead_name": "Kolhapur Kabaddi League",
+                    "proposed_amount": "1250000.00",
+                    "won_by": "Eva Exec",
+                },
+            ),
+            (admin, "payment_received", {"client_name": "Pune Strikers FC", "amount": "250000.00"}),
+            (admin, "budget_warn", {"project_name": "Turf installation, Baner", "usage_pct": "87"}),
+            (
+                admin,
+                "lead_won",
+                {
+                    "lead_name": "Sangli Swimming Club",
+                    "proposed_amount": "450000.00",
+                    "won_by": "Rohan Mehta",
+                },
+            ),
+            (admin, "budget_over", {"project_name": "Stadium lighting audit"}),
+            (
+                admin,
+                "payment_received",
+                {"client_name": "Mumbai Arena Pvt Ltd", "amount": "420000.00"},
+            ),
+            (
+                manager,
+                "lead_won",
+                {
+                    "lead_name": "Priyanka Rao",
+                    "proposed_amount": "300000.00",
+                    "won_by": "Priya Nair",
+                },
+            ),
+            (manager, "lead_assigned", {"lead_name": "Aditya Singh"}),
+            (
+                manager,
+                "lead_won_reversed",
+                {"lead_name": "Wakad Turf Arena", "reversed_by": "Alice Admin"},
+            ),
+            (exec_, "lead_assigned", {"lead_name": "Rahul Sharma"}),
+            (exec_, "lead_assigned", {"lead_name": "Vikram Desai"}),
+            (exec_, "lead_assigned", {"lead_name": "Pooja Bhosale"}),
+            (exec_, "lead_reassigned_away", {"lead_name": "Karan Mehta"}),
+            (
+                exec_,
+                "lead_won",
+                {
+                    "lead_name": "Deccan Sports Academy",
+                    "proposed_amount": "225000.00",
+                    "won_by": "Eva Exec",
+                },
+            ),
+            (pm, "budget_warn", {"project_name": "Turf installation, Baner", "usage_pct": "87"}),
+            (pm, "budget_over", {"project_name": "Stadium lighting audit"}),
+            (pm, "budget_warn", {"project_name": "Arena seating redesign", "usage_pct": "82"}),
+            (pm, "account_created", {}),
+        ]
+        now = timezone.now()
+        for i, (user, kind, payload) in enumerate(plan):
+            row = create_notification(user, kind, {**payload, "demo": True})
+            Notification.objects.filter(pk=row.pk).update(
+                created_at=now - timedelta(days=(i * 14) // len(plan), hours=(i * 5) % 24),
+                is_read=i % 3 == 0,
+            )
+        self.stdout.write(f"  notifications: {len(plan)} created")
 
     def _seed_projects(self, users):
         # TODO(Dev B): create demo projects from won leads, assigned to users["PROJECT_MANAGER"].

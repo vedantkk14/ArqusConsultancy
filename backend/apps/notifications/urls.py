@@ -1,3 +1,9 @@
-from django.urls import path  # noqa: F401
+from apps.core.routers import OptionalSlashRouter
 
-urlpatterns = []
+from .views import NotificationViewSet
+
+# The slash is optional: /notifications and /notifications/ both work.
+router = OptionalSlashRouter()
+router.register("notifications", NotificationViewSet, basename="notifications")
+
+urlpatterns = router.urls

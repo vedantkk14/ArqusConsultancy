@@ -50,12 +50,12 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     label: 'Accounts',
     icon: 'account_balance',
     route: '/accounts',
-    roles: [Admin, SalesManager],
+    roles: [Admin],
     children: [
       { label: 'Customer Ledgers', icon: 'menu_book', route: '/accounts/ledgers', roles: [Admin] },
       { label: 'Payment Entries', icon: 'payments', route: '/accounts/payments', roles: [Admin] },
       { label: 'Customer Statement', icon: 'receipt_long', route: '/accounts/statement', roles: [Admin] },
-      { label: 'Pending Collections', icon: 'pending_actions', route: '/accounts/pending', roles: [Admin, SalesManager] },
+      { label: 'Pending Collections', icon: 'pending_actions', route: '/accounts/pending', roles: [Admin] },
     ],
   },
   {

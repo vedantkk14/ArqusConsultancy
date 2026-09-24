@@ -230,8 +230,10 @@ class Command(BaseCommand):
         # Ledgers for won leads are Dev C's (accounts.Ledger does not exist yet).
 
     def _seed_projects(self, users):
-        # TODO(Dev B): create demo projects from won leads, assigned to users["PROJECT_MANAGER"].
-        pass
+        """8 projects over 2 PMs with varied budget usage and ~50 expenses. Idempotent per lead."""
+        from apps.projects.demo import seed_projects
+
+        seed_projects(self, users)
 
     def _seed_ledgers(self, users):
         # TODO(Dev C): create a Ledger (with total amount) for each won lead.

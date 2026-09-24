@@ -4,6 +4,7 @@ Rule: a PROJECT_MANAGER never sees the Total Project Amount, lead data or paymen
 They see only the Sanctioned Budget on their own projects.
 See docs/ARCHITECTURE.md ("Privacy shield").
 """
+
 import pytest
 
 pytestmark = pytest.mark.skip(reason="Placeholder: implement when projects endpoints exist (Dev B)")

@@ -1,0 +1,238 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// ---- Header card: soft glow tinted by the status --------------------------------------------------
+.head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  overflow: hidden;
+  padding: var(--space-5);
+  isolation: isolate;
+
+  &::before {
+    position: absolute;
+    top: -60%;
+    left: -10%;
+    z-index: -1;
+    width: 60%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--glow, var(--tint-slate)), transparent 65%);
+    content: '';
+    pointer-events: none;
+  }
+
+  &.g-cyan { --glow: var(--tint-cyan); }
+  &.g-teal { --glow: var(--tint-teal); }
+  &.g-amber { --glow: var(--tint-amber); }
+  &.g-rose { --glow: var(--tint-rose); }
+}
+
+.id {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.id-t {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.nm {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+
+  dt {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+  }
+
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    margin: 2px 0 0;
+    color: var(--ink);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+
+  a {
+    color: var(--brand-deep);
+    font-weight: 500;
+  }
+}
+
+.src {
+  padding: 1px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--subtle);
+  color: var(--ink-2);
+}
+
+.muted {
+  color: var(--ink-3);
+}
+
+.link {
+  min-height: 32px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--brand-deep);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.acts {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+
+  mat-icon {
+    margin-right: 4px;
+  }
+}
+
+.ib {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.stage {
+  padding: var(--space-3) var(--space-4);
+}
+
+.lost {
+  margin: 4px 0 0;
+  color: var(--tint-rose-ink);
+  font-size: var(--text-sm);
+}
+
+// ---- Layout ----------------------------------------------------------------------------------------
+.grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.main,
+.side {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.panel {
+  padding: var(--space-5);
+}
+
+// ---- Phone bar ------------------------------------------------------------------------------------
+.mbar {
+  position: fixed;
+  right: 0;
+  bottom: calc(var(--tabbar-h, 64px) + env(safe-area-inset-bottom));
+  left: 0;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(8px);
+
+  a,
+  button {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .pri {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--on-ink);
+  }
+}
+
+.sheet {
+  padding: var(--space-2) var(--space-1) calc(var(--space-4) + env(safe-area-inset-bottom));
+
+  h2 {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-lg);
+  }
+}
+
+@media (max-width: 1023px) {
+  :host {
+    padding-bottom: 72px; // room for the phone bar
+  }
+}
+
+@media (min-width: 768px) {
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .acts {
+    display: flex;
+  }
+
+  .head {
+    padding: var(--space-6);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    align-items: start;
+  }
+}

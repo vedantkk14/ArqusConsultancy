@@ -1,0 +1,205 @@
+@if (lead(); as lead) {
+  <!-- Header card -->
+  <section class="card head rise-in" [class]="'card head rise-in g-' + glow()" aria-label="Lead summary">
+    <div class="id">
+      <app-lead-avatar [name]="lead.name" [size]="64" />
+      <div class="id-t">
+        <p class="nm" aria-hidden="true">{{ lead.name }}</p>
+        <app-lead-status [status]="lead.status" />
+      </div>
+    </div>
+
+    <dl class="facts">
+      <div>
+        <dt>Phone</dt>
+        <dd>
+          @if (tel(); as href) {
+            <a class="num" [href]="href" [attr.aria-label]="'Call ' + lead.name + ' on ' + formatPhone(lead.phone)">{{ formatPhone(lead.phone) }}</a>
+          } @else {
+            <span class="num">{{ lead.phone }}</span>
+          }
+        </dd>
+      </div>
+      @if (lead.email) {
+        <div>
+          <dt>Email</dt>
+          <dd><a [href]="'mailto:' + lead.email">{{ lead.email }}</a></dd>
+        </div>
+      }
+      <div>
+        <dt>Source</dt>
+        <dd><span class="src">{{ lead.source_other || lead.source_label }}</span></dd>
+      </div>
+      <div>
+        <dt>Assigned to</dt>
+        <dd class="who">
+          @if (lead.assigned_to; as a) {
+            <app-lead-avatar [name]="a.name" [size]="24" />{{ a.name }}
+          } @else {
+            <span class="muted">Unassigned</span>
+          }
+          @if (isManager()) {
+            <button type="button" class="link" (click)="reassign(lead)" [attr.aria-label]="'Reassign ' + lead.name">Reassign</button>
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Created</dt>
+        <dd [attr.title]="full(lead.created_at)">{{ rel(lead.created_at) }}</dd>
+      </div>
+      @if (!closed()) {
+        <div>
+          <dt>Next follow-up</dt>
+          <dd><app-followup-pill [at]="lead.next_followup_at" /></dd>
+        </div>
+      }
+    </dl>
+
+    <div class="acts">
+      @if (tel(); as href) {
+        <a matButton="outlined" [href]="href" [attr.aria-label]="'Call ' + lead.name"><mat-icon>call</mat-icon>Call</a>
+      }
+      <button matButton="outlined" type="button" (click)="openWhatsApp(lead)" [attr.aria-label]="'WhatsApp ' + lead.name">
+        <mat-icon>chat</mat-icon>WhatsApp
+      </button>
+      @if (lead.email) {
+        <a matButton="outlined" [href]="'mailto:' + lead.email" [attr.aria-label]="'Email ' + lead.name"><mat-icon>mail</mat-icon>Email</a>
+      }
+      <button matButton="filled" type="button" (click)="logActivity()"><mat-icon>edit_note</mat-icon>Log activity</button>
+      <button matButton="outlined" type="button" (click)="edit(lead)" [attr.aria-label]="'Edit ' + lead.name"><mat-icon>edit</mat-icon>Edit</button>
+      @if (isAdmin()) {
+        <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + lead.name">
+          <mat-icon aria-hidden="true">more_vert</mat-icon>
+        </button>
+        <mat-menu #over="matMenu" xPosition="before">
+          <button mat-menu-item type="button" (click)="remove(lead)"><mat-icon>delete</mat-icon>Delete lead</button>
+        </mat-menu>
+      }
+    </div>
+  </section>
+
+  <!-- Stage -->
+  <section class="card stage rise-in" style="--i: 1" aria-label="Stage">
+    <app-stage-stepper [status]="lead.status" [allowed]="lead.allowed_transitions" (pick)="changeStatus(lead, $event)" />
+    @if (lead.status === 'LOST' && lostReason()) {
+      <p class="lost">Lost: {{ lostReason() }}{{ lead.lost_note ? ' · ' + lead.lost_note : '' }}</p>
+    }
+  </section>
+
+  <div class="grid">
+    <div class="main">
+      @if (layout.isDesktop()) {
+        <section class="card panel rise-in" style="--i: 2" id="log-activity" aria-labelledby="log-title">
+          <app-panel-head title="Log activity" subtitle="Calls, messages, meetings and notes" headingId="log-title" />
+          <app-activity-composer #composer [lead]="lead" (logged)="onLogged()" />
+        </section>
+      }
+      <section class="card panel rise-in" style="--i: 3" aria-labelledby="tl-title">
+        <app-panel-head title="Timeline" [subtitle]="lead.interactions_count + ' entries, newest first'" headingId="tl-title" />
+        <app-lead-timeline [leadId]="lead.id" [refresh]="timelineTick()" />
+      </section>
+    </div>
+
+    <aside class="side">
+      @if (lead.status === 'WON') {
+        <section class="card panel deal rise-in" style="--i: 2" aria-labelledby="deal-title">
+          <app-panel-head title="Deal" subtitle="Handed to accounts when won" headingId="deal-title" />
+          <p class="big num">{{ lead.proposed_amount | inr }}</p>
+          <p class="small">Proposed value</p>
+          @if (lead.finance; as f) {
+            @if (f.finalized) {
+              <p class="chip ok">Finalized</p>
+              <p class="row"><span>Final amount</span><strong class="num">{{ f.total_amount | inr }}</strong></p>
+            } @else {
+              <p class="chip wait">Awaiting finalization</p>
+            }
+            @if (isAdmin()) {
+              <div class="deal-acts">
+                @if (!f.finalized) {
+                  <button matButton="filled" type="button" (click)="finalize(lead)">Finalize amount</button>
+                }
+                <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ lead: lead.id }">Convert to project</a>
+              </div>
+            }
+          }
+        </section>
+      }
+
+      <section class="card panel rise-in" style="--i: 3" aria-labelledby="details-title">
+        <app-panel-head title="Details" headingId="details-title" />
+        <dl class="kv">
+          <dt>Requirements</dt>
+          <dd class="pre">{{ lead.requirements || 'Not written yet.' }}</dd>
+          <dt>Source</dt>
+          <dd>{{ lead.source_other || lead.source_label }}</dd>
+          <dt>Created by</dt>
+          <dd>{{ lead.created_by?.name ?? '—' }}</dd>
+          <dt>Proposed value</dt>
+          <dd>
+            @if (editingAmount()) {
+              <app-money-input inputId="dp-amount" [(ngModel)]="amountDraft" [invalid]="!!amountError()" />
+              @if (amountError()) {
+                <span class="err">{{ amountError() }}</span>
+              }
+              <span class="inline-acts">
+                <button matButton type="button" (click)="editingAmount.set(false)">Cancel</button>
+                <button matButton="filled" type="button" (click)="saveAmount(lead)">Save</button>
+              </span>
+            } @else {
+              <span class="num">{{ lead.proposed_amount ? (lead.proposed_amount | inr) : 'Not set' }}</span>
+              @if (!closed()) {
+                <button type="button" class="link" (click)="startAmountEdit(lead)" aria-label="Edit proposed value">Edit</button>
+              }
+            }
+          </dd>
+        </dl>
+      </section>
+
+      @if (!closed()) {
+        <section class="card panel rise-in" style="--i: 4" aria-labelledby="fu-title">
+          <app-panel-head title="Follow-up" headingId="fu-title" />
+          <p class="fu-when">
+            @if (lead.next_followup_at) {
+              <app-followup-pill [at]="lead.next_followup_at" />
+              <span class="small">{{ full(lead.next_followup_at) }}</span>
+            } @else {
+              <span class="small">No follow-up set.</span>
+            }
+          </p>
+          <div class="chips" role="group" aria-label="Snooze to">
+            @for (s of snoozes; track s.label) {
+              <button type="button" class="chip" (click)="setFollowup(lead, s.at())">{{ s.label }}</button>
+            }
+            @if (lead.next_followup_at) {
+              <button type="button" class="chip clear" (click)="setFollowup(lead, null)">Clear</button>
+            }
+          </div>
+        </section>
+      }
+    </aside>
+  </div>
+
+  <!-- Phones: sticky Call | WhatsApp | Log -->
+  @if (!layout.isDesktop()) {
+    <nav class="mbar" aria-label="Quick actions">
+      @if (tel(); as href) {
+        <a [href]="href" [attr.aria-label]="'Call ' + lead.name"><mat-icon aria-hidden="true">call</mat-icon>Call</a>
+      }
+      <button type="button" (click)="openWhatsApp(lead)" [attr.aria-label]="'WhatsApp ' + lead.name">
+        <mat-icon aria-hidden="true">chat</mat-icon>WhatsApp
+      </button>
+      <button type="button" class="pri" (click)="logActivity()"><mat-icon aria-hidden="true">edit_note</mat-icon>Log</button>
+    </nav>
+  }
+
+  <ng-template #composerSheet>
+    <div class="sheet">
+      <h2>Log activity</h2>
+      <app-activity-composer [lead]="lead" (logged)="onLogged()" />
+    </div>
+  </ng-template>
+} @else {
+  <app-empty-state icon="person_search" title="Lead not found" message="It may have been deleted, or it isn't assigned to you.">
+    <a matButton="filled" routerLink="/leads/all">Back to leads</a>
+  </app-empty-state>
+}

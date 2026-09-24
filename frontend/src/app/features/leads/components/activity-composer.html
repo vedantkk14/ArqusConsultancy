@@ -1,0 +1,92 @@
+<form (ngSubmit)="submit()" novalidate>
+  <div class="types" role="radiogroup" aria-label="Activity type">
+    @for (t of types; track t) {
+      <button
+        type="button"
+        role="radio"
+        [class]="'type t-' + meta[t].tint"
+        [attr.aria-checked]="type() === t"
+        (click)="type.set(t)"
+      >
+        <mat-icon aria-hidden="true">{{ meta[t].icon }}</mat-icon>{{ meta[t].label }}
+      </button>
+    }
+  </div>
+
+  <label class="sr-only" for="ac-notes">Notes</label>
+  <textarea
+    #notesBox
+    id="ac-notes"
+    name="notes"
+    rows="3"
+    placeholder="What happened? Next steps?"
+    [(ngModel)]="notes"
+    [attr.aria-describedby]="errors()['notes'] ? 'ac-notes-err' : null"
+  ></textarea>
+  @if (errors()['notes']) {
+    <p class="err" id="ac-notes-err">{{ errors()['notes'] }}</p>
+  }
+
+  <div class="opts">
+    @if (!closed() && lead().allowed_transitions.length) {
+      <label class="opt">
+        <span>Also update status</span>
+        <select name="status" [ngModel]="newStatus()" (ngModelChange)="newStatus.set($event)">
+          <option value="">Keep {{ labels[lead().status] }}</option>
+          @for (s of lead().allowed_transitions; track s) {
+            <option [value]="s">{{ labels[s] }}</option>
+          }
+        </select>
+      </label>
+    }
+    @if (newStatus() === 'WON') {
+      <div class="opt">
+        <label for="ac-amount">Proposed value</label>
+        <app-money-input inputId="ac-amount" name="amount" [(ngModel)]="amount" [invalid]="!!errors()['proposed_amount']" />
+        @if (errors()['proposed_amount']) {
+          <p class="err">{{ errors()['proposed_amount'] }}</p>
+        }
+      </div>
+    }
+    @if (newStatus() === 'LOST') {
+      <label class="opt">
+        <span>Reason</span>
+        <select name="reason" [(ngModel)]="reason">
+          <option value="">Choose a reason</option>
+          @for (r of reasons; track r[0]) {
+            <option [value]="r[0]">{{ r[1] }}</option>
+          }
+        </select>
+        @if (errors()['lost_reason']) {
+          <span class="err">{{ errors()['lost_reason'] }}</span>
+        }
+      </label>
+    }
+  </div>
+
+  @if (!closed() && newStatus() !== 'WON' && newStatus() !== 'LOST') {
+    <div class="fu">
+      <label for="ac-fu">Next follow-up (IST)</label>
+      <div class="fu-row">
+        <input id="ac-fu" type="datetime-local" name="fu" [(ngModel)]="followup" (ngModelChange)="followupSet.set(!!$event)" />
+        @for (q of quick; track q.label) {
+          <button type="button" class="chip" (click)="setFollowup(q.at())">{{ q.label }}</button>
+        }
+      </div>
+      @if (errors()['next_followup_at']) {
+        <p class="err">{{ errors()['next_followup_at'] }}</p>
+      } @else if (followupSet()) {
+        <p class="hint">{{ preview() }}</p>
+      } @else if (nudge()) {
+        <p class="nudge"><mat-icon aria-hidden="true">schedule</mat-icon>Set a follow-up so this doesn't go cold.</p>
+      }
+    </div>
+  }
+
+  @if (errors()['form']) {
+    <p class="err" role="alert">{{ errors()['form'] }}</p>
+  }
+  <div class="bar">
+    <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Log ' + meta[type()].label.toLowerCase() }}</button>
+  </div>
+</form>

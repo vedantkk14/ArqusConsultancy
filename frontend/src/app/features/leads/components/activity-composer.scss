@@ -1,0 +1,110 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  mat-icon { width: 18px; height: 18px; font-size: 18px; }
+
+  &[aria-checked='true'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--on-ink);
+    font-weight: 600;
+  }
+}
+
+textarea,
+select,
+input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+textarea { resize: vertical; }
+
+.opts {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.opt,
+.fu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.fu-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  input { flex: 1 1 220px; width: auto; }
+}
+
+.chip {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.err { margin: 0; color: var(--negative); font-size: var(--text-sm); font-weight: 400; }
+.hint { margin: 0; color: var(--ink-3); font-size: var(--text-xs); font-weight: 400; }
+
+.nudge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--tint-amber-ink);
+  font-size: var(--text-sm);
+  font-weight: 400;
+
+  mat-icon { width: 18px; height: 18px; font-size: 18px; }
+}
+
+.bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (min-width: 600px) {
+  .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

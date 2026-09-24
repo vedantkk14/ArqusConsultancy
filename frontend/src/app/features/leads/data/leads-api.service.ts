@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of, shareReplay } from 'rxjs';
 import { ApiService, QueryParams } from '../../../core/api/api.service';
 import { PaginatedResponse } from '../../../core/models';
 import {
@@ -33,6 +33,22 @@ export class LeadsApi {
 
   get(id: number): Observable<LeadDetail> {
     return this.api.get<LeadDetail>(`${BASE}/${id}`);
+  }
+
+  private readonly shared = new Map<number, Observable<LeadDetail | null>>();
+
+  /** One request shared by the route's resolver and title (null when missing or not yours). */
+  getShared(id: number): Observable<LeadDetail | null> {
+    let obs = this.shared.get(id);
+    if (!obs) {
+      obs = this.get(id).pipe(
+        catchError(() => of(null)),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+      this.shared.set(id, obs);
+      setTimeout(() => this.shared.delete(id), 2000);
+    }
+    return obs;
   }
 
   create(body: LeadInput): Observable<LeadDetail> {

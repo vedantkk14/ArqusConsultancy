@@ -1,0 +1,43 @@
+app-receipt-page { display: flex; flex-direction: column; gap: var(--space-4); }
+
+app-receipt-page .bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+app-receipt-page .back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-left: -8px;
+  padding: 0 12px 0 8px;
+  border-radius: var(--radius-pill);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover { background: var(--surface); color: var(--ink); }
+  mat-icon { width: 20px; height: 20px; font-size: 20px; }
+}
+
+app-receipt-page .rc { display: flex; flex-direction: column; gap: var(--space-5); max-width: 720px; padding: var(--space-6); }
+app-receipt-page .rc-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+app-receipt-page .rc-head img { height: 48px; width: auto; }
+app-receipt-page .rc-title { text-align: right; h2 { margin: 0; font-size: var(--text-lg); } p { margin: 2px 0 0; color: var(--ink-2); font-weight: 600; } }
+app-receipt-page .rc-void { margin: 0; padding: 8px 12px; border-radius: var(--radius-control); background: var(--tint-rose); color: var(--tint-rose-ink); font-weight: 600; }
+app-receipt-page .rc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); margin: 0;
+  dt { color: var(--ink-3); font-size: var(--text-xs); }
+  dd { margin: 2px 0 0; color: var(--ink); font-size: var(--text-sm); font-weight: 500; overflow-wrap: anywhere; }
+}
+app-receipt-page .rc-amount { display: flex; flex-direction: column; gap: 4px; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--subtle);
+  .lbl { color: var(--ink-3); font-size: var(--text-sm); }
+  strong { color: var(--ink); font-size: var(--text-kpi); font-weight: 600; letter-spacing: -0.02em; }
+  .words { color: var(--ink-2); font-size: var(--text-sm); }
+}
+app-receipt-page .rc-note { margin: 0; color: var(--ink-3); font-size: var(--text-sm); }
+app-receipt-page .rc-sign { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-6); color: var(--ink-3); font-size: var(--text-sm);
+  .line { min-width: 200px; padding-top: 6px; border-top: 1px solid var(--ink-3); text-align: center; }
+}
+
+@media print {
+  app-receipt-page .rc { max-width: none; padding: 0; }
+  app-receipt-page .rc-amount { background: #fff !important; }
+}

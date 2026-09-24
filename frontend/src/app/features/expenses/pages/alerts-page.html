@@ -1,0 +1,51 @@
+<header class="head">
+  <div class="head-t">
+    <p class="insight">{{ loading() ? 'Checking budgets…' : insight() || 'All projects are within budget.' }}</p>
+    <p class="count" aria-live="polite">Running projects at 80% of their budget or more, worst first.</p>
+  </div>
+</header>
+
+@if (error()) {
+  <app-error-state title="Couldn't load budget alerts" (retry)="load()" />
+} @else if (!loading() && !rows().length) {
+  <app-empty-state icon="verified" title="All projects are within budget" message="Projects appear here once they reach 80% of their sanctioned budget." />
+} @else {
+  <ul class="alerts" [attr.aria-busy]="loading()" aria-label="Projects near or over budget">
+    @if (loading()) {
+      @for (i of placeholders; track i) {
+        <li class="card al" aria-hidden="true">
+          <app-skeleton width="40%" height="16px" />
+          <app-skeleton height="10px" radius="999px" />
+        </li>
+      }
+    } @else {
+      @for (row of rows(); track row.id; let i = $index) {
+        <li class="card al rise-in" [style.--i]="i % 10">
+          <div class="al-main">
+            <a class="nm" [routerLink]="['/projects', row.id]">{{ row.name }}</a>
+            <span class="who">
+              @if (row.pm_name) {
+                <app-person-avatar [name]="row.pm_name" [size]="20" />{{ row.pm_name }}
+              } @else {
+                <span class="nopm">No PM</span>
+              }
+            </span>
+          </div>
+          <div class="al-bar"><app-budget-bar [usagePct]="row.usage_pct" [state]="row.state" /></div>
+          <div class="al-fig">
+            @if (row.state === 'over') {
+              <strong class="num neg">{{ row.over_by | inr }} over</strong>
+            } @else {
+              <strong class="num">{{ row.remaining | inr }} left</strong>
+            }
+            <span class="small num">{{ row.spent | inr }} of {{ row.sanctioned_budget | inr }}</span>
+          </div>
+          <div class="al-acts">
+            <button matButton="outlined" type="button" [attr.aria-label]="'Adjust the budget of ' + row.name" (click)="adjust(row)">Adjust budget</button>
+            <a matButton="outlined" [routerLink]="['/projects', row.id]" [attr.aria-label]="'Open ' + row.name">Open project</a>
+          </div>
+        </li>
+      }
+    }
+  </ul>
+}

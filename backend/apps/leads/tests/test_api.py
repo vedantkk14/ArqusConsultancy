@@ -404,11 +404,24 @@ def test_assignees_have_open_counts(client_for, manager, exec_a, make_lead):
 # ---- Finalize, delete, WhatsApp ----------
 
 
-def test_finalize_reports_accounts_not_ready(client_for, admin, make_lead):
+def test_finalize_reports_accounts_not_ready(client_for, admin, make_lead, monkeypatch):
+    """If the accounts adapter is unavailable, finalize says what is missing instead of failing."""
+    from apps.leads import integrations
+
+    monkeypatch.setattr(integrations, "accounts_missing", lambda: ["accounts.Ledger"])
     lead = make_lead(status=LeadStatus.WON, proposed_amount=100)
     r = client_for(admin).post(f"{BASE}/{lead.id}/finalize", {"amount": "100"})
     assert r.status_code == 409 and err(r) == "accounts_not_ready"
     assert r.json()["error"]["details"]["missing"]
+
+
+def test_finalize_creates_a_finalized_ledger(client_for, admin, make_lead):
+    lead = make_lead(status=LeadStatus.WON, proposed_amount=100)
+    r = client_for(admin).post(f"{BASE}/{lead.id}/finalize", {"amount": "100"})
+    assert r.status_code == 200
+    from apps.accounts.models import Ledger
+
+    assert Ledger.objects.get(lead=lead).finalized_at is not None
 
 
 def test_finalize_needs_a_won_lead(client_for, admin, make_lead):
@@ -556,7 +569,7 @@ def test_admin_can_own_work_and_close_a_lead(client_for, admin, make_lead):
     r = c.post(f"{BASE}/{lead.id}/status", {"status": "WON", "proposed_amount": "500000"})
     assert r.status_code == 200 and r.json()["status"] == "WON"
     r = c.post(f"{BASE}/{lead.id}/finalize", {"amount": "500000"})
-    assert r.status_code == 409 and err(r) == "accounts_not_ready"  # until Dev C ships finalize
+    assert r.status_code == 200  # accounts is merged, so finalizing works
 
 
 def test_interested_cannot_go_back_to_contacted(client_for, manager, make_lead):

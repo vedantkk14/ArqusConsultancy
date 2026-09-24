@@ -39,23 +39,23 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     label: 'Projects',
     icon: 'assignment',
     route: '/projects',
-    roles: [Admin, SalesManager, ProjectManager],
+    roles: [Admin, ProjectManager],
     children: [
-      { label: 'Convert Won Lead', icon: 'transform', route: '/projects/convert', roles: [Admin, SalesManager] },
-      { label: 'Running', icon: 'play_circle', route: '/projects/running', roles: [Admin, SalesManager, ProjectManager] },
-      { label: 'Completed', icon: 'check_circle', route: '/projects/completed', roles: [Admin, SalesManager, ProjectManager] },
+      { label: 'Convert Won Lead', icon: 'transform', route: '/projects/convert', roles: [Admin] },
+      { label: 'Running', icon: 'play_circle', route: '/projects/running', roles: [Admin, ProjectManager] },
+      { label: 'Completed', icon: 'check_circle', route: '/projects/completed', roles: [Admin, ProjectManager] },
     ],
   },
   {
     label: 'Accounts',
     icon: 'account_balance',
     route: '/accounts',
-    roles: [Admin, SalesManager],
+    roles: [Admin],
     children: [
       { label: 'Customer Ledgers', icon: 'menu_book', route: '/accounts/ledgers', roles: [Admin] },
       { label: 'Payment Entries', icon: 'payments', route: '/accounts/payments', roles: [Admin] },
       { label: 'Customer Statement', icon: 'receipt_long', route: '/accounts/statement', roles: [Admin] },
-      { label: 'Pending Collections', icon: 'pending_actions', route: '/accounts/pending', roles: [Admin, SalesManager] },
+      { label: 'Pending Collections', icon: 'pending_actions', route: '/accounts/pending', roles: [Admin] },
     ],
   },
   {
@@ -65,7 +65,7 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     roles: [Admin, ProjectManager],
     children: [
       { label: 'All Expenses', icon: 'receipt', route: '/expenses/all', roles: [Admin, ProjectManager] },
-      { label: 'Budget Alerts', icon: 'warning', route: '/expenses/alerts', roles: [Admin, ProjectManager] },
+      { label: 'Budget Alerts', icon: 'warning', route: '/expenses/alerts', roles: [Admin] },
     ],
   },
   {

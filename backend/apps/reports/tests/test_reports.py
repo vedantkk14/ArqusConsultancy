@@ -115,7 +115,8 @@ def test_custom_period_validation(team):
 # ---- Fallbacks (accounts / projects models not merged) ----------
 
 
-def test_finance_reports_fall_back_without_error(team):
+def test_finance_reports_fall_back_without_error(team, monkeypatch):
+    monkeypatch.setattr(rs, "_model", lambda app, name: None)
     c = client(team[0])
     fin = c.get(BASE + "financial?period=year").json()
     assert fin["data_sources"]["accounts"] is False and fin["note"]

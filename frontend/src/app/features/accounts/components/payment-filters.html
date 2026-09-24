@@ -1,0 +1,80 @@
+<div class="row">
+  <label class="search">
+    <span class="sr-only">Search payments</span>
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input
+      type="search"
+      placeholder="Search client, reference or note"
+      autocomplete="off"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </label>
+
+  @if (compact()) {
+    <button type="button" class="ctl more" (click)="openSheet()">
+      <mat-icon aria-hidden="true">tune</mat-icon>Filters{{ dropdownCount() ? ' (' + dropdownCount() + ')' : '' }}
+    </button>
+  } @else {
+    <ng-container *ngTemplateOutlet="dropdowns" />
+  }
+
+  <label class="sort">
+    <span class="sr-only">Sort by</span>
+    <select class="ctl" (change)="set('ordering', $any($event.target).value)">
+      <option value="" [selected]="!filters().ordering">Default order</option>
+      @for (o of orderings; track o.value) {
+        <option [value]="o.value" [selected]="filters().ordering === o.value">{{ o.label }}</option>
+      }
+    </select>
+  </label>
+
+  @if (anyActive()) {
+    <button type="button" class="clear" (click)="cleared.emit()">Clear filters</button>
+  }
+</div>
+
+<div class="chips" role="group" aria-label="Filter by status">
+  @for (s of states; track s.value) {
+    <button type="button" class="chip" [attr.aria-pressed]="filters().state === s.value" (click)="set('state', s.value)">{{ s.label }}</button>
+  }
+</div>
+
+<ng-template #dropdowns>
+  <label class="dd">
+    <span class="lbl">Mode</span>
+    <select class="ctl" (change)="set('mode', $any($event.target).value)">
+      <option value="" [selected]="!filters().mode">All modes</option>
+      @for (m of modes; track m[0]) {
+        <option [value]="m[0]" [selected]="filters().mode === m[0]">{{ m[1] }}</option>
+      }
+    </select>
+  </label>
+  <label class="dd">
+    <span class="lbl">Proof</span>
+    <select class="ctl" (change)="set('has_proof', $any($event.target).value)">
+      <option value="" [selected]="!filters().has_proof">Any</option>
+      <option value="true" [selected]="filters().has_proof === 'true'">With proof</option>
+      <option value="false" [selected]="filters().has_proof === 'false'">Without proof</option>
+    </select>
+  </label>
+  <label class="dd">
+    <span class="lbl">From</span>
+    <input class="ctl" type="date" [value]="filters().date_from" (change)="set('date_from', $any($event.target).value)" />
+  </label>
+  <label class="dd">
+    <span class="lbl">To</span>
+    <input class="ctl" type="date" [value]="filters().date_to" (change)="set('date_to', $any($event.target).value)" />
+  </label>
+</ng-template>
+
+<ng-template #sheet>
+  <div class="sheet">
+    <h2>Filters</h2>
+    <ng-container *ngTemplateOutlet="dropdowns" />
+    <div class="sheet-actions">
+      <button matButton type="button" (click)="cleared.emit(); closeSheet()">Clear filters</button>
+      <button matButton="filled" type="button" (click)="closeSheet()">Done</button>
+    </div>
+  </div>
+</ng-template>

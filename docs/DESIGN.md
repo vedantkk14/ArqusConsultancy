@@ -291,5 +291,21 @@ INFO  1.83:1   (decorative)  --brand on --brand-tint  cyan accent on brand-tint
 | `--brand` #32c5f3 | `--surface` #ffffff | 2.02:1 | n/a | cyan accent on surface (decorative) | info |
 | `--brand` #32c5f3 | `--brand-tint` #e6f7fd | 1.83:1 | n/a | cyan accent on brand-tint (decorative) | info |
 
+## Projects and expenses
+
+- **Budget state tints** (always with the words "On track", "Near limit", "Over budget"): cyan under 80%, amber from 80% to 100%, rose above 100%. They reuse `--tint-cyan/amber/rose` with their `-ink` text, so the contrast table above already covers them; no new colour was added.
+- **Usage bar** (`app-budget-bar`): an 8px pill track on `--plate`; the fill is `--data-cyan / --data-amber / --data-rose` (graphics only, never text) and grows with `transform: scaleX`. The detail page uses a 14px bar with a tick at the 80% line. The figure and state are written beside it ("82% · Near limit"), so colour never carries the meaning.
+- **Money**: strings from the API shown with `inr` (paise on expense rows). A negative remaining or margin keeps its minus sign and turns `--negative`.
+- **Header card glow** follows the state (cyan, amber, rose); expense category chips use the five tints (Materials cyan, Labour teal, Equipment amber, Food rose, others slate); "Void" is a rose tag and "Override" an amber tag.
+- **Forms on phones** (add expense, convert, filters) are bottom sheets; on desktop the convert panel is a right-hand side panel and the expense form a dialog. Both show the same form component.
+
+## Accounts
+
+- **Ledger state tints** (always with the words): Awaiting finalization = amber, Unpaid = rose, Partial = cyan, Paid = teal, from the existing `--tint-*` pairs, so the contrast table above already covers them. "12d overdue" is a rose pill.
+- **Collected bar** (`app-collect-bar`): an 8px pill on `--plate`, filled with `--data-teal` (graphics only) and "42% collected" written beside it. The fraction is cut, so 99.9% never reads as 100%.
+- **Money hero** on the ledger page uses `--grad-ink` with white text (14.97:1 on the deep-navy end) and a `--brand` progress line (7.42:1 on that gradient), like the dashboard's hero KPI.
+- **Printable pages** (statement, receipt): a body class `acc-print` is added while the page is open; its print CSS hides the sidebar, top bar, tab bar and anything marked `.no-print`, and prints white on white.
+- **Forms on phones** (record payment, filters) are bottom sheets; on desktop, a dialog. The amount field offers a "Fill balance" chip and the reference label follows the payment mode.
+
 49/49 pairs pass
 

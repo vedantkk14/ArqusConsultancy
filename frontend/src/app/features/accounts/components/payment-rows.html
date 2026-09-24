@@ -1,0 +1,118 @@
+<ng-template #acts let-p>
+  <span class="acts">
+    @if (p.has_proof) {
+      <button type="button" class="ib" [attr.aria-label]="'View proof: ' + label(p)" (click)="emit('proof', p)">
+        <mat-icon aria-hidden="true">{{ p.proof_kind === 'pdf' ? 'picture_as_pdf' : 'image' }}</mat-icon>
+      </button>
+    }
+    <button type="button" class="ib" [matMenuTriggerFor]="more" [attr.aria-label]="'More actions: ' + label(p)">
+      <mat-icon aria-hidden="true">more_vert</mat-icon>
+    </button>
+    <mat-menu #more="matMenu" xPosition="before">
+      @if (!p.is_void) {
+        <a mat-menu-item [routerLink]="['/accounts/payments', p.id, 'receipt']"><mat-icon>print</mat-icon>Print receipt</a>
+        <button mat-menu-item type="button" (click)="emit('void', p)"><mat-icon>block</mat-icon>Void…</button>
+      } @else {
+        <a mat-menu-item [routerLink]="['/accounts/ledgers', p.ledger]"><mat-icon>open_in_new</mat-icon>Open ledger</a>
+      }
+    </mat-menu>
+  </span>
+</ng-template>
+
+<ng-template #tag let-p>
+  @if (p.is_void) {
+    <span class="tag void" [attr.title]="p.void_reason">Void</span>
+  }
+</ng-template>
+
+@if (layout() === 'table') {
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Receipt</th>
+          <th>Date</th>
+          @if (showClient()) {
+            <th>Client</th>
+          }
+          <th>Mode</th>
+          <th class="c-ref">Reference</th>
+          <th class="r">Amount</th>
+          <th class="r"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (skeleton()) {
+          @for (i of placeholders; track i) {
+            <tr class="sk" aria-hidden="true">
+              <td [attr.colspan]="showClient() ? 7 : 6">
+                <span class="sk-row">
+                  <app-skeleton width="12%" height="14px" />
+                  <app-skeleton width="12%" height="14px" />
+                  <app-skeleton width="10%" height="22px" radius="999px" />
+                  <app-skeleton width="16%" height="14px" />
+                </span>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (p of rows(); track p.id) {
+            <tr [class.is-void]="p.is_void">
+              <td class="nw"><span class="rc num">{{ p.receipt_no }}</span><ng-container *ngTemplateOutlet="tag; context: { $implicit: p }" /></td>
+              <td class="nw" [attr.title]="full(p.created_at)">{{ day(p.received_on) }}</td>
+              @if (showClient()) {
+                <td><a class="pl" [routerLink]="['/accounts/ledgers', p.ledger]">{{ p.client }}</a></td>
+              }
+              <td><span [class]="'mode t-' + tint(p.mode)">{{ p.mode_label }}</span></td>
+              <td class="det c-ref">
+                {{ p.reference || '—' }}
+                @if (p.note) {
+                  <span class="ph">{{ p.note }}</span>
+                }
+                @if (p.is_void && p.void_reason) {
+                  <span class="ph">Voided: {{ p.void_reason }}</span>
+                }
+              </td>
+              <td class="r num" [class.strike]="p.is_void">{{ p.amount | inr: 'paise' }}</td>
+              <td class="r"><ng-container *ngTemplateOutlet="acts; context: { $implicit: p }" /></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <ul class="cards">
+    @if (skeleton()) {
+      @for (i of placeholders.slice(0, 3); track i) {
+        <li class="card lc" aria-hidden="true">
+          <app-skeleton width="45%" height="16px" />
+          <app-skeleton width="70%" height="13px" />
+        </li>
+      }
+    } @else {
+      @for (p of rows(); track p.id; let i = $index) {
+        <li class="card lc rise-in" [style.--i]="i % 10" [class.is-void]="p.is_void">
+          <span class="lc-top">
+            <span [class]="'mode t-' + tint(p.mode)">{{ p.mode_label }}</span>
+            <strong class="num" [class.strike]="p.is_void">{{ p.amount | inr: 'paise' }}</strong>
+          </span>
+          <span class="det-t"><span class="rc num">{{ p.receipt_no }}</span><ng-container *ngTemplateOutlet="tag; context: { $implicit: p }" /></span>
+          @if (p.reference) {
+            <span class="ph">{{ p.reference }}</span>
+          }
+          @if (p.is_void && p.void_reason) {
+            <span class="ph">Voided: {{ p.void_reason }}</span>
+          }
+          <span class="lc-meta">
+            <span>{{ day(p.received_on) }}</span>
+            @if (showClient()) {
+              <a class="pl" [routerLink]="['/accounts/ledgers', p.ledger]">{{ p.client }}</a>
+            }
+          </span>
+          <span class="lc-acts"><ng-container *ngTemplateOutlet="acts; context: { $implicit: p }" /></span>
+        </li>
+      }
+    }
+  </ul>
+}

@@ -1,0 +1,107 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.insight {
+  margin: 0 0 2px;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+}
+
+.count {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.head-a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+// ---- Summary strip -------------------------------------------------------------------------------------
+.strip {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.figs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+
+  dt { color: var(--ink-3); font-size: var(--text-sm); }
+  dd { margin: 2px 0 6px; color: var(--ink); font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.02em; }
+}
+
+.aging {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.seg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur-fast), background-color var(--dur-fast);
+
+  &:hover { border-color: var(--line-strong); }
+  &[aria-pressed='true'] { border-color: var(--ink); background: var(--ink); color: var(--on-ink); .seg-t, .seg-n { color: var(--on-ink); } }
+  .seg-t, .seg-n { color: var(--ink-3); font-size: var(--text-xs); }
+}
+
+.list {
+  padding: var(--space-2);
+  transition: opacity var(--dur-fast);
+
+  &.busy { opacity: 0.55; }
+}
+
+.more { display: flex; justify-content: center; }
+
+@media (min-width: 768px) {
+  .figs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .aging { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .list {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .head-a {
+    width: 100%;
+
+    > * { flex: 1; }
+  }
+}
+
+.list { max-width: 100%; overflow-x: auto; }

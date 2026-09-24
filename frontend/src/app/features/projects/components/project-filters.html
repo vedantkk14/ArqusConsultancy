@@ -1,0 +1,110 @@
+<div class="row">
+  <label class="search">
+    <span class="sr-only">Search projects</span>
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input
+      type="search"
+      placeholder="Search project or client"
+      autocomplete="off"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </label>
+
+  @if (compact()) {
+    <button type="button" class="ctl more" (click)="openSheet()">
+      <mat-icon aria-hidden="true">tune</mat-icon>Filters{{ dropdownCount() ? ' (' + dropdownCount() + ')' : '' }}
+    </button>
+  } @else {
+    <ng-container *ngTemplateOutlet="dropdowns" />
+  }
+
+  <label class="sort">
+    <span class="sr-only">Sort by</span>
+    <select class="ctl" (change)="set('ordering', $any($event.target).value)">
+      <option value="" [selected]="!filters().ordering">Default order</option>
+      @for (o of orderings; track o.value) {
+        <option [value]="o.value" [selected]="filters().ordering === o.value">{{ o.label }}</option>
+      }
+    </select>
+  </label>
+
+  @if (anyActive()) {
+    <button type="button" class="clear" (click)="cleared.emit()">Clear filters</button>
+  }
+</div>
+
+<div class="chips" role="group" aria-label="Filter by budget state">
+  <button type="button" class="chip" [attr.aria-pressed]="chip() === ''" (click)="pick('')">
+    All
+    @if (countFor('') !== null) {
+      <span class="n">{{ countFor('') }}</span>
+    }
+  </button>
+  <button type="button" class="chip" [attr.aria-pressed]="chip() === 'ok'" (click)="pick('ok')">
+    On track
+    @if (countFor('ok') !== null) {
+      <span class="n">{{ countFor('ok') }}</span>
+    }
+  </button>
+  <button type="button" class="chip" [attr.aria-pressed]="chip() === 'warn'" (click)="pick('warn')">
+    Near limit
+    @if (countFor('warn') !== null) {
+      <span class="n">{{ countFor('warn') }}</span>
+    }
+  </button>
+  <button type="button" class="chip" [attr.aria-pressed]="chip() === 'over'" (click)="pick('over')">
+    Over budget
+    @if (countFor('over') !== null) {
+      <span class="n">{{ countFor('over') }}</span>
+    }
+  </button>
+  @if (chip() === 'at_risk') {
+    <button type="button" class="chip" aria-pressed="true" (click)="pick('at_risk')">
+      Near limit or over
+      <span class="n">{{ countFor('at_risk') }}</span>
+    </button>
+  }
+  @if (showPm()) {
+    <button type="button" class="chip" [attr.aria-pressed]="chip() === 'no_pm'" (click)="pick('no_pm')">
+      No project manager
+      @if (countFor('no_pm') !== null) {
+        <span class="n">{{ countFor('no_pm') }}</span>
+      }
+    </button>
+  }
+</div>
+
+<ng-template #dropdowns>
+  @if (showPm()) {
+    <label class="dd">
+      <span class="lbl">Project manager</span>
+      <select class="ctl" (change)="set('pm', $any($event.target).value)">
+        <option value="" [selected]="!filters().pm">Anyone</option>
+        <option value="none" [selected]="filters().pm === 'none'">No manager</option>
+        @for (m of managers(); track m.id) {
+          <option [value]="m.id" [selected]="filters().pm === '' + m.id">{{ m.name }}</option>
+        }
+      </select>
+    </label>
+  }
+  <label class="dd">
+    <span class="lbl">Created from</span>
+    <input class="ctl" type="date" [value]="filters().created_from" (change)="set('created_from', $any($event.target).value)" />
+  </label>
+  <label class="dd">
+    <span class="lbl">Created to</span>
+    <input class="ctl" type="date" [value]="filters().created_to" (change)="set('created_to', $any($event.target).value)" />
+  </label>
+</ng-template>
+
+<ng-template #sheet>
+  <div class="sheet">
+    <h2>Filters</h2>
+    <ng-container *ngTemplateOutlet="dropdowns" />
+    <div class="sheet-actions">
+      <button matButton type="button" (click)="cleared.emit(); closeSheet()">Clear filters</button>
+      <button matButton="filled" type="button" (click)="closeSheet()">Done</button>
+    </div>
+  </div>
+</ng-template>

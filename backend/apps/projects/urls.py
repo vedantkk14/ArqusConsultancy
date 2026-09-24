@@ -1,3 +1,9 @@
-from django.urls import path  # noqa: F401
+from rest_framework.routers import SimpleRouter
 
-urlpatterns = []
+from .views import ExpenseViewSet, ProjectViewSet
+
+router = SimpleRouter(trailing_slash=False)
+router.register("projects", ProjectViewSet, basename="projects")
+router.register("expenses", ExpenseViewSet, basename="expenses")
+
+urlpatterns = router.urls

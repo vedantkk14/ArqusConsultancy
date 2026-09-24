@@ -1,0 +1,174 @@
+@if (ledger(); as l) {
+  <a class="back" routerLink="/accounts/ledgers">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>Customer ledgers
+  </a>
+
+  <!-- Header card -->
+  <section [class]="'card head rise-in g-' + glow()" aria-label="Client summary">
+    <div class="id">
+      <app-person-avatar [name]="l.client" [size]="64" />
+      <div class="id-t">
+        <p class="nm" aria-hidden="true">{{ l.client }}</p>
+        <span class="chips-row">
+          <app-ledger-state [state]="l.state" />
+          @if (l.is_overdue) {
+            <app-overdue-pill [days]="l.days_since" />
+          }
+        </span>
+      </div>
+    </div>
+
+    <dl class="facts">
+      <div>
+        <dt>Phone</dt>
+        <dd><a class="num" [href]="'tel:' + l.lead_block.phone" [attr.aria-label]="'Call ' + l.client">{{ l.lead_block.phone }}</a></dd>
+      </div>
+      <div>
+        <dt>Sales executive</dt>
+        <dd>{{ l.exec_name ?? 'Unassigned' }}</dd>
+      </div>
+      <div>
+        <dt>Deal</dt>
+        <dd><a [routerLink]="['/leads', l.lead]" [attr.aria-label]="'Open the lead for ' + l.client">Open lead</a></dd>
+      </div>
+      <div>
+        <dt>{{ l.finalized ? 'Finalized' : 'Won' }}</dt>
+        <dd [attr.title]="full(l.finalized_at ?? l.created_at)">{{ rel(l.finalized_at ?? l.created_at) }}</dd>
+      </div>
+    </dl>
+
+    <div class="acts">
+      @if (can('record_payment')) {
+        <button matButton="filled" type="button" [attr.aria-label]="'Record payment for ' + l.client" (click)="recordPayment(l)"><mat-icon>add</mat-icon>Record payment</button>
+      }
+      @if (can('finalize')) {
+        <button matButton="filled" type="button" [attr.aria-label]="'Finalize ' + l.client" (click)="finalize(l)"><mat-icon>task_alt</mat-icon>Finalize amount</button>
+      }
+      @if (can('reminder')) {
+        <button matButton="outlined" type="button" [attr.aria-label]="'Send a reminder to ' + l.client" (click)="remind(l)"><mat-icon>chat</mat-icon>Send reminder</button>
+      }
+      @if (can('statement')) {
+        <a matButton="outlined" routerLink="/accounts/statement" [queryParams]="{ ledger: l.id }" [attr.aria-label]="'Statement for ' + l.client"><mat-icon>receipt_long</mat-icon>Statement</a>
+      }
+      @if (can('revise_total')) {
+        <button matButton="outlined" type="button" [attr.aria-label]="'Revise the total for ' + l.client" (click)="reviseTotal(l)"><mat-icon>edit</mat-icon>Revise total</button>
+      }
+    </div>
+  </section>
+
+  <!-- Money hero -->
+  <section class="card hero rise-in" style="--i: 1" aria-label="Money">
+    @if (l.finalized) {
+      <dl class="hero-figs">
+        <div>
+          <dt>Total</dt>
+          <dd class="num">{{ l.total | inr }}</dd>
+        </div>
+        <div>
+          <dt>Received</dt>
+          <dd class="num">{{ l.received | inr }}</dd>
+        </div>
+        <div>
+          <dt>Outstanding</dt>
+          <dd class="num">{{ l.outstanding | inr }}</dd>
+        </div>
+      </dl>
+      <div class="hero-bar" aria-hidden="true"><span [style.width.%]="+l.collected_pct > 100 ? 100 : +l.collected_pct"></span></div>
+      <p class="hero-note">
+        {{ l.collected_pct }}% collected{{ l.state === 'PAID' ? ' · fully paid' : '' }}
+        @if (l.is_overdue) {
+          · <span class="over">Overdue, {{ l.days_since }} days since the last payment</span>
+        }
+      </p>
+    } @else {
+      <p class="hero-wait">Proposed <strong class="num">{{ (l.proposed_amount ?? l.total) | inr }}</strong>. Finalize to start collecting.</p>
+    }
+  </section>
+
+  <div class="grid">
+    <div class="main">
+      <!-- Payments -->
+      <section class="card panel rise-in" style="--i: 2" aria-labelledby="pay-title">
+        <app-panel-head
+          title="Payments"
+          [subtitle]="paymentsLoaded() ? paymentCount() + (paymentCount() === 1 ? ' payment' : ' payments') : 'Loading…'"
+          headingId="pay-title"
+        >
+          @if (can('record_payment') && layout.isDesktop()) {
+            <button matButton="filled" type="button" [attr.aria-label]="'Record payment for ' + l.client" (click)="recordPayment(l)"><mat-icon>add</mat-icon>Record payment</button>
+          }
+        </app-panel-head>
+        @if (paymentsError() && !payments().length) {
+          <app-error-state title="Couldn't load payments" (retry)="loadPayments(1)" />
+        } @else if (paymentsLoaded() && !payments().length) {
+          <app-empty-state icon="payments" [bordered]="false" title="No payments yet" [message]="l.finalized ? 'Record the first payment when money arrives.' : 'Finalize the amount, then record payments.'" />
+        } @else {
+          <app-payment-rows [rows]="payments()" [layout]="wide() ? 'table' : 'cards'" [skeleton]="!paymentsLoaded()" (action)="onPaymentAction($event)" />
+          @if (payments().length < paymentCount()) {
+            <div class="more">
+              <button matButton="outlined" type="button" [disabled]="paymentsLoading()" (click)="loadMorePayments()">
+                {{ paymentsLoading() ? 'Loading…' : 'Load more' }}
+              </button>
+            </div>
+          }
+        }
+      </section>
+    </div>
+
+    <aside class="side">
+      <!-- Project -->
+      <section class="card panel rise-in" style="--i: 2" aria-labelledby="proj-title">
+        <app-panel-head title="Project" subtitle="Budget and margin" headingId="proj-title" />
+        @if (l.project; as p) {
+          <p class="pname"><a [routerLink]="['/projects', p.id]">{{ p.name }}</a></p>
+          <dl class="kv">
+            <dt>Sanctioned budget</dt>
+            <dd class="num">{{ p.sanctioned_budget | inr }}</dd>
+            <dt>Spent</dt>
+            <dd class="num">{{ p.spent | inr }}</dd>
+            <dt>Planned margin</dt>
+            <dd class="num" [class.neg]="isNegative(p.planned_margin)">{{ p.planned_margin | inr }}</dd>
+            <dt>Live margin</dt>
+            <dd class="num" [class.neg]="isNegative(p.live_margin)">{{ p.live_margin | inr }}</dd>
+          </dl>
+        } @else if (l.finalized) {
+          <p class="small">No project yet.</p>
+          <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ lead: l.lead }" [attr.aria-label]="'Convert ' + l.client + ' to a project'">Convert to project</a>
+        } @else {
+          <p class="small">No project yet.</p>
+        }
+      </section>
+
+      <section class="card panel rise-in" style="--i: 3" aria-labelledby="tl-title">
+        <app-panel-head title="Timeline" subtitle="Newest first" headingId="tl-title" />
+        <app-ledger-timeline [ledgerId]="l.id" [refresh]="timelineTick()" />
+      </section>
+    </aside>
+  </div>
+
+  <!-- Phones: sticky Record payment | Reminder | Statement -->
+  @if (!layout.isDesktop() && (can('record_payment') || can('finalize'))) {
+    <nav class="mbar" aria-label="Ledger actions">
+      @if (can('record_payment')) {
+        <button type="button" class="pri" [attr.aria-label]="'Record payment for ' + l.client" (click)="recordPayment(l)"><mat-icon aria-hidden="true">add</mat-icon>Record payment</button>
+      }
+      @if (can('finalize')) {
+        <button type="button" class="pri" [attr.aria-label]="'Finalize ' + l.client" (click)="finalize(l)"><mat-icon aria-hidden="true">task_alt</mat-icon>Finalize amount</button>
+      }
+      @if (can('reminder')) {
+        <button type="button" [attr.aria-label]="'Send a reminder to ' + l.client" (click)="remind(l)"><mat-icon aria-hidden="true">chat</mat-icon>Remind</button>
+      }
+      @if (can('revise_total')) {
+        <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + l.client"><mat-icon aria-hidden="true">more_vert</mat-icon></button>
+        <mat-menu #over="matMenu" xPosition="before">
+          <button mat-menu-item type="button" (click)="reviseTotal(l)"><mat-icon>edit</mat-icon>Revise total</button>
+          <a mat-menu-item routerLink="/accounts/statement" [queryParams]="{ ledger: l.id }"><mat-icon>receipt_long</mat-icon>Statement</a>
+        </mat-menu>
+      }
+    </nav>
+  }
+} @else {
+  <app-empty-state icon="menu_book" title="Ledger not found" message="It may have been removed when the deal was marked lost.">
+    <a matButton="filled" routerLink="/accounts/ledgers">Back to ledgers</a>
+  </app-empty-state>
+}

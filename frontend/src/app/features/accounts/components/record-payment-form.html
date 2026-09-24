@@ -1,0 +1,169 @@
+<form (ngSubmit)="submit()" novalidate>
+  <div class="field">
+    <label for="rp-ledger-q">Client</label>
+    @if (picked(); as p) {
+      <div class="picked-client">
+        <span><strong>{{ p.client }}</strong> · <span class="num">{{ p.phone }}</span></span>
+        @if (!locked()) {
+          <button type="button" class="fill" (click)="change()" [attr.aria-label]="'Change client from ' + p.client">Change</button>
+        }
+      </div>
+    } @else {
+      <input
+        id="rp-ledger-q"
+        type="search"
+        autocomplete="off"
+        placeholder="Search a client with a balance"
+        [value]="search()"
+        (input)="onSearch($any($event.target).value)"
+        [attr.aria-invalid]="errors().ledger ? true : null"
+      />
+      @if (options().length) {
+        <ul class="opts" aria-label="Clients with a balance">
+          @for (o of options(); track o.id) {
+            <li>
+              <button type="button" (click)="pick(o)">
+                <span>{{ o.client }}</span>
+                <span class="ph num">Outstanding {{ o.outstanding | inr }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="hint">No client with a balance matches.</p>
+      }
+      @if (errors().ledger) {
+        <p class="error">{{ errors().ledger }}</p>
+      }
+    }
+  </div>
+
+  <div class="field">
+    <label for="rp-amount">Amount</label>
+    <app-money-input
+      inputId="rp-amount"
+      name="amount"
+      [(ngModel)]="amount"
+      [invalid]="!!errors().amount || overOutstanding() !== null"
+      [describedBy]="'rp-out' + (errors().amount ? ' rp-amount-err' : '')"
+    />
+    <p class="out" id="rp-out">
+      @if (picked(); as p) {
+        Outstanding <strong class="num">{{ p.outstanding | inr }}</strong>
+        <button type="button" class="fill" [attr.aria-label]="'Fill the balance of ' + (p.outstanding | inr)" (click)="fillBalance()">Fill balance</button>
+      } @else {
+        Choose a client to see the balance.
+      }
+    </p>
+    @if (errors().amount) {
+      <p class="error" id="rp-amount-err">{{ errors().amount }}</p>
+    }
+    @if (overOutstanding() !== null) {
+      <p class="error" role="alert">{{ overMessage() }}</p>
+    }
+  </div>
+
+  <div class="field">
+    <span class="lbl" id="rp-mode-label">Mode</span>
+    <fieldset class="modes" aria-labelledby="rp-mode-label">
+      @for (m of modes; track m[0]) {
+        <label class="mode">
+          <input type="radio" name="mode" [id]="'rp-mode-' + m[0]" [value]="m[0]" [ngModel]="mode()" (ngModelChange)="setMode($event)" />
+          <span>{{ m[1] }}</span>
+        </label>
+      }
+    </fieldset>
+  </div>
+
+  @if (needsReference()) {
+    <div class="field">
+      <label for="rp-reference">{{ referenceLabel() }}</label>
+      <input
+        id="rp-reference"
+        name="reference"
+        type="text"
+        maxlength="100"
+        autocomplete="off"
+        [(ngModel)]="reference"
+        [attr.aria-invalid]="errors().reference ? true : null"
+        [attr.aria-describedby]="errors().reference ? 'rp-reference-err' : null"
+      />
+      @if (errors().reference) {
+        <p class="error" id="rp-reference-err">{{ errors().reference }}</p>
+      }
+    </div>
+  }
+
+  <div class="field">
+    <label for="rp-date">Received on</label>
+    <input
+      id="rp-date"
+      name="received_on"
+      type="date"
+      [min]="earliest"
+      [max]="today"
+      [(ngModel)]="receivedOn"
+      [attr.aria-invalid]="errors().received_on ? true : null"
+      [attr.aria-describedby]="errors().received_on ? 'rp-date-err' : null"
+    />
+    @if (errors().received_on) {
+      <p class="error" id="rp-date-err">{{ errors().received_on }}</p>
+    }
+  </div>
+
+  <div class="field">
+    <label for="rp-note">Note (optional)</label>
+    <textarea id="rp-note" name="note" maxlength="300" [(ngModel)]="note"></textarea>
+    <span class="count num">{{ note.length }}/300</span>
+  </div>
+
+  <div class="field">
+    <span class="lbl" id="rp-proof-label">Proof (optional)</span>
+    @if (file(); as f) {
+      <div class="picked">
+        @if (preview(); as url) {
+          <img [src]="url" alt="Proof preview" />
+        } @else {
+          <span class="pdf" aria-hidden="true"><mat-icon>picture_as_pdf</mat-icon></span>
+        }
+        <span class="nm">{{ f.name }}</span>
+        <button type="button" class="rm" aria-label="Remove proof" (click)="removeFile()"><mat-icon aria-hidden="true">close</mat-icon>Remove</button>
+      </div>
+    } @else {
+      <div class="pick" role="group" aria-labelledby="rp-proof-label">
+        <button type="button" id="rp-proof" (click)="camera.click()"><mat-icon aria-hidden="true">photo_camera</mat-icon>Take photo</button>
+        <button type="button" (click)="chooser.click()"><mat-icon aria-hidden="true">upload_file</mat-icon>Choose file</button>
+      </div>
+    }
+    <input #camera class="sr-only" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true" (change)="onFile(camera)" />
+    <input #chooser class="sr-only" type="file" accept="image/*,application/pdf" tabindex="-1" aria-hidden="true" (change)="onFile(chooser)" />
+    <p class="hint">Bank slip, cheque photo or screenshot. JPG, PNG, WebP or PDF, up to 5 MB.</p>
+    @if (errors().proof) {
+      <p class="error" role="alert">{{ errors().proof }}</p>
+    }
+  </div>
+
+  @if (duplicate()) {
+    <div class="dup" role="alert">
+      <p>The same payment was just recorded. Record it again only if the client really paid twice.</p>
+      <button matButton="filled" type="button" [disabled]="saving()" (click)="submit(true)">Record anyway</button>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  @if (saving()) {
+    <div class="prog" role="progressbar" aria-label="Uploading" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+      <span [style.transform]="'scaleX(' + (progress() ?? 0) / 100 + ')'"></span>
+    </div>
+  }
+
+  <div class="actions">
+    <button matButton type="button" (click)="cancelled.emit()">Cancel</button>
+    <button matButton="filled" type="submit" [disabled]="saving()">
+      {{ saving() ? (progress() === null ? 'Saving…' : 'Uploading… ' + progress() + '%') : 'Record payment' }}
+    </button>
+  </div>
+</form>

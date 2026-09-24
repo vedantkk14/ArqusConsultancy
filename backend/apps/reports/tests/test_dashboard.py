@@ -158,8 +158,14 @@ def test_admin_gets_every_field_with_the_right_types(client, django_assert_max_n
 
 
 @pytest.mark.django_db
-def test_real_zeros_while_source_models_do_not_exist(client):
-    """projects/accounts have no models yet: real zeros, no invented numbers, empty lists."""
+def test_real_zeros_while_source_models_do_not_exist(client, monkeypatch):
+    """A missing projects/accounts model gives real zeros, no invented numbers, empty lists."""
+    from apps.reports import services
+
+    real = services._model
+    monkeypatch.setattr(
+        services, "_model", lambda app, name: real(app, name) if app == "leads" else None
+    )
     client.force_authenticate(_user("ADMIN"))
     body = client.get(URL).json()
     sources = body["data_sources"]

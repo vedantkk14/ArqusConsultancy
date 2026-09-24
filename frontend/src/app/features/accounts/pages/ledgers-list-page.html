@@ -1,0 +1,95 @@
+<header class="head">
+  <div class="head-t">
+    @if (insight()) {
+      <p class="insight">{{ insight() }}</p>
+    }
+    <p class="count" aria-live="polite">{{ countText() }}</p>
+  </div>
+  <div class="head-a">
+    <button matButton="outlined" type="button" (click)="exportCsv()"><mat-icon>download</mat-icon>Export CSV</button>
+    <button matButton="filled" type="button" (click)="recordPayment()"><mat-icon>add</mat-icon>Record payment</button>
+  </div>
+</header>
+
+@if (store.summary(); as s) {
+  <section class="card strip" aria-label="Collection summary">
+    <dl class="figs">
+      <div>
+        <dt>Total value</dt>
+        <dd class="num">{{ s.total_value | inrCompact }}</dd>
+      </div>
+      <div>
+        <dt>Received</dt>
+        <dd class="num">{{ s.received | inrCompact }}</dd>
+      </div>
+      <div>
+        <dt>Outstanding</dt>
+        <dd class="num">{{ s.outstanding | inrCompact }}</dd>
+      </div>
+      <div>
+        <dt>Collection rate</dt>
+        <dd class="num">{{ s.collection_rate_pct }}%</dd>
+        <app-collect-bar [pct]="s.collection_rate_pct" />
+      </div>
+    </dl>
+    @if (mode === 'pending') {
+      <div class="aging" role="group" aria-label="Filter by days waiting">
+        @for (b of s.aging; track b.bucket) {
+          <button type="button" class="seg" [attr.aria-pressed]="filters().aging === b.bucket" (click)="setAging(b.bucket)">
+            <span class="seg-t">{{ b.bucket }} days</span>
+            <strong class="num">{{ b.amount | inrCompact }}</strong>
+            <span class="seg-n">{{ b.count }} {{ b.count === 1 ? 'client' : 'clients' }}</span>
+          </button>
+        }
+      </div>
+    }
+  </section>
+} @else if (!store.error()) {
+  <section class="card strip" aria-hidden="true">
+    <div class="figs">
+      @for (i of [0, 1, 2, 3]; track i) {
+        <app-skeleton width="100px" height="34px" />
+      }
+    </div>
+  </section>
+}
+
+<app-ledger-filters
+  class="filters"
+  [filters]="filters()"
+  [summary]="store.summary()"
+  [mode]="mode"
+  [compact]="!wide()"
+  (changed)="setFilters($event)"
+  (cleared)="clearFilters()"
+/>
+
+@if (store.error() && !store.rows().length) {
+  <app-error-state title="Couldn't load ledgers" (retry)="store.reload()" />
+} @else if (store.loaded() && !store.rows().length) {
+  @if (hasFilters()) {
+    <app-empty-state icon="filter_alt_off" title="No ledgers match these filters" message="Try a different search or clear the filters.">
+      <button matButton="outlined" type="button" (click)="clearFilters()">Clear filters</button>
+    </app-empty-state>
+  } @else if (mode === 'pending') {
+    <app-empty-state icon="verified" title="Nothing pending" message="Every client is fully paid." />
+  } @else {
+    <app-empty-state icon="menu_book" title="No ledgers yet" message="A ledger is created when a lead is marked won. Won deals appear here." />
+  }
+} @else {
+  <section class="card list" [class.busy]="store.loading() && store.loaded()" [attr.aria-busy]="store.loading()" aria-label="Ledgers">
+    <app-ledger-rows
+      [rows]="store.rows()"
+      [layout]="wide() ? 'table' : 'cards'"
+      [skeleton]="!store.loaded()"
+      (action)="onAction($event)"
+    />
+  </section>
+  @if (store.hasMore()) {
+    <div class="more">
+      <button matButton="outlined" type="button" [disabled]="store.loading()" (click)="store.loadMore()">
+        {{ store.loading() ? 'Loading…' : 'Load more' }}
+      </button>
+    </div>
+  }
+}

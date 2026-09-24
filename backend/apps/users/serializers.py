@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 
 from .models import User
@@ -10,6 +12,41 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("id", "name", "email", "role", "must_change_password")
         read_only_fields = fields
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """/me: who I am. `commission_rate` is shown to sales executives only (read-only)."""
+
+    name = serializers.CharField(source="display_name", read_only=True)
+    commission_rate = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "name",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "role",
+            "must_change_password",
+            "commission_rate",
+        )
+        read_only_fields = fields
+
+    def get_commission_rate(self, user):
+        if user.role != User.Role.SALES_EXEC:
+            return None
+        return f"{Decimal(str(user.commission_rate)):.2f}"
+
+
+class ProfileUpdateSerializer(serializers.Serializer):
+    """What a person may change about themselves: name and phone (not email or role)."""
+
+    first_name = serializers.CharField(max_length=150, required=False)
+    last_name = serializers.CharField(max_length=150, required=False)
+    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
 
 
 class UserCreateSerializer(serializers.Serializer):
@@ -75,7 +112,9 @@ class UserAdminSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_commission_rate(self, user):
-        return f"{user.commission_rate:.2f}" if user.role == User.Role.SALES_EXEC else None
+        if user.role != User.Role.SALES_EXEC:
+            return None
+        return f"{Decimal(str(user.commission_rate)):.2f}"
 
 
 class UserUpdateSerializer(serializers.Serializer):

@@ -3,7 +3,7 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import BaseThrottle, ScopedRateThrottle
@@ -28,6 +28,8 @@ from .serializers import (
     PasswordChangeSerializer,
     PasswordForgotSerializer,
     PasswordResetSerializer,
+    ProfileSerializer,
+    ProfileUpdateSerializer,
     RefreshSerializer,
     UserAdminSerializer,
     UserCreateSerializer,
@@ -96,11 +98,24 @@ class LogoutView(_PublicAuthView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class MeView(RetrieveAPIView):
-    serializer_class = UserSerializer
+class MeView(RetrieveUpdateAPIView):
+    """GET /me; PATCH /me changes the caller's own name and phone only."""
+
+    serializer_class = ProfileSerializer
+    http_method_names = ["get", "patch", "head", "options"]
 
     def get_object(self):
         return self.request.user
+
+    @extend_schema(request=ProfileUpdateSerializer, responses=ProfileSerializer)
+    def patch(self, request, *args, **kwargs):
+        data = ProfileUpdateSerializer(data=request.data, partial=True)
+        data.is_valid(raise_exception=True)
+        user = request.user
+        for field, value in data.validated_data.items():
+            setattr(user, field, value.strip() if isinstance(value, str) else value)
+        user.save()
+        return Response(ProfileSerializer(user).data)
 
 
 class UserViewSet(GenericViewSet):

@@ -1,5 +1,6 @@
 """Abstract base models shared by every app."""
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -51,3 +52,34 @@ class SoftDeleteModel(models.Model):
         self.is_deleted = False
         self.deleted_at = None
         self.save(update_fields=["is_deleted", "deleted_at"])
+
+
+class AuditLog(models.Model):
+    """Who changed what, when. Written by core/signals.py for a configurable allowlist of models."""
+
+    class Action(models.TextChoices):
+        CREATE = "CREATE", "Create"
+        UPDATE = "UPDATE", "Update"
+        DELETE = "DELETE", "Delete"
+
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )  # null: a system action (seed, management command, background job)
+    action = models.CharField(max_length=10, choices=Action.choices)
+    model_label = models.CharField(max_length=100)  # e.g. "leads.Lead"
+    object_id = models.CharField(max_length=64)
+    object_repr = models.CharField(max_length=200)
+    changes = models.JSONField(
+        default=dict, blank=True
+    )  # field -> {"old", "new"}, values <= 200 chars
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["model_label", "-created_at"], name="audit_model_time"),
+            models.Index(fields=["actor", "-created_at"], name="audit_actor_time"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.action} {self.model_label}#{self.object_id}"

@@ -69,6 +69,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.core.middleware.AuditActorMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -134,7 +135,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --- DRF -------------------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.core.authentication.AuditJWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardPagination",

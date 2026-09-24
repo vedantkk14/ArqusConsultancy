@@ -137,6 +137,11 @@ export class AuthService {
       );
   }
 
+  /** Keep the signed-in user in step after they edit their own profile. */
+  updateUser(patch: Partial<AuthUser>): void {
+    this.currentUser.update((user) => (user ? { ...user, ...patch } : user));
+  }
+
   forgotPassword(email: string): Observable<{ message: string }> {
     return this.api.post<{ message: string }>('/auth/password/forgot', { email });
   }

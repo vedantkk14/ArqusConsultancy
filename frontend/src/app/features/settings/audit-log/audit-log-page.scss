@@ -1,0 +1,36 @@
+.nowrap { white-space: nowrap; }
+.obj { overflow-wrap: anywhere; }
+
+.view {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--brand-deep);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
+.dr td { height: auto; background: var(--surface-2); }
+
+.diff {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+
+  li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: var(--text-sm); }
+  .f { min-width: 120px; color: var(--ink-3); }
+  .o { color: var(--negative); text-decoration: line-through; overflow-wrap: anywhere; }
+  .n { color: var(--tint-teal-ink); font-weight: 500; overflow-wrap: anywhere; }
+  mat-icon { width: 16px; height: 16px; font-size: 16px; color: var(--ink-3); }
+}
+
+input.ctl { min-width: 140px; }

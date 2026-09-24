@@ -1,0 +1,35 @@
+<header class="head">
+  <p class="note">
+    These are defined in code by the team that owns that module. To add or change one, ask the relevant developer.
+  </p>
+</header>
+
+@if (error()) {
+  <app-error-state title="Couldn't load master data" (retry)="load()" />
+} @else {
+  <div class="grid">
+    @if (lists(); as all) {
+      @for (l of all; track l.key; let i = $index) {
+        <section class="card panel rise-in" [style.--i]="i" [attr.aria-label]="l.label">
+          <header class="panel-head">
+            <h2>{{ l.label }}</h2>
+            <span class="src">{{ l.source }}</span>
+          </header>
+          @if (l.available) {
+            <ul class="chips">
+              @for (v of l.values; track v.value) {
+                <li class="chip">{{ v.label }}</li>
+              }
+            </ul>
+          } @else {
+            <p class="none"><mat-icon aria-hidden="true">hourglass_empty</mat-icon>Not available until the {{ l.owner_app }} module is merged.</p>
+          }
+        </section>
+      }
+    } @else {
+      @for (i of placeholders; track i) {
+        <div class="card panel" aria-hidden="true"><app-skeleton width="40%" height="20px" /><app-skeleton height="64px" /></div>
+      }
+    }
+  </div>
+}

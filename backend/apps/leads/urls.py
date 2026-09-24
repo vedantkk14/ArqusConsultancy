@@ -1,3 +1,8 @@
-from django.urls import path  # noqa: F401
+from rest_framework.routers import SimpleRouter
 
-urlpatterns = []
+from .views import LeadViewSet
+
+router = SimpleRouter(trailing_slash=False)
+router.register("leads", LeadViewSet, basename="leads")
+
+urlpatterns = router.urls

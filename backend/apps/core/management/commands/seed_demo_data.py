@@ -24,6 +24,71 @@ FORCED_CHANGE_USER = (
 )
 
 
+# Two more execs so lists, the leaderboard and reassignment have data. Password Exec@123.
+EXTRA_EXECS = [("rohan.exec", "Rohan", "Mehta"), ("priya.exec", "Priya", "Nair")]
+
+# name, status, follow-up bucket. Some names repeat on purpose (different people, same name).
+DEMO_LEADS = [
+    ("Rahul Sharma", "NEW", "none"),
+    ("Pune Strikers FC", "NEW", "today"),
+    ("Ananya Kulkarni", "NEW", "overdue"),
+    ("Deccan Sports Academy", "CONTACTED", "overdue"),
+    ("Nashik Cricket Club", "CONTACTED", "today"),
+    ("Mumbai Arena Pvt Ltd", "INTERESTED", "upcoming"),
+    ("Kolhapur Kabaddi League", "WON", "none"),
+    ("Sneha Patil", "LOST", "none"),
+    ("Rahul Sharma", "CONTACTED", "upcoming"),
+    ("Vikram Desai", "INTERESTED", "overdue"),
+    ("Goa Football Club", "NEW", "none"),
+    ("Aarav Joshi", "CONTACTED", "none"),
+    ("Satara Hockey Club", "INTERESTED", "today"),
+    ("Priyanka Rao", "WON", "none"),
+    ("Thane Tennis Academy", "LOST", "none"),
+    ("Karan Mehta", "NEW", "upcoming"),
+    ("Baner Badminton Hub", "CONTACTED", "overdue"),
+    ("Meera Iyer", "INTERESTED", "upcoming"),
+    ("Aurangabad Athletics", "WON", "none"),
+    ("Rohit Pawar", "NEW", "none"),
+    ("Solapur Sports Club", "CONTACTED", "upcoming"),
+    ("Neha Gupta", "LOST", "none"),
+    ("Kothrud Cricket Ground", "INTERESTED", "none"),
+    ("Aditya Singh", "NEW", "overdue"),
+    ("Sangli Swimming Club", "WON", "none"),
+    ("Pooja Bhosale", "CONTACTED", "today"),
+    ("Hinjewadi Sports Park", "INTERESTED", "overdue"),
+    ("Siddharth Jain", "NEW", "none"),
+    ("Latur Volleyball Club", "LOST", "none"),
+    ("Isha Deshmukh", "CONTACTED", "upcoming"),
+    ("Wakad Turf Arena", "WON", "none"),
+    ("Aniket More", "NEW", "none"),
+    ("Pimpri Chess Academy", "INTERESTED", "upcoming"),
+    ("Tanvi Kale", "CONTACTED", "overdue"),
+    ("Ratnagiri Rowing Club", "WON", "none"),
+    ("Aniket More", "NEW", "upcoming"),
+    ("Chinchwad Cycling Club", "LOST", "none"),
+    ("Kavya Shetty", "INTERESTED", "today"),
+    ("Nagpur Sports Complex", "CONTACTED", "none"),
+    ("Omkar Salunkhe", "NEW", "none"),
+]
+
+REQUIREMENTS = [
+    "New synthetic turf for a 5-a-side ground, with floodlights.",
+    "Feasibility study for a multi-sport academy.",
+    "Upgrade seating and changing rooms before the season.",
+    "Consulting on a membership and booking system.",
+    "",
+]
+
+NOTES = [
+    "Discussed scope and timelines.",
+    "Shared the brochure and past projects.",
+    "Asked for a site visit next week.",
+    "Waiting on budget approval from the committee.",
+    "Sent a revised quote.",
+    "Client prefers a call in the evening.",
+]
+
+
 class Command(BaseCommand):
     help = "Create demo users (one per role) and, later, demo business data. DEBUG only."
 
@@ -84,8 +149,85 @@ class Command(BaseCommand):
     # --- TODO sections: each dev fills in their own, keeping the command idempotent ----------
 
     def _seed_leads(self, users):
-        # TODO(Dev A): create demo leads in various statuses, owned by users["SALES_EXEC"].
-        pass
+        """~40 leads over the last 3 months, keyed by phone (re-running changes nothing)."""
+        import random
+        from datetime import datetime, time, timedelta
+
+        from django.utils import timezone
+
+        from apps.leads.models import Interaction, Lead
+        from apps.leads.selectors import business_tz
+
+        User = get_user_model()
+        execs = [users["SALES_EXEC"]]
+        for username, first, last in EXTRA_EXECS:
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    "first_name": first,
+                    "last_name": last,
+                    "email": f"{username}@crm.local",
+                    "role": "SALES_EXEC",
+                },
+            )
+            if created:
+                user.set_password("Exec@123")
+                user.save()
+            execs.append(user)
+        manager = users["SALES_MANAGER"]
+
+        rnd = random.Random(42)
+        now = timezone.now()
+        tz = business_tz()
+        today_start = datetime.combine(now.astimezone(tz).date(), time.min, tzinfo=tz)
+        late_evening = today_start + timedelta(hours=23, minutes=15)
+        due_today = late_evening if late_evening > now else now + timedelta(minutes=30)
+        sources = ["WEBSITE", "REFERRAL", "INSTAGRAM", "FACEBOOK", "GOOGLE_ADS", "WALK_IN", "EVENT"]
+        reasons = ["PRICE", "COMPETITOR", "NO_RESPONSE", "NOT_INTERESTED"]
+        created_count = 0
+
+        for i, (name, status, followup) in enumerate(DEMO_LEADS):
+            phone = f"+9198{i:08d}"
+            if Lead.all_objects.filter(phone=phone).exists():
+                continue
+            created_at = now - timedelta(days=rnd.randint(1, 90), hours=rnd.randint(0, 20))
+            assignee = None if i % 13 == 5 else execs[i % len(execs)]
+            next_fu = {
+                "overdue": now - timedelta(days=rnd.randint(1, 6), hours=2),
+                "today": due_today,
+                "upcoming": now + timedelta(days=rnd.randint(2, 10)),
+                "none": None,
+            }[followup]
+            won = status == "WON"
+            lead = Lead.objects.create(
+                name=name,
+                phone=phone,
+                email=f"{name.split()[0].lower()}{i}@example.com" if i % 3 else "",
+                source=sources[i % len(sources)],
+                requirements=REQUIREMENTS[i % len(REQUIREMENTS)],
+                status=status,
+                assigned_to=assignee,
+                next_followup_at=None if status in ("WON", "LOST") else next_fu,
+                proposed_amount=(150000 + 25000 * (i % 12)) if status != "NEW" else None,
+                won_at=created_at + timedelta(days=rnd.randint(3, 20)) if won else None,
+                lost_reason=reasons[i % len(reasons)] if status == "LOST" else "",
+                created_by=manager,
+            )
+            Lead.objects.filter(pk=lead.pk).update(created_at=created_at)
+            touches = 0 if status == "NEW" and i % 2 == 0 else rnd.randint(1, 6)
+            for n in range(touches):
+                kind = ["CALL", "WHATSAPP", "MEETING", "NOTE", "EMAIL"][(i + n) % 5]
+                row = Interaction.objects.create(
+                    lead=lead,
+                    type=kind,
+                    notes=NOTES[(i + n) % len(NOTES)],
+                    created_by=assignee or manager,
+                )
+                when = min(now, created_at + timedelta(days=n * 3 + 1, hours=rnd.randint(1, 8)))
+                Interaction.objects.filter(pk=row.pk).update(created_at=when)
+            created_count += 1
+        self.stdout.write(f"  leads: {created_count} created ({Lead.objects.count()} in total)")
+        # Ledgers for won leads are Dev C's (accounts.Ledger does not exist yet).
 
     def _seed_projects(self, users):
         # TODO(Dev B): create demo projects from won leads, assigned to users["PROJECT_MANAGER"].

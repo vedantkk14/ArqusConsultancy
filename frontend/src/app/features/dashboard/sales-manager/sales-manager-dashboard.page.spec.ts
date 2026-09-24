@@ -48,11 +48,12 @@ const text = (el: Element | null) => el?.textContent?.replace(/\s+/g, ' ').trim(
 describe('SalesManagerDashboardPage', () => {
   it('shows skeletons first, then the team data', async () => {
     const { el, resolve } = await setup();
-    expect(el.querySelectorAll('.skeleton-layout').length).toBe(1);
+    expect(el.querySelectorAll('.skeleton-card').length).toBe(5);
 
     resolve(mockSalesManagerDashboard('month'));
-    expect(el.querySelectorAll('.skeleton-layout').length).toBe(0);
-    expect(text(el.querySelector('app-team-results-strip'))).toContain('24');
+    expect(el.querySelectorAll('.skeleton-card').length).toBe(0);
+    expect(el.querySelectorAll('a.kpi').length).toBe(4);
+    expect(text(el.querySelector('.kpi .kpi-value'))).toBe('24');
     expect(el.querySelectorAll('app-queue-section').length).toBe(4);
   });
 

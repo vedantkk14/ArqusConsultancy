@@ -1,87 +1,126 @@
 <header class="page-head">
-  <button type="button" class="icon-btn" aria-label="Refresh" matTooltip="Refresh" [disabled]="state().status === 'loading'" (click)="reload()">
-    <mat-icon aria-hidden="true" [class.spin]="refreshing()">refresh</mat-icon>
-  </button>
+  <div class="controls">
+    <app-period-switcher class="segmented" [value]="period()" (changed)="setPeriod($event)" />
+    <span class="updated">{{ updatedText() }}</span>
+    <button
+      type="button"
+      class="icon-btn"
+      aria-label="Refresh"
+      matTooltip="Refresh"
+      [disabled]="state().status === 'loading'"
+      (click)="reload()"
+    >
+      <mat-icon aria-hidden="true" [class.spin]="refreshing()">refresh</mat-icon>
+    </button>
+  </div>
 </header>
 
 @if (state().status === 'error' && !data()) {
   <app-error-state title="Couldn't load the team dashboard" (retry)="reload()" />
-} @else if (data(); as d) {
-  <div class="layout" [class.busy]="refreshing()" [attr.aria-busy]="state().status === 'loading'">
-    <section class="needs" aria-label="Needs attention">
-      <app-queue-section
-        title="Unassigned leads"
-        [items]="d.queues.unassigned.items"
-        [total]="d.queues.unassigned.total"
-        [priority]="d.queues.unassigned.total > 0"
-        viewAllRoute="/leads/all"
-        [viewAllParams]="{ assigned_to: 'none' }"
-        emptyText="No unassigned leads."
-        (assign)="openAssign($event)"
-        (whatsapp)="openWhatsapp($event)"
-      />
-      <app-queue-section
-        title="Overdue follow-ups"
-        [items]="d.queues.overdue.items"
-        [total]="d.queues.overdue.total"
-        viewAllRoute="/leads/overdue"
-        emptyText="No overdue follow-ups. Nice work."
-        (assign)="openAssign($event)"
-        (whatsapp)="openWhatsapp($event)"
-      />
-      <app-queue-section
-        title="Due today"
-        [items]="d.queues.today.items"
-        [total]="d.queues.today.total"
-        viewAllRoute="/leads/all"
-        [viewAllParams]="{ followup: 'today' }"
-        emptyText="Nothing due today."
-        (assign)="openAssign($event)"
-        (whatsapp)="openWhatsapp($event)"
-      />
-      <app-queue-section
-        title="Won - awaiting finalisation"
-        [items]="d.queues.won_awaiting.items"
-        [total]="d.queues.won_awaiting.total"
-        viewAllRoute="/leads/won"
-        [viewAllParams]="{ won_awaiting: 'true' }"
-        emptyText="No deals waiting on finalisation."
-        (assign)="openAssign($event)"
-        (whatsapp)="openWhatsapp($event)"
-      />
-    </section>
-
-    <aside class="side">
-      <app-team-pipeline-card [stages]="d.pipeline" />
-      <app-team-results-strip [kpis]="d.kpis" [period]="period()" (periodChanged)="setPeriod($event)" />
-      <app-activity-card [rows]="activityRows()" />
-    </aside>
-
-    <app-by-executive-list class="by-exec" [rows]="d.by_executive" />
-  </div>
 } @else {
-  <div class="layout skeleton-layout" aria-hidden="true">
-    <section class="needs">
-      @for (i of [0, 1, 2]; track i) {
-        <div class="card panel">
-          <app-skeleton width="40%" height="16px" />
-          <app-skeleton height="52px" radius="10px" />
-          <app-skeleton height="52px" radius="10px" />
+  <div class="bento" [class.busy]="refreshing()" [attr.aria-busy]="state().status === 'loading'">
+    @if (data(); as d) {
+      <!-- KPI row -->
+      <section class="b-kpis" aria-label="Team figures">
+        <a class="card card-link kpi rise-in" style="--i: 0" routerLink="/leads/all" [queryParams]="{ open: 'true' }">
+          <span class="kpi-label">Open leads</span>
+          <span class="kpi-value num" [appCountUp]="d.kpis.team_open_leads"></span>
+          <span class="kpi-context">
+            {{ d.kpis.team_new_untouched }} new &amp; untouched
+          </span>
+          @if (d.kpis.team_overdue > 0) {
+            <span class="pill overdue"><mat-icon aria-hidden="true">event_busy</mat-icon>{{ d.kpis.team_overdue }} overdue</span>
+          }
+        </a>
+
+        <a class="card card-link kpi rise-in" style="--i: 1" routerLink="/leads/won">
+          <span class="kpi-label">Won {{ periodNoun() }}</span>
+          <span class="kpi-value num" [appCountUp]="d.kpis.team_won_count"></span>
+          <span class="kpi-context">{{ d.kpis.team_won_value | inrCompact }} value</span>
+        </a>
+
+        <a class="card card-link kpi rise-in" style="--i: 2" routerLink="/leads/won">
+          <span class="kpi-label">Conversion</span>
+          <span class="kpi-body">
+            <app-radial-gauge [pct]="d.kpis.team_conversion_pct" tone="teal" [size]="72" label="conversion" />
+            <span class="wl">
+              <span><b class="num">{{ d.kpis.team_won_count }}</b> Won</span>
+              <span><b class="num">{{ d.kpis.team_lost_count }}</b> Lost</span>
+            </span>
+          </span>
+        </a>
+
+        <a class="card card-link kpi rise-in" style="--i: 3" routerLink="/leads/all" [queryParams]="{ assigned_to: 'none' }">
+          <span class="kpi-label">Unassigned</span>
+          <span class="kpi-value num" [appCountUp]="d.kpis.unassigned_leads"></span>
+          @if (d.kpis.unassigned_leads > 0) {
+            <span class="pill overdue"><mat-icon aria-hidden="true">person_off</mat-icon>needs assignment</span>
+          } @else {
+            <span class="kpi-context">Every lead is owned</span>
+          }
+        </a>
+      </section>
+
+      <!-- Needs attention -->
+      <section class="card b-needs rise-in" style="--i: 4" aria-label="Needs attention">
+        <app-queue-section
+          title="Unassigned leads"
+          [items]="d.queues.unassigned.items"
+          [total]="d.queues.unassigned.total"
+          [priority]="d.queues.unassigned.total > 0"
+          viewAllRoute="/leads/all"
+          [viewAllParams]="{ assigned_to: 'none' }"
+          emptyText="No unassigned leads."
+          (assign)="openAssign($event)"
+          (whatsapp)="openWhatsapp($event)"
+        />
+        <app-queue-section
+          title="Overdue follow-ups"
+          [items]="d.queues.overdue.items"
+          [total]="d.queues.overdue.total"
+          viewAllRoute="/leads/overdue"
+          emptyText="No overdue follow-ups. Nice work."
+          (assign)="openAssign($event)"
+          (whatsapp)="openWhatsapp($event)"
+        />
+        <app-queue-section
+          title="Due today"
+          [items]="d.queues.today.items"
+          [total]="d.queues.today.total"
+          viewAllRoute="/leads/all"
+          [viewAllParams]="{ followup: 'today' }"
+          emptyText="Nothing due today."
+          (assign)="openAssign($event)"
+          (whatsapp)="openWhatsapp($event)"
+        />
+        <app-queue-section
+          title="Won - awaiting finalisation"
+          [items]="d.queues.won_awaiting.items"
+          [total]="d.queues.won_awaiting.total"
+          viewAllRoute="/leads/won"
+          [viewAllParams]="{ won_awaiting: 'true' }"
+          emptyText="No deals waiting on finalisation."
+          (assign)="openAssign($event)"
+          (whatsapp)="openWhatsapp($event)"
+        />
+      </section>
+
+      <!-- Team pipeline -->
+      <app-team-pipeline-card class="b-pipeline rise-in" style="--i: 5" [stages]="d.pipeline" />
+
+      <!-- By executive -->
+      <app-by-executive-list class="b-exec rise-in" style="--i: 6" [rows]="d.by_executive" />
+
+      <!-- Recent team activity -->
+      <app-activity-card class="b-activity rise-in" style="--i: 7" [rows]="activityRows()" [now]="now()" />
+    } @else {
+      @for (k of ['b-kpis', 'b-needs', 'b-pipeline', 'b-exec', 'b-activity']; track k) {
+        <div class="card skeleton-card" [class]="k" aria-hidden="true">
+          <app-skeleton width="40%" height="14px" />
+          <app-skeleton width="60%" height="28px" radius="8px" />
+          <app-skeleton height="96px" radius="10px" />
         </div>
       }
-    </section>
-    <aside class="side">
-      @for (i of [0, 1, 2]; track i) {
-        <div class="card panel">
-          <app-skeleton width="40%" height="16px" />
-          <app-skeleton height="80px" radius="10px" />
-        </div>
-      }
-    </aside>
-    <div class="card panel by-exec">
-      <app-skeleton width="30%" height="16px" />
-      <app-skeleton height="52px" radius="10px" />
-      <app-skeleton height="52px" radius="10px" />
-    </div>
+    }
   </div>
 }

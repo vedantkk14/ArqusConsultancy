@@ -4,7 +4,7 @@ import { LeadStatus } from '../../leads/data/lead.models';
 import { Period } from '../dashboard.models';
 
 export type { Period };
-export { PERIODS, PERIOD_LABELS, DEFAULT_PERIOD, toPeriod } from '../dashboard.models';
+export { PERIODS, PERIOD_LABELS, PERIOD_NOUN, DEFAULT_PERIOD, toPeriod } from '../dashboard.models';
 
 /** Manager sees the exec's own proposed value only - never a ledger, payment, project or final amount. */
 export interface QueueLeadItem {

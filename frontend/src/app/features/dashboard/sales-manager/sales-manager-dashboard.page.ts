@@ -4,20 +4,23 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, catchError, combineLatest, interval, map, merge, of, startWith, switchMap } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject, catchError, combineLatest, interval, map, merge, of, startWith, switchMap, tap } from 'rxjs';
 import { AssignDialog, AssignDialogData } from '../../leads/components/dialogs/assign-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../../leads/components/dialogs/whatsapp-dialog';
 import { ErrorState } from '../../../shared/error-state/error-state';
+import { InrCompactPipe } from '../../../shared/money/inr.pipe';
 import { Skeleton } from '../../../shared/skeleton/skeleton';
 import { ActivityCard } from '../components/activity-card';
+import { CountUp } from '../components/count-up';
+import { PeriodSwitcher } from '../components/period-switcher';
+import { RadialGauge } from '../components/radial-gauge';
 import { RecentActivity } from '../dashboard.models';
 import { LayoutService } from '../../../layout/layout.service';
 import { ByExecutiveList } from './components/by-executive-list';
 import { QueueSection } from './components/queue-section';
 import { TeamPipelineCard } from './components/team-pipeline-card';
-import { TeamResultsStrip } from './components/team-results-strip';
-import { Period, QueueLeadItem, SalesManagerDashboard, toPeriod } from './sales-manager-dashboard.models';
+import { PERIOD_NOUN, Period, QueueLeadItem, SalesManagerDashboard, toPeriod } from './sales-manager-dashboard.models';
 import { SalesManagerDashboardService } from './sales-manager-dashboard.service';
 
 type LoadState =
@@ -45,17 +48,21 @@ const ACTION_VERB: Record<string, string> = {
   imports: [
     ActivityCard,
     ByExecutiveList,
+    CountUp,
     ErrorState,
+    InrCompactPipe,
     MatIconModule,
     MatTooltipModule,
+    PeriodSwitcher,
     QueueSection,
+    RadialGauge,
+    RouterLink,
     Skeleton,
     TeamPipelineCard,
-    TeamResultsStrip,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sales-manager-dashboard.page.html',
-  styleUrl: './sales-manager-dashboard.page.scss',
+  styleUrls: ['./sales-manager-dashboard.page.scss', '../kpi-cards.scss'],
 })
 export class SalesManagerDashboardPage {
   private readonly route = inject(ActivatedRoute);
@@ -70,11 +77,24 @@ export class SalesManagerDashboardPage {
     this.route.queryParamMap.pipe(map((p) => toPeriod(p.get('period')))),
     { initialValue: toPeriod(this.route.snapshot.queryParamMap.get('period')) },
   );
+  protected readonly periodNoun = computed(() => PERIOD_NOUN[this.period()]);
 
   private readonly reload$ = new Subject<void>();
   protected readonly state = signal<LoadState>({ status: 'loading', data: null });
   protected readonly data = computed(() => this.state().data);
   protected readonly refreshing = computed(() => this.state().status === 'loading' && !!this.data());
+
+  /** "Updated N min ago": loaded-at time plus a clock that ticks every 30s (same pattern as the admin dashboard). */
+  private readonly loadedAt = signal<Date | null>(null);
+  protected readonly now = toSignal(interval(30_000).pipe(map(() => new Date())), { initialValue: new Date() });
+  protected readonly updatedText = computed(() => {
+    const at = this.loadedAt();
+    if (!at) {
+      return 'Loading';
+    }
+    const minutes = Math.floor((this.now().getTime() - at.getTime()) / 60_000);
+    return minutes < 1 ? 'Updated just now' : `Updated ${minutes} min ago`;
+  });
 
   protected readonly today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -104,6 +124,7 @@ export class SalesManagerDashboardPage {
         switchMap(([period]) =>
           this.service.load(period).pipe(
             map((data): LoadState => ({ status: 'ready', data })),
+            tap(() => this.loadedAt.set(new Date())),
             catchError(() => of<LoadState>({ status: 'error', data: null })),
             startWith<LoadState>({ status: 'loading', data: this.state().data }),
           ),

@@ -34,7 +34,7 @@ describe('ByExecutiveList', () => {
   it('highlights an exec past the overdue threshold', () => {
     const rows = [ROW({ id: 1, name: 'Busy', overdue: 4 }), ROW({ id: 2, name: 'Fine', overdue: 2 })];
     const el = render(rows).nativeElement as HTMLElement;
-    const hot = el.querySelector('.row.hot');
+    const hot = el.querySelector('li.hot');
     expect(hot?.textContent).toContain('Busy');
     expect(hot?.textContent).not.toContain('Fine');
   });

@@ -160,37 +160,6 @@
 
 // ---- Login card details (bento-era restyle) ----------------------------------------------------------
 .auth {
-  // Fields fade in one after another (60ms stagger); off with reduced motion via the global rule.
-  form > * {
-    animation: rise-in 360ms var(--ease-out) both;
-  }
-
-  @for $i from 1 through 8 {
-    form > :nth-child(#{$i}) {
-      animation-delay: #{120 + $i * 60}ms;
-    }
-  }
-
-  .pill {
-    display: flex;
-    width: fit-content;
-    align-items: center;
-    gap: 4px;
-    margin: 0 auto var(--space-2);
-    padding: 3px 10px 3px 8px;
-    border-radius: var(--radius-pill);
-    background: var(--tint-cyan);
-    color: var(--tint-cyan-ink);
-    font-size: var(--text-xs);
-    font-weight: 600;
-
-    mat-icon {
-      width: 14px;
-      height: 14px;
-      font-size: 14px;
-    }
-  }
-
   // Filled inputs with a leading icon: white + cyan ring on focus, icon tints too.
   .control {
     position: relative;
@@ -296,31 +265,6 @@
       margin: 0;
       color: var(--ink-3);
       font-size: var(--text-sm);
-    }
-  }
-
-  .trust {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-2) var(--space-4);
-    margin: var(--space-3) 0 0;
-    padding: 0;
-    list-style: none;
-    color: var(--ink-3);
-    font-size: var(--text-xs);
-
-    li {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    mat-icon {
-      width: 14px;
-      height: 14px;
-      font-size: 14px;
-      color: var(--brand-deep);
     }
   }
 

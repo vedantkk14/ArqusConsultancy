@@ -17,20 +17,9 @@ import { AuthBrand } from './auth-brand';
     <main class="auth">
       <app-auth-brand class="brand" />
       <section class="side">
-        <svg class="watermark" viewBox="0 0 520 300" fill="none" aria-hidden="true" focusable="false">
-          <ellipse cx="260" cy="120" rx="240" ry="92" />
-          <ellipse cx="260" cy="120" rx="150" ry="52" />
-          <path d="M40 190 Q260 280 480 190 M70 232 Q260 310 450 232" />
-        </svg>
         <div class="card-wrap rise-in">
           <div class="card-x">
-            <div class="band">
-              <svg class="arcs" viewBox="0 0 420 112" fill="none" aria-hidden="true" focusable="false">
-                <ellipse cx="210" cy="118" rx="240" ry="70" />
-                <ellipse cx="210" cy="118" rx="170" ry="46" />
-              </svg>
-              <img class="logo" src="brand/arqus-logo.png" alt="ARQUS Sports Consultancy" width="124" height="73" />
-            </div>
+            <img class="logo" src="brand/arqus-logo.png" alt="ARQUS Sports Consultancy" width="132" height="78" />
             <div class="body">
               <ng-content />
             </div>

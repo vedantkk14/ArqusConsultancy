@@ -1,5 +1,4 @@
 <app-auth-layout>
-  <p class="pill"><mat-icon aria-hidden="true">lock</mat-icon>Secure sign-in</p>
   <h1>Sign in</h1>
   <p class="lede">Welcome back. Enter your details to continue.</p>
 
@@ -17,8 +16,7 @@
 
     <div class="field">
       <label for="identifier">Email or username</label>
-      <div class="control has-icon">
-        <mat-icon class="lead" aria-hidden="true">person</mat-icon>
+      <div class="control">
         <input
           #identifier
           id="identifier"
@@ -42,7 +40,6 @@
     <app-password-field
       inputId="password"
       label="Password"
-      icon="lock"
       autocomplete="current-password"
       enterKeyHint="go"
       errorId="password-error"
@@ -76,10 +73,6 @@
 
   <div class="help">
     <p>Need access? Ask your administrator to create your account.</p>
-    <ul class="trust">
-      <li><mat-icon aria-hidden="true">admin_panel_settings</mat-icon>Role-based access</li>
-      <li><mat-icon aria-hidden="true">verified_user</mat-icon>Protected sessions</li>
-    </ul>
   </div>
 
   @if (showDemoLogins) {

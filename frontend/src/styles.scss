@@ -111,7 +111,11 @@ html {
   --mat-menu-item-label-text-color: var(--ink);
   --mat-menu-item-icon-color: var(--ink-3);
   --mat-menu-item-icon-size: 18px;
-  --mat-menu-item-hover-state-layer-color: var(--ink);
+  // Light hover/focus fill with ink text (a dark layer hid the labels).
+  --mat-menu-item-hover-state-layer-color: var(--subtle);
+  --mat-menu-item-focus-state-layer-color: var(--subtle);
+  --mat-menu-item-hover-state-layer-opacity: 1;
+  --mat-menu-item-focus-state-layer-opacity: 1;
   --mat-tooltip-container-color: var(--ink);
   --mat-tooltip-supporting-text-color: var(--on-ink);
   --mat-tooltip-container-shape: 6px;
@@ -332,6 +336,13 @@ html :focus-visible:not(.mat-mdc-input-element):not(.mat-mdc-select) {
 
 .mat-mdc-menu-item {
   min-height: 40px !important;
+}
+
+// Keyboard focus: a ring inside the row so the panel never clips it (beats the app-wide focus rule).
+html .mat-mdc-menu-panel .mat-mdc-menu-item:focus-visible {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: -2px;
+  box-shadow: none;
 }
 
 .mat-bottom-sheet-container {

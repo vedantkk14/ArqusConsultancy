@@ -1,4 +1,4 @@
-.topbar {
+﻿.topbar {
   position: sticky;
   top: 0;
   z-index: 2;
@@ -24,7 +24,7 @@
   margin-right: var(--space-1);
 }
 
-// Left: who is signed in (greeting over role). Right: the page, then search, bell and account.
+// Left: who is signed in (greeting over role). Right: the page, then the account menu.
 .who {
   display: flex;
   min-width: 0;
@@ -78,50 +78,6 @@
   flex: 1;
 }
 
-.search {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: 240px;
-  height: 36px;
-  margin-right: var(--space-2);
-  padding: 0 6px 0 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--ink-3);
-  font: inherit;
-  font-size: var(--text-base);
-  cursor: pointer;
-  transition: border-color var(--dur-fast) ease;
-
-  span {
-    flex: 1;
-    text-align: left;
-  }
-
-  mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-  }
-
-  kbd {
-    padding: 1px 6px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--subtle);
-    color: var(--ink-3);
-    font-family: inherit;
-    font-size: var(--text-xs);
-  }
-
-  &:hover {
-    border-color: var(--line-strong);
-  }
-}
-
-.icon-btn,
 .avatar-btn {
   position: relative;
   display: grid;
@@ -150,17 +106,6 @@
 
 .avatar-btn {
   border-radius: 50%;
-}
-
-.dot {
-  position: absolute;
-  top: 9px;
-  right: 10px;
-  width: 8px;
-  height: 8px;
-  border: 2px solid var(--surface);
-  border-radius: 50%;
-  background: var(--negative);
 }
 
 .menu-user {
@@ -207,3 +152,4 @@
     border-right: 1px solid var(--line);
   }
 }
+

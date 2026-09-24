@@ -121,6 +121,7 @@ payment, project or total keys.
 | ✅ | `POST /leads/{id}/whatsapp` | A, SM, SE | `{template_id}` -> `{text, url}` (wa.me); writes MessageLog (OPENED) + WHATSAPP interaction |
 | ✅ | `POST /leads/{id}/finalize` | A | `{amount, note?}`; 409 `accounts_not_ready` `{missing:[...]}` until Dev C ships the contract below |
 | ✅ | `GET /leads/export` | A, SM | CSV of the filtered list, max 5000 rows, formula cells prefixed with `'` |
+| ✅ | `GET /dashboard/sales-manager?period=month\|quarter\|year\|all` | SM only | Team dashboard - see below |
 
 **List filters (contract with the dashboards' "View all" links):** `status` (comma list), `assigned_to`
 (id or `none`), `source` (comma list), `q` (name, email, phone digits), `followup=overdue|today|upcoming|none`,
@@ -156,6 +157,49 @@ OTHER). The first CALL / WHATSAPP / EMAIL / MEETING on a NEW lead moves it to CO
 Once these exist, finalize, `won_awaiting`, `finance` and the `has_ledger` delete guard work with no leads change.
 Notifications use `core.services.notify(user, type, payload)` with types `lead_assigned`,
 `lead_reassigned_away`, `lead_won`.
+
+### Sales Manager dashboard
+
+`GET /dashboard/sales-manager?period=month|quarter|year|all` (registered in `apps/leads/urls.py`; default
+`month`). SALES_MANAGER only -
+401 anonymous, 403 for ADMIN, SALES_EXEC and PROJECT_MANAGER, 400 for a bad `period`. Team-scoped: leads
+owned by any active SALES_EXEC. Manager sees each lead's `proposed_amount` only, exactly like the rest of
+the Leads API - never a ledger, payment, project or final/total amount, not even as `null`. Definitions
+(open, overdue, due today, won-awaiting, business day) come from `apps/leads/selectors.py`, identical to
+the rest of the Leads API. "Lost within the period" is `status=LOST` + `updated_at` (see
+docs/OPEN_DECISIONS.md #15 - `Lead` has no `lost_at`).
+
+```json
+{
+  "as_of": "2026-09-24T19:03:34.662Z",
+  "business_date": "2026-09-25",
+  "period": {"key": "month", "from": "2026-09-01", "to": "2026-09-24"},
+  "kpis": {
+    "team_open_leads": 27, "team_new_untouched": 3, "team_followups_today": 0, "team_overdue": 14,
+    "team_won_count": 9, "team_lost_count": 5, "team_conversion_pct": "64.3", "team_won_value": "2226000.00",
+    "unassigned_leads": 5
+  },
+  "queues": {
+    "overdue": {"total": 14, "items": [{"id": 4, "name": "Deccan Sports Academy", "phone": "+919800000003",
+      "status": "CONTACTED", "source_label": "Facebook", "next_followup_at": "2026-09-18T12:13:20Z",
+      "days_overdue": 7, "proposed_amount": "225000.00", "last_note": "Discussed scope and timelines.",
+      "assigned_to": {"id": 3, "name": "Eva Exec"}}]},
+    "today": {"total": 0, "items": []},
+    "unassigned": {"total": 5, "items": [{"...": "same shape, no `assigned_to` key"}]},
+    "won_awaiting": {"total": 0, "items": []}
+  },
+  "by_executive": [{"id": 3, "name": "Eva Exec", "open_leads": 8, "overdue": 4, "won_count": 4,
+    "won_value": "1250000.00", "conversion_pct": "66.7", "load_score": 16}],
+  "pipeline": [{"status": "NEW", "count": 10}, {"status": "CONTACTED", "count": 10},
+               {"status": "INTERESTED", "count": 6}, {"status": "WON", "count": 7}, {"status": "LOST", "count": 5}],
+  "recent_activity": [{"at": "2026-09-24T14:13:20Z", "exec_name": "Rohan Mehta", "lead_id": 35,
+    "lead_name": "Ratnagiri Rowing Club", "type": "MEETING", "text": "Shared the brochure and past projects."}]
+}
+```
+
+`by_executive` includes every active SALES_EXEC, even one with zero leads (all zeros, never omitted); an
+exec whose `overdue` exceeds 3 gets an amber highlight in the UI ("overdue > 3", not a performance verdict).
+`load_score = open_leads + overdue*2`, sort key only, not shown as a formula.
 
 ## Accounts (Dev C)
 

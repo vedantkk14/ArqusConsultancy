@@ -41,10 +41,29 @@
   white-space: nowrap;
 }
 
-.subtitle {
-  overflow: hidden;
+.meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
   color: var(--ink-3);
   font-size: var(--text-sm);
+}
+
+.hi {
+  white-space: nowrap;
+
+  strong {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+}
+
+.subtitle {
+  display: none;
+  overflow: hidden;
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -140,20 +159,34 @@
 
 .menu-user {
   display: flex;
+  min-width: 220px;
   flex-direction: column;
-  padding: 8px 16px 10px;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 16px 12px;
   margin-bottom: 4px;
   border-bottom: 1px solid var(--line);
 
   strong {
     color: var(--ink);
-    font-size: var(--text-sm);
+    font-size: var(--text-md);
     font-weight: 600;
   }
 
-  span {
+  .greet,
+  .mail {
     color: var(--ink-3);
     font-size: var(--text-xs);
+  }
+
+  app-role-badge {
+    margin-top: 6px;
+  }
+}
+
+@media (min-width: 640px) {
+  .subtitle {
+    display: inline;
   }
 }
 

@@ -1,6 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
+import { ROLE_LABELS } from '../../core/models';
+import { firstName, greeting } from '../../core/models/user-display';
 import { CommandPalette } from '../command-palette/command-palette';
 import { LayoutService } from '../layout.service';
 import { Sidebar } from '../sidebar/sidebar';
@@ -27,6 +31,35 @@ import { Topbar } from '../topbar/topbar';
 export class Shell {
   protected readonly layout = inject(LayoutService);
   private readonly dialog = inject(MatDialog);
+
+  constructor() {
+    this.welcomeOnce();
+  }
+
+  /** "Good afternoon, Alice." once per sign-in (not on every refresh); signing out resets it. */
+  private welcomeOnce(): void {
+    const auth = inject(AuthService);
+    const user = auth.user();
+    if (!user) {
+      return;
+    }
+    const key = `crm.welcomed.${user.id}`;
+    try {
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1');
+        inject(MatSnackBar).open(`${greeting()}, ${firstName(user.name)}. You're signed in as ${ROLE_LABELS[user.role]}.`, undefined, {
+          duration: 4000,
+        });
+      }
+      inject(DestroyRef).onDestroy(() => {
+        if (!auth.user()) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch {
+      /* storage unavailable: skip the welcome */
+    }
+  }
 
   onKeydown(event: KeyboardEvent): void {
     if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) {

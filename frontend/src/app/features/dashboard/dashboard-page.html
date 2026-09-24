@@ -1,7 +1,7 @@
 @if (!isAdmin()) {
   <app-empty-state
     icon="dashboard"
-    title="Your dashboard is on the way"
+    [title]="'Hi ' + firstName() + ', your dashboard is on the way'"
     message="A dashboard for your role is being built. Use the menu to get to your pages meanwhile."
   />
 } @else {

@@ -4,9 +4,15 @@
   }
   <div class="titles">
     <h1 class="page-title">{{ pageTitle() }}</h1>
-    @if (layout.subtitle()) {
-      <span class="subtitle">{{ layout.subtitle() }}</span>
-    }
+    <div class="meta">
+      @if (auth.user(); as user) {
+        <span class="hi">Hi, <strong>{{ firstName(user.name) }}</strong></span>
+        <app-role-badge [role]="user.role" />
+      }
+      @if (layout.subtitle()) {
+        <span class="subtitle">{{ layout.subtitle() }}</span>
+      }
+    </div>
   </div>
   <span class="spacer"></span>
 
@@ -37,8 +43,10 @@
     </button>
     <mat-menu #accountMenu="matMenu" xPosition="before">
       <div class="menu-user">
+        <span class="greet">{{ greeting() }}</span>
         <strong>{{ user.name }}</strong>
-        <span>{{ roleLabels[user.role] }}</span>
+        <span class="mail">{{ user.email }}</span>
+        <app-role-badge [role]="user.role" />
       </div>
       <a mat-menu-item routerLink="/settings/profile">
         <mat-icon>person</mat-icon>

@@ -144,3 +144,30 @@ describe('Shell and sidebar', () => {
     expect(filterPages(pagesForRole(Role.Admin), 'reports').length).toBe(4); // matches the group name
   });
 });
+
+describe('Personal header', () => {
+  afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => (n.innerHTML = '')));
+
+  it('greets the user by first name and shows their role on every page', () => {
+    const { el } = render();
+    const meta = el.querySelector('.topbar .meta')!.textContent!.replace(/\s+/g, ' ');
+    expect(meta).toContain('Hi, Alice');
+    expect(meta).toContain('Admin');
+    expect(el.querySelector('.topbar app-role-badge')).not.toBeNull();
+    expect(el.querySelector('app-sidebar-user app-role-badge')).not.toBeNull();
+  });
+
+  it('welcomes the user once per sign-in', () => {
+    sessionStorage.clear();
+    render();
+    const toast = () => document.querySelector('.mat-mdc-snack-bar-container')?.textContent?.replace(/\s+/g, ' ') ?? '';
+    expect(toast()).toMatch(/Good (morning|afternoon|evening), Alice\. You're signed in as Admin\./);
+    expect(sessionStorage.getItem('crm.welcomed.1')).toBe('1');
+  });
+
+  it('does not repeat the welcome on a refresh in the same session', () => {
+    sessionStorage.setItem('crm.welcomed.1', '1');
+    render();
+    expect(document.querySelector('.mat-mdc-snack-bar-container')).toBeNull();
+  });
+});

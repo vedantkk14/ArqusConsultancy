@@ -6,12 +6,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ROLE_LABELS } from '../../core/models';
+import { RoleBadge } from '../../shared/role-badge/role-badge';
 import { UserAvatar } from '../../shared/user-avatar/user-avatar';
 
 /** Bottom of the sidebar: avatar, name, role and log-out. In the rail, the avatar opens an account menu. */
 @Component({
   selector: 'app-sidebar-user',
-  imports: [CdkMenu, CdkMenuItem, CdkMenuTrigger, MatIconModule, MatTooltipModule, RouterLink, UserAvatar],
+  imports: [CdkMenu, CdkMenuItem, CdkMenuTrigger, MatIconModule, MatTooltipModule, RoleBadge, RouterLink, UserAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.rail]': 'rail()' },
   template: `
@@ -45,7 +46,7 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
         <app-user-avatar [name]="user.name" [size]="32" />
         <div class="who">
           <strong>{{ user.name }}</strong>
-          <span>{{ roleLabels[user.role] }}</span>
+          <app-role-badge [role]="user.role" />
         </div>
         <button type="button" class="icon-btn" aria-label="Log out" matTooltip="Log out" (click)="auth.logout()">
           <mat-icon aria-hidden="true">logout</mat-icon>
@@ -88,9 +89,8 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .who span {
-      color: var(--ink-3);
-      font-size: var(--text-xs);
+    .who app-role-badge {
+      margin-top: 2px;
     }
     .icon-btn,
     .avatar-btn {

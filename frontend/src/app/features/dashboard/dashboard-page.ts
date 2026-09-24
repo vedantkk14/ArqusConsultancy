@@ -9,6 +9,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, catchError, combineLatest, interval, map, of, startWith, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { Role } from '../../core/models';
+import { firstName } from '../../core/models/user-display';
 import { LayoutService } from '../../layout/layout.service';
 import { DataColumn, DataList, DataRow } from '../../shared/data-list/data-list';
 import { EmptyState } from '../../shared/empty-state/empty-state';
@@ -99,6 +100,7 @@ export class DashboardPage {
 
   /** The admin endpoint is admin-only; other roles get their own dashboards later. */
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  protected readonly firstName = computed(() => firstName(this.auth.user()?.name));
 
   /** The period lives in the URL (?period=quarter) so it survives reloads and can be shared. */
   protected readonly period = toSignal(this.route.queryParamMap.pipe(map((p) => toPeriod(p.get('period')))), {

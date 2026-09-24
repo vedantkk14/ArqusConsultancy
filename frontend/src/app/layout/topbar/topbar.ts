@@ -6,7 +6,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-import { ROLE_LABELS } from '../../core/models';
+import { firstName, greeting } from '../../core/models/user-display';
+import { RoleBadge } from '../../shared/role-badge/role-badge';
 import { UserAvatar } from '../../shared/user-avatar/user-avatar';
 import { LayoutService } from '../layout.service';
 
@@ -20,7 +21,7 @@ export const MOD_KEY_LABEL =
 
 @Component({
   selector: 'app-topbar',
-  imports: [MatIconModule, MatMenuModule, MatTooltipModule, RouterLink, UserAvatar],
+  imports: [MatIconModule, MatMenuModule, MatTooltipModule, RoleBadge, RouterLink, UserAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',
@@ -30,7 +31,8 @@ export class Topbar {
 
   protected readonly auth = inject(AuthService);
   protected readonly layout = inject(LayoutService);
-  protected readonly roleLabels = ROLE_LABELS;
+  protected readonly firstName = firstName;
+  protected readonly greeting = greeting;
   protected readonly modKey = MOD_KEY_LABEL;
 
   /** Current page name, taken from the active route's `title`. */

@@ -17,3 +17,5 @@ and record the final answer here.
 | 10 | **WhatsApp approach** | Phase 1: `wa.me` click-to-chat links with a pre-filled template message, and a manual Message Log. Phase 2 (later): WhatsApp Business (Meta Cloud) API for automated sends. |
 | 11 | **Dashboard "Year" and "Quarter"** | Indian financial year (1 April to 31 March); quarters Apr-Jun, Jul-Sep, Oct-Dec, Jan-Mar. Change `FINANCIAL_YEAR_START_MONTH` in `apps/reports/services.py` to 1 for calendar years. |
 | 12 | **Dashboard for non-admin roles** | Admin-only for now (the KPIs include money). Sales Manager and others see a "coming soon" note on /dashboard until role dashboards are specified. |
+| 13 | **Can a Sales Exec create leads?** (`EXEC_CAN_CREATE_LEADS` in `apps/leads/services.py`) | **Undecided.** Default `False`: managers add and assign leads; execs work their own. |
+| 14 | **Who sees the finalized total on a lead?** (`FINAL_AMOUNT_VISIBLE_TO`) | **Undecided.** Default `{"ADMIN", "SALES_MANAGER"}`; an Exec never sees it. |

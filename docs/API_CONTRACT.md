@@ -93,14 +93,55 @@ A change or reset clears `must_change_password` and revokes every refresh token 
 
 ## Leads (Dev A)
 
+All under `/api/v1/leads`. Roles: A = Admin, SM = Sales Manager, SE = Sales Exec (own leads only; others
+404). PM gets 403 everywhere. Money is a decimal string. Exec responses never contain `finance`, ledger,
+payment, project or total keys.
+
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| 🔲 | `GET /leads` | A, SM, SE | Filters: status, owner, overdue. SE sees own leads |
-| 🔲 | `POST /leads` | A, SM, SE | |
-| 🔲 | `GET/PATCH /leads/{id}` | A, SM, SE | |
-| 🔲 | `POST /leads/{id}/follow-ups` | A, SM, SE | |
-| 🔲 | `POST /leads/{id}/mark-won` | A, SM, SE | Calls `accounts.services.create_ledger(lead)` |
-| 🔲 | `POST /leads/{id}/mark-lost` | A, SM, SE | Requires a reason |
+| ✅ | `GET /leads` | A, SM, SE | Paginated (20, max 100). Filters below |
+| ✅ | `GET /leads/summary` | A, SM, SE | `by_status[{status,count,value}]`, `overdue`, `today`, `untouched`, `no_followup`, `won_awaiting`; honours `q`, `assigned_to`, `source`, `created_*` |
+| ✅ | `POST /leads` | A, SM | 409 `duplicate_lead` `{existing:{id,name,status,assigned_to_name}}` unless `force=true` |
+| ✅ | `GET /leads/check-duplicate?phone=&exclude=` | A, SM | `{existing: {...} | null}` |
+| ✅ | `GET /leads/{id}` | A, SM, SE | Adds `allowed_transitions`, `interactions_count`; `finance {finalized,total_amount,finalized_at}` for A, SM |
+| ✅ | `PATCH /leads/{id}` | A, SM (contact fields), SE (email, requirements, next_followup_at, proposed_amount) | Other keys -> 400. Amount change logs AMOUNT_CHANGE |
+| ✅ | `DELETE /leads/{id}` | A | Soft delete; 409 `has_ledger` |
+| ✅ | `POST /leads/{id}/status` | A, SM, SE | `{status, note?, lost_reason?, lost_note?, proposed_amount?, next_followup_at?}` |
+| ✅ | `GET/POST /leads/{id}/interactions` | A, SM, SE | Append-only. POST `{type, notes, next_followup_at?, new_status?, lost_reason?, proposed_amount?}` |
+| ✅ | `POST /leads/{id}/assign`, `POST /leads/bulk-assign` | A, SM | `{assigned_to}` / `{ids (max 100), assigned_to}`, atomic, active SALES_EXEC only |
+| ✅ | `GET /leads/assignees` | A, SM | `[{id, name, open_count}]` |
+| ✅ | `GET /leads/whatsapp-templates` | A, SM, SE | Active templates |
+| ✅ | `GET /leads/{id}/whatsapp?template_id=` | A, SM, SE | Preview `{text, url}`; logs nothing |
+| ✅ | `POST /leads/{id}/whatsapp` | A, SM, SE | `{template_id}` -> `{text, url}` (wa.me); writes MessageLog (OPENED) + WHATSAPP interaction |
+| ✅ | `POST /leads/{id}/finalize` | A | `{amount, note?}`; 409 `accounts_not_ready` `{missing:[...]}` until Dev C ships the contract below |
+| ✅ | `GET /leads/export` | A, SM | CSV of the filtered list, max 5000 rows, formula cells prefixed with `'` |
+
+**List filters (contract with the dashboards' "View all" links):** `status` (comma list), `assigned_to`
+(id or `none`), `source` (comma list), `q` (name, email, phone digits), `followup=overdue|today|upcoming|none`,
+`open=true`, `untouched=true` (NEW with no interactions), `won_awaiting=true`, `created_from`, `created_to`
+(YYYY-MM-DD, IST), `ordering` = `created_at`, `-created_at` (default), `name`, `next_followup_at`, `-days_overdue`,
+`-proposed_amount`, `-last_activity_at`, `won_at`. Nulls sort last. Definitions (IST, `BUSINESS_TIME_ZONE`):
+open = not WON/LOST; overdue = open and follow-up < now; today = open and follow-up between now and the end
+of the business day (never overlaps overdue). Dashboards should import these from `apps/leads/selectors.py`.
+
+**Status machine:** NEW -> CONTACTED | LOST; CONTACTED -> INTERESTED | WON | LOST; INTERESTED -> CONTACTED |
+WON | LOST; WON -> none; LOST -> CONTACTED (A, SM only). WON needs `proposed_amount > 0`, sets `won_at`, clears
+the follow-up, calls `create_ledger` once (repeat requests are no-ops) and notifies every active Admin
+(`lead_won`). LOST needs `lost_reason` (PRICE, COMPETITOR, NO_RESPONSE, NOT_INTERESTED, REQUIREMENT_CHANGED,
+OTHER). The first CALL / WHATSAPP / EMAIL / MEETING on a NEW lead moves it to CONTACTED; NOTE never does.
+
+**Error codes:** `duplicate_lead` (409), `invalid_transition` (400, `{allowed, from, to}`), `followup_in_past`
+(400, 5-minute tolerance), `followup_on_closed` (400), `accounts_not_ready` (409), `has_ledger` (409),
+`not_won` (400), `phone_unusable` (400).
+
+**Leads -> Accounts contract (Dev C must add):**
+1. `accounts.Ledger` with `lead` (one-to-one to `leads.Lead`), `total_amount` Decimal(12,2) and a
+   `finalized_at` DateTimeField (the finalization marker, null until finalized).
+2. `accounts.services.create_ledger(lead)`: exists as a stub; make it create the Ledger idempotently.
+3. `accounts.services.finalize_ledger(lead, amount, by)`: sets `total_amount`, `finalized_at`, audit log.
+Once these exist, finalize, `won_awaiting`, `finance` and the `has_ledger` delete guard work with no leads change.
+Notifications use `core.services.notify(user, type, payload)` with types `lead_assigned`,
+`lead_reassigned_away`, `lead_won`.
 
 ## Accounts (Dev C)
 

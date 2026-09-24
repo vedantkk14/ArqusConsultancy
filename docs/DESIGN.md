@@ -143,6 +143,35 @@ Nothing else moves.
 - **New tokens:** `--surface-2`, `--line-cyan`, `--grad-accent` (login card), and the graphics-only `--data-cyan / teal / ink / amber / orange / rose / slate` for chart marks. They are never used for text, so they are not in the text contrast gate.
 - **Charts:** hand-built SVG, no library. Money shown on screen always comes from API strings; `Number()` is used only for geometry. Every chart has a text equivalent (a labelled list, figures beside it, or a hidden table), so colour never carries meaning alone.
 
+## Leads
+
+- **Status tints** (always with the word, never colour alone): New = slate, Contacted = cyan, Interested = amber, Won = teal, Lost = rose; `--tint-*` fill with `--tint-*-ink` text. Board column dots use the matching `--data-*` colour.
+- **Follow-up pill:** overdue = rose with "3d overdue", today = amber with the time, later = quiet grey, none = muted text. Times are shown in IST.
+- **Panels** reuse the dashboard's `app-panel-head` (title, muted subtitle, right-side control); cards use `.card`, `.rise-in`, skeletons shaped like the real rows and cards.
+- **Lead header card:** a soft radial glow tinted by the status; avatars get a deterministic token tint from the name.
+- **Phones:** tables become cards with 44px+ Call / WhatsApp buttons; filters move into a bottom sheet; the detail page has a sticky Call | WhatsApp | Log bar.
+
+Contrast of the pairs the Leads screens add (all at least 4.5:1):
+
+| Foreground | Background | Ratio | Use | Result |
+| --- | --- | --- | --- | --- |
+| `--tint-slate-ink` | `--tint-slate` | 8.91:1 | New status chip | pass |
+| `--tint-cyan-ink` | `--tint-cyan` | 6.50:1 | Contacted status chip, top leaderboard | pass |
+| `--tint-amber-ink` | `--tint-amber` | 6.77:1 | Interested chip, due-today pill, duplicate notice | pass |
+| `--tint-teal-ink` | `--tint-teal` | 6.49:1 | Won chip, WhatsApp preview | pass |
+| `--tint-rose-ink` | `--tint-rose` | 6.22:1 | Lost chip, overdue pill | pass |
+| `--tint-amber-ink` | `--surface` | 7.63:1 | Follow-up nudge | pass |
+| `--tint-rose-ink` | `--surface` | 7.36:1 | Lost reason, days overdue | pass |
+| `--ink-2` | `--subtle` | 9.16:1 | Upcoming follow-up pill, chip counts | pass |
+| `--ink-3` | `--subtle` | 4.51:1 | Table header | pass |
+| `--ink-2` | `--surface-2` | 9.40:1 | Row hover text | pass |
+| `--ink` | `--brand-tint` | 17.69:1 | Selected row / option | pass |
+| `--on-ink` | `--ink` | 19.47:1 | Pressed filter chip, bulk bar | pass |
+| `--brand-deep` | `--surface` | 5.68:1 | Links (Reassign, Edit, Open lead) | pass |
+| `--negative` | `--surface` | 6.57:1 | Field errors | pass |
+| `--ink-3` | `--surface-2` | 4.64:1 | Muted cells on row hover | pass |
+| `--ink-3` | `--brand-tint` | 4.52:1 | Muted cells on a selected row | pass |
+
 ## Logo
 
 `frontend/public/brand/`: `arqus-logo.png` (expanded sidebar, login), `arqus-emblem.png` (rail, mobile top bar),

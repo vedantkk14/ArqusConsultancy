@@ -1,0 +1,128 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.insight {
+  margin: 0 0 2px;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+}
+
+.count {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.head-a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-2);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+
+    mat-icon {
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+    }
+  }
+
+  [aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--on-ink);
+    font-weight: 600;
+  }
+}
+
+.bulk {
+  position: sticky;
+  top: calc(var(--topbar-h, 64px) + 8px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--radius-control);
+  background: var(--ink);
+  box-shadow: var(--shadow-3);
+  color: var(--on-ink);
+  animation: rise 200ms var(--ease-out) both;
+
+  span {
+    flex: 1;
+  }
+
+  .mat-mdc-button:not(:disabled) {
+    color: var(--on-ink);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.list {
+  padding: var(--space-2);
+  transition: opacity var(--dur-fast);
+
+  &.busy {
+    opacity: 0.55;
+  }
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  .list {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .head-a {
+    width: 100%;
+
+    > * {
+      flex: 1;
+    }
+  }
+}

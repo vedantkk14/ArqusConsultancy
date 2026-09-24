@@ -344,17 +344,23 @@ def render_template(template: WhatsAppTemplate, lead: Lead, by) -> str:
     )
 
 
-@transaction.atomic
-def whatsapp(lead: Lead, template: WhatsAppTemplate, by) -> dict:
+def whatsapp_preview(lead: Lead, template: WhatsAppTemplate, by) -> dict:
+    """Render only; nothing is logged."""
     _require_own_or_manager(lead, by)
     digits = phone_digits(lead.phone)
     if not 8 <= len(digits) <= 15:
         raise PhoneUnusable()
     text = render_template(template, lead, by)
-    url = integrations.whatsapp_provider.open_url(digits, text)
+    return {"text": text, "url": integrations.whatsapp_provider.open_url(digits, text)}
+
+
+@transaction.atomic
+def whatsapp(lead: Lead, template: WhatsAppTemplate, by) -> dict:
+    result = whatsapp_preview(lead, template, by)
+    text = result["text"]
     MessageLog.objects.create(lead=lead, template=template, rendered_text=text, created_by=by)
     log_interaction(lead, by, type_=InteractionType.WHATSAPP, notes=f"Sent “{template.name}”")
-    return {"text": text, "url": url}
+    return result
 
 
 # ---- Admin ----------

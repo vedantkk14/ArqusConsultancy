@@ -86,7 +86,9 @@ class LeadViewSet(viewsets.GenericViewSet):
         )
         qs = apply_ordering(qs, request.query_params.get("ordering"))
         page = self.paginate_queryset(qs)
-        return self.get_paginated_response(LeadListSerializer(page, many=True).data)
+        return self.get_paginated_response(
+            LeadListSerializer(page, many=True, context={"request": request}).data
+        )
 
     def create(self, request):
         if not services.can_create(request.user):
@@ -251,14 +253,18 @@ class LeadViewSet(viewsets.GenericViewSet):
         services.assign(lead, serializer.validated_data["assigned_to"], request.user)
         return Response(self._detail(lead))
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["get", "post"])
     def whatsapp(self, request, pk=None):
+        """GET ?template_id= previews the message; POST logs it and returns the wa.me link."""
         lead = self.get_object()
-        serializer = WhatsAppSerializer(data=request.data)
+        source = request.query_params if request.method == "GET" else request.data
+        serializer = WhatsAppSerializer(data=source)
         serializer.is_valid(raise_exception=True)
         template = get_object_or_404(
             WhatsAppTemplate, pk=serializer.validated_data["template_id"], is_active=True
         )
+        if request.method == "GET":
+            return Response(services.whatsapp_preview(lead, template, request.user))
         return Response(services.whatsapp(lead, template, request.user))
 
     @action(detail=True, methods=["post"])

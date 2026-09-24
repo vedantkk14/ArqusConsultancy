@@ -1,0 +1,189 @@
+<ng-template #actions let-lead>
+  <span class="acts">
+    @if (tel(lead.phone); as href) {
+      <a class="ib" [href]="href" [attr.aria-label]="'Call ' + lead.name"><mat-icon aria-hidden="true">call</mat-icon></a>
+    }
+    <button type="button" class="ib wa" [attr.aria-label]="'WhatsApp ' + lead.name" (click)="emit('whatsapp', lead)">
+      <mat-icon aria-hidden="true">chat</mat-icon>
+    </button>
+    <button type="button" class="ib" [matMenuTriggerFor]="more" [attr.aria-label]="'More actions for ' + lead.name">
+      <mat-icon aria-hidden="true">more_vert</mat-icon>
+    </button>
+    <mat-menu #more="matMenu" xPosition="before">
+      <a mat-menu-item [routerLink]="['/leads', lead.id]"><mat-icon>open_in_new</mat-icon>Open lead</a>
+      @for (to of lead.allowed_transitions; track to) {
+        <button mat-menu-item type="button" (click)="action.emit({ kind: 'status', lead, to })">
+          <mat-icon>swap_horiz</mat-icon>Move to {{ label(to) }}
+        </button>
+      }
+      @if (canAssign()) {
+        <button mat-menu-item type="button" (click)="emit('assign', lead)"><mat-icon>person_add</mat-icon>Assign…</button>
+      }
+      @if (mode() === 'overdue') {
+        @for (o of snoozeOptions(); track o.label) {
+          <button mat-menu-item type="button" (click)="action.emit({ kind: 'snooze', lead, at: o.at })">
+            <mat-icon>snooze</mat-icon>Snooze: {{ o.label }}
+          </button>
+        }
+        <button mat-menu-item type="button" (click)="emit('pick-snooze', lead)"><mat-icon>event</mat-icon>Snooze: pick date…</button>
+      }
+    </mat-menu>
+  </span>
+</ng-template>
+
+<ng-template #lastCell let-lead>
+  @if (mode() === 'won-awaiting') {
+    @if (canFinalize()) {
+      <button type="button" class="fin" [attr.aria-label]="'Finalize ' + lead.name" (click)="emit('finalize', lead)">Finalize</button>
+    } @else {
+      <span class="muted-s">Admin finalizes</span>
+    }
+  } @else {
+    <ng-container *ngTemplateOutlet="actions; context: { $implicit: lead }" />
+  }
+</ng-template>
+
+@if (layout() === 'table') {
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          @if (selectable()) {
+            <th class="c-sel">
+              <input
+                type="checkbox"
+                aria-label="Select all leads on this page"
+                [checked]="allSelected()"
+                [indeterminate]="someSelected()"
+                (change)="toggledAll.emit($any($event.target).checked)"
+              />
+            </th>
+          }
+          <th>Lead</th>
+          @if (mode() === 'won-awaiting') {
+            <th>Won on</th>
+            <th>Assigned</th>
+            <th class="r">Proposed value</th>
+            <th>Waiting</th>
+          } @else {
+            <th class="c-src">Source</th>
+            <th>Status</th>
+            <th>Assigned</th>
+            <th>{{ mode() === 'overdue' ? 'Overdue' : 'Next follow-up' }}</th>
+            <th class="r">Proposed value</th>
+            <th class="c-last">Last activity</th>
+          }
+          <th class="r"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (skeleton()) {
+          @for (i of placeholders; track i) {
+            <tr class="sk" aria-hidden="true">
+              <td [attr.colspan]="selectable() ? 9 : 8">
+                <span class="sk-row">
+                  <app-skeleton width="36px" height="36px" radius="50%" />
+                  <app-skeleton width="30%" height="14px" />
+                  <app-skeleton width="12%" height="14px" />
+                  <app-skeleton width="14%" height="22px" radius="999px" />
+                </span>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (lead of rows(); track lead.id) {
+            <tr [class.is-sel]="selected().has(lead.id)">
+              @if (selectable()) {
+                <td class="c-sel">
+                  <input
+                    type="checkbox"
+                    [attr.aria-label]="'Select ' + lead.name"
+                    [checked]="selected().has(lead.id)"
+                    (change)="toggled.emit(lead.id)"
+                  />
+                </td>
+              }
+              <td>
+                <span class="who">
+                  <app-lead-avatar [name]="lead.name" />
+                  <span class="who-t">
+                    <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                    <span class="ph num">{{ formatPhone(lead.phone) }}</span>
+                  </span>
+                </span>
+              </td>
+              @if (mode() === 'won-awaiting') {
+                <td>{{ wonOn(lead) }}</td>
+                <td>{{ lead.assigned_to?.name ?? 'Unassigned' }}</td>
+                <td class="r num">{{ lead.proposed_amount | inr }}</td>
+                <td>{{ waiting(lead) }}</td>
+              } @else {
+                <td class="c-src">{{ lead.source_other || lead.source_label }}</td>
+                <td><app-lead-status [status]="lead.status" /></td>
+                <td>
+                  @if (lead.assigned_to; as a) {
+                    <span class="who sm"><app-lead-avatar [name]="a.name" [size]="24" />{{ a.name }}</span>
+                  } @else {
+                    <span class="muted-s">Unassigned</span>
+                  }
+                </td>
+                <td><app-followup-pill [at]="lead.next_followup_at" [now]="now()" /></td>
+                <td class="r num">{{ lead.proposed_amount ? (lead.proposed_amount | inrCompact) : '—' }}</td>
+                <td class="c-last muted-s" [attr.title]="full(lead.last_activity_at)">
+                  {{ relative(lead.last_activity_at, now()) || 'No activity' }}
+                </td>
+              }
+              <td class="r"><ng-container *ngTemplateOutlet="lastCell; context: { $implicit: lead }" /></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <ul class="cards">
+    @if (skeleton()) {
+      @for (i of placeholders.slice(0, 4); track i) {
+        <li class="card lc" aria-hidden="true">
+          <span class="who"><app-skeleton width="40px" height="40px" radius="50%" /><app-skeleton width="50%" height="16px" /></span>
+          <app-skeleton width="70%" height="14px" />
+          <app-skeleton height="44px" radius="10px" />
+        </li>
+      }
+    } @else {
+      @for (lead of rows(); track lead.id; let i = $index) {
+        <li class="card lc rise-in" [style.--i]="i % 10" [class.is-sel]="selected().has(lead.id)">
+          <span class="lc-top">
+            <span class="who">
+              @if (selectable()) {
+                <input type="checkbox" [attr.aria-label]="'Select ' + lead.name" [checked]="selected().has(lead.id)" (change)="toggled.emit(lead.id)" />
+              }
+              <app-lead-avatar [name]="lead.name" [size]="40" />
+              <span class="who-t">
+                <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                <span class="ph num">{{ formatPhone(lead.phone) }}</span>
+              </span>
+            </span>
+            @if (mode() !== 'won-awaiting') {
+              <app-lead-status [status]="lead.status" />
+            }
+          </span>
+          <span class="lc-meta">
+            @if (mode() === 'won-awaiting') {
+              <span>Won {{ wonOn(lead) }} · waiting {{ waiting(lead) }}</span>
+              <strong class="num">{{ lead.proposed_amount | inr }}</strong>
+            } @else {
+              <app-followup-pill [at]="lead.next_followup_at" [now]="now()" />
+              <span>{{ lead.source_other || lead.source_label }}</span>
+              <span>{{ lead.assigned_to?.name ?? 'Unassigned' }}</span>
+              @if (lead.proposed_amount) {
+                <strong class="num">{{ lead.proposed_amount | inrCompact }}</strong>
+              }
+            }
+          </span>
+          <span class="lc-acts"><ng-container *ngTemplateOutlet="lastCell; context: { $implicit: lead }" /></span>
+        </li>
+      }
+    }
+  </ul>
+}

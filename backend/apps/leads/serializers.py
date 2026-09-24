@@ -58,6 +58,7 @@ class LeadListSerializer(serializers.ModelSerializer):
     proposed_amount = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     last_activity_at = serializers.DateTimeField(read_only=True, allow_null=True)
     days_overdue = serializers.SerializerMethodField()
+    allowed_transitions = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
@@ -78,15 +79,18 @@ class LeadListSerializer(serializers.ModelSerializer):
             "won_at",
             "lost_reason",
             "created_at",
+            "allowed_transitions",
         ]
 
     def get_days_overdue(self, lead) -> int:
         return days_overdue(lead)
 
+    def get_allowed_transitions(self, lead) -> list[str]:
+        return services.allowed_transitions(lead, self.context["request"].user)
+
 
 class LeadDetailSerializer(LeadListSerializer):
     created_by = PersonSerializer(allow_null=True, read_only=True)
-    allowed_transitions = serializers.SerializerMethodField()
     interactions_count = serializers.IntegerField(read_only=True)
 
     class Meta(LeadListSerializer.Meta):
@@ -95,12 +99,8 @@ class LeadDetailSerializer(LeadListSerializer):
             "lost_note",
             "created_by",
             "updated_at",
-            "allowed_transitions",
             "interactions_count",
         ]
-
-    def get_allowed_transitions(self, lead) -> list[str]:
-        return services.allowed_transitions(lead, self.context["request"].user)
 
 
 class LeadWriteSerializer(serializers.ModelSerializer):

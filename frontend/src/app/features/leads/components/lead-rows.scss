@@ -1,0 +1,178 @@
+:host {
+  display: block;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+}
+
+th {
+  height: 40px;
+  padding: 0 12px;
+  background: var(--subtle);
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+
+  &:first-child { border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
+  &:last-child { border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
+}
+
+td {
+  height: 56px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+tbody tr {
+  position: relative; // stretched link target
+  transition: background-color var(--dur-fast);
+
+  &:hover { background: var(--surface-2); }
+  &.is-sel { background: var(--brand-tint); }
+}
+
+.r { text-align: right; }
+.c-sel { width: 44px; }
+
+input[type='checkbox'] {
+  position: relative;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-deep);
+  cursor: pointer;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+
+  &.sm { gap: 8px; }
+}
+
+.who-t {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.stretch {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+
+  &::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+  }
+
+  &:hover { text-decoration: underline; }
+  &:focus-visible { outline: none; }
+  &:focus-visible::after { outline: 2px solid var(--brand-deep); outline-offset: -2px; border-radius: var(--radius-sm); }
+}
+
+.ph { color: var(--ink-3); font-size: var(--text-xs); }
+.muted-s { color: var(--ink-3); font-size: var(--text-sm); }
+
+.acts {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.ib {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+
+  &:hover { background: var(--subtle); color: var(--ink); }
+  mat-icon { width: 20px; height: 20px; font-size: 20px; }
+}
+
+.fin {
+  position: relative;
+  z-index: 1;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--ink);
+  color: var(--on-ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sk-row { display: flex; align-items: center; gap: 16px; }
+.c-src, .c-last { display: none; }
+
+// ---- Cards (phones) --------------------------------------------------------------------------------
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lc {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--space-4);
+
+  &.is-sel { border-color: var(--brand-deep); }
+}
+
+.lc-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+
+  strong { margin-left: auto; color: var(--ink); }
+}
+
+.lc-acts {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+
+  .ib { width: 48px; height: 44px; }
+}
+
+@media (min-width: 1100px) {
+  .c-src, .c-last { display: table-cell; }
+}

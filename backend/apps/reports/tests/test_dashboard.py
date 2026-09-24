@@ -174,7 +174,7 @@ def test_real_zeros_while_source_models_do_not_exist(client, monkeypatch):
     assert body["kpis"]["win_rate_pct"] == "0.0"
     assert body["kpis"]["received_delta_pct"] is None  # previous period is empty
     assert body["attention"] == []  # only counts above zero are sent
-    assert body["funnel"] == [] and body["sales_by_exec"] == []
+    assert all(st["count"] == 0 for st in body["funnel"]) and body["sales_by_exec"] == []
 
 
 @pytest.mark.django_db

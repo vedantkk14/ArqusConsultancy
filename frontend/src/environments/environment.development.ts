@@ -2,9 +2,8 @@ export const environment = {
   production: false,
   // `ng serve` forwards /api to http://localhost:8000 (see proxy.conf.json).
   apiBaseUrl: '/api/v1',
-  // Serve review fixtures for screens whose backend data does not exist yet (dashboard KPIs).
-  // Set to false to see the real API (which returns zeros until the leads/projects/accounts models land).
-  useMocks: true,
+  // The dashboard reads the real API. Set to true only to review the UI against the typed fixture.
+  useMocks: false,
   // Dev only: one-click demo accounts under the login card (filled in, never submitted automatically).
   // environment.ts (production) keeps showDemoLogins false and an empty list, so no credentials ship.
   showDemoLogins: true,

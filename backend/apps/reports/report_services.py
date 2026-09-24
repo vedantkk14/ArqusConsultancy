@@ -147,6 +147,26 @@ def build_sales(period: ReportPeriod) -> dict:
 # ---- Financial health -------------------------------------------------------------------------
 
 
+def _month_sums(qs, field: str, months: list[str]) -> list[Decimal]:
+    from django.db.models.functions import TruncMonth
+
+    first = date(int(months[0][:4]), int(months[0][5:]), 1)
+    rows = (
+        qs.filter(**{f"{field}__gte": first})
+        .annotate(m=TruncMonth(field))
+        .order_by()
+        .values("m")
+        .annotate(t=Sum("amount"))
+    )
+    by_month = {r["m"].strftime("%Y-%m"): Decimal(r["t"] or 0) for r in rows}
+    return [by_month.get(m, ZERO) for m in months]
+
+
+def _range_q(field: str, period: ReportPeriod) -> Q:
+    cond = Q(**{f"{field}__lte": period.end})
+    return cond & Q(**{f"{field}__gte": period.start}) if period.start else cond
+
+
 def build_financial(period: ReportPeriod, today: date) -> dict:
     months = months_for(period, today)
     ledger, payment, expense = (
@@ -155,14 +175,46 @@ def build_financial(period: ReportPeriod, today: date) -> dict:
         _model("projects", "Expense"),
     )
     available = ledger is not None and payment is not None
-    # TODO(depends on accounts.Ledger / accounts.Payment, projects.Expense - Dev B / Dev C):
-    #   received[m] / spent[m]  = Sum(Payment.amount) / Sum(Expense.amount) grouped by month
-    #   aging                   = accounts' aging_buckets(), else aging_bucket() over unpaid ledgers
-    #   collection_rate_pct     = all payments / Sum(finalized ledger total)
-    #   top_outstanding_clients = top 5 customers by outstanding, aggregated in one query
-    received = [ZERO] * len(months)
-    spent = [ZERO] * len(months)
+    received = spent = [ZERO] * len(months)
     received_total = spent_total = outstanding = ZERO
+    aging = empty_aging()
+    top: list[dict] = []
+    rate = "0.0"
+    if available:
+        from apps.accounts import selectors as acc
+
+        payments = acc.active_payments()
+        received = _month_sums(payments, "received_on", months)
+        received_total = Decimal(
+            payments.filter(_range_q("received_on", period)).aggregate(t=Sum("amount"))["t"] or 0
+        )
+        finalized = acc.with_figures(ledger.objects.filter(finalized_at__isnull=False))
+        rows = list(
+            finalized.filter(acc.has_balance_q()).values_list(
+                "lead__name", "outstanding", "aging_base"
+            )
+        )
+        outstanding = sum((Decimal(o) for _, o, _b in rows), ZERO)
+        aging = acc.aging_buckets([(o, base) for _, o, base in rows])
+        per_client: dict[str, list] = {}
+        for name, amount, _base in rows:
+            entry = per_client.setdefault(name, [0, ZERO])
+            entry[0] += 1
+            entry[1] += Decimal(amount)
+        top = [
+            {"name": n, "ledgers": c, "outstanding": money(v)}
+            for n, (c, v) in sorted(per_client.items(), key=lambda kv: -kv[1][1])[:5]
+        ]
+        totals = finalized.aggregate(t=Sum("total_amount"))["t"]
+        rate = acc.collection_rate(totals, payments.aggregate(t=Sum("amount"))["t"])
+    if expense is not None:
+        from apps.projects import selectors as prj
+
+        active = prj.active_expenses()
+        spent = _month_sums(active, "spent_on", months)
+        spent_total = Decimal(
+            active.filter(_range_q("spent_on", period)).aggregate(t=Sum("amount"))["t"] or 0
+        )
     return {
         **period.as_dict(),
         "data_sources": {"accounts": available, "expenses": expense is not None},
@@ -175,26 +227,60 @@ def build_financial(period: ReportPeriod, today: date) -> dict:
             "spent": money(spent_total),
             "net": money(received_total - spent_total),
             "outstanding": money(outstanding),
-            "collection_rate_pct": pct(received_total, received_total + outstanding),
+            "collection_rate_pct": rate,
         },
-        "aging": empty_aging(),
-        "top_outstanding_clients": [],
+        "aging": aging,
+        "top_outstanding_clients": top,
     }
 
 
 # ---- Project margin ---------------------------------------------------------------------------
 
+MARGIN_MAX_ROWS = 200
+
 
 def build_project_margin(period: ReportPeriod) -> dict:
     project = _model("projects", "Project")
-    # TODO(depends on projects.Project + projects budget_state / accounts finance adapter, Dev B):
-    #   rows = per project {id, name, pm, sanctioned, spent, usage_pct, total, received,
-    #   planned_margin, live_margin}. Without the finance adapter send sanctioned/spent only.
+    ledger = _model("accounts", "Ledger")
+    rows: list[dict] = []
+    if project is not None:
+        from apps.projects import selectors as prj
+
+        projects = list(prj.budget_usage_qs(project.objects.select_related("pm"))[:MARGIN_MAX_ROWS])
+        finance = {}
+        if ledger is not None:
+            from apps.accounts import selectors as acc
+
+            lead_ids = [p.lead_id for p in projects if p.lead_id]
+            for row in acc.with_figures(
+                ledger.objects.filter(lead_id__in=lead_ids, finalized_at__isnull=False)
+            ).values("lead_id", "total_amount", "received"):
+                finance[row["lead_id"]] = {
+                    "total_amount": row["total_amount"],
+                    "received": row["received"],
+                }
+        for p in projects:
+            fin = finance.get(p.lead_id)
+            margins = prj.project_margins(fin, p.spent, p.sanctioned_budget)
+            rows.append(
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "pm": p.pm.display_name if p.pm else "—",
+                    "sanctioned": money(p.sanctioned_budget),
+                    "spent": money(p.spent),
+                    "usage_pct": prj.usage_pct(p.spent, p.sanctioned_budget),
+                    "total": money(fin["total_amount"]) if fin else None,
+                    "received": money(fin["received"]) if fin else None,
+                    **margins,
+                }
+            )
+    linked = project is not None and ledger is not None
     return {
         **period.as_dict(),
-        "data_sources": {"projects": project is not None, "accounts": False},
-        "note": FINANCE_PENDING_NOTE,
-        "rows": [],
+        "data_sources": {"projects": project is not None, "accounts": ledger is not None},
+        "note": None if linked else FINANCE_PENDING_NOTE,
+        "rows": rows,
     }
 
 

@@ -334,8 +334,8 @@ All four take `?period=month|quarter|year|all|custom` (default `month`; `custom`
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
 | ✅ | `GET /reports/sales` | A, SM | Per sales executive. Won and lost are decided in the period; commission = won value x the executive's rate. |
-| ✅ | `GET /reports/financial` | A | Received vs expenses per month (6 months, 12 for year/all), aging, top clients. Zeros until accounts is merged. |
-| ✅ | `GET /reports/project-margin` | A | Empty with `note` until projects and accounts are merged. |
+| ✅ | `GET /reports/financial` | A | Received vs expenses per month (6 months, 12 for year/all), aging, top 5 clients by outstanding, collection rate; all from accounts and expenses. |
+| ✅ | `GET /reports/project-margin` | A | One row per project: budget, spent, usage, and (finalized ledgers only) total, received, planned and live margin. |
 | ✅ | `GET /reports/lead-funnel` | A | Stages of leads created in the period, `reached` (this stage or later), conversion from the previous stage, lost, split by source. |
 
 ```json
@@ -454,7 +454,8 @@ Definitions (each is one named function/constant in `apps/reports/services.py`):
 - `sales_by_exec[].share_pct` = won value / the top exec's won value; `lead_sources` = top 5 + "Other".
 - Note: these live at the top level (`cashflow`, `funnel`, …), not under a `charts` key.
 
-**Status:** the endpoint, shape and definitions are implemented and tested. The figures are real zeros until the
-`leads.Lead`, `projects.Project/Expense` and `accounts.Ledger/Payment` models exist (`data_sources` says which are
-connected). Each block has a `TODO(depends on …)` in `services.py` describing the aggregate to add. The frontend
-dev build uses a typed fixture (`environment.useMocks`) meanwhile.
+**Status:** live. Every figure is calculated from the database (leads, accounts, projects) using each app's own
+selectors, so screens agree on what open, overdue, aging and over budget mean. `data_sources` says which apps are
+present; a missing one leaves its part at zeros. Payments and expenses that are voided never count. The period
+boundaries use the business time zone (Asia/Kolkata). The dev build no longer uses a fixture (`environment.useMocks`
+is false; the fixture is only for UI review).

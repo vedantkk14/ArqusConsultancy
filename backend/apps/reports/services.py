@@ -12,7 +12,6 @@ from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.apps import apps
-from django.utils import timezone
 
 # ---- Definitions (one place each) ----------------------------------------------------------------
 
@@ -162,11 +161,23 @@ def _model(app_label: str, model_name: str):
 # ---- Dashboard -----------------------------------------------------------------------------------
 
 
+def business_today() -> date:
+    """Today in the business time zone (the server clock is UTC; the office is not)."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from django.conf import settings
+
+    return datetime.now(ZoneInfo(getattr(settings, "BUSINESS_TIME_ZONE", "Asia/Kolkata"))).date()
+
+
 def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = None) -> dict:
     """Everything the admin dashboard shows for `period` (shape: docs/API_CONTRACT.md)."""
-    today = today or timezone.localdate()
+    today = today or business_today()
     rng = period_range(period, today)
     months = trend_months(today)
+
+    from . import live
 
     lead_model = _model("leads", "Lead")
     project_model = _model("projects", "Project")
@@ -174,61 +185,82 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
     payment_model = _model("accounts", "Payment")
     expense_model = _model("projects", "Expense")
 
-    # --- Leads ---------------------------------------------------------------------------------
-    # TODO(depends on leads.Lead, Dev A): with the model in place, fill these with aggregates:
-    #   leads_total    = Lead.objects.count() (all-time snapshot)
-    #   leads_new      = created in [rng.start, rng.end]; leads_new_prev over the previous range
-    #   open_count     = status not in LEAD_CLOSED_STATUSES
-    #   open_value     = Sum("proposed_amount") over open leads, missing amounts count as 0
-    #   won/lost_count = status WON / LOST, decided within the period
-    #   trends.leads_new, funnel, sales_by_exec: one values()/annotate() query each
+    # --- Real figures. Each source is optional: a missing model leaves its part at zeros. ---------
     leads_total = leads_new = leads_new_prev = open_count = won_count = lost_count = 0
     open_value = ZERO
     leads_new_trend = [0] * len(months)
     funnel: list[dict] = []
     sales_by_exec: list[dict] = []
+    lead_sources: list[dict] = []
+    activity: list[dict] = []
+    overdue_followups = won_awaiting = 0
+    if lead_model is not None:
+        f = live.lead_figures(rng, months)
+        leads_total, leads_new, leads_new_prev = f["total"], f["new"], f["new_prev"]
+        open_count, open_value = f["open_count"], f["open_value"]
+        won_count, lost_count = f["won"], f["lost"]
+        leads_new_trend, funnel = f["trend"], f["funnel"]
+        sales_by_exec, lead_sources, activity = f["sales_by_exec"], f["sources"], f["activity"]
+        overdue_followups, won_awaiting = f["overdue"], f["won_awaiting"]
 
-    # --- Projects ------------------------------------------------------------------------------
-    # TODO(depends on projects.Project, Dev B): snapshots, not period-based:
-    #   projects_running = status != COMPLETED;  projects_completed = status == COMPLETED
-    projects_running = projects_completed = 0
-
-    # --- Accounts ------------------------------------------------------------------------------
-    # TODO(depends on accounts.Ledger / accounts.Payment, Dev C):
-    #   received / received_prev = Sum(Payment.amount) in the period / previous period
-    #   outstanding         = Sum(ledger total - payments) over ledgers with a positive balance
-    #   outstanding_clients = distinct customers of those ledgers
-    #   outstanding_overdue = the part of `outstanding` on ledgers older than OVERDUE_AFTER_DAYS
-    #   trends.received and cashflow.collected = payments per month
-    #   cashflow.spent = expenses per month
-    #   spent (period) = Sum(Expense.amount) in the period; net = received - spent
-    #   collection_rate_pct = all payments / Sum(finalized ledger total) (snapshot)
-    #   collections_aging / top_overdue_clients: unpaid ledgers by days since the last payment
-    #     (or ledger creation), bucketed with aging_bucket(); top 3 by days
-    received = received_prev = outstanding = outstanding_overdue = spent = ZERO
-    received_all = finalized_value = ZERO
-    outstanding_clients = 0
-    received_trend = [ZERO] * len(months)
+    projects_running = projects_completed = budget_alerts = 0
+    projects_burn: list[dict] = []
+    spent = ZERO
     spent_trend = [ZERO] * len(months)
+    recent_expenses: list[dict] = []
+    if project_model is not None and expense_model is not None:
+        p = live.project_figures(rng, months)
+        projects_running, projects_completed = p["running"], p["completed"]
+        projects_burn, budget_alerts, spent = p["burn"], p["over"], p["spent"]
+        spent_trend = [p["spent_by_month"].get(m, ZERO) for m in months]
+        recent_expenses = p["recent_expenses"]
+
+    received = received_prev = outstanding = outstanding_overdue = ZERO
+    received_all = finalized_value = ZERO
+    outstanding_clients = overdue_payments = 0
+    received_trend = [ZERO] * len(months)
     collections_aging = empty_aging()
     top_overdue_clients: list[dict] = []
+    recent_payments: list[dict] = []
+    if ledger_model is not None and payment_model is not None:
+        a = live.finance_figures(rng, months)
+        received, received_prev, received_all = a["received"], a["received_prev"], a["received_all"]
+        finalized_value = a["finalized_value"]
+        outstanding, outstanding_overdue = a["outstanding"], a["outstanding_overdue"]
+        outstanding_clients, overdue_payments = a["outstanding_clients"], a["overdue_count"]
+        received_trend = [a["received_by_month"].get(m, ZERO) for m in months]
+        collections_aging, top_overdue_clients = a["aging"], a["top_overdue"]
+        recent_payments = a["recent_payments"]
     net = received - spent
 
-    # TODO(depends on projects.Project / projects.Expense, Dev B): projects_burn = up to 5 running
-    #   projects by spent / sanctioned_budget (never the total project amount),
-    #   state = burn_state().
-    projects_burn: list[dict] = []
-
-    # TODO(depends on leads.Lead.source, Dev A): lead_sources = top 5 sources + "Other", with pct().
-    lead_sources: list[dict] = []
+    # Payments and expenses also show up in the activity feed, newest first.
+    feed = [
+        {
+            "when": r["at"].isoformat(),
+            "actor": "Accounts",
+            "action": f"received {r['amount']} from {r['client']}",
+            "type": "payment",
+        }
+        for r in recent_payments
+    ] + [
+        {
+            "when": r["at"].isoformat(),
+            "actor": "Projects",
+            "action": f"logged {r['category']} {r['amount']} on {r['project']}",
+            "type": "expense",
+        }
+        for r in recent_expenses
+    ]
+    activity = sorted(activity + feed, key=lambda r: r["when"], reverse=True)[:8]
+    for row in recent_payments + recent_expenses:
+        row.pop("at", None)
 
     # --- Waiting on you -------------------------------------------------------------------------
-    # TODO(depends on leads/projects/accounts): one count per item; only counts > 0 are sent.
     attention_counts = {
-        "overdue_followups": 0,
-        "won_awaiting_finalization": 0,
-        "overdue_payments": 0,
-        "budget_alerts": 0,
+        "overdue_followups": overdue_followups,
+        "won_awaiting_finalization": won_awaiting,
+        "overdue_payments": overdue_payments,
+        "budget_alerts": budget_alerts,
     }
 
     return {
@@ -288,7 +320,7 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
         "top_overdue_clients": top_overdue_clients,
         "projects_burn": projects_burn,
         # activity items: {when, actor, action, type}; type is lead|payment|expense|project|user
-        "recent": {"payments": [], "expenses": [], "activity": []},
+        "recent": {"payments": recent_payments, "expenses": recent_expenses, "activity": activity},
     }
 
 

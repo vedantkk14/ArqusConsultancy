@@ -6,23 +6,29 @@ import { ApiError } from '../../../../core/models';
 import { LOST_REASONS, LeadDetail, LeadStatus, LostReason, STATUS_LABELS, StatusChange } from '../../data/lead.models';
 import { LeadsApi } from '../../data/leads-api.service';
 import { toBusinessIso } from '../../utils/business-time';
+import { FollowupPicker } from '../followup-picker';
 import { MoneyInput, isPositiveMoney } from '../money-input';
+import { DialogHead } from './dialog-head';
 
 export interface StatusDialogData {
-  lead: { id: number; name: string; proposed_amount: string | null };
+  lead: { id: number; name: string; proposed_amount: string | null; status?: LeadStatus };
   to: LeadStatus;
 }
 
 /** Status change: Won needs a value, Lost needs a reason, the rest take an optional note and follow-up. */
 @Component({
   selector: 'app-status-dialog',
-  imports: [FormsModule, MatButtonModule, MatDialogModule, MoneyInput],
+  imports: [DialogHead, FollowupPicker, FormsModule, MatButtonModule, MatDialogModule, MoneyInput],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dialog.scss',
   template: `
-    <h2 mat-dialog-title>Mark as {{ label }}</h2>
-    <p class="sub">{{ data.lead.name }}</p>
+    <app-dialog-head [title]="'Mark as ' + label" [subtitle]="data.lead.name" />
     <form (ngSubmit)="submit()" novalidate>
+      @if (data.to === 'LOST' && data.lead.status === 'WON') {
+        <p class="note warn">
+          This deal was won. Marking it lost cancels the account ledger. It is only possible before any payment is received.
+        </p>
+      }
       @if (data.to === 'WON') {
         <p class="note">This creates the client's account ledger and notifies the admin.</p>
         <div class="field">
@@ -67,8 +73,8 @@ export interface StatusDialogData {
           <textarea id="sd-note" name="note" [(ngModel)]="note"></textarea>
         </div>
         <div class="field">
-          <label for="sd-fu">Next follow-up (optional, IST)</label>
-          <input id="sd-fu" type="datetime-local" name="fu" [(ngModel)]="followup" />
+          <label for="sd-fu">Next follow-up (optional)</label>
+          <app-followup-picker inputId="sd-fu" name="fu" [(ngModel)]="followup" [invalid]="!!errors()['next_followup_at']" />
           @if (errors()['next_followup_at']) {
             <p class="error">{{ errors()['next_followup_at'] }}</p>
           }
@@ -79,7 +85,7 @@ export interface StatusDialogData {
       }
       <div class="actions">
         <button matButton type="button" mat-dialog-close>Cancel</button>
-        <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Mark as ' + label }}</button>
+        <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Confirm' }}</button>
       </div>
     </form>
   `,

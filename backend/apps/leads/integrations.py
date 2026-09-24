@@ -9,6 +9,7 @@ Contract expected from accounts (Dev C), see docs/API_CONTRACT.md "Leads -> Acco
 from urllib.parse import quote
 
 from django.apps import apps
+from django.core.exceptions import FieldError
 from django.db.models import BooleanField as _Bool
 from django.db.models import Exists, OuterRef, Value
 
@@ -67,6 +68,24 @@ def has_ledger(lead) -> bool:
     except LookupError:
         return False
     return model.objects.filter(lead=lead).exists()
+
+
+def payments_received(lead) -> bool:
+    """True once any payment exists against the lead's ledger (the deal is then final)."""
+    try:
+        payment = apps.get_model("accounts", "Payment")
+        return payment.objects.filter(ledger__lead=lead).exists()
+    except (LookupError, FieldError):
+        return False
+
+
+def cancel_ledger(lead) -> None:
+    """Ask accounts to cancel the ledger created when the lead was won (no-op until it exists)."""
+    from apps.accounts import services
+
+    handler = getattr(services, "cancel_ledger", None)
+    if callable(handler):
+        handler(lead)
 
 
 def finance_for(lead) -> dict:

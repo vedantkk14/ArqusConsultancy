@@ -7,6 +7,7 @@ import { InrPipe } from '../../../../shared/money/inr.pipe';
 import { LeadDetail } from '../../data/lead.models';
 import { LeadsApi } from '../../data/leads-api.service';
 import { MoneyInput, isPositiveMoney } from '../money-input';
+import { DialogHead } from './dialog-head';
 
 export interface FinalizeDialogData {
   lead: { id: number; name: string; proposed_amount: string | null };
@@ -15,12 +16,11 @@ export interface FinalizeDialogData {
 /** Admin: confirm the final Total Amount for a won lead (stored on the accounts ledger). */
 @Component({
   selector: 'app-finalize-dialog',
-  imports: [FormsModule, InrPipe, MatButtonModule, MatDialogModule, MoneyInput],
+  imports: [DialogHead, FormsModule, InrPipe, MatButtonModule, MatDialogModule, MoneyInput],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dialog.scss',
   template: `
-    <h2 mat-dialog-title>Finalize amount</h2>
-    <p class="sub">{{ data.lead.name }} · proposed {{ data.lead.proposed_amount | inr }}</p>
+    <app-dialog-head title="Finalize amount" [subtitle]="data.lead.name + ' · proposed ' + (data.lead.proposed_amount | inr)" />
     <form (ngSubmit)="submit()" novalidate>
       <div class="field">
         <label for="fd-amount">Final amount</label>
@@ -49,7 +49,7 @@ export interface FinalizeDialogData {
       }
       <div class="actions">
         <button matButton type="button" mat-dialog-close>Cancel</button>
-        <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Finalizing…' : 'Finalize' }}</button>
+        <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Finalizing…' : 'Confirm' }}</button>
       </div>
     </form>
   `,

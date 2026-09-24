@@ -61,6 +61,8 @@ export interface LeadListItem {
   lost_reason: LostReason | '';
   created_at: string;
   allowed_transitions: LeadStatus[];
+  /** Only sent to roles that may see the final amount (Admin, Sales Manager). */
+  finalized?: boolean;
 }
 
 export interface LeadFinance {
@@ -158,7 +160,8 @@ export interface NewInteraction {
 
 // ---- List filters (the URL query uses the API's names) ---------------------------------------------
 
-export type ListMode = 'all' | 'overdue' | 'won-awaiting';
+/** all = open leads; won / lost = the closed lists; overdue = open with a missed follow-up. */
+export type ListMode = 'all' | 'overdue' | 'won' | 'lost';
 export type FollowupFilter = '' | 'overdue' | 'today' | 'upcoming' | 'none';
 
 export interface LeadFilters {
@@ -167,6 +170,7 @@ export interface LeadFilters {
   assigned_to: string;
   source: string;
   followup: FollowupFilter;
+  won_awaiting: '' | 'true';
   created_from: string;
   created_to: string;
   ordering: string;
@@ -178,6 +182,7 @@ export const EMPTY_FILTERS: LeadFilters = {
   assigned_to: '',
   source: '',
   followup: '',
+  won_awaiting: '',
   created_from: '',
   created_to: '',
   ordering: '',
@@ -191,4 +196,5 @@ export const ORDERINGS: { value: string; label: string }[] = [
   { value: '-days_overdue', label: 'Most overdue' },
   { value: '-proposed_amount', label: 'Highest value' },
   { value: '-last_activity_at', label: 'Recent activity' },
+  { value: '-won_at', label: 'Recently won' },
 ];

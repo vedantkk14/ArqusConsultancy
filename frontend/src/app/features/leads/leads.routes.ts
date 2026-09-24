@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { ResolveFn, Route, Routes } from '@angular/router';
+import { ResolveFn, Route, Router, Routes } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { roleGuard } from '../../core/auth/role.guard';
@@ -37,7 +37,14 @@ export const LEADS_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'all' },
   listRoute('all', 'all', allLeadsTitle),
   listRoute('overdue', 'overdue', 'Overdue follow-ups'),
-  listRoute('won-awaiting', 'won-awaiting', 'Won - awaiting finalization'),
+  listRoute('won', 'won', 'Won leads'),
+  listRoute('lost', 'lost', 'Lost leads'),
+  // Old link (dashboard "Won deals to finalise"): now the Won page filtered to awaiting finalization.
+  {
+    path: 'won-awaiting',
+    pathMatch: 'full',
+    redirectTo: () => inject(Router).parseUrl('/leads/won?won_awaiting=true'),
+  },
   {
     path: 'new',
     title: 'Add lead',

@@ -9,7 +9,7 @@
     <button type="button" class="ib" [matMenuTriggerFor]="more" [attr.aria-label]="'More actions for ' + lead.name">
       <mat-icon aria-hidden="true">more_vert</mat-icon>
     </button>
-    <mat-menu #more="matMenu" xPosition="before">
+    <mat-menu #more="matMenu" xPosition="before" class="leads-menu">
       <a mat-menu-item [routerLink]="['/leads', lead.id]"><mat-icon>open_in_new</mat-icon>Open lead</a>
       @for (to of lead.allowed_transitions; track to) {
         <button mat-menu-item type="button" (click)="action.emit({ kind: 'status', lead, to })">
@@ -32,14 +32,19 @@
 </ng-template>
 
 <ng-template #lastCell let-lead>
-  @if (mode() === 'won-awaiting') {
-    @if (canFinalize()) {
-      <button type="button" class="fin" [attr.aria-label]="'Finalize ' + lead.name" (click)="emit('finalize', lead)">Finalize</button>
-    } @else {
-      <span class="muted-s">Admin finalizes</span>
-    }
+  @if (mode() === 'won' && canFinalize() && lead.finalized === false) {
+    <button type="button" class="fin" [attr.aria-label]="'Finalize ' + lead.name" (click)="emit('finalize', lead)">Finalize</button>
+  }
+  <ng-container *ngTemplateOutlet="actions; context: { $implicit: lead }" />
+</ng-template>
+
+<ng-template #finState let-lead>
+  @if (lead.finalized === true) {
+    <span class="fin-chip ok">Finalized</span>
+  } @else if (lead.finalized === false) {
+    <span class="fin-chip wait">Awaiting</span>
   } @else {
-    <ng-container *ngTemplateOutlet="actions; context: { $implicit: lead }" />
+    <span class="muted-s">Won</span>
   }
 </ng-template>
 
@@ -60,11 +65,18 @@
             </th>
           }
           <th>Lead</th>
-          @if (mode() === 'won-awaiting') {
+          @if (mode() === 'won') {
             <th>Won on</th>
             <th>Assigned</th>
             <th class="r">Proposed value</th>
-            <th>Waiting</th>
+            @if (canFinalize() || canSeeFinal()) {
+              <th>Finalization</th>
+            }
+          } @else if (mode() === 'lost') {
+            <th>Reason</th>
+            <th>Assigned</th>
+            <th class="r">Proposed value</th>
+            <th class="c-last">Last activity</th>
           } @else {
             <th class="c-src">Source</th>
             <th>Status</th>
@@ -80,7 +92,7 @@
         @if (skeleton()) {
           @for (i of placeholders; track i) {
             <tr class="sk" aria-hidden="true">
-              <td [attr.colspan]="selectable() ? 9 : 8">
+              <td [attr.colspan]="selectable() ? 10 : 9">
                 <span class="sk-row">
                   <app-skeleton width="36px" height="36px" radius="50%" />
                   <app-skeleton width="30%" height="14px" />
@@ -112,11 +124,18 @@
                   </span>
                 </span>
               </td>
-              @if (mode() === 'won-awaiting') {
+              @if (mode() === 'won') {
                 <td>{{ wonOn(lead) }}</td>
                 <td>{{ lead.assigned_to?.name ?? 'Unassigned' }}</td>
                 <td class="r num">{{ lead.proposed_amount | inr }}</td>
-                <td>{{ waiting(lead) }}</td>
+                @if (canFinalize() || canSeeFinal()) {
+                  <td><ng-container *ngTemplateOutlet="finState; context: { $implicit: lead }" /></td>
+                }
+              } @else if (mode() === 'lost') {
+                <td>{{ reasonLabel(lead.lost_reason) }}</td>
+                <td>{{ lead.assigned_to?.name ?? 'Unassigned' }}</td>
+                <td class="r num">{{ lead.proposed_amount ? (lead.proposed_amount | inr) : '—' }}</td>
+                <td class="c-last muted-s" [attr.title]="full(lead.last_activity_at)">{{ relative(lead.last_activity_at, now()) || 'No activity' }}</td>
               } @else {
                 <td class="c-src">{{ lead.source_other || lead.source_label }}</td>
                 <td><app-lead-status [status]="lead.status" /></td>
@@ -164,14 +183,21 @@
                 <span class="ph num">{{ formatPhone(lead.phone) }}</span>
               </span>
             </span>
-            @if (mode() !== 'won-awaiting') {
+            @if (mode() === 'all' || mode() === 'overdue') {
               <app-lead-status [status]="lead.status" />
+            } @else if (mode() === 'won') {
+              <ng-container *ngTemplateOutlet="finState; context: { $implicit: lead }" />
             }
           </span>
           <span class="lc-meta">
-            @if (mode() === 'won-awaiting') {
-              <span>Won {{ wonOn(lead) }} · waiting {{ waiting(lead) }}</span>
+            @if (mode() === 'won') {
+              <span>Won {{ wonOn(lead) }} · {{ lead.assigned_to?.name ?? 'Unassigned' }}</span>
               <strong class="num">{{ lead.proposed_amount | inr }}</strong>
+            } @else if (mode() === 'lost') {
+              <span>{{ reasonLabel(lead.lost_reason) }} · {{ lead.assigned_to?.name ?? 'Unassigned' }}</span>
+              @if (lead.proposed_amount) {
+                <strong class="num">{{ lead.proposed_amount | inrCompact }}</strong>
+              }
             } @else {
               <app-followup-pill [at]="lead.next_followup_at" [now]="now()" />
               <span>{{ lead.source_other || lead.source_label }}</span>

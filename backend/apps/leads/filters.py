@@ -34,7 +34,8 @@ ORDERINGS = {
     "-days_overdue": [F("next_followup_at").asc(nulls_last=True)],  # most overdue first
     "-proposed_amount": [F("proposed_amount").desc(nulls_last=True)],
     "-last_activity_at": [F("last_activity_at").desc(nulls_last=True)],
-    "won_at": [F("won_at").asc(nulls_last=True)],  # won-awaiting: oldest first
+    "won_at": [F("won_at").asc(nulls_last=True)],  # oldest first
+    "-won_at": [F("won_at").desc(nulls_last=True)],
 }
 DEFAULT_ORDERING = "-created_at"
 TRUE = {"1", "true", "yes"}

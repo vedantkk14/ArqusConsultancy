@@ -147,6 +147,8 @@ Nothing else moves.
 
 - **Status tints** (always with the word, never colour alone): New = slate, Contacted = cyan, Interested = amber, Won = teal, Lost = rose; `--tint-*` fill with `--tint-*-ink` text. Board column dots use the matching `--data-*` colour.
 - **Follow-up pill:** overdue = rose with "3d overdue", today = amber with the time, later = quiet grey, none = muted text. Times are shown in IST.
+- **Pages:** All leads (open leads only), Overdue, Won leads, Lost leads. Closed leads leave All leads and appear on their own page; a won deal can still move to Lost until payment arrives.
+- **Dialogs** share one header with a close (X); Cancel sits bottom-left and Confirm bottom-right. Follow-ups use one picker: quick dates, a date field, and time buttons (9 am to 6 pm) plus a time field.
 - **Panels** reuse the dashboard's `app-panel-head` (title, muted subtitle, right-side control); cards use `.card`, `.rise-in`, skeletons shaped like the real rows and cards.
 - **Lead header card:** a soft radial glow tinted by the status; avatars get a deterministic token tint from the name.
 - **Phones:** tables become cards with 44px+ Call / WhatsApp buttons; filters move into a bottom sheet; the detail page has a sticky Call | WhatsApp | Log bar.

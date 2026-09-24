@@ -3,19 +3,12 @@
     @if (insight()) {
       <p class="insight">{{ insight() }}</p>
     }
+    @if (note) {
+      <p class="insight">{{ note }}</p>
+    }
     <p class="count" aria-live="polite">{{ countText() }}</p>
   </div>
   <div class="head-a">
-    @if (mode === 'all' && layout.isDesktop()) {
-      <div class="seg" role="group" aria-label="View">
-        <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">
-          <mat-icon aria-hidden="true">view_list</mat-icon>List
-        </button>
-        <button type="button" [attr.aria-pressed]="view() === 'board'" (click)="setView('board')">
-          <mat-icon aria-hidden="true">view_kanban</mat-icon>Board
-        </button>
-      </div>
-    }
     @if (isManager()) {
       <button matButton="outlined" type="button" (click)="exportCsv()"><mat-icon>download</mat-icon>Export CSV</button>
       @if (mode === 'all') {
@@ -24,6 +17,13 @@
     }
   </div>
 </header>
+
+@if (mode === 'won') {
+  <div class="seg" role="group" aria-label="Won leads">
+    <button type="button" [attr.aria-pressed]="!awaitingOnly()" (click)="setAwaiting(false)">All won</button>
+    <button type="button" [attr.aria-pressed]="awaitingOnly()" (click)="setAwaiting(true)">Awaiting finalization</button>
+  </div>
+}
 
 <app-lead-filters
   class="filters"
@@ -45,21 +45,21 @@
   </div>
 }
 
-@if (view() === 'board') {
-  <app-leads-board [query]="query()" [summary]="store.summary()" [now]="now()" (moved)="store.refreshSummary()" />
-} @else if (store.error() && !store.rows().length) {
+@if (store.error() && !store.rows().length) {
   <app-error-state title="Couldn't load leads" (retry)="store.reload()" />
 } @else if (store.loaded() && !store.rows().length) {
   @if (hasFilters()) {
     <app-empty-state icon="filter_alt_off" title="No leads match these filters" message="Try a different search or clear the filters.">
       <button matButton="outlined" type="button" (click)="clearFilters()">Clear filters</button>
     </app-empty-state>
-  } @else if (mode === 'won-awaiting') {
-    <app-empty-state icon="task_alt" title="Nothing to finalize" message="Won deals waiting for a final amount show up here." />
+  } @else if (mode === 'won') {
+    <app-empty-state icon="emoji_events" title="No won leads yet" message="When a lead is marked won it moves here." />
+  } @else if (mode === 'lost') {
+    <app-empty-state icon="thumb_down" title="No lost leads" message="Leads marked lost move here and leave the main list." />
   } @else if (mode === 'overdue') {
     <app-empty-state icon="event_available" title="No overdue follow-ups" message="Every open lead is on schedule." />
   } @else if (isManager()) {
-    <app-empty-state icon="contacts" title="No leads yet" message="Leads you add or import appear here.">
+    <app-empty-state icon="contacts" title="No open leads" message="Add a lead to get started. Won and lost leads have their own pages.">
       <a matButton="filled" routerLink="/leads/new">Add your first lead</a>
     </app-empty-state>
   } @else {
@@ -71,10 +71,11 @@
       [rows]="store.rows()"
       [layout]="wide() ? 'table' : 'cards'"
       [mode]="mode"
-      [selectable]="isManager() && mode !== 'won-awaiting'"
+      [selectable]="isManager() && (mode === 'all' || mode === 'overdue')"
       [selected]="store.selected()"
       [canAssign]="isManager()"
       [canFinalize]="isAdmin()"
+      [canSeeFinal]="isManager()"
       [skeleton]="!store.loaded()"
       [now]="now()"
       (toggled)="store.toggle($event)"

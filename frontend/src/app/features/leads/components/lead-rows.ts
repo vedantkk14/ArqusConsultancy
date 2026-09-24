@@ -5,7 +5,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { RouterLink } from '@angular/router';
 import { InrCompactPipe, InrPipe } from '../../../shared/money/inr.pipe';
 import { Skeleton } from '../../../shared/skeleton/skeleton';
-import { LeadListItem, LeadStatus, ListMode, STATUS_LABELS } from '../data/lead.models';
+import { LOST_REASONS, LeadListItem, LeadStatus, ListMode, STATUS_LABELS } from '../data/lead.models';
 import { atBusinessTime, formatBusiness, formatBusinessFull, nextMonday, relativeLabel } from '../utils/business-time';
 import { formatPhone, toTelHref } from '../utils/phone';
 import { FollowupPill, LeadAvatar, LeadStatusChip } from './lead-bits';
@@ -32,7 +32,7 @@ export type RowAction =
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lead-rows.html',
-  styleUrl: './lead-rows.scss',
+  styleUrls: ['./lead-rows.scss', './leads-menu.scss'],
 })
 export class LeadRows {
   readonly rows = input.required<LeadListItem[]>();
@@ -42,6 +42,8 @@ export class LeadRows {
   readonly selected = input<ReadonlySet<number>>(new Set());
   readonly canAssign = input(false);
   readonly canFinalize = input(false);
+  /** Admins and Sales Managers see whether a won deal is finalized. */
+  readonly canSeeFinal = input(false);
   readonly skeleton = input(false);
   readonly now = input<Date>(new Date());
   readonly toggled = output<number>();
@@ -65,6 +67,10 @@ export class LeadRows {
       { label: 'In 3 days', at: atBusinessTime(3, 10, 0, now) },
       { label: 'Next Monday', at: nextMonday(10, now) },
     ];
+  }
+
+  protected reasonLabel(reason: string): string {
+    return LOST_REASONS.find((r) => r[0] === reason)?.[1] ?? '—';
   }
 
   protected label(status: string): string {

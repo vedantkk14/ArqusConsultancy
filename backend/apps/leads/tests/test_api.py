@@ -152,8 +152,8 @@ VALID = [
     ("CONTACTED", "INTERESTED"),
     ("CONTACTED", "WON"),
     ("CONTACTED", "LOST"),
-    ("INTERESTED", "CONTACTED"),
     ("INTERESTED", "WON"),
+    ("WON", "LOST"),
     ("INTERESTED", "LOST"),
     ("LOST", "CONTACTED"),
 ]
@@ -557,3 +557,48 @@ def test_admin_can_own_work_and_close_a_lead(client_for, admin, make_lead):
     assert r.status_code == 200 and r.json()["status"] == "WON"
     r = c.post(f"{BASE}/{lead.id}/finalize", {"amount": "500000"})
     assert r.status_code == 409 and err(r) == "accounts_not_ready"  # until Dev C ships finalize
+
+
+def test_interested_cannot_go_back_to_contacted(client_for, manager, make_lead):
+    lead = make_lead(status=LeadStatus.INTERESTED)
+    data = client_for(manager).get(f"{BASE}/{lead.id}").json()
+    assert data["allowed_transitions"] == ["WON", "LOST"]
+
+
+def test_won_can_still_be_lost_by_managers_only_before_payment(
+    client_for, manager, exec_a, make_lead
+):
+    lead = make_lead(status=LeadStatus.WON, assigned_to=exec_a, proposed_amount=900)
+    assert client_for(exec_a).get(f"{BASE}/{lead.id}").json()["allowed_transitions"] == []
+    assert client_for(manager).get(f"{BASE}/{lead.id}").json()["allowed_transitions"] == ["LOST"]
+    r = client_for(exec_a).post(
+        f"{BASE}/{lead.id}/status", {"status": "LOST", "lost_reason": "PRICE"}
+    )
+    assert err(r) == "invalid_transition"
+
+    with mock.patch.object(integrations, "payments_received", return_value=True):
+        r = client_for(manager).post(
+            f"{BASE}/{lead.id}/status", {"status": "LOST", "lost_reason": "PRICE"}
+        )
+    assert r.status_code == 409 and err(r) == "has_payments"
+    lead.refresh_from_db()
+    assert lead.status == LeadStatus.WON
+
+    with (
+        mock.patch.object(integrations, "cancel_ledger") as cancel,
+        mock.patch.object(integrations, "_notify") as notify,
+    ):
+        r = client_for(manager).post(
+            f"{BASE}/{lead.id}/status", {"status": "LOST", "lost_reason": "PRICE"}
+        )
+    assert r.status_code == 200 and r.json()["status"] == "LOST" and r.json()["won_at"] is None
+    cancel.assert_called_once()
+    assert notify.call_count == 0 or all(
+        c.args[1] == "lead_won_reversed" for c in notify.call_args_list
+    )
+
+
+def test_finalized_flag_is_for_managers_only(client_for, manager, exec_a, make_lead):
+    make_lead(status=LeadStatus.WON, assigned_to=exec_a, proposed_amount=5)
+    assert client_for(manager).get(BASE).json()["results"][0]["finalized"] is False
+    assert "finalized" not in client_for(exec_a).get(BASE).json()["results"][0]

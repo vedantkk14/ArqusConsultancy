@@ -16,6 +16,7 @@ from .exceptions import (
     FollowupInPast,
     FollowupOnClosed,
     HasLedger,
+    HasPayments,
     InvalidTransition,
     NotWon,
     PhoneUnusable,
@@ -36,6 +37,8 @@ from .utils import phone_digits
 EXEC_CAN_CREATE_LEADS = False
 FINAL_AMOUNT_VISIBLE_TO = {ADMIN, SALES_MANAGER}
 REOPEN_ROLES = {ADMIN, SALES_MANAGER}
+# A won deal is not final until money arrives, so a manager can still mark it lost.
+WON_TO_LOST_ROLES = {ADMIN, SALES_MANAGER}
 FOLLOWUP_TOLERANCE = timedelta(minutes=5)
 BULK_ASSIGN_LIMIT = 100
 # Who can own a lead: sales execs, and admins who work a lead themselves.
@@ -45,8 +48,8 @@ COMPANY_NAME = "ARQUS Sports Consultancy"
 TRANSITIONS: dict[str, set[str]] = {
     LeadStatus.NEW: {LeadStatus.CONTACTED, LeadStatus.LOST},
     LeadStatus.CONTACTED: {LeadStatus.INTERESTED, LeadStatus.WON, LeadStatus.LOST},
-    LeadStatus.INTERESTED: {LeadStatus.CONTACTED, LeadStatus.WON, LeadStatus.LOST},
-    LeadStatus.WON: set(),
+    LeadStatus.INTERESTED: {LeadStatus.WON, LeadStatus.LOST},  # no way back to Contacted
+    LeadStatus.WON: {LeadStatus.LOST},  # WON_TO_LOST_ROLES only, and only before any payment
     LeadStatus.LOST: {LeadStatus.CONTACTED},  # reopen: REOPEN_ROLES only
 }
 USER_INTERACTION_TYPES = {
@@ -76,6 +79,8 @@ def allowed_transitions(lead: Lead, user) -> list[str]:
     allowed = set(TRANSITIONS.get(lead.status, set()))
     if lead.status == LeadStatus.LOST and user.role not in REOPEN_ROLES:
         allowed.discard(LeadStatus.CONTACTED)
+    if lead.status == LeadStatus.WON and user.role not in WON_TO_LOST_ROLES:
+        allowed.discard(LeadStatus.LOST)
     return [s for s in STATUS_ORDER if s in allowed]
 
 
@@ -217,6 +222,11 @@ def change_status(
     elif new_status == LeadStatus.LOST:
         if not lost_reason:
             raise ValidationError({"lost_reason": ["Choose why this lead was lost."]})
+        if old_status == LeadStatus.WON:
+            if integrations.payments_received(lead):
+                raise HasPayments()
+            lead.won_at = None
+            integrations.cancel_ledger(lead)
         lead.lost_reason = lost_reason
         lead.lost_note = lost_note
         lead.next_followup_at = None
@@ -241,6 +251,10 @@ def change_status(
         meta=meta,
     )
 
+    if old_status == LeadStatus.WON and new_status == LeadStatus.LOST:
+        payload = {"lead_id": lead.id, "lead_name": lead.name, "reversed_by": _name(by)}
+        for admin in get_user_model().objects.filter(role=ADMIN, is_active=True):
+            integrations.notify(admin, "lead_won_reversed", payload)
     if new_status == LeadStatus.WON:
         integrations.create_ledger(lead)
         payload = {

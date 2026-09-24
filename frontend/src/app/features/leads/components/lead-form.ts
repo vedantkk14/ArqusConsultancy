@@ -25,7 +25,9 @@ import {
   STATUS_LABELS,
 } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
-import { atBusinessTime, formatBusiness, toBusinessInput, toBusinessIso } from '../utils/business-time';
+import { FollowupPicker } from './followup-picker';
+import { LeadAvatar } from './lead-bits';
+import { toBusinessInput, toBusinessIso } from '../utils/business-time';
 import { localPart, normalizePhone } from '../utils/phone';
 
 export const REQUIREMENTS_MAX = 500;
@@ -49,10 +51,10 @@ export interface LeadFormSaved {
 /** Add / edit lead. Used by /leads/new and the "Edit lead" sheet on the detail page. */
 @Component({
   selector: 'app-lead-form',
-  imports: [MatButtonModule, MatIconModule, ReactiveFormsModule, RouterLink],
+  imports: [FollowupPicker, LeadAvatar, MatButtonModule, MatIconModule, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lead-form.html',
-  styleUrl: './lead-form.scss',
+  styleUrls: ['./lead-form.scss', './lead-form-pick.scss'],
 })
 export class LeadForm {
   /** Edit mode when set. */
@@ -74,11 +76,6 @@ export class LeadForm {
   protected readonly saving = signal(false);
   protected readonly formError = signal('');
   protected readonly submitted = signal(false);
-  protected readonly followupChips = [
-    { label: 'Today 5 pm', at: () => atBusinessTime(0, 17) },
-    { label: 'Tomorrow 10 am', at: () => atBusinessTime(1, 10) },
-    { label: 'In 3 days', at: () => atBusinessTime(3, 10) },
-  ];
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
@@ -94,10 +91,6 @@ export class LeadForm {
   private readonly values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
   protected readonly reqLength = computed(() => (this.values().requirements ?? '').length);
   protected readonly isOther = computed(() => this.values().source === 'OTHER');
-  protected readonly followupPreview = computed(() => {
-    const iso = toBusinessIso(this.values().next_followup_at ?? '');
-    return iso ? formatBusiness(iso) : '';
-  });
   protected readonly isEdit = computed(() => this.lead() !== null);
 
   ngOnInit(): void {
@@ -175,11 +168,6 @@ export class LeadForm {
   protected assignToMe(): void {
     this.form.controls.assigned_to.setValue(String(this.meId()));
     this.form.controls.assigned_to.markAsDirty();
-  }
-
-  protected setFollowup(iso: string): void {
-    this.form.controls.next_followup_at.setValue(toBusinessInput(iso));
-    this.form.controls.next_followup_at.markAsDirty();
   }
 
   protected autoPick(): void {

@@ -1,6 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
@@ -8,10 +7,9 @@ import { Subject, firstValueFrom, isObservable, of } from 'rxjs';
 import { LeadDetail } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
 import { unsavedChangesGuard } from '../pages/lead-new-page';
-import { FakeLeadsApi, SUMMARY, makeLead } from '../testing/fake-leads-api';
+import { FakeLeadsApi, makeLead } from '../testing/fake-leads-api';
 import { StatusDialog } from './dialogs/status-dialog';
 import { LeadForm } from './lead-form';
-import { LeadsBoard } from './leads-board';
 
 const text = (el: Element | null) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 
@@ -76,62 +74,6 @@ describe('StatusDialog', () => {
     failing.error({ status: 400, code: 'invalid_transition', message: 'This status change is not allowed.', details: {} });
     TestBed.tick();
     expect(text(el)).toContain('This status change is not allowed.');
-  });
-});
-
-describe('LeadsBoard', () => {
-  function setup(dialogResult: LeadDetail | undefined) {
-    const api = new FakeLeadsApi();
-    const dialog = { open: vi.fn(() => ({ afterClosed: () => of(dialogResult) })) };
-    TestBed.configureTestingModule({ providers: providers(api, [{ provide: MatDialog, useValue: dialog }]) });
-    const fixture = TestBed.createComponent(LeadsBoard);
-    fixture.componentRef.setInput('query', { ordering: '-created_at' });
-    fixture.componentRef.setInput('summary', SUMMARY);
-    fixture.detectChanges();
-    return { api, dialog, fixture };
-  }
-
-  const columnNames = (fixture: { nativeElement: HTMLElement }, status: string) =>
-    [...fixture.nativeElement.querySelectorAll(`section[aria-labelledby="col-${status}"] .nm`)].map(text);
-
-  it('loads one list per column and shows counts from the summary', () => {
-    const { api, fixture } = setup(undefined);
-    expect(api.listCalls.map((c) => c['status'])).toEqual(['NEW', 'CONTACTED', 'INTERESTED', 'WON', 'LOST']);
-    expect(api.listCalls[0]['page_size']).toBe(15);
-    expect(text(fixture.nativeElement.querySelector('section[aria-labelledby="col-WON"] header'))).toContain('₹4L');
-  });
-
-  it('moving to Won opens the dialog and puts the card back on cancel', () => {
-    const { dialog, fixture } = setup(undefined);
-    const lead = makeLead(9, { status: 'CONTACTED', allowed_transitions: ['INTERESTED', 'WON', 'LOST'] });
-    type Col = { status: string; rows: LeadDetail[]; loading: boolean };
-    const board = fixture.componentInstance as unknown as {
-      columns: WritableSignal<Col[]>;
-      move: (l: LeadDetail, to: string) => void;
-    };
-    // Seed the CONTACTED column directly (each column has its own request).
-    board.columns.update((cols) =>
-      cols.map((c) => (c.status === 'CONTACTED' ? { ...c, rows: [lead], loading: false } : { ...c, loading: false })),
-    );
-    fixture.detectChanges();
-    expect(columnNames(fixture, 'CONTACTED')).toEqual(['Lead 9']);
-
-    board.move(lead, 'WON');
-    fixture.detectChanges();
-    expect(dialog.open).toHaveBeenCalledWith(StatusDialog, expect.objectContaining({ data: { lead, to: 'WON' } }));
-    expect(columnNames(fixture, 'CONTACTED')).toEqual(['Lead 9']);
-    expect(columnNames(fixture, 'WON')).toEqual([]);
-  });
-
-  it('rejects a move the API does not allow, without a request', () => {
-    const { api, dialog, fixture } = setup(undefined);
-    const lead = makeLead(3, { status: 'NEW', allowed_transitions: ['CONTACTED', 'LOST'] });
-    const board = fixture.componentInstance as unknown as { move: (l: LeadDetail, to: string) => void };
-    board.move(lead, 'WON');
-    fixture.detectChanges();
-    expect(dialog.open).not.toHaveBeenCalled();
-    expect(api.statusCalls).toEqual([]);
-    expect(text(fixture.nativeElement.querySelector('[aria-live]'))).toContain("can't move from New to Won");
   });
 });
 

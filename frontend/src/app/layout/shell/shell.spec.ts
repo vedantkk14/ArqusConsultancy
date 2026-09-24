@@ -105,7 +105,8 @@ describe('Shell and sidebar', () => {
       'All Leads',
       'Add New Lead',
       'Overdue Follow-ups',
-      'Won - Awaiting Finalization',
+      'Won Leads',
+      'Lost Leads',
     ]);
 
     keydown(document.activeElement ?? flyout, 'Escape', 27);

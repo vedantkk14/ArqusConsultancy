@@ -7,6 +7,7 @@ import { ApiError } from '../../../../core/models';
 import { Assignee } from '../../data/lead.models';
 import { LeadsApi } from '../../data/leads-api.service';
 import { LeadAvatar } from '../lead-bits';
+import { DialogHead } from './dialog-head';
 
 export interface AssignDialogData {
   ids: number[];
@@ -18,7 +19,7 @@ export interface AssignDialogData {
 /** Pick a sales executive (with their open-lead count) for one lead or a selection. */
 @Component({
   selector: 'app-assign-dialog',
-  imports: [LeadAvatar, MatButtonModule, MatDialogModule],
+  imports: [DialogHead, LeadAvatar, MatButtonModule, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dialog.scss',
   styles: `
@@ -35,8 +36,7 @@ export interface AssignDialogData {
     input[type='radio'] { width: 18px; height: 18px; accent-color: var(--brand-deep); }
   `,
   template: `
-    <h2 mat-dialog-title>Assign to…</h2>
-    <p class="sub">{{ data.label }}</p>
+    <app-dialog-head title="Assign to…" [subtitle]="data.label" />
     @if (canTakeIt()) {
       <button matButton="outlined" type="button" class="me" (click)="choice.set(meId()); save()">Assign to me</button>
     }

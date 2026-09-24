@@ -1,0 +1,44 @@
+<div class="fp" [class.invalid]="invalid()">
+  <div class="quick" role="group" aria-label="Quick dates">
+    @for (q of quick; track q.label) {
+      <button type="button" class="chip" [disabled]="disabled()" (click)="setQuick(q.at())">{{ q.label }}</button>
+    }
+  </div>
+
+  <div class="dt">
+    <label class="f">
+      <span>Date</span>
+      <input type="date" [id]="inputId()" [min]="minDate" [value]="date()" [disabled]="disabled()" (change)="setDate($any($event.target).value)" />
+    </label>
+    <label class="f">
+      <span>Time</span>
+      <input type="time" [value]="time()" [disabled]="disabled() || !date()" (change)="setTime($any($event.target).value)" />
+    </label>
+  </div>
+
+  <div class="times" role="group" aria-label="Fix the time">
+    @for (t of times; track t.value) {
+      <button
+        type="button"
+        class="chip t"
+        [attr.aria-pressed]="time() === t.value"
+        [disabled]="disabled() || !date()"
+        (click)="setTime(t.value)"
+      >
+        {{ t.label }}
+      </button>
+    }
+    @if (customTime()) {
+      <span class="chip t on" aria-hidden="true">{{ time() }}</span>
+    }
+  </div>
+
+  <div class="foot">
+    @if (preview()) {
+      <p class="pv"><mat-icon aria-hidden="true">event_available</mat-icon>{{ preview() }} <span class="tz">IST</span></p>
+      <button type="button" class="clear" [disabled]="disabled()" (click)="clear()">Clear</button>
+    } @else {
+      <p class="pv muted">No follow-up set</p>
+    }
+  </div>
+</div>

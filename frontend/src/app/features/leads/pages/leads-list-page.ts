@@ -9,7 +9,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { interval, map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
-import { LayoutService } from '../../../layout/layout.service';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { AssignDialog, AssignDialogData } from '../components/dialogs/assign-dialog';
@@ -19,7 +18,6 @@ import { StatusDialog, StatusDialogData } from '../components/dialogs/status-dia
 import { WhatsAppDialog, WhatsAppDialogData } from '../components/dialogs/whatsapp-dialog';
 import { LeadFiltersBar } from '../components/lead-filters';
 import { LeadRows, RowAction } from '../components/lead-rows';
-import { LeadsBoard } from '../components/leads-board';
 import { Assignee, EMPTY_FILTERS, LeadDetail, LeadFilters, LeadListItem, ListMode } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
 import { LeadsListStore, filtersFromQuery, toQuery } from '../data/leads-list.store';
@@ -47,7 +45,7 @@ export function listInsight(s: { overdue: number; untouched: number; today: numb
 /** One page for All / Overdue / Won - awaiting finalization (mode from the route data). */
 @Component({
   selector: 'app-leads-list-page',
-  imports: [EmptyState, ErrorState, LeadFiltersBar, LeadRows, LeadsBoard, MatButtonModule, MatIconModule, RouterLink],
+  imports: [EmptyState, ErrorState, LeadFiltersBar, LeadRows, MatButtonModule, MatIconModule, RouterLink],
   providers: [LeadsListStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './leads-list-page.html',
@@ -60,7 +58,6 @@ export class LeadsListPage {
   private readonly api = inject(LeadsApi);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
-  protected readonly layout = inject(LayoutService);
   protected readonly store = inject(LeadsListStore);
 
   protected readonly mode: ListMode = this.route.snapshot.data['mode'] ?? 'all';
@@ -72,9 +69,6 @@ export class LeadsListPage {
   protected readonly query = computed(() => toQuery(this.mode, this.filters()), {
     equal: (a, b) => JSON.stringify(a) === JSON.stringify(b),
   });
-  protected readonly view = computed(() =>
-    this.mode === 'all' && this.layout.isDesktop() && this.queryMap().get('view') === 'board' ? 'board' : 'list',
-  );
 
   protected readonly wide = toSignal(inject(BreakpointObserver).observe('(min-width: 768px)').pipe(map((s) => s.matches)), {
     initialValue: true,
@@ -85,9 +79,15 @@ export class LeadsListPage {
   protected readonly insight = computed(() => (this.mode === 'all' ? listInsight(this.store.summary()) : ''));
   protected readonly countText = computed(() => {
     const n = this.store.count();
-    const noun = this.mode === 'won-awaiting' ? (n === 1 ? 'deal to finalize' : 'deals to finalize') : n === 1 ? 'lead' : 'leads';
-    return this.store.loaded() ? `${n} ${noun}` : 'Loading…';
+    const kind = this.mode === 'won' ? 'won ' : this.mode === 'lost' ? 'lost ' : '';
+    return this.store.loaded() ? `${n} ${kind}${n === 1 ? 'lead' : 'leads'}` : 'Loading…';
   });
+  protected readonly note = this.mode === 'won'
+    ? 'A won deal is final once payment is received. Until then a manager can still mark it lost.'
+    : this.mode === 'lost'
+      ? 'Lost leads stay here. A manager can reopen one as Contacted.'
+      : '';
+  protected readonly awaitingOnly = computed(() => this.filters().won_awaiting === 'true');
   protected readonly hasFilters = computed(() =>
     Object.entries(this.filters()).some(([key, value]) => key !== 'ordering' && value !== ''),
   );
@@ -113,8 +113,8 @@ export class LeadsListPage {
     this.navigate({ ...EMPTY_FILTERS });
   }
 
-  protected setView(view: 'list' | 'board'): void {
-    this.navigate({ view: view === 'board' ? 'board' : '' } as never);
+  protected setAwaiting(on: boolean): void {
+    this.navigate({ won_awaiting: on ? 'true' : '' });
   }
 
   private navigate(patch: Record<string, string>): void {
@@ -140,7 +140,14 @@ export class LeadsListPage {
         this.dialog
           .open<StatusDialog, StatusDialogData, LeadDetail>(StatusDialog, { data: { lead, to: action.to } })
           .afterClosed()
-          .subscribe((updated) => updated && this.store.reload());
+          .subscribe((updated) => {
+            if (!updated) {
+              return;
+            }
+            const where = updated.status === 'WON' ? 'Won leads' : updated.status === 'LOST' ? 'Lost leads' : '';
+            this.snack.open(where ? `${lead.name} moved to ${where}.` : `${lead.name} updated.`, undefined, { duration: 3500 });
+            this.store.reload();
+          });
         break;
       case 'snooze':
         this.snooze(lead, action.at);
@@ -210,7 +217,11 @@ export class LeadsListPage {
         if (!done) {
           return;
         }
-        this.store.removeRow(lead.id);
+        if (this.mode === 'won') {
+          this.store.patchRow(lead.id, { finalized: true });
+        } else {
+          this.store.removeRow(lead.id);
+        }
         this.store.refreshSummary();
         this.snack
           .open(`${lead.name} finalized.`, 'Convert to project', { duration: 8000 })

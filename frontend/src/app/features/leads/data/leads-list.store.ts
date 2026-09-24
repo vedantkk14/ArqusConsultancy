@@ -9,9 +9,10 @@ export const PAGE_SIZE = 20;
 
 /** Fixed query parts per page mode (the user's filters come on top). */
 export const MODE_PRESETS: Record<ListMode, { params: QueryParams; ordering: string }> = {
-  all: { params: {}, ordering: '-created_at' },
+  all: { params: { open: 'true' }, ordering: '-created_at' },
   overdue: { params: { followup: 'overdue' }, ordering: '-days_overdue' },
-  'won-awaiting': { params: { won_awaiting: 'true' }, ordering: 'won_at' },
+  won: { params: { status: 'WON' }, ordering: '-won_at' },
+  lost: { params: { status: 'LOST' }, ordering: '-last_activity_at' },
 };
 
 export function toQuery(mode: ListMode, filters: LeadFilters): QueryParams {

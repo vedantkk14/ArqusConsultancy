@@ -176,3 +176,18 @@ input[type='checkbox'] {
 @media (min-width: 1100px) {
   .c-src, .c-last { display: table-cell; }
 }
+
+.fin-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 600;
+
+  &.ok { background: var(--tint-teal); color: var(--tint-teal-ink); }
+  &.wait { background: var(--tint-amber); color: var(--tint-amber-ink); }
+}
+
+.acts .fin { margin-right: 6px; }

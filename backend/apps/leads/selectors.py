@@ -101,7 +101,9 @@ def with_list_annotations(qs: QuerySet) -> QuerySet:
         .order_by("-created_at")
         .values("created_at")[:1]
     )
-    return qs.annotate(last_activity_at=Subquery(latest))
+    return qs.annotate(
+        last_activity_at=Subquery(latest), is_finalized=integrations.finalized_exists()
+    )
 
 
 def summary(qs: QuerySet, now: datetime | None = None) -> dict:

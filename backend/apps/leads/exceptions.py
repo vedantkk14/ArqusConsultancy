@@ -45,6 +45,12 @@ class HasLedger(LeadError):
     default_detail = "This lead has an account ledger and cannot be deleted."
 
 
+class HasPayments(LeadError):
+    status_code = status.HTTP_409_CONFLICT
+    default_code = "has_payments"
+    default_detail = "Payment has already been received, so this deal can no longer be marked lost."
+
+
 class NotWon(LeadError):
     default_code = "not_won"
     default_detail = "Only won leads can be finalized."

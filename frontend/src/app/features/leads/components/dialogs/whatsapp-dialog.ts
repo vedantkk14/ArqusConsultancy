@@ -5,6 +5,7 @@ import { ApiError } from '../../../../core/models';
 import { WhatsAppTemplate } from '../../data/lead.models';
 import { LeadsApi } from '../../data/leads-api.service';
 import { normalizePhone } from '../../utils/phone';
+import { DialogHead } from './dialog-head';
 
 export interface WhatsAppDialogData {
   lead: { id: number; name: string; phone: string };
@@ -13,7 +14,7 @@ export interface WhatsAppDialogData {
 /** Choose a template, see the message the server renders, then open WhatsApp (logged on the timeline). */
 @Component({
   selector: 'app-whatsapp-dialog',
-  imports: [MatButtonModule, MatDialogModule],
+  imports: [DialogHead, MatButtonModule, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dialog.scss',
   styles: `
@@ -29,8 +30,7 @@ export interface WhatsAppDialogData {
     }
   `,
   template: `
-    <h2 mat-dialog-title>WhatsApp {{ data.lead.name }}</h2>
-    <p class="sub">Pick a message. It opens in WhatsApp for you to send.</p>
+    <app-dialog-head [title]="'WhatsApp ' + data.lead.name" subtitle="Pick a message. It opens in WhatsApp for you to send." />
     <div class="tpls" role="group" aria-label="Templates">
       @for (t of templates(); track t.id) {
         <button type="button" class="tpl" [attr.aria-pressed]="choice() === t.id" (click)="pick(t.id)">{{ t.name }}</button>

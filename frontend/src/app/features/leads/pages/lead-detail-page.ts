@@ -55,7 +55,7 @@ const MANAGERS: Role[] = [Role.Admin, Role.SalesManager];
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lead-detail-page.html',
-  styleUrls: ['./lead-detail-page.scss', './lead-detail-cards.scss'],
+  styleUrls: ['./lead-detail-page.scss', './lead-detail-cards.scss', '../components/leads-menu.scss'],
 })
 export class LeadDetailPage {
   private readonly route = inject(ActivatedRoute);
@@ -77,6 +77,16 @@ export class LeadDetailPage {
     return fresh && base && fresh.id === base.id ? fresh : base;
   });
   protected readonly timelineTick = signal(0);
+
+  /** Back goes to the list the lead belongs to: All leads, or Won / Lost leads once it is closed. */
+  protected readonly back = computed(() => {
+    const status = this.lead()?.status;
+    return status === 'WON'
+      ? { link: '/leads/won', label: 'Won leads' }
+      : status === 'LOST'
+        ? { link: '/leads/lost', label: 'Lost leads' }
+        : { link: '/leads/all', label: 'All leads' };
+  });
 
   protected readonly isManager = computed(() => MANAGERS.includes(this.auth.role() as Role));
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
@@ -148,6 +158,9 @@ export class LeadDetailPage {
     this.dialog
       .open<EditLeadDialog, EditLeadDialogData, LeadDetail>(EditLeadDialog, {
         data: { lead, limited: !this.isManager() },
+        // Material caps dialogs at 560px; the form's two-column layout needs more room.
+        width: '760px',
+        maxWidth: 'calc(100vw - 32px)',
         autoFocus: 'first-tabbable',
       })
       .afterClosed()

@@ -1,66 +1,69 @@
 :host {
   display: block;
+  container-type: inline-size;
 }
 
+// ---- Sections: label column on wide screens, stacked on phones and in dialogs -------------------
 .sec {
-  margin: 0 0 var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--line);
 
-  &:focus-within {
-    border-color: var(--line-cyan);
-    box-shadow: var(--shadow-1);
+  &:first-of-type {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+.lab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: 600;
   }
 
-  legend {
-    display: flex;
-    float: left; // keeps the legend inside the card box
-    width: 100%;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: var(--space-4);
-    padding: 0;
-
-    + * { clear: both; }
+  p {
+    margin: 2px 0 0;
+    color: var(--ink-3);
+    font-size: var(--text-sm);
   }
 }
 
 .ic {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   flex: none;
   place-items: center;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--tint-cyan);
   color: var(--tint-cyan-ink);
 
-  mat-icon { width: 20px; height: 20px; font-size: 20px; }
+  mat-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+  }
 }
 
-.lg { display: flex; flex-direction: column; line-height: 1.3; }
-.lt { color: var(--ink); font-size: var(--text-md); font-weight: 600; }
-.lh { color: var(--ink-3); font-size: var(--text-sm); }
+.body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-3);
+}
 
 .grid {
   display: grid;
   gap: var(--space-4);
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-3);
-}
-
-.grow {
-  flex: 1 1 240px;
-}
-
+// ---- Fields: filled, calm, clear focus -----------------------------------------------------------
 .field {
   display: flex;
   min-width: 0;
@@ -79,17 +82,29 @@
   font-weight: 400;
 }
 
-input,
+input:not([type='radio']),
 select,
 textarea {
   width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
+  min-height: 48px;
+  padding: 10px 14px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--ink);
   font: inherit;
+  transition: background-color var(--dur-fast), border-color var(--dur-fast);
+
+  &::placeholder {
+    color: var(--ink-3);
+  }
+
+  &:focus {
+    border-color: var(--brand-deep);
+    background: var(--surface);
+    outline: 2px solid var(--brand-deep);
+    outline-offset: 1px;
+  }
 
   &[aria-invalid='true'] {
     border-color: var(--negative);
@@ -110,9 +125,12 @@ textarea {
   align-items: stretch;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
-  background: var(--surface);
+  background: var(--surface-2);
+  overflow: hidden;
 
   &:focus-within {
+    border-color: var(--brand-deep);
+    background: var(--surface);
     outline: 2px solid var(--brand-deep);
     outline-offset: 1px;
   }
@@ -123,16 +141,18 @@ textarea {
 
   .pre {
     display: grid;
-    padding: 0 10px 0 12px;
+    padding: 0 12px 0 14px;
     place-items: center;
     border-right: 1px solid var(--line);
-    color: var(--ink-3);
-    font-weight: 500;
+    color: var(--ink-2);
+    font-weight: 600;
   }
 
-  input {
+  input:not([type='radio']) {
     border: 0;
-    outline: none;
+    border-radius: 0;
+    background: transparent;
+    outline: none !important;
   }
 }
 
@@ -147,6 +167,7 @@ textarea {
   margin: 0;
   color: var(--ink-3);
   font-size: var(--text-xs);
+  text-align: right;
 
   &.over {
     color: var(--negative);
@@ -177,45 +198,19 @@ textarea {
   }
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip {
-  min-height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--ink-2);
-  font: inherit;
-  font-size: var(--text-sm);
-  cursor: pointer;
-
-  &:hover {
-    border-color: var(--line-strong);
-  }
-}
-
-.auto {
-  min-height: 44px;
-}
-
+// ---- Action bar ------------------------------------------------------------------------------------------
 .bar {
   position: sticky;
   bottom: calc(var(--tabbar-h, 64px) + env(safe-area-inset-bottom));
   z-index: 3;
   display: flex;
-  justify-content: flex-end;
   gap: var(--space-2);
   margin: 0;
   padding: var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
   box-shadow: var(--shadow-2);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(6px);
 
   > * {
@@ -223,19 +218,44 @@ textarea {
   }
 }
 
-@media (min-width: 768px) {
+@container (min-width: 480px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .wide {
+      grid-column: 1 / -1;
+    }
   }
 
+  .people {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 760px) {
+  .sec {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: var(--space-8);
+    padding: var(--space-6) 0;
+
+    &:first-of-type {
+      padding-top: 0;
+    }
+  }
+
+  .lab {
+    align-items: flex-start;
+  }
   .bar {
     position: static;
-    margin: 0;
-    padding: var(--space-2) 0 0;
+    justify-content: flex-end;
+    margin-top: var(--space-2);
+    padding: var(--space-4) 0 0;
     border: 0;
+    border-top: 1px solid var(--line);
     border-radius: 0;
-    box-shadow: none;
     background: none;
+    box-shadow: none;
     backdrop-filter: none;
 
     > * {
@@ -244,8 +264,18 @@ textarea {
   }
 }
 
-@media (min-width: 1024px) {
-  .bar {
-    bottom: env(safe-area-inset-bottom);
+// In the edit dialog the actions stay at the bottom of the dialog: Cancel (left) and Save (right).
+:host-context(app-edit-lead-dialog) .bar {
+  bottom: -1px;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: none;
+
+  > * {
+    flex: none;
   }
 }

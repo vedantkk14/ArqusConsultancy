@@ -39,7 +39,7 @@
     background: transparent;
     color: var(--ink);
     font: inherit;
-    outline: none;
+    outline: none !important; // the box itself shows the focus ring
   }
 }
 

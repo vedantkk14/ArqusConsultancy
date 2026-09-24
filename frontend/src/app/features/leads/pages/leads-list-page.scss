@@ -33,6 +33,7 @@
 
 .seg {
   display: inline-flex;
+  align-self: flex-start;
   padding: 3px;
   border: 1px solid var(--line);
   border-radius: var(--radius-control);

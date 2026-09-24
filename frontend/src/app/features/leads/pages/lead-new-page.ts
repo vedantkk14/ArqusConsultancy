@@ -7,7 +7,6 @@ import { Observable, map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog';
-import { PanelHead } from '../../dashboard/components/panel-head';
 import { LeadForm, LeadFormSaved } from '../components/lead-form';
 
 export interface LeavesWithChanges {
@@ -34,15 +33,21 @@ export const unsavedChangesGuard: CanDeactivateFn<LeavesWithChanges> = (componen
 
 @Component({
   selector: 'app-lead-new-page',
-  imports: [LeadForm, MatIconModule, PanelHead],
+  imports: [LeadForm, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="layout">
       <section class="main rise-in" aria-labelledby="new-lead-title">
         <header class="intro">
-          <app-panel-head title="New lead" subtitle="Only name and mobile number are required." headingId="new-lead-title" />
+          <span class="badge" aria-hidden="true"><mat-icon>person_add</mat-icon></span>
+          <div>
+            <h2 id="new-lead-title">New lead</h2>
+            <p>Only name and mobile number are required. The rest can wait.</p>
+          </div>
         </header>
-        <app-lead-form [canAssign]="canAssign()" (saved)="onSaved($event)" />
+        <div class="card form-card">
+          <app-lead-form [canAssign]="canAssign()" (saved)="onSaved($event)" />
+        </div>
       </section>
       <aside class="tips card" aria-label="Tips">
         <h2>Good to know</h2>
@@ -56,20 +61,28 @@ export const unsavedChangesGuard: CanDeactivateFn<LeavesWithChanges> = (componen
     </div>
   `,
   styles: `
-    :host { display: block; max-width: 1180px; }
+    :host { display: block; container-type: inline-size; max-width: 1180px; }
     .layout { display: grid; gap: var(--space-5); align-items: start; }
-    .intro { padding: var(--space-5); margin-bottom: var(--space-4); border-radius: var(--radius-card); background: var(--grad-ink); }
-    .intro ::ng-deep h2 { color: var(--on-ink); font-size: var(--text-lg); }
-    .intro ::ng-deep p { color: rgba(255, 255, 255, 0.78); }
-    .intro ::ng-deep app-panel-head { margin: 0; }
+    .intro {
+      position: relative; display: flex; align-items: center; gap: 16px; overflow: hidden;
+      margin-bottom: var(--space-4); padding: var(--space-5); border-radius: var(--radius-card);
+      background: radial-gradient(60% 120% at 100% 0%, color-mix(in srgb, var(--data-cyan) 30%, transparent), transparent 70%), var(--grad-ink);
+      color: var(--on-ink);
+    }
+    .badge { display: grid; width: 48px; height: 48px; flex: none; place-items: center; border-radius: 14px; background: rgba(255, 255, 255, 0.12); }
+    .badge mat-icon { width: 26px; height: 26px; font-size: 26px; }
+    .intro h2 { margin: 0; color: var(--on-ink); font-size: var(--text-lg); }
+    .intro p { margin: 2px 0 0; color: rgba(255, 255, 255, 0.8); font-size: var(--text-sm); }
+    .form-card { padding: var(--space-5); }
     .tips { display: none; padding: var(--space-5); }
     .tips h2 { margin: 0 0 var(--space-3); font-size: var(--text-md); }
     .tips ul { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
     .tips li { display: flex; gap: 10px; color: var(--ink-2); font-size: var(--text-sm); line-height: 1.45; }
     .tips mat-icon { flex: none; width: 20px; height: 20px; font-size: 20px; color: var(--brand-deep); }
-    @media (min-width: 1100px) {
-      .layout { grid-template-columns: minmax(0, 1fr) 300px; }
+    @container (min-width: 900px) {
+      .layout { grid-template-columns: minmax(0, 1fr) 280px; }
       .tips { display: block; }
+      .form-card { padding: var(--space-6); }
     }
   `,
 })
@@ -92,4 +105,3 @@ export class LeadNewPage implements LeavesWithChanges {
     }
   }
 }
-

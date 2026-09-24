@@ -1,0 +1,136 @@
+:host {
+  display: block;
+}
+
+.fp {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quick,
+.times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--line-strong);
+    color: var(--ink);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  // The selected chip keeps its white text while hovered (hover would otherwise darken the label).
+  &[aria-pressed='true'],
+  &[aria-pressed='true']:hover:not(:disabled),
+  &.on {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--on-ink);
+    font-weight: 600;
+  }
+}
+
+.dt {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 10px;
+}
+
+.f {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+
+  span {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+  }
+
+  input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+
+    &:disabled {
+      background: var(--subtle);
+      color: var(--ink-3);
+    }
+  }
+}
+
+.invalid .f input {
+  border-color: var(--negative);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.pv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--tint-teal-ink);
+  font-size: var(--text-sm);
+  font-weight: 500;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &.muted {
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+}
+
+.tz {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.clear {
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--negative);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

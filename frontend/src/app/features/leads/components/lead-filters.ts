@@ -51,17 +51,20 @@ export class LeadFiltersBar {
   readonly changed = output<Partial<LeadFilters>>();
   readonly cleared = output<void>();
 
-  protected readonly statuses = LEAD_STATUSES;
+  /** All leads shows open leads only: Won and Lost have their own pages. */
+  protected readonly statuses = LEAD_STATUSES.filter((s) => s !== 'WON' && s !== 'LOST');
   protected readonly labels = STATUS_LABELS;
   protected readonly sources = LEAD_SOURCES;
   protected readonly orderings = ORDERINGS;
   protected readonly search = signal('');
-  protected readonly showChips = computed(() => this.mode() !== 'won-awaiting');
+  protected readonly showChips = computed(() => this.mode() === 'all');
   protected readonly dropdownCount = computed(() => activeFilterCount(this.filters()));
   protected readonly anyActive = computed(() =>
     Object.entries(this.filters()).some(([key, value]) => key !== 'ordering' && value !== ''),
   );
-  protected readonly total = computed(() => this.summary()?.by_status.reduce((sum, s) => sum + s.count, 0) ?? null);
+  protected readonly total = computed(
+    () => this.summary()?.by_status.filter((s) => s.status !== 'WON' && s.status !== 'LOST').reduce((sum, s) => sum + s.count, 0) ?? null,
+  );
 
   private readonly sheet = inject(MatBottomSheet);
   private readonly sheetTpl = viewChild.required<TemplateRef<unknown>>('sheet');

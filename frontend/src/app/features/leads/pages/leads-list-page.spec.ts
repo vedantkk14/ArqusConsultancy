@@ -19,7 +19,8 @@ async function setup(role: Role = Role.Admin, url = '/leads/all') {
       provideRouter([
         { path: 'leads/all', component: LeadsListPage, data: { mode: 'all' } },
         { path: 'leads/overdue', component: LeadsListPage, data: { mode: 'overdue' } },
-        { path: 'leads/won-awaiting', component: LeadsListPage, data: { mode: 'won-awaiting' } },
+        { path: 'leads/won', component: LeadsListPage, data: { mode: 'won' } },
+        { path: 'leads/lost', component: LeadsListPage, data: { mode: 'lost' } },
       ]),
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -104,17 +105,47 @@ describe('LeadsListPage', () => {
     expect(text(el.querySelector('.bulk'))).toContain('1 selected');
   });
 
-  it('shows Finalize only to Admin in the won-awaiting list', async () => {
-    const admin = await setup(Role.Admin, '/leads/won-awaiting');
-    expect(admin.api.listCalls[0]).toMatchObject({ won_awaiting: 'true', ordering: 'won_at' });
-    admin.resolve([makeLead(3, { status: 'WON', proposed_amount: '400000.00', won_at: '2026-09-20T06:30:00Z' })]);
-    expect(buttonByText(admin.el, 'Finalize')).toBeTruthy();
+  it('All leads shows open leads only, with chips for the open statuses', async () => {
+    const { api, el, resolve } = await setup();
+    expect(api.listCalls[0]).toMatchObject({ open: 'true', ordering: '-created_at' });
+    resolve();
+    const chips = [...el.querySelectorAll('.chips .chip')].map((c) => text(c).replace(/\d+$/, '').trim());
+    expect(chips).toEqual(['All', 'New', 'Contacted', 'Interested']);
+  });
+
+  it('Won and Lost have their own lists', async () => {
+    const won = await setup(Role.Admin, '/leads/won');
+    expect(won.api.listCalls[0]).toMatchObject({ status: 'WON', ordering: '-won_at' });
+    TestBed.resetTestingModule();
+    const lost = await setup(Role.Admin, '/leads/lost');
+    expect(lost.api.listCalls[0]).toMatchObject({ status: 'LOST' });
+  });
+
+  it('Won list: Finalize is Admin only and only while awaiting; the filter goes in the URL', async () => {
+    const rows = [
+      makeLead(3, { status: 'WON', proposed_amount: '400000.00', won_at: '2026-09-20T06:30:00Z', finalized: false, allowed_transitions: ['LOST'] }),
+      makeLead(4, { status: 'WON', proposed_amount: '100000.00', won_at: '2026-09-18T06:30:00Z', finalized: true, allowed_transitions: ['LOST'] }),
+    ];
+    const admin = await setup(Role.Admin, '/leads/won');
+    admin.resolve(rows);
+    expect(admin.el.querySelectorAll('button.fin').length).toBe(1);
+    expect(text(admin.el)).toContain('Finalized');
+    expect(text(admin.el)).toContain('Awaiting');
+    buttonByText(admin.el, 'Awaiting finalization')!.click();
+    await admin.harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/leads/won?won_awaiting=true');
+    expect(admin.api.listCalls.at(-1)).toMatchObject({ status: 'WON', won_awaiting: 'true' });
 
     TestBed.resetTestingModule();
-    const manager = await setup(Role.SalesManager, '/leads/won-awaiting');
-    manager.resolve([makeLead(3, { status: 'WON', proposed_amount: '400000.00', won_at: '2026-09-20T06:30:00Z' })]);
-    expect(buttonByText(manager.el, 'Finalize')).toBeUndefined();
-    expect(text(manager.el)).toContain('Admin finalizes');
+    const manager = await setup(Role.SalesManager, '/leads/won');
+    manager.resolve(rows);
+    expect(manager.el.querySelectorAll('button.fin').length).toBe(0);
+    expect(text(manager.el)).toContain('Finalized');
+
+    TestBed.resetTestingModule();
+    const exec = await setup(Role.SalesExec, '/leads/won');
+    exec.resolve(rows.map(({ finalized: _f, ...r }) => r));
+    expect(text(exec.el)).not.toContain('Finalization');
   });
 
   it('snoozes optimistically and puts the row back when the save fails', async () => {
@@ -150,7 +181,8 @@ describe('list helpers', () => {
   it('round-trips filters and applies mode presets', () => {
     const f = filtersFromQuery((k) => ({ status: 'WON', q: 'ra' })[k] ?? null);
     expect(f).toEqual({ ...EMPTY_FILTERS, status: 'WON', q: 'ra' });
-    expect(toQuery('all', f)).toEqual({ status: 'WON', q: 'ra', ordering: '-created_at' });
+    expect(toQuery('all', f)).toEqual({ status: 'WON', q: 'ra', open: 'true', ordering: '-created_at' });
+    expect(toQuery('won', EMPTY_FILTERS)).toEqual({ status: 'WON', ordering: '-won_at' });
     expect(toQuery('overdue', EMPTY_FILTERS)).toEqual({ followup: 'overdue', ordering: '-days_overdue' });
   });
 

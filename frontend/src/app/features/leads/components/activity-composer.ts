@@ -14,8 +14,9 @@ import {
   UserInteractionType,
 } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
-import { atBusinessTime, formatBusiness, toBusinessInput, toBusinessIso } from '../utils/business-time';
+import { toBusinessIso } from '../utils/business-time';
 import { serverErrors } from './dialogs/status-dialog';
+import { FollowupPicker } from './followup-picker';
 import { MoneyInput, isPositiveMoney } from './money-input';
 
 export const TYPE_META: Record<string, { label: string; icon: string; tint: string }> = {
@@ -32,7 +33,7 @@ export const TYPE_META: Record<string, { label: string; icon: string; tint: stri
 /** Log a call / WhatsApp / email / meeting / note, optionally moving the stage and setting a follow-up. */
 @Component({
   selector: 'app-activity-composer',
-  imports: [FormsModule, MatButtonModule, MatIconModule, MoneyInput],
+  imports: [FollowupPicker, FormsModule, MatButtonModule, MatIconModule, MoneyInput],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './activity-composer.html',
   styleUrl: './activity-composer.scss',
@@ -48,11 +49,6 @@ export class ActivityComposer {
   protected readonly meta = TYPE_META;
   protected readonly labels = STATUS_LABELS;
   protected readonly reasons = LOST_REASONS;
-  protected readonly quick = [
-    { label: 'Today 5 pm', at: () => atBusinessTime(0, 17) },
-    { label: 'Tomorrow 10 am', at: () => atBusinessTime(1, 10) },
-    { label: 'In 3 days', at: () => atBusinessTime(3, 10) },
-  ];
 
   protected readonly type = signal<UserInteractionType>('CALL');
   protected notes = '';
@@ -82,16 +78,6 @@ export class ActivityComposer {
 
   focus(): void {
     this.notesBox()?.nativeElement.focus();
-  }
-
-  protected setFollowup(iso: string): void {
-    this.followup = toBusinessInput(iso);
-    this.followupSet.set(true);
-  }
-
-  protected preview(): string {
-    const iso = toBusinessIso(this.followup);
-    return iso ? formatBusiness(iso) : '';
   }
 
   protected submit(): void {

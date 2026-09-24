@@ -1,4 +1,8 @@
 @if (lead(); as lead) {
+  <a class="back" [routerLink]="back().link">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>{{ back().label }}
+  </a>
+
   <!-- Header card -->
   <section class="card head rise-in" [class]="'card head rise-in g-' + glow()" aria-label="Lead summary">
     <div class="id">
@@ -71,7 +75,7 @@
         <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + lead.name">
           <mat-icon aria-hidden="true">more_vert</mat-icon>
         </button>
-        <mat-menu #over="matMenu" xPosition="before">
+        <mat-menu #over="matMenu" xPosition="before" class="leads-menu">
           <button mat-menu-item type="button" (click)="remove(lead)"><mat-icon>delete</mat-icon>Delete lead</button>
         </mat-menu>
       }
@@ -106,6 +110,7 @@
           <app-panel-head title="Deal" subtitle="Handed to accounts when won" headingId="deal-title" />
           <p class="big num">{{ lead.proposed_amount | inr }}</p>
           <p class="small">Proposed value</p>
+          <p class="small hold">Not final until payment is received.</p>
           @if (lead.finance; as f) {
             @if (f.finalized) {
               <p class="chip ok">Finalized</p>

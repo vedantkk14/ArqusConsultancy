@@ -1,13 +1,21 @@
 <form [formGroup]="form" (ngSubmit)="submit(false)" novalidate>
-  <fieldset class="sec">
-    <legend><span class="ic" aria-hidden="true"><mat-icon>person</mat-icon></span><span class="lg"><span class="lt">Contact</span><span class="lh">Who should we talk to?</span></span></legend>
-    <div class="grid">
+  <!-- Contact -->
+  <section class="sec" aria-labelledby="lf-h-contact">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>person</mat-icon></span>
+      <div>
+        <h3 id="lf-h-contact">Contact</h3>
+        <p>Who should we talk to?</p>
+      </div>
+    </div>
+    <div class="body grid">
       <div class="field">
         <label for="lf-name">Name</label>
         <input
           id="lf-name"
           formControlName="name"
           autocomplete="name"
+          placeholder="e.g. Rahul Sharma"
           [attr.aria-invalid]="showError('name') || null"
           [attr.aria-describedby]="showError('name') ? 'lf-name-err' : null"
         />
@@ -48,13 +56,14 @@
         }
       </div>
 
-      <div class="field">
+      <div class="field wide">
         <label for="lf-email">Email <span class="opt">(optional)</span></label>
         <input
           id="lf-email"
           formControlName="email"
           type="email"
           autocomplete="email"
+          placeholder="name@company.com"
           [attr.aria-invalid]="showError('email') || null"
           [attr.aria-describedby]="showError('email') ? 'lf-email-err' : null"
         />
@@ -63,86 +72,118 @@
         }
       </div>
     </div>
-  </fieldset>
+  </section>
 
-  <fieldset class="sec">
-    <legend><span class="ic" aria-hidden="true"><mat-icon>travel_explore</mat-icon></span><span class="lg"><span class="lt">Source</span><span class="lh">Helps us see which channels work.</span></span></legend>
-    <div class="grid">
-      <div class="field">
-        <label for="lf-source">Where did this lead come from?</label>
-        <select id="lf-source" formControlName="source">
-          @for (s of sources; track s[0]) {
-            <option [value]="s[0]">{{ s[1] }}</option>
-          }
-        </select>
+  <!-- Source -->
+  <section class="sec" aria-labelledby="lf-h-source">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>travel_explore</mat-icon></span>
+      <div>
+        <h3 id="lf-h-source">Source</h3>
+        <p>Where did this lead come from?</p>
+      </div>
+    </div>
+    <div class="body">
+      <div class="chipset" role="radiogroup" aria-labelledby="lf-h-source">
+        @for (s of sources; track s[0]) {
+          <label class="opt-chip">
+            <input type="radio" formControlName="source" [value]="s[0]" />
+            <span>{{ s[1] }}</span>
+          </label>
+        }
       </div>
       @if (isOther()) {
         <div class="field">
           <label for="lf-source-other">Describe the source</label>
-          <input id="lf-source-other" formControlName="source_other" />
+          <input id="lf-source-other" formControlName="source_other" placeholder="e.g. Newspaper ad" />
         </div>
       }
     </div>
-  </fieldset>
+  </section>
 
-  <fieldset class="sec">
-    <legend><span class="ic" aria-hidden="true"><mat-icon>description</mat-icon></span><span class="lg"><span class="lt">Requirements</span><span class="lh">A line or two is enough.</span></span></legend>
-    <div class="field">
-      <label for="lf-req">What does the client need? <span class="opt">(optional)</span></label>
-      <textarea id="lf-req" formControlName="requirements" rows="4" aria-describedby="lf-req-count"></textarea>
-      <p class="hint" id="lf-req-count" [class.over]="reqLength() > maxReq">{{ reqLength() }} / {{ maxReq }}</p>
-    </div>
-  </fieldset>
-
-  @if (canAssign() && !isEdit()) {
-    <fieldset class="sec">
-      <legend><span class="ic" aria-hidden="true"><mat-icon>group</mat-icon></span><span class="lg"><span class="lt">Assignment</span><span class="lh">Who will work this lead.</span></span></legend>
-      <div class="row">
-        <div class="field grow">
-          <label for="lf-assign">Assign to</label>
-          <select id="lf-assign" formControlName="assigned_to">
-            <option value="">Assign later</option>
-            @for (a of assignees(); track a.id) {
-              <option [value]="'' + a.id">
-                {{ a.name }}{{ a.id === meId() ? ' (you)' : a.role === 'ADMIN' ? ' (Admin)' : '' }} · {{ a.open_count }} open
-              </option>
-            }
-          </select>
-        </div>
-        @if (amAssignee()) {
-          <button matButton="outlined" type="button" class="auto" (click)="assignToMe()">Assign to me</button>
-        }
-        <button matButton="outlined" type="button" class="auto" [disabled]="!assignees().length" (click)="autoPick()">
-          Auto-pick least loaded
-        </button>
+  <!-- Requirements -->
+  <section class="sec" aria-labelledby="lf-h-req">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>description</mat-icon></span>
+      <div>
+        <h3 id="lf-h-req">Requirements</h3>
+        <p>A line or two is enough.</p>
       </div>
-    </fieldset>
-  }
-
-  @if (!limited()) {
-    <fieldset class="sec">
-      <legend><span class="ic" aria-hidden="true"><mat-icon>event</mat-icon></span><span class="lg"><span class="lt">Follow-up</span><span class="lh">When to reach out next.</span></span></legend>
+    </div>
+    <div class="body">
       <div class="field">
-        <label for="lf-fu">Next follow-up <span class="opt">(optional, IST)</span></label>
-        <input
-          id="lf-fu"
-          type="datetime-local"
-          formControlName="next_followup_at"
-          [attr.aria-invalid]="showError('next_followup_at') || null"
-          [attr.aria-describedby]="showError('next_followup_at') ? 'lf-fu-err' : 'lf-fu-hint'"
-        />
-        <div class="chips" role="group" aria-label="Quick follow-up times">
-          @for (c of followupChips; track c.label) {
-            <button type="button" class="chip" (click)="setFollowup(c.at())">{{ c.label }}</button>
+        <label for="lf-req" class="sr-only">What does the client need?</label>
+        <textarea
+          id="lf-req"
+          formControlName="requirements"
+          rows="4"
+          placeholder="What does the client need? (optional)"
+          aria-describedby="lf-req-count"
+        ></textarea>
+        <p class="hint" id="lf-req-count" [class.over]="reqLength() > maxReq">{{ reqLength() }} / {{ maxReq }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Assignment -->
+  @if (canAssign() && !isEdit()) {
+    <section class="sec" aria-labelledby="lf-h-assign">
+      <div class="lab">
+        <span class="ic" aria-hidden="true"><mat-icon>group</mat-icon></span>
+        <div>
+          <h3 id="lf-h-assign">Assignment</h3>
+          <p>Who will work this lead?</p>
+        </div>
+      </div>
+      <div class="body">
+        <div class="people" role="radiogroup" aria-labelledby="lf-h-assign">
+          <label class="person">
+            <input type="radio" formControlName="assigned_to" value="" />
+            <span class="pc">
+              <span class="later" aria-hidden="true"><mat-icon>schedule</mat-icon></span>
+              <span class="nm">Assign later<small>Decide when it's ready</small></span>
+            </span>
+          </label>
+          @for (a of assignees(); track a.id) {
+            <label class="person">
+              <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+              <span class="pc">
+                <app-lead-avatar [name]="a.name" [size]="36" />
+                <span class="nm">
+                  {{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}
+                  <small>{{ a.role === 'ADMIN' ? 'Admin · ' : '' }}{{ a.open_count }} open</small>
+                </span>
+              </span>
+            </label>
           }
         </div>
+        <div class="tools">
+          @if (amAssignee()) {
+            <button type="button" class="link" (click)="assignToMe()">Assign to me</button>
+          }
+          <button type="button" class="link" [disabled]="!assignees().length" (click)="autoPick()">Auto-pick least loaded</button>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- Follow-up -->
+  @if (!limited()) {
+    <section class="sec" aria-labelledby="lf-h-fu">
+      <div class="lab">
+        <span class="ic" aria-hidden="true"><mat-icon>event</mat-icon></span>
+        <div>
+          <h3 id="lf-h-fu">Follow-up</h3>
+          <p>When to reach out next (optional).</p>
+        </div>
+      </div>
+      <div class="body">
+        <app-followup-picker inputId="lf-fu" formControlName="next_followup_at" [invalid]="showError('next_followup_at')" />
         @if (showError('next_followup_at')) {
           <p class="err" id="lf-fu-err">{{ errorText('next_followup_at') }}</p>
-        } @else if (followupPreview()) {
-          <p class="hint" id="lf-fu-hint">{{ followupPreview() }}</p>
         }
       </div>
-    </fieldset>
+    </section>
   }
 
   @if (formError()) {

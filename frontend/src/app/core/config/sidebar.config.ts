@@ -31,7 +31,8 @@ export const SIDEBAR_CONFIG: NavItem[] = [
       { label: 'All Leads', icon: 'list', route: '/leads/all', roles: [Admin, SalesManager, SalesExec] },
       { label: 'Add New Lead', icon: 'person_add', route: '/leads/new', roles: [Admin, SalesManager] },
       { label: 'Overdue Follow-ups', icon: 'event_busy', route: '/leads/overdue', roles: [Admin, SalesManager, SalesExec] },
-      { label: 'Won - Awaiting Finalization', icon: 'emoji_events', route: '/leads/won-awaiting', roles: [Admin, SalesManager] },
+      { label: 'Won Leads', icon: 'emoji_events', route: '/leads/won', roles: [Admin, SalesManager, SalesExec] },
+      { label: 'Lost Leads', icon: 'thumb_down', route: '/leads/lost', roles: [Admin, SalesManager, SalesExec] },
     ],
   },
   {

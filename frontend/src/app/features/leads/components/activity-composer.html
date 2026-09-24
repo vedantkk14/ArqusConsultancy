@@ -66,17 +66,10 @@
 
   @if (!closed() && newStatus() !== 'WON' && newStatus() !== 'LOST') {
     <div class="fu">
-      <label for="ac-fu">Next follow-up (IST)</label>
-      <div class="fu-row">
-        <input id="ac-fu" type="datetime-local" name="fu" [(ngModel)]="followup" (ngModelChange)="followupSet.set(!!$event)" />
-        @for (q of quick; track q.label) {
-          <button type="button" class="chip" (click)="setFollowup(q.at())">{{ q.label }}</button>
-        }
-      </div>
+      <label for="ac-fu">Next follow-up</label>
+      <app-followup-picker inputId="ac-fu" name="fu" [(ngModel)]="followup" (ngModelChange)="followupSet.set(!!$event)" [invalid]="!!errors()['next_followup_at']" />
       @if (errors()['next_followup_at']) {
         <p class="err">{{ errors()['next_followup_at'] }}</p>
-      } @else if (followupSet()) {
-        <p class="hint">{{ preview() }}</p>
       } @else if (nudge()) {
         <p class="nudge"><mat-icon aria-hidden="true">schedule</mat-icon>Set a follow-up so this doesn't go cold.</p>
       }

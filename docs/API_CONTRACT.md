@@ -120,25 +120,33 @@ payment, project or total keys.
 (id or `none`), `source` (comma list), `q` (name, email, phone digits), `followup=overdue|today|upcoming|none`,
 `open=true`, `untouched=true` (NEW with no interactions), `won_awaiting=true`, `created_from`, `created_to`
 (YYYY-MM-DD, IST), `ordering` = `created_at`, `-created_at` (default), `name`, `next_followup_at`, `-days_overdue`,
-`-proposed_amount`, `-last_activity_at`, `won_at`. Nulls sort last. Definitions (IST, `BUSINESS_TIME_ZONE`):
+`-proposed_amount`, `-last_activity_at`, `won_at`, `-won_at`. Nulls sort last. Definitions (IST, `BUSINESS_TIME_ZONE`):
 open = not WON/LOST; overdue = open and follow-up < now; today = open and follow-up between now and the end
 of the business day (never overlaps overdue). Dashboards should import these from `apps/leads/selectors.py`.
 
-**Status machine:** NEW -> CONTACTED | LOST; CONTACTED -> INTERESTED | WON | LOST; INTERESTED -> CONTACTED |
-WON | LOST; WON -> none; LOST -> CONTACTED (A, SM only). WON needs `proposed_amount > 0`, sets `won_at`, clears
+**Status machine:** NEW -> CONTACTED | LOST; CONTACTED -> INTERESTED | WON | LOST; INTERESTED -> WON | LOST (no
+way back to Contacted); WON -> LOST (A, SM only, and only before any payment: 409 `has_payments`); LOST -> CONTACTED
+(reopen, A, SM only). A won lead that is marked lost loses `won_at`, its ledger is cancelled through
+`accounts.services.cancel_ledger(lead)` and every Admin gets `lead_won_reversed`. WON needs `proposed_amount > 0`, sets `won_at`, clears
 the follow-up, calls `create_ledger` once (repeat requests are no-ops) and notifies every active Admin
 (`lead_won`). LOST needs `lost_reason` (PRICE, COMPETITOR, NO_RESPONSE, NOT_INTERESTED, REQUIREMENT_CHANGED,
 OTHER). The first CALL / WHATSAPP / EMAIL / MEETING on a NEW lead moves it to CONTACTED; NOTE never does.
 
 **Error codes:** `duplicate_lead` (409), `invalid_transition` (400, `{allowed, from, to}`), `followup_in_past`
 (400, 5-minute tolerance), `followup_on_closed` (400), `accounts_not_ready` (409), `has_ledger` (409),
-`not_won` (400), `phone_unusable` (400).
+`not_won` (400), `phone_unusable` (400), `has_payments` (409).
+
+**UI lists:** All leads = `open=true` (Won and Lost are not shown there); Won leads = `status=WON` (optionally
+`won_awaiting=true`); Lost leads = `status=LOST`; Overdue = `followup=overdue`. List rows carry `finalized`
+(true/false) for Admin and Sales Manager only; it is absent for Sales Execs.
 
 **Leads -> Accounts contract (Dev C must add):**
 1. `accounts.Ledger` with `lead` (one-to-one to `leads.Lead`), `total_amount` Decimal(12,2) and a
    `finalized_at` DateTimeField (the finalization marker, null until finalized).
 2. `accounts.services.create_ledger(lead)`: exists as a stub; make it create the Ledger idempotently.
 3. `accounts.services.finalize_ledger(lead, amount, by)`: sets `total_amount`, `finalized_at`, audit log.
+4. `accounts.services.cancel_ledger(lead)`: called when a won lead is marked lost (no-op until it exists), and an
+   `accounts.Payment` with `ledger.lead`, so leads can refuse "lost" once a payment exists (`has_payments`).
 Once these exist, finalize, `won_awaiting`, `finance` and the `has_ledger` delete guard work with no leads change.
 Notifications use `core.services.notify(user, type, payload)` with types `lead_assigned`,
 `lead_reassigned_away`, `lead_won`.

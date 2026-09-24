@@ -45,6 +45,11 @@ const pairs = [
   ...['paper', 'surface'].map((bg) => ['line-strong', bg, GRAPHIC, `input border on ${bg}`]),
   ['ink', 'surface', GRAPHIC, 'Spent bars, lost segment on surface'],
   ['brand-deep', 'surface', GRAPHIC, 'Collected bar outline on surface'],
+  // polish: tinted chips/pills and the dark gradient panels (both gradient ends are checked)
+  ...['cyan', 'teal', 'amber', 'rose', 'slate'].map((t) => [`tint-${t}-ink`, `tint-${t}`, TEXT, `${t} pill text/icon`]),
+  ...['ink', 'deep-navy'].map((bg) => ['on-ink', bg, TEXT, `white text on --grad-ink (${bg} end)`]),
+  ...['ink', 'deep-navy'].map((bg) => ['brand', bg, TEXT, `cyan text/sparkline on --grad-ink (${bg} end)`]),
+  ['ink-2', 'tint-slate', TEXT, 'inactive pill-tab label on slate tint'],
 ];
 
 // Cyan on light surfaces is never the only carrier of meaning: the active item is also bold with a tinted

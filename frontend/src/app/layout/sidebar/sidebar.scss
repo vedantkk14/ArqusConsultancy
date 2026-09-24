@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--surface);
+  background: linear-gradient(var(--surface), #f3f8fa);
   border-right: 1px solid var(--line);
 }
 
@@ -135,9 +135,7 @@ li + li {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition:
-    background-color var(--dur-fast),
-    color var(--dur-fast);
+  transition: background-color var(--dur-fast);
 
   mat-icon {
     color: var(--ink-3);
@@ -174,6 +172,8 @@ li + li {
   mat-icon {
     color: var(--ink);
   }
+
+  box-shadow: var(--glow-cyan);
 
   &::before {
     content: '';
@@ -240,9 +240,7 @@ li + li {
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    background-color var(--dur-fast),
-    color var(--dur-fast);
+  transition: background-color var(--dur-fast);
 
   &:hover {
     background: var(--subtle);
@@ -297,6 +295,7 @@ li + li {
 
   &.active {
     background: var(--brand-tint);
+    box-shadow: var(--glow-cyan);
     color: var(--ink);
   }
 }

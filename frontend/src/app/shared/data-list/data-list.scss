@@ -7,8 +7,8 @@ table {
 th {
   height: 36px;
   padding: 0 var(--space-4);
-  background: var(--subtle);
-  color: var(--ink-3);
+  background: var(--tint-slate);
+  color: var(--ink-2);
   font-size: var(--text-sm);
   font-weight: 500;
   text-align: left;
@@ -37,7 +37,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background: #fafbfc;
+  background: color-mix(in srgb, var(--tint-cyan) 55%, var(--surface));
 }
 
 tbody tr:last-child td {

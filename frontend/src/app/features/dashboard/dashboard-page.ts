@@ -86,7 +86,7 @@ const ACTIVITY_COLUMNS: DataColumn[] = [
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard-page.html',
-  styleUrl: './dashboard-page.scss',
+  styleUrls: ['./dashboard-page.scss', './kpi-cards.scss'],
 })
 export class DashboardPage {
   private readonly route = inject(ActivatedRoute);

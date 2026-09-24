@@ -36,8 +36,8 @@
       <!-- 3. KPI cards + 4. Waiting on you -->
       <section class="kpis" aria-label="Key figures">
         @if (data(); as d) {
-          <a class="card card-link kpi k-revenue" routerLink="/accounts/ledgers">
-            <span class="kpi-label"><mat-icon aria-hidden="true">account_balance_wallet</mat-icon>Total revenue received</span>
+          <a class="card card-link kpi k-revenue featured rise-in" style="--i: 0" routerLink="/accounts/ledgers">
+            <span class="kpi-label"><span class="ic"><mat-icon aria-hidden="true">account_balance_wallet</mat-icon></span>Total revenue received</span>
             <span class="kpi-value lg num" [appCountUp]="d.kpis.received" countFormat="inr"></span>
             <span class="kpi-context">
               @if (delta(); as dl) {
@@ -52,42 +52,42 @@
             <app-sparkline class="spark" [values]="d.trends.received" [label]="receivedSparkLabel()" />
           </a>
 
-          <a class="card card-link kpi k-outstanding" routerLink="/accounts/pending">
-            <span class="kpi-label"><mat-icon aria-hidden="true">hourglass_top</mat-icon>Outstanding balance</span>
+          <a class="card card-link kpi k-outstanding rise-in" style="--i: 1" routerLink="/accounts/pending">
+            <span class="kpi-label"><span class="ic"><mat-icon aria-hidden="true">hourglass_top</mat-icon></span>Outstanding balance</span>
             <span class="kpi-value num" [appCountUp]="d.kpis.outstanding" countFormat="inr"></span>
             <span class="kpi-context">across {{ d.kpis.outstanding_clients }} {{ d.kpis.outstanding_clients === 1 ? 'client' : 'clients' }}</span>
             @if (d.kpis.outstanding_overdue !== '0.00') {
-              <span class="overdue"><mat-icon aria-hidden="true">error_outline</mat-icon>{{ d.kpis.outstanding_overdue | inr }} overdue</span>
+              <span class="overdue pill"><mat-icon aria-hidden="true">error_outline</mat-icon>{{ d.kpis.outstanding_overdue | inr }} overdue</span>
             } @else {
               <span class="kpi-context">Nothing overdue</span>
             }
           </a>
 
-          <a class="card card-link kpi k-leads" routerLink="/leads/all">
-            <span class="kpi-label"><mat-icon aria-hidden="true">contacts</mat-icon>Total leads</span>
+          <a class="card card-link kpi k-leads rise-in" style="--i: 2" routerLink="/leads/all">
+            <span class="kpi-label"><span class="ic"><mat-icon aria-hidden="true">contacts</mat-icon></span>Total leads</span>
             <span class="kpi-value num" [appCountUp]="d.kpis.leads_total"></span>
             <span class="kpi-context">+{{ d.kpis.leads_new }} {{ periodNoun() }}</span>
             <app-sparkline class="spark small" [values]="d.trends.leads_new" [label]="leadsSparkLabel()" />
           </a>
 
-          <a class="card card-link kpi k-open" routerLink="/leads/all" [queryParams]="{ status: 'open' }">
-            <span class="kpi-label"><mat-icon aria-hidden="true">track_changes</mat-icon>Active opportunities</span>
+          <a class="card card-link kpi k-open rise-in" style="--i: 3" routerLink="/leads/all" [queryParams]="{ status: 'open' }">
+            <span class="kpi-label"><span class="ic"><mat-icon aria-hidden="true">track_changes</mat-icon></span>Active opportunities</span>
             <span class="kpi-value num" [appCountUp]="d.kpis.open_count"></span>
             <span class="kpi-context">{{ d.kpis.open_value | inrCompact }} proposed value</span>
           </a>
 
-          <a class="card card-link kpi k-won" routerLink="/leads/won-awaiting">
-            <span class="kpi-label"><mat-icon aria-hidden="true">emoji_events</mat-icon>Deals won / lost</span>
+          <a class="card card-link kpi k-won rise-in" style="--i: 4" routerLink="/leads/won-awaiting">
+            <span class="kpi-label"><span class="ic"><mat-icon aria-hidden="true">emoji_events</mat-icon></span>Deals won / lost</span>
             <span class="split">
               <span class="fig"><span class="kpi-value num" [appCountUp]="d.kpis.won_count"></span><span class="fig-label">Won</span></span>
               <span class="fig"><span class="kpi-value num" [appCountUp]="d.kpis.lost_count"></span><span class="fig-label">Lost</span></span>
             </span>
             <app-split-bar [first]="d.kpis.won_count" [second]="d.kpis.lost_count" />
-            <span class="kpi-context">{{ d.kpis.win_rate_pct.replace('.0', '') }}% win rate</span>
+            <span class="rate-chip">{{ d.kpis.win_rate_pct.replace('.0', '') }}% win rate</span>
           </a>
 
-          <a class="card card-link kpi k-projects" routerLink="/projects/running">
-            <span class="kpi-label"><mat-icon aria-hidden="true">assignment</mat-icon>Projects</span>
+          <a class="card card-link kpi k-projects rise-in" style="--i: 5" routerLink="/projects/running">
+            <span class="kpi-label"><span class="ic"><mat-icon aria-hidden="true">assignment</mat-icon></span>Projects</span>
             <span class="split">
               <span class="fig"><span class="kpi-value num" [appCountUp]="d.kpis.projects_running"></span><span class="fig-label">Running</span></span>
               <span class="fig"><span class="kpi-value num" [appCountUp]="d.kpis.projects_completed"></span><span class="fig-label">Completed</span></span>
@@ -95,7 +95,7 @@
             <app-split-bar [first]="d.kpis.projects_running" [second]="d.kpis.projects_completed" />
           </a>
 
-          <app-attention-panel class="attention" [items]="d.attention" />
+          <app-attention-panel class="attention rise-in" style="--i: 6" [items]="d.attention" />
         } @else {
           @for (k of ['k-revenue', 'k-outstanding', 'k-leads', 'k-open', 'k-won', 'k-projects', 'attention']; track k) {
             <div class="card kpi skeleton-card" [class]="k" aria-hidden="true">
@@ -109,7 +109,7 @@
 
       <!-- 5. Revenue vs expenses, 6. Funnel and sales -->
       <div class="panels">
-        <section class="card panel p-cash" aria-labelledby="cash-title">
+        <section class="card panel p-cash rise-in" style="--i: 7" aria-labelledby="cash-title">
           <header><h2 id="cash-title">Revenue vs expenses</h2><span class="muted">Last 6 months</span></header>
           @if (data(); as d) {
             <app-cashflow-chart [months]="d.cashflow.months" [collected]="d.cashflow.collected" [spent]="d.cashflow.spent" />
@@ -139,7 +139,7 @@
         <!-- 7. Recent -->
         <section class="card panel p-recent" aria-labelledby="recent-title">
           <header><h2 id="recent-title">Recent</h2></header>
-          <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+          <mat-tab-group class="pill-tabs" mat-stretch-tabs="false" animationDuration="0ms">
             <mat-tab label="Payments">
               <app-data-list label="Recent payments" [columns]="paymentColumns" [rows]="recentPayments()" [loading]="!data()" emptyText="No payments yet" />
             </mat-tab>

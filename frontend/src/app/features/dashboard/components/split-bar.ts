@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     .track {
       display: flex;
       gap: 2px;
-      height: 8px;
+      height: 10px;
       overflow: hidden;
       border-radius: 999px;
       background: var(--plate);
@@ -27,12 +27,11 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       transition: width var(--dur-base) var(--ease-out);
     }
     .a {
-      background: var(--brand);
-      box-shadow: inset 0 0 0 1px var(--brand-deep);
+      background: var(--split-a, var(--grad-brand));
       border-radius: 999px 0 0 999px;
     }
     .b {
-      background: var(--ink);
+      background: linear-gradient(90deg, var(--ink-2), var(--ink));
       border-radius: 0 999px 999px 0;
     }
   `,

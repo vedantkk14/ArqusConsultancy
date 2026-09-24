@@ -1,0 +1,236 @@
+// Mobile-first: a 220px dark header. From 1024px: the full-height left panel with copy and chips.
+:host {
+  position: relative;
+  display: flex;
+  height: 220px;
+  padding-bottom: 40px; // the form card overlaps the bottom 40px on phones
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--grad-ink);
+  color: var(--on-ink);
+  isolation: isolate;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  will-change: transform;
+}
+
+.orb-a {
+  top: -30%;
+  right: -10%;
+  width: 60%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(50, 197, 243, 0.45), transparent 65%);
+  animation: drift-a 24s ease-in-out infinite alternate;
+}
+
+.orb-b {
+  bottom: -35%;
+  left: -15%;
+  width: 55%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(50, 197, 243, 0.25), transparent 65%);
+  animation: drift-b 30s ease-in-out infinite alternate;
+}
+
+.dots {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image: radial-gradient(circle, #fff 1px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+@keyframes drift-a {
+  to {
+    transform: translate(-12%, 14%) scale(1.1);
+  }
+}
+
+@keyframes drift-b {
+  to {
+    transform: translate(14%, -10%) scale(1.15);
+  }
+}
+
+// ---- Stage: rings + disc (+ chips on desktop) ----------------------------------------------------------
+.stage {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  display: grid;
+  width: min(340px, 90%);
+  place-items: center;
+  perspective: 900px;
+}
+
+.rings {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ring {
+  stroke: var(--brand);
+  stroke-width: 1.5;
+  transition: transform 300ms var(--ease-out);
+}
+
+.r1 {
+  opacity: 0.15;
+  transform: translate(calc(var(--px) * 6px), calc(var(--py) * 4px));
+}
+
+.r2 {
+  opacity: 0.22;
+  transform: translate(calc(var(--px) * 12px), calc(var(--py) * 8px));
+}
+
+.r3 {
+  opacity: 0.3;
+  transform: translate(calc(var(--px) * 18px), calc(var(--py) * 12px));
+}
+
+.disc {
+  grid-area: 1 / 1;
+  display: grid;
+  width: 96px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -6px 14px rgba(11, 13, 15, 0.08),
+    0 0 0 8px rgba(50, 197, 243, 0.12),
+    0 0 48px 8px rgba(50, 197, 243, 0.35),
+    0 18px 40px rgba(0, 0, 0, 0.35);
+  animation: float 6s ease-in-out infinite;
+
+  img {
+    width: 64%;
+    height: auto;
+    transform: rotateX(calc(var(--py) * -8deg)) rotateY(calc(var(--px) * 8deg));
+    transition: transform 300ms var(--ease-out);
+  }
+}
+
+@keyframes float {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.chip,
+.copy {
+  display: none;
+}
+
+// ---- Desktop panel ------------------------------------------------------------------------------------
+@media (min-width: 1024px) {
+  :host {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    gap: var(--space-10);
+    padding: var(--space-10);
+  }
+
+  .stage {
+    width: min(520px, 90%);
+  }
+
+  .disc {
+    width: 148px;
+    transform-style: preserve-3d;
+  }
+
+  .chip {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--on-ink);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    white-space: nowrap;
+    transition: transform 300ms var(--ease-out);
+    animation: float 7s ease-in-out infinite;
+
+    mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      color: var(--brand);
+    }
+  }
+
+  // Each chip sits at its own depth: nearer ones move more with the pointer.
+  .c1 {
+    top: 2%;
+    left: 0;
+    translate: calc(var(--px) * 22px) calc(var(--py) * 14px);
+  }
+
+  .c2 {
+    top: 42%;
+    right: -6%;
+    translate: calc(var(--px) * 30px) calc(var(--py) * 20px);
+    animation-delay: -2s;
+  }
+
+  .c3 {
+    bottom: 0;
+    left: 8%;
+    translate: calc(var(--px) * 14px) calc(var(--py) * 10px);
+    animation-delay: -4s;
+  }
+
+  .copy {
+    display: block;
+    max-width: 36rem;
+    text-align: center;
+  }
+
+  .headline {
+    margin: 0;
+    color: var(--on-ink);
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .sub {
+    margin: var(--space-3) 0 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: var(--text-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb,
+  .disc,
+  .chip {
+    animation: none;
+  }
+}

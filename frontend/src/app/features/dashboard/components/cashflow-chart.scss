@@ -39,6 +39,7 @@ svg {
 .grid {
   stroke: var(--line);
   stroke-width: 1;
+  stroke-dasharray: 3 4;
 }
 
 .axis {
@@ -47,14 +48,39 @@ svg {
   font-variant-numeric: tabular-nums;
 }
 
-rect.collected {
-  fill: var(--brand);
+// Bars: gradients; hovered bar goes fully opaque and shows its value (opacity only).
+.bar rect {
+  opacity: 0.9;
+  transition: opacity 150ms ease;
+}
+
+.bar:hover rect {
+  opacity: 1;
+}
+
+.collected rect {
+  fill: url(#cf-collected);
   stroke: var(--brand-deep);
   stroke-width: 1;
 }
 
-rect.spent {
+.spent rect {
+  fill: url(#cf-spent);
+}
+
+.val {
   fill: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+}
+
+.bar:hover .val {
+  opacity: 1;
 }
 
 .empty {

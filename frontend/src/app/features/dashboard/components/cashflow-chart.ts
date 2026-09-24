@@ -59,11 +59,13 @@ export class CashflowChart {
       const x0 = PAD.left + i * slot + (slot * GROUP_GAP) / 2;
       const c = Number(this.collected()[i]) || 0;
       const s = Number(this.spent()[i]) || 0;
+      // Bars run 6px past the baseline and are clipped there, so only the top corners look rounded.
+      const bar = (x: number, v: number) => ({ x, y: this.y(v), w: barW - 2, h: this.y(0) - this.y(v) + 6 });
       return {
         month,
         labelX: PAD.left + i * slot + slot / 2,
-        collected: { x: x0, y: this.y(c), w: barW, h: this.y(0) - this.y(c) },
-        spent: { x: x0 + barW, y: this.y(s), w: barW, h: this.y(0) - this.y(s) },
+        collected: { ...bar(x0, c), label: formatInrCompact(this.collected()[i] ?? '0') },
+        spent: { ...bar(x0 + barW, s), label: formatInrCompact(this.spent()[i] ?? '0') },
       };
     });
   });

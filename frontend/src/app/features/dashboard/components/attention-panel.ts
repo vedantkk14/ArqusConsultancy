@@ -60,8 +60,11 @@ const SEVERITY_TEXT: Record<AttentionItem['severity'], string> = {
       color: var(--ink-2);
       text-decoration: none;
     }
+    .row {
+      transition: background-color 150ms ease;
+    }
     .row:hover {
-      background: var(--subtle);
+      background: var(--tint-slate);
       color: var(--ink);
     }
     mat-icon {
@@ -84,9 +87,16 @@ const SEVERITY_TEXT: Record<AttentionItem['severity'], string> = {
       min-width: 0;
     }
     .count {
-      color: var(--ink);
+      min-width: 28px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: var(--tint-cyan);
+      color: var(--tint-cyan-ink);
       font-weight: 600;
+      text-align: center;
     }
+    .sev-high .count { background: var(--tint-rose); color: var(--tint-rose-ink); }
+    .sev-medium .count { background: var(--tint-amber); color: var(--tint-amber-ink); }
     .clear {
       display: flex;
       align-items: center;

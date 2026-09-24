@@ -58,12 +58,20 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 12px 12px 16px;
-      border-top: 1px solid var(--line);
+      margin: 8px 12px 12px;
+      padding: 10px 8px 10px 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--highlight), var(--shadow-1);
     }
     :host(.rail) {
       justify-content: center;
-      padding: 12px 0;
+      margin: 8px 0 12px;
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
     }
     .who {
       display: flex;

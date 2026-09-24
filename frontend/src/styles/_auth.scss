@@ -1,0 +1,159 @@
+// Auth pages (login, forgot, reset, change password): controls, banners and the primary button.
+// Global so the five auth components share one copy; scoped under .auth (the shared layout).
+
+.auth {
+  label {
+    transition: color 150ms ease;
+  }
+
+  .field:focus-within > label {
+    color: var(--brand-deep);
+  }
+
+  input[type='text'],
+  input[type='email'],
+  input[type='password'] {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: inset 0 1px 2px rgba(11, 13, 15, 0.05);
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--text-md); // 16px: stops iOS from zooming into the field
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+
+    &:hover {
+      border-color: var(--ink-2);
+    }
+
+    &:focus-visible {
+      border-color: var(--brand-deep);
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 0;
+      box-shadow: var(--ring);
+    }
+
+    &:disabled {
+      background: var(--subtle);
+      color: var(--ink-3);
+    }
+
+    // No pale-blue autofill fill: keep the white field and ink text.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--ink);
+      box-shadow: 0 0 0 40px var(--surface) inset;
+      caret-color: var(--ink);
+    }
+  }
+
+  .invalid input,
+  input[aria-invalid='true'] {
+    border-color: var(--negative);
+  }
+
+  .field-error {
+    margin: 6px 0 0;
+    color: var(--negative);
+    font-size: var(--text-sm);
+  }
+
+  // Banners: tint + left accent bar + icon (role="alert"/"status" stays in the templates).
+  .banner {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 11px 12px 11px 16px;
+    border-radius: 12px;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: currentColor;
+    }
+
+    mat-icon {
+      width: 18px;
+      height: 18px;
+      flex: none;
+      font-size: 18px;
+    }
+
+    &.error {
+      background: var(--tint-rose);
+      color: var(--tint-rose-ink);
+    }
+
+    &.info {
+      background: var(--tint-cyan);
+      color: var(--tint-cyan-ink);
+    }
+
+    &.success {
+      background: var(--tint-teal);
+      color: var(--tint-teal-ink);
+    }
+  }
+
+  // Primary button: ink gradient, layered shadow, lift + slow light sweep on hover, sink on press.
+  .submit {
+    --mat-button-filled-container-height: 48px;
+    --mat-button-filled-container-shape: 12px;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    transition:
+      transform 150ms var(--ease-out),
+      box-shadow 150ms ease;
+
+    mat-spinner {
+      display: inline-block;
+      margin-right: var(--space-2);
+      vertical-align: middle;
+      --mat-progress-spinner-active-indicator-color: var(--on-ink);
+    }
+
+    &:not(:disabled) {
+      background: var(--grad-ink);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 1px 2px rgba(11, 13, 15, 0.2),
+        0 8px 20px -6px rgba(11, 13, 15, 0.45);
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
+        transform: translateX(-110%);
+        pointer-events: none;
+      }
+
+      &:hover {
+        transform: translateY(-1px);
+
+        &::after {
+          transform: translateX(110%);
+          transition: transform 900ms ease;
+        }
+      }
+
+      &:active {
+        transform: translateY(1px);
+      }
+    }
+  }
+}

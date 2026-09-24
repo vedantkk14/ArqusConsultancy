@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100dvh;
-  background: var(--paper);
+  background: transparent; // the page --wash on <body> shows through
 }
 
 // Fixed sidebar; its width (and the content offset) follow --sidebar-w and animate on toggle.

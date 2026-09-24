@@ -56,16 +56,16 @@ export interface BarRow {
       white-space: nowrap;
     }
     .track {
-      height: 6px;
+      height: 8px;
       overflow: hidden;
       border-radius: 999px;
-      background: var(--plate);
+      background: var(--line);
     }
     .track span {
       display: block;
       height: 100%;
       border-radius: 999px;
-      background: var(--brand-deep);
+      background: linear-gradient(90deg, var(--brand), var(--brand-deep));
     }
     .empty {
       display: grid;

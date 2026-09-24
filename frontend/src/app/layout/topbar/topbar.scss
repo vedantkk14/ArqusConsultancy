@@ -7,8 +7,14 @@
   gap: var(--space-2);
   height: var(--topbar-h);
   padding: 0 var(--gutter);
-  background: var(--surface);
+  background: var(--surface); // fallback without backdrop-filter
   border-bottom: 1px solid var(--line);
+
+  @supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 .emblem {

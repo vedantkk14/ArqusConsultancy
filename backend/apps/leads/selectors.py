@@ -47,13 +47,17 @@ def business_day_bounds(now: datetime | None = None) -> tuple[datetime, datetime
 # ---- Definitions (Q objects) ----------
 
 
-def open_q() -> Q:
-    return ~Q(status__in=CLOSED_STATUSES)
+def open_q(prefix: str = "") -> Q:
+    """`prefix` lets a caller reuse this filtering a queryset through a relation, e.g.
+
+    `open_q("assigned_leads__")` inside `Count("assigned_leads", filter=...)` on a User queryset.
+    """
+    return ~Q(**{f"{prefix}status__in": CLOSED_STATUSES})
 
 
-def overdue_q(now: datetime | None = None) -> Q:
+def overdue_q(now: datetime | None = None, prefix: str = "") -> Q:
     """Open and the follow-up time has passed."""
-    return open_q() & Q(next_followup_at__lt=now or timezone.now())
+    return open_q(prefix) & Q(**{f"{prefix}next_followup_at__lt": now or timezone.now()})
 
 
 def due_today_q(now: datetime | None = None) -> Q:

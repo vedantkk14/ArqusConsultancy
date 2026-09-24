@@ -34,7 +34,7 @@ const FLYOUT_POSITIONS: ConnectedPosition[] = [
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.scss',
+  styleUrls: ['./sidebar.scss', './sidebar-rail.scss'],
   host: { '[class.rail]': 'layout.collapsed()' },
 })
 export class Sidebar {

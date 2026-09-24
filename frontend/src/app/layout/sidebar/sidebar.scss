@@ -1,10 +1,16 @@
 // Rhythm: every top-level row is 36px with 2px between rows; children are 32px on a guide line.
 :host {
+  --sb-line: rgba(255,255,255,.1);
+  --sb-hover: rgba(255,255,255,.08);
+  --sb-on: rgba(255,255,255,.12);
+  --sb-mute: rgba(255,255,255,.72);
+  --sb-text: rgba(255,255,255,.82);
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: linear-gradient(var(--surface), #f3f8fa);
-  border-right: 1px solid var(--line);
+  background: radial-gradient(90% 40% at 100% 0%, color-mix(in srgb, var(--data-cyan) 30%, transparent), transparent 70%), var(--grad-ink);
+  border-right: 1px solid rgba(255,255,255,.06);
+  color: var(--on-ink);
 }
 
 mat-icon {
@@ -14,14 +20,13 @@ mat-icon {
   font-size: 18px;
 }
 
-// ---- Header: same 64px as the top bar, so their bottom borders form one line -------------------------
 .head {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   height: var(--topbar-h);
   padding: 0 var(--space-3) 0 var(--space-4);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--sb-line);
   flex: none;
 }
 
@@ -44,9 +49,13 @@ mat-icon {
 }
 
 .mark {
-  width: 46px;
+  box-sizing: content-box;
+  width: 40px;
   height: auto;
   flex: none;
+  padding: 5px 6px;
+  border-radius: 10px;
+  background: var(--surface); // emblem has black parts: light chip
 }
 
 .brand-text {
@@ -56,7 +65,7 @@ mat-icon {
   line-height: 1.15;
 
   strong {
-    color: var(--ink);
+    color: var(--on-ink);
     font-size: 15px;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -64,7 +73,7 @@ mat-icon {
 
   span {
     overflow: hidden;
-    color: var(--ink-3);
+    color: var(--sb-mute);
     font-size: var(--text-xs);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -81,7 +90,7 @@ mat-icon {
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--ink-3);
+  color: var(--sb-mute);
   cursor: pointer;
 }
 
@@ -90,10 +99,9 @@ mat-icon {
   justify-content: center;
   margin-bottom: var(--space-2);
   padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--sb-line);
 }
 
-// ---- Nav ----------------------------------------------------------------------------------------------
 .nav {
   flex: 1;
   min-height: 0;
@@ -127,7 +135,7 @@ li + li {
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--ink-2);
+  color: var(--sb-text);
   font: inherit;
   font-size: var(--text-base);
   font-weight: 500;
@@ -138,12 +146,12 @@ li + li {
   transition: background-color var(--dur-fast);
 
   mat-icon {
-    color: var(--ink-3);
+    color: rgba(255,255,255,.62);
   }
 
   &:hover {
-    background: var(--subtle);
-    color: var(--ink);
+    background: var(--sb-hover);
+    color: var(--on-ink);
   }
 }
 
@@ -153,27 +161,25 @@ li + li {
   text-overflow: ellipsis;
 }
 
-// A group that holds the current page reads as "you are here" even when closed.
 .item.has-active {
-  color: var(--ink);
+  color: var(--on-ink);
   font-weight: 600;
 
   mat-icon:not(.chevron) {
-    color: var(--ink);
+    color: var(--data-cyan);
   }
 }
 
-// Active page: tint + ink 600 + a 3px cyan bar with a rounded end on the left edge.
 .item.active {
-  background: var(--brand-tint);
-  color: var(--ink);
+  background: var(--sb-on);
+  color: var(--on-ink);
   font-weight: 600;
 
   mat-icon {
-    color: var(--ink);
+    color: var(--data-cyan);
   }
 
-  box-shadow: var(--glow-cyan);
+  box-shadow: inset 0 1px 0 var(--sb-hover);
 
   &::before {
     content: '';
@@ -183,16 +189,15 @@ li + li {
     left: 0;
     width: 3px;
     border-radius: 0 3px 3px 0;
-    background: var(--brand);
+    background: var(--data-cyan);
   }
 }
 
-// Quiet chevron: small and muted, only a hint.
 .item mat-icon.chevron {
   width: 16px;
   height: 16px;
   font-size: 16px;
-  color: var(--line-strong);
+  color: rgba(255,255,255,.45);
   transition: transform var(--dur-base) var(--ease-out);
 }
 
@@ -200,8 +205,6 @@ li + li {
   transform: rotate(180deg);
 }
 
-// Accordion: animate height with the grid 0fr -> 1fr trick. The clip has no padding, so a closed
-// group takes exactly 0px (spacing lives on the inner list).
 .sub-wrap {
   display: grid;
   grid-template-rows: 0fr;
@@ -217,11 +220,10 @@ li + li {
   overflow: hidden;
 }
 
-// Children hang off a guide line aligned with the parent's icon.
 .sub {
   margin: 2px 0 6px 18px;
   padding-left: 10px;
-  border-left: 1px solid var(--line);
+  border-left: 1px solid rgba(255,255,255,.14);
 
   li + li {
     margin-top: 0;
@@ -235,7 +237,7 @@ li + li {
   height: 32px;
   padding: 0 10px;
   border-radius: var(--radius-sm);
-  color: var(--ink-3);
+  color: var(--sb-mute);
   font-size: var(--text-sm);
   font-weight: 500;
   text-decoration: none;
@@ -243,14 +245,13 @@ li + li {
   transition: background-color var(--dur-fast);
 
   &:hover {
-    background: var(--subtle);
-    color: var(--ink);
+    background: var(--sb-hover);
+    color: var(--on-ink);
   }
 
-  // Active child: tint + ink, and the guide line lights up cyan beside it.
   &.active {
-    background: var(--brand-tint);
-    color: var(--ink);
+    background: var(--sb-on);
+    color: var(--on-ink);
     font-weight: 600;
 
     &::before {
@@ -261,7 +262,7 @@ li + li {
       left: -11px;
       width: 2px;
       border-radius: 2px;
-      background: var(--brand);
+      background: var(--data-cyan);
     }
   }
 }
@@ -271,50 +272,4 @@ li + li {
   .sub-item {
     height: 44px;
   }
-}
-
-// ---- Rail and header toggle --------------------------------------------------------------------------------------------
-.rail-item {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  margin: 0 auto;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-control);
-  background: transparent;
-  color: var(--ink-3);
-  cursor: pointer;
-
-  mat-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-  }
-
-  &.active {
-    background: var(--brand-tint);
-    box-shadow: var(--glow-cyan);
-    color: var(--ink);
-  }
-}
-
-.toggle,
-.rail-item {
-  transition: background-color var(--dur-fast), color var(--dur-fast);
-}
-
-.toggle:hover,
-.rail-item:hover,
-.rail-item[aria-expanded='true'] {
-  background: var(--subtle);
-  color: var(--ink);
-}
-
-.item:focus-visible,
-.sub-item:focus-visible,
-.rail-item:focus-visible,
-.toggle:focus-visible {
-  outline-offset: -2px;
 }

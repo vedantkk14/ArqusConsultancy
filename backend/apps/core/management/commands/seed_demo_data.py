@@ -99,8 +99,8 @@ class Command(BaseCommand):
         users = self._seed_users()
         self._seed_forced_change_user()
         self._seed_leads(users)
+        self._seed_ledgers(users)  # before projects: converting a deal needs a finalized ledger
         self._seed_projects(users)
-        self._seed_ledgers(users)
         self._seed_payments(users)
         self.stdout.write(self.style.SUCCESS("Demo data ready."))
         self._print_credentials()
@@ -236,9 +236,13 @@ class Command(BaseCommand):
         seed_projects(self, users)
 
     def _seed_ledgers(self, users):
-        # TODO(Dev C): create a Ledger (with total amount) for each won lead.
-        pass
+        """A ledger for every won lead; most finalized, two awaiting finalization."""
+        from apps.accounts.demo import seed_ledgers
+
+        seed_ledgers(self, users)
 
     def _seed_payments(self, users):
-        # TODO(Dev C): create demo payments against the ledgers.
-        pass
+        """Payments over ~6 months in every mode, some with proof, some voided; covers every aging bucket."""
+        from apps.accounts.demo import seed_payments
+
+        seed_payments(self, users)

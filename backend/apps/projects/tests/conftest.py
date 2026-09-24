@@ -100,7 +100,17 @@ def make_lead(db, sales_exec):
             "assigned_to": sales_exec,
         }
         defaults.update(fields)
-        return Lead.objects.create(**defaults)
+        lead = Lead.objects.create(**defaults)
+        if lead.status == LeadStatus.WON:  # a won deal has a finalized ledger (accounts module)
+            from apps.accounts.models import Ledger
+
+            Ledger.objects.create(
+                lead=lead,
+                total_amount=lead.proposed_amount or 0,
+                finalized_at=timezone.now(),
+                finalized_on=selectors.business_today(),
+            )
+        return lead
 
     return _make
 

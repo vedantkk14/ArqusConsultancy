@@ -117,13 +117,18 @@ def test_end_date_cannot_precede_start_date(client_for, admin, make_lead):
     assert res.status_code == 400 and "expected_end_date" in res.json()["error"]["details"]
 
 
-def test_without_accounts_the_deal_total_falls_back_to_the_proposed_amount(admin, make_lead):
-    assert integrations.accounts_ready() is False  # get_project_finance does not exist yet
-    assert integrations.accounts_missing() == ["accounts.services.get_project_finance(lead)"]
+def test_the_deal_total_comes_from_the_accounts_ledger(make_lead):
+    from apps.accounts.models import Ledger
+
+    assert integrations.accounts_ready() is True
     lead = make_lead(proposed_amount=Decimal("250000.00"))
-    assert integrations.deal_total(lead) == Decimal("250000.00")
-    assert integrations.finance_for(lead) is None
-    assert integrations.finalization_problem(lead) is None  # marker missing: allowed
+    Ledger.objects.filter(lead=lead).update(total_amount=Decimal("300000.00"))
+    assert integrations.deal_total(lead) == Decimal("300000.00")
+    finance = integrations.finance_for(lead)
+    assert finance["received"] == Decimal("0.00") and finance["finalized"] is True
+    assert integrations.finalization_problem(lead) is None
+    Ledger.objects.filter(lead=lead).update(finalized_at=None)
+    assert integrations.finalization_problem(lead) == "not_finalized"
 
 
 @pytest.fixture
@@ -183,9 +188,10 @@ def test_admin_detail_carries_finance_and_margins(client_for, admin, pm1, make_l
     }
 
 
-def test_admin_detail_finance_is_null_until_accounts_exist(client_for, admin, project):
-    body = client_for(admin).get(f"{BASE}/{project.pk}").json()
-    assert body["finance"] is None
+def test_admin_detail_carries_the_ledger_finance(client_for, admin, project):
+    finance = client_for(admin).get(f"{BASE}/{project.pk}").json()["finance"]
+    assert finance["total_amount"] == "1000000.00" and finance["received"] == "0.00"
+    assert finance["planned_margin"] == "400000.00" and finance["live_margin"] == "0.00"
 
 
 def test_convertible_lists_only_eligible_deals(client_for, admin, make_lead):

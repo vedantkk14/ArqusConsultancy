@@ -143,7 +143,8 @@ tbody tr {
 }
 
 .st { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.c-last, .c-exec { display: none; }
+.c-last, .c-exec, .c-rec, .c-bar { display: none; }
+.table-scroll { overflow-x: auto; }
 .acts { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 2px; }
 
 .ib {
@@ -176,4 +177,6 @@ tbody tr {
 
 .lc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .lc-acts { display: flex; justify-content: flex-end; padding-top: 10px; border-top: 1px solid var(--line); .ib { width: 48px; height: 44px; } }
+@media (min-width: 1000px) { .c-rec { display: table-cell; } }
+@media (min-width: 1200px) { .c-bar { display: table-cell; } }
 @media (min-width: 1560px) { .c-last, .c-exec { display: table-cell; } }

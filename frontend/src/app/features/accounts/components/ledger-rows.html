@@ -29,7 +29,7 @@
           <th class="c-exec">Executive</th>
           <th>State</th>
           <th class="r">Total</th>
-          <th class="r">Received</th>
+          <th class="r c-rec">Received</th>
           <th class="r">Outstanding</th>
           <th class="c-bar">Collected</th>
           <th class="c-last">Last payment</th>
@@ -70,7 +70,7 @@
                 <span class="st"><app-ledger-state [state]="r.state" />@if (r.is_overdue) { <app-overdue-pill [days]="r.days_since" /> }</span>
               </td>
               <td class="r num">{{ r.total | inrCompact }}</td>
-              <td class="r num">{{ r.finalized ? (r.received | inrCompact) : '—' }}</td>
+              <td class="r num c-rec">{{ r.finalized ? (r.received | inrCompact) : '—' }}</td>
               <td class="r num" [class.neg]="r.is_overdue">{{ r.finalized ? (r.outstanding | inrCompact) : '—' }}</td>
               <td class="c-bar">
                 @if (r.finalized) {

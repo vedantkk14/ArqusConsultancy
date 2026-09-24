@@ -36,7 +36,7 @@
             <th>Client</th>
           }
           <th>Mode</th>
-          <th>Reference</th>
+          <th class="c-ref">Reference</th>
           <th class="r">Amount</th>
           <th class="r"><span class="sr-only">Actions</span></th>
         </tr>
@@ -64,7 +64,7 @@
                 <td><a class="pl" [routerLink]="['/accounts/ledgers', p.ledger]">{{ p.client }}</a></td>
               }
               <td><span [class]="'mode t-' + tint(p.mode)">{{ p.mode_label }}</span></td>
-              <td class="det">
+              <td class="det c-ref">
                 {{ p.reference || '—' }}
                 @if (p.note) {
                   <span class="ph">{{ p.note }}</span>

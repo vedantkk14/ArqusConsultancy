@@ -130,3 +130,7 @@ tr.is-void td { color: var(--ink-3); }
   .ib { width: 48px; height: 44px; }
 }
 
+
+.c-ref { display: none; }
+.table-scroll { overflow-x: auto; }
+@media (min-width: 1000px) { .c-ref { display: table-cell; } }

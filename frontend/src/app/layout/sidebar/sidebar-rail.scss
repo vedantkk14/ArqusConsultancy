@@ -19,7 +19,7 @@
 
   &.active {
     background: rgba(255,255,255,.14);
-    color: var(--data-cyan);
+    color: var(--sb-accent);
   }
 }
 
@@ -39,10 +39,10 @@
 .sub-item:focus-visible,
 .rail-item:focus-visible,
 .toggle:focus-visible {
-  outline: 2px solid var(--data-cyan);
+  outline: 2px solid var(--sb-accent);
   outline-offset: -2px;
 }
 
 :host ::ng-deep .nav-dot {
-  border-color: var(--deep-navy);
+  border-color: #062a30;
 }

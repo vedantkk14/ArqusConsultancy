@@ -37,6 +37,13 @@ export const routes: Routes = [
     canActivateChild: [mustChangePasswordGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: () => inject(AuthService).homeRoute() },
+      {
+        path: 'notifications',
+        title: 'Notifications',
+        loadComponent: () =>
+          import('./features/notifications/notifications-page').then((m) => m.NotificationsPage),
+      },
+      { path: 'account/profile', pathMatch: 'full', redirectTo: 'settings/profile' },
       featureRoute('dashboard', () =>
         import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       ),

@@ -1,0 +1,99 @@
+:host {
+  display: inline-flex;
+}
+
+.bell {
+  position: relative;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--subtle);
+    color: var(--ink);
+  }
+}
+
+.dot {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--negative);
+  box-sizing: content-box;
+}
+
+// The menu panel lives in the overlay, so its rules must not be scoped to this component.
+::ng-deep .np-menu.mat-mdc-menu-panel {
+  width: min(380px, 92vw);
+  max-width: none;
+
+  .np-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--text-md);
+  }
+
+  .np-all-read {
+    min-height: 32px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    color: var(--brand-deep);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .np-item {
+    height: auto;
+    padding: 10px 16px;
+    align-items: flex-start;
+
+    .mat-mdc-menu-item-text { display: flex; gap: 12px; width: 100%; }
+    &.unread { background: var(--brand-tint); }
+  }
+
+  .np-ic {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    place-items: center;
+    border-radius: 50%;
+
+    mat-icon { width: 18px; height: 18px; margin: 0; font-size: 18px; }
+    &.t-cyan { background: var(--tint-cyan); color: var(--tint-cyan-ink); }
+    &.t-teal { background: var(--tint-teal); color: var(--tint-teal-ink); }
+    &.t-amber { background: var(--tint-amber); color: var(--tint-amber-ink); }
+    &.t-rose { background: var(--tint-rose); color: var(--tint-rose-ink); }
+    &.t-slate { background: var(--tint-slate); color: var(--tint-slate-ink); }
+  }
+
+  .np-txt { display: flex; min-width: 0; flex-direction: column; gap: 1px; line-height: 1.35; white-space: normal; }
+  .np-ttl { color: var(--ink); font-size: var(--text-sm); font-weight: 600; }
+  .np-body { color: var(--ink-2); font-size: var(--text-sm); }
+  .np-when { color: var(--ink-3); font-size: var(--text-xs); }
+  .np-empty { margin: 0; padding: 24px 16px; color: var(--ink-2); text-align: center; }
+
+  .np-foot {
+    justify-content: center;
+    border-top: 1px solid var(--line);
+    color: var(--brand-deep);
+    font-weight: 500;
+  }
+}

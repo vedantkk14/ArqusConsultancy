@@ -6,6 +6,7 @@ import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink } from '@angu
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { firstName, greeting } from '../../core/models/user-display';
+import { NotificationBell } from '../notification-bell/notification-bell';
 import { RoleBadge } from '../../shared/role-badge/role-badge';
 import { UserAvatar } from '../../shared/user-avatar/user-avatar';
 import { LayoutService } from '../layout.service';
@@ -20,7 +21,7 @@ export const MOD_KEY_LABEL =
 
 @Component({
   selector: 'app-topbar',
-  imports: [MatIconModule, MatMenuModule, RoleBadge, RouterLink, UserAvatar],
+  imports: [MatIconModule, MatMenuModule, NotificationBell, RoleBadge, RouterLink, UserAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',

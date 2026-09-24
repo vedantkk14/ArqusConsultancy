@@ -291,5 +291,13 @@ INFO  1.83:1   (decorative)  --brand on --brand-tint  cyan accent on brand-tint
 | `--brand` #32c5f3 | `--surface` #ffffff | 2.02:1 | n/a | cyan accent on surface (decorative) | info |
 | `--brand` #32c5f3 | `--brand-tint` #e6f7fd | 1.83:1 | n/a | cyan accent on brand-tint (decorative) | info |
 
+## Projects and expenses
+
+- **Budget state tints** (always with the words "On track", "Near limit", "Over budget"): cyan under 80%, amber from 80% to 100%, rose above 100%. They reuse `--tint-cyan/amber/rose` with their `-ink` text, so the contrast table above already covers them; no new colour was added.
+- **Usage bar** (`app-budget-bar`): an 8px pill track on `--plate`; the fill is `--data-cyan / --data-amber / --data-rose` (graphics only, never text) and grows with `transform: scaleX`. The detail page uses a 14px bar with a tick at the 80% line. The figure and state are written beside it ("82% · Near limit"), so colour never carries the meaning.
+- **Money**: strings from the API shown with `inr` (paise on expense rows). A negative remaining or margin keeps its minus sign and turns `--negative`.
+- **Header card glow** follows the state (cyan, amber, rose); expense category chips use the five tints (Materials cyan, Labour teal, Equipment amber, Food rose, others slate); "Void" is a rose tag and "Override" an amber tag.
+- **Forms on phones** (add expense, convert, filters) are bottom sheets; on desktop the convert panel is a right-hand side panel and the expense form a dialog. Both show the same form component.
+
 49/49 pairs pass
 

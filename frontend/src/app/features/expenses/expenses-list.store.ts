@@ -96,7 +96,7 @@ export class ExpensesListStore {
   }
 
   refreshSummary(): void {
-    const { ordering: _ordering, ...filters } = this.query;
+    const filters = Object.fromEntries(Object.entries(this.query).filter(([key]) => key !== 'ordering'));
     this.api
       .expenseSummary(filters)
       .pipe(catchError(() => of(null)))

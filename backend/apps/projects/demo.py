@@ -93,7 +93,9 @@ def seed_projects(command, users) -> None:
     if created:
         pm2.set_password("Project@123")
         pm2.save()
-    command.stdout.write(f"  {'created' if created else 'found'} {username} (PROJECT_MANAGER)")
+    command.stdout.write(
+        f"  {'created' if created else 'found'} {username} (PROJECT_MANAGER, password Project@123)"
+    )
     pms = {1: pm1, 2: pm2, None: None}
 
     _ensure_won_leads(admin)

@@ -23,6 +23,12 @@ def media_root(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path / "media"
 
 
+@pytest.fixture(autouse=True)
+def fast_hasher(settings):
+    """Password hashing is the slowest part of creating test users; the tests never log in."""
+    settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+
 @pytest.fixture
 def make_user(db):
     counter = {"n": 0}
@@ -140,9 +146,9 @@ def receipt_file(name="r.png", data=None, content_type="image/png"):
 
 
 @pytest.fixture
-def make_expense(project):
+def make_expense(request):
     def _make(by, amount="1000.00", proj=None, category="MATERIALS", **extra):
-        proj = proj or project
+        proj = proj or request.getfixturevalue("project")
         data = {
             "amount": Decimal(amount),
             "category": category,
@@ -182,3 +188,52 @@ def expense_form(**over) -> dict:
 
 def days_ago(n: int):
     return selectors.business_today() - timedelta(days=n)
+
+
+FORBIDDEN_KEYS = (
+    "total_amount",
+    "proposed_amount",
+    "ledger",
+    "payment",
+    "received",
+    "outstanding",
+    "margin",
+    "lead",
+    "phone",
+    "email",
+    "commission",
+    "final",
+)
+FORBIDDEN_TEXT = ("1000000", LEAD_PHONE, LEAD_PHONE[3:], "client1@example.com")
+
+
+def leak_keys(payload, path="$"):
+    """Every JSON key (at any depth) that looks like finance or lead data."""
+    found = []
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if any(bad in str(key).lower() for bad in FORBIDDEN_KEYS):
+                found.append(f"{path}.{key}")
+            found += leak_keys(value, f"{path}.{key}")
+    elif isinstance(payload, list):
+        for i, item in enumerate(payload):
+            found += leak_keys(item, f"{path}[{i}]")
+    return found
+
+
+def assert_no_leak(response):
+    """A PM response must not carry finance or lead data: not as a key, not as text."""
+    raw = (
+        response.content.decode("utf-8", "ignore")
+        if hasattr(response, "content")
+        else str(response)
+    )
+    try:
+        data = response.json()
+    except Exception:  # noqa: BLE001 - binary or empty body
+        data = None
+    assert leak_keys(data) == [], (
+        f"leaked keys in {response.request['PATH_INFO']}: {leak_keys(data)}"
+    )
+    for needle in FORBIDDEN_TEXT:
+        assert needle not in raw, f"{needle!r} leaked in {response.request['PATH_INFO']}"

@@ -169,20 +169,97 @@ Never accessible to PM.
 | 🔲 | `GET /accounts/ledgers/{id}/statement` | A | Customer statement |
 | 🔲 | `GET /accounts/pending-collections` | A, SM | |
 
-## Projects (Dev B)
+## Projects and expenses (Dev B)
 
-PM sees only own projects and only the sanctioned budget (see privacy shield).
+A PM sees only the projects assigned to them (anything else is **404**) and only the sanctioned budget. The Sales
+roles get **403** on every endpoint here; anonymous requests get **401**. PM responses come from separate
+serializers (allowlist) and never contain `total_amount`, `proposed_amount`, ledger, payment, `received`,
+`outstanding`, margin or any lead field, not even as `null`. Money is a decimal string ("1234.50"), never a number.
+Routes have no trailing slash, like the rest of the API.
 
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| 🔲 | `POST /projects` | A, SM | Convert a won lead |
-| 🔲 | `GET /projects` | A, SM, PM | Filter by status; PM: own only, PM serializer |
-| 🔲 | `GET/PATCH /projects/{id}` | A, SM, PM | PM: no `total_amount`, no lead data |
-| 🔲 | `POST /projects/{id}/complete` | A, PM | |
-| 🔲 | `POST /projects/{id}/reopen` | A | |
-| 🔲 | `GET/POST /projects/{id}/expenses` | A, PM | |
-| 🔲 | `GET /expenses` | A, PM | Filters: project, date, over-budget |
-| 🔲 | `GET /expenses/budget-alerts` | A, PM | |
+| ✅ | `GET /projects` | A, PM | Paginated (20). Filters and orderings below. PM: own projects, PM shape |
+| ✅ | `GET /projects/summary` | A, PM | `{running, completed, ok, warn, over, no_pm (admin only), sanctioned_total, spent_total}`. Accepts the list filters except `state`; `status` picks which status the state counts are for (default running) |
+| ✅ | `GET /projects/convertible` | A | Won deals that can become projects: `{count, results: [{lead, name, exec_name, won_at, proposed_amount, total_amount, suggested_budget, ineligible_reason, project_id}]}`. `?lead=<id>` looks one up and says why it cannot be converted: `not_won`, `project_exists` (with `project_id`) or `not_finalized` |
+| ✅ | `GET /projects/managers` | A | Active project managers with `running_projects`, for the assign selects |
+| ✅ | `POST /projects` | A | Convert a won lead. Body: `lead`, `name`, `sanctioned_budget`, `pm?` (null = assign later), `start_date?`, `expected_end_date?`, `scope?`. Returns the admin detail (201) |
+| ✅ | `GET /projects/{id}` | A, PM | PM shape or admin shape (adds `pm`, `lead_id`, `finance`), plus `allowed_actions` computed by the server |
+| ✅ | `PATCH /projects/{id}` | A | `name`, `start_date`, `expected_end_date`, `scope` |
+| ✅ | `POST /projects/{id}/budget` | A | `{sanctioned_budget, reason}`. Never below what is spent, never above the deal total. Writes an event and notifies the PM |
+| ✅ | `POST /projects/{id}/assign-pm` | A | `{pm}` (null unassigns). Notifies the old and the new PM |
+| ✅ | `POST /projects/{id}/complete` | A, PM (own) | Locks expenses |
+| ✅ | `POST /projects/{id}/reopen` | A | `{reason}`. Notifies the PM |
+| ✅ | `GET /projects/{id}/events` | A, PM (own) | Append-only timeline, newest first, paginated |
+| ✅ | `GET/POST /projects/{id}/expenses` | A, PM (own) | POST is `multipart/form-data`: `amount`, `category`, `spent_on`, `vendor?`, `description?`, `receipt?`, and for admins `admin_override`, `override_reason` |
+| ✅ | `GET /expenses` | A, PM | Paginated. Filters below. PM: expenses on own projects only |
+| ✅ | `GET /expenses/summary` | A, PM | `{total, count, void_count, by_category[]}` for the current filters; voided expenses are never counted |
+| ✅ | `GET /expenses/alerts` | A | Running projects at or over 80%, worst first, with `pm_name`, `remaining`, `over_by` |
+| ✅ | `GET /expenses/export` | A | CSV, at most 5000 rows, current filters. Cells starting with `= + - @` (or a tab) get an apostrophe prefix |
+| ✅ | `GET /expenses/{id}` | A, PM (own) | `can_edit` says whether the caller may edit or void it now |
+| ✅ | `PATCH /expenses/{id}` | A, PM (own, 30 min) | Same fields as POST (all optional). Re-checks the budget |
+| ✅ | `POST /expenses/{id}/void` | A, PM (own, 30 min) | `{reason}`. The row stays visible with `is_void` and is excluded from every sum |
+| ✅ | `GET /expenses/{id}/receipt` | A, PM (own) | The file, inline, `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`. Receipts have no public URL: fetch with the JWT and show from a blob |
+
+**`GET /projects` filters** (names are a contract with the dashboard links): `status` (`running`, `completed`, comma
+separated), `pm` (id or `none`), `q` (name or client), `state` (`ok`, `warn`, `over`), `over_budget=true` (warn and
+over), `near_limit=true` (warn only), `no_pm=true`, `created_from`, `created_to` (YYYY-MM-DD, business days),
+`ordering` (`name`, `-usage_pct`, `-spent`, `-created_at`, `expected_end_date`; default `-created_at`), `page`,
+`page_size`. Dashboard links: `/projects/running?over_budget=true` and `/projects/running?no_pm=true`.
+
+**`GET /expenses` filters**: `project`, `category` (comma separated), `logged_by`, `q` (vendor, description, project),
+`date_from`, `date_to`, `has_receipt` (`true`/`false`), `state` (`active`, `void`, `override`), `ordering`
+(`-spent_on` default, `spent_on`, `-amount`, `amount`, `-created_at`).
+
+**Budget state** (`selectors.budget_state(spent, sanctioned)`): `ok` below 80%, `warn` from 80% to 100% inclusive,
+`over` above 100%. Every project carries `sanctioned_budget`, `spent`, `remaining` (negative when over),
+`usage_pct` (a string such as `"82.50"`, cut, never rounded up) and `state`.
+
+**Error codes** (standard `{error: {code, message, details}}`):
+
+| Code | HTTP | When |
+| --- | --- | --- |
+| `not_won` | 400 | Converting a lead that is not Won |
+| `project_exists` | 409 | The lead already has a project (`details.project_id`) |
+| `not_finalized` | 409 | Accounts says the deal is not finalized (only once the accounts marker exists) |
+| `budget_exceeds_total` | 400 | Sanctioned budget above the deal total (`details.max_budget`, admin only) |
+| `budget_below_spent` | 400 | New budget below what is already spent (`details.spent`) |
+| `over_budget` | 409 | The expense would pass the budget (`details.remaining`); an admin may retry with `admin_override` and a reason |
+| `project_completed` | 409 | Any change to a completed project's expenses or budget |
+| `not_completed` | 409 | Reopening a running project |
+| `expense_void` | 409 | Changing an expense that is already void |
+| `edit_window_closed` | 403 | A PM changing their own expense after 30 minutes |
+| `invalid_receipt` | 400 | Wrong type (checked by magic bytes), over 5 MB or unreadable image |
+| `validation_error` | 400 | Field errors in `details` (`amount`, `spent_on`, `receipt`, `pm`, `reason`, ...) |
+
+Expense rules: amount is a positive decimal string, at most 10 digits and 2 decimals (floats are refused); `spent_on`
+is a business-timezone date (`BUSINESS_TIME_ZONE`, default Asia/Kolkata), not in the future and at most 30 days back;
+categories `MATERIALS LABOUR TRANSPORT EQUIPMENT FOOD PERMITS OTHER`; a receipt (JPG, PNG, WebP or PDF, 5 MB) is
+required except for `LABOUR`. Images are re-encoded (EXIF removed, at most 1600 px). All numbers above live in
+`apps/projects/rules.py`.
+
+### Projects -> Accounts (what Dev C provides)
+
+Projects reads the deal's money through one adapter, `apps/projects/integrations.py`. It needs:
+
+* `accounts.services.get_project_finance(lead) -> {total_amount, received, outstanding, finalized} | None`
+  (Decimals; `None` when the lead has no ledger). **Missing today**, so:
+  * conversion is allowed without finalization, and the budget ceiling is the lead's `proposed_amount`;
+  * the admin detail returns `finance: null` ("Awaiting accounts data"), so no margin is shown.
+* The existence of that function is the "finalization marker": once it exists, `POST /projects` returns
+  `409 not_finalized` unless `finalized` is true, and `/projects/convertible` lists only finalized deals.
+
+### What Dev C can import from projects
+
+* `apps.projects.selectors.budget_state(spent, sanctioned)` returns `"ok" | "warn" | "over"`, and
+  `usage_pct(spent, sanctioned)` returns the string. Use them so every screen agrees on "near limit".
+* `apps.projects.selectors.budget_usage_qs(qs=None)` annotates `Project` rows with `spent` (non-void expenses)
+  and `usage`. Filter with `selectors.state_q("warn")` (also `"ok"`, `"over"`), for example the dashboard's "projects
+  over budget" count: `budget_usage_qs().filter(status="RUNNING").exclude(state_q("ok"))`.
+* `selectors.project_margins(finance, spent, sanctioned)` is the one definition of planned and live margin.
+* Notification types sent through `core.services.notify`: `budget_warn`, `budget_over` (every active admin, once per
+  upward change), `project_assigned`, `project_unassigned`, `budget_changed`, `project_completed`, `project_reopened`.
+  Payloads carry `project_id` and `project_name` (alerts add `usage_pct`, `spent`, `sanctioned_budget`).
 
 ## Reports (Dev C)
 

@@ -14,8 +14,9 @@ import { Role } from '../../../core/models';
 import { LayoutService } from '../../../layout/layout.service';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
-import { InrPipe, formatInr } from '../../../shared/money/inr.pipe';
+import { InrPipe } from '../../../shared/money/inr.pipe';
 import { AddExpenseForm } from '../components/add-expense-form';
+import { BudgetPanel } from '../components/budget-panel';
 import { BudgetDialog, BudgetDialogData } from '../components/dialogs/budget-dialog';
 import { CompleteDialog, CompleteDialogData } from '../components/dialogs/complete-dialog';
 import { ReasonDialog, ReasonDialogData } from '../components/dialogs/reason-dialog';
@@ -25,7 +26,7 @@ import { ExpenseAction, ExpenseRows } from '../components/expense-rows';
 import { ProjectTimeline } from '../components/project-timeline';
 import { EXPENSE_CATEGORIES, Expense, ProjectAction, ProjectDetail, STATE_TINT } from '../data/project.models';
 import { ProjectsApi } from '../data/projects-api.service';
-import { BudgetBar, BudgetStateChip, PersonAvatar } from '../ui/bits';
+import { BudgetStateChip, PersonAvatar } from '../ui/bits';
 import { formatBusinessFull, formatDay, relativeLabel } from '../ui/business-time';
 import { DialogHead } from '../ui/dialog-head';
 import { PanelHead } from '../ui/panel-head';
@@ -39,7 +40,7 @@ const EXPENSE_TITLE_ID = 'ae-title';
   selector: 'app-project-detail-page',
   imports: [
     AddExpenseForm,
-    BudgetBar,
+    BudgetPanel,
     BudgetStateChip,
     DialogHead,
     EmptyState,
@@ -90,19 +91,6 @@ export class ProjectDetailPage {
       ? { link: '/projects/completed', label: 'Completed projects' }
       : { link: '/projects/running', label: this.isAdmin() ? 'Running projects' : 'My projects' },
   );
-  /** "₹4.8L left · 20% used" in plain words; an overspent project says how far over it is. */
-  protected readonly leftText = computed(() => {
-    const p = this.project();
-    if (!p) {
-      return '';
-    }
-    const pct = `${Math.floor(Number(p.usage_pct) || 0)}% used`;
-    return p.remaining.startsWith('-')
-      ? `${formatInr(p.remaining.slice(1))} over · ${pct}`
-      : `${formatInr(p.remaining)} left · ${pct}`;
-  });
-  protected readonly overBy = computed(() => (this.project()?.remaining.startsWith('-') ? this.project()!.remaining.slice(1) : null));
-
   protected readonly categories = EXPENSE_CATEGORIES;
   protected readonly full = formatBusinessFull;
   protected readonly day = formatDay;
@@ -195,7 +183,7 @@ export class ProjectDetailPage {
         maxWidth: 'calc(100vw - 32px)',
         maxHeight: '92vh',
         ariaLabelledBy: EXPENSE_TITLE_ID,
-        autoFocus: 'first-tabbable',
+        autoFocus: '#ae-amount',
       });
       this.expenseDialog.afterClosed().subscribe(() => (this.expenseDialog = null));
     } else {

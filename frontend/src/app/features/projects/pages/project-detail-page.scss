@@ -4,7 +4,6 @@
   gap: var(--space-4);
 }
 
-// ---- Header card: soft glow tinted by the budget state -------------------------------------------
 .head {
   position: relative;
   display: flex;
@@ -116,7 +115,6 @@
   mat-icon { margin-right: 4px; }
 }
 
-// ---- Layout ----------------------------------------------------------------------------------------
 .grid { display: grid; gap: var(--space-4); }
 
 .main,
@@ -129,20 +127,8 @@
 
 .panel { padding: var(--space-5); }
 
-// ---- Budget ----------------------------------------------------------------------------------------
-.figs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin: var(--space-4) 0 0;
-
-  dt { color: var(--ink-3); font-size: var(--text-xs); }
-  dd { margin: 2px 0 0; color: var(--ink); font-size: var(--text-md); font-weight: 600; overflow-wrap: anywhere; }
-}
-
 .neg { color: var(--negative); }
 
-// ---- Finance and scope -----------------------------------------------------------------------------
 .kv {
   display: grid;
   gap: 4px;
@@ -155,7 +141,6 @@
 .small { margin: var(--space-3) 0 0; color: var(--ink-3); font-size: var(--text-sm); }
 .pre { margin: 0; color: var(--ink-2); font-size: var(--text-sm); white-space: pre-line; overflow-wrap: anywhere; }
 
-// ---- Expenses --------------------------------------------------------------------------------------
 .ctl {
   height: 40px;
   padding: 0 12px;
@@ -167,10 +152,9 @@
   font-size: var(--text-sm);
 }
 
-.busy { opacity: 0.55; transition: opacity var(--dur-fast); }
+.busy { opacity: 0.55; }
 .more { display: flex; justify-content: center; margin-top: var(--space-3); }
 
-// Add/edit form host (dialog on desktop, bottom sheet on phones).
 .xp {
   box-sizing: border-box;
   padding: var(--space-6);
@@ -178,7 +162,6 @@
   &.in-sheet { padding: var(--space-2) var(--space-1) 0; }
 }
 
-// ---- Phone bar -------------------------------------------------------------------------------------
 .mbar {
   position: fixed;
   right: 0;
@@ -190,7 +173,6 @@
   padding: 8px 16px;
   border-top: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 94%, transparent);
-  backdrop-filter: blur(8px);
 
   button {
     display: inline-flex;
@@ -239,7 +221,6 @@
   font-size: var(--text-sm);
   font-weight: 500;
   text-decoration: none;
-  transition: background-color var(--dur-fast), color var(--dur-fast);
 
   &:hover { background: var(--surface); color: var(--ink); }
   mat-icon { width: 20px; height: 20px; font-size: 20px; }

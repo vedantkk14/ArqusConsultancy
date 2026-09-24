@@ -148,7 +148,7 @@ export class ConvertPage {
         maxWidth: '100vw',
         panelClass: 'convert-panel',
         ariaLabelledBy: DIALOG_TITLE_ID,
-        autoFocus: 'first-tabbable',
+        autoFocus: '#cv-name',
       });
       this.dialogRef.afterClosed().subscribe(() => this.afterClose());
     } else {

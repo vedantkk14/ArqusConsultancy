@@ -20,7 +20,10 @@ export const CATEGORY_TINT: Record<string, string> = {
   OTHER: 'slate',
 };
 
-export type ExpenseAction = { kind: 'receipt' | 'edit' | 'void'; expense: Expense };
+export interface ExpenseAction {
+  kind: 'receipt' | 'edit' | 'void';
+  expense: Expense;
+}
 
 /** Expenses as a table (>= 768px) or stacked cards (phones). Void rows stay visible with a "Void" tag. */
 @Component({

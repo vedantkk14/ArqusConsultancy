@@ -66,24 +66,7 @@
   <div class="grid">
     <div class="main">
       <!-- Budget (both roles) -->
-      <section class="card panel rise-in" style="--i: 1" aria-labelledby="budget-title">
-        <app-panel-head title="Budget" [subtitle]="leftText()" headingId="budget-title" />
-        <app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" [wide]="true" />
-        <dl class="figs">
-          <div>
-            <dt>Sanctioned</dt>
-            <dd class="num">{{ p.sanctioned_budget | inr }}</dd>
-          </div>
-          <div>
-            <dt>Spent</dt>
-            <dd class="num">{{ p.spent | inr }}</dd>
-          </div>
-          <div>
-            <dt>{{ overBy() ? 'Over by' : 'Remaining' }}</dt>
-            <dd class="num" [class.neg]="overBy()">{{ overBy() ? (overBy() | inr) : (p.remaining | inr) }}</dd>
-          </div>
-        </dl>
-      </section>
+      <app-budget-panel [project]="p" />
 
       <!-- Expenses -->
       <section class="card panel rise-in" style="--i: 2" aria-labelledby="exp-title">

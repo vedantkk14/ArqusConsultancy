@@ -41,8 +41,9 @@ export function makeProject(id: number, patch: Partial<ProjectListItem> = {}): P
 
 /** A project as a project manager sees it: no `pm` object, no lead, no finance. */
 export function makePmProject(id: number, patch: Partial<ProjectListItem> = {}): ProjectListItem {
-  const { pm: _pm, ...rest } = makeProject(id, patch);
-  return rest;
+  const project = makeProject(id, patch);
+  delete project.pm;
+  return project;
 }
 
 export function makeDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
@@ -64,8 +65,11 @@ export function makeDetail(id: number, patch: Partial<ProjectDetail> = {}): Proj
 }
 
 export function makePmDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
-  const { pm: _pm, lead_id: _lead, finance: _finance, ...rest } = makeDetail(id, patch);
-  return { ...rest, allowed_actions: ['add_expense', 'complete'], ...patch };
+  const detail = makeDetail(id, { allowed_actions: ['add_expense', 'complete'], ...patch });
+  delete detail.pm;
+  delete detail.lead_id;
+  delete detail.finance;
+  return detail;
 }
 
 export function makeExpense(id: number, patch: Partial<Expense> = {}): Expense {

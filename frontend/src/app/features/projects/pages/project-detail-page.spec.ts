@@ -264,7 +264,7 @@ describe('ProjectDetailPage', () => {
     });
 
     it('phones open the form in a bottom sheet', async () => {
-      const { harness } = await openForm({ width: 390 });
+      await openForm({ width: 390 });
       expect(overlay().querySelector('mat-bottom-sheet-container')).toBeTruthy();
       expect(overlay().querySelector('input[capture=environment]')).toBeTruthy();
     });

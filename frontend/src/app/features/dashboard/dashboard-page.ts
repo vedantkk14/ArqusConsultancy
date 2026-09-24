@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,6 +19,7 @@ import { ActivityCard } from './components/activity-card';
 import { AgingCard } from './components/aging-card';
 import { AttentionPanel } from './components/attention-panel';
 import { CashHero } from './components/cash-hero';
+import { CreateAccountDialog, CreatedAccount } from './components/create-account-dialog';
 import { CountUp } from './components/count-up';
 import { FunnelCard } from './components/funnel-card';
 import { LeaderboardCard } from './components/leaderboard-card';
@@ -28,7 +31,7 @@ import { RadialGauge } from './components/radial-gauge';
 import { SourcesCard } from './components/sources-card';
 import { Sparkline } from './components/sparkline';
 import { BarSegment, StackedBar } from './components/stacked-bar';
-import { NAV_BADGE_SOURCES, composeInsight } from './dashboard-utils';
+import { NAV_BADGE_SOURCES } from './dashboard-utils';
 import { AdminDashboard, PERIOD_NOUN, Period, toPeriod } from './dashboard.models';
 import { DashboardService } from './dashboard.service';
 
@@ -87,6 +90,8 @@ export class DashboardPage {
   private readonly router = inject(Router);
   private readonly service = inject(DashboardService);
   private readonly auth = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
+  private readonly snack = inject(MatSnackBar);
   protected readonly layout = inject(LayoutService);
 
   protected readonly paymentColumns = PAYMENT_COLUMNS;
@@ -119,10 +124,6 @@ export class DashboardPage {
 
   // ---- Derived display values --------------------------------------------------------------------
   protected readonly periodNoun = computed(() => PERIOD_NOUN[this.period()]);
-  protected readonly insight = computed(() => {
-    const d = this.data();
-    return d ? composeInsight(d) : '';
-  });
 
   protected readonly leadsDelta = computed(() => {
     const k = this.data()?.kpis;
@@ -195,6 +196,18 @@ export class DashboardPage {
         takeUntilDestroyed(),
       )
       .subscribe((s) => this.state.set(s));
+  }
+
+  /** Admin creates a login for any role; the new user signs in and lands on their own dashboard. */
+  protected createAccount(): void {
+    this.dialog
+      .open<CreateAccountDialog, void, CreatedAccount>(CreateAccountDialog, {
+        width: '640px',
+        maxWidth: 'calc(100vw - 32px)',
+        autoFocus: 'first-tabbable',
+      })
+      .afterClosed()
+      .subscribe((user) => user && this.snack.open(`Account created for ${user.name}.`, undefined, { duration: 4000 }));
   }
 
   protected setPeriod(period: Period): void {

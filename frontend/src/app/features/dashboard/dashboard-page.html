@@ -7,13 +7,9 @@
 } @else {
   <!-- Header: insight line + controls (the title and date are in the top bar) -->
   <header class="page-head">
-    <p class="insight" aria-live="polite">
-      @if (data()) {
-        {{ insight() }}
-      } @else {
-        <app-skeleton width="min(420px, 80%)" height="16px" />
-      }
-    </p>
+    <button type="button" class="create" (click)="createAccount()">
+      <mat-icon aria-hidden="true">person_add</mat-icon>Create account
+    </button>
     <div class="controls">
       <app-period-switcher class="segmented" [value]="period()" (changed)="setPeriod($event)" />
       <span class="updated">{{ updatedText() }}</span>

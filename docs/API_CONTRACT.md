@@ -91,6 +91,12 @@ A change or reset clears `must_change_password` and revokes every refresh token 
 
 `retry_after` is in seconds.
 
+## Users (Admin)
+
+| Status | Method & path | Who | Notes |
+| --- | --- | --- | --- |
+| ✅ | `POST /users` | A | Create an account for any role. Body: `username`, `email`, `first_name`, `last_name`, `phone?`, `role` (ADMIN, SALES_MANAGER, SALES_EXEC, PROJECT_MANAGER), `password` (temporary, checked by the password validators), `must_change_password?` (default true). Returns `{id, name, email, role, must_change_password}`. Field errors for a taken username or email and for weak passwords. The new user signs in with the username or the email, and with `must_change_password` is sent to the change-password page first. |
+
 ## Leads (Dev A)
 
 All under `/api/v1/leads`. Roles: A = Admin, SM = Sales Manager, SE = Sales Exec (own leads only; others

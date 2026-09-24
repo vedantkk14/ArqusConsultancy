@@ -9,7 +9,6 @@ export const NEW_ACTIONS = [
   { label: 'Add lead', icon: 'person_add', route: '/leads/new' },
   { label: 'Record payment', icon: 'payments', route: '/accounts/payments' },
   { label: 'Convert won lead', icon: 'transform', route: '/projects/convert' },
-  { label: 'Add user', icon: 'group_add', route: '/team/users' },
 ];
 
 /** One "+ New" menu. `fab` renders it as the floating button above the mobile tab bar. */

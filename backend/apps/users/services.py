@@ -160,6 +160,36 @@ def set_temporary_password(user, raw_password: str) -> None:
     blacklist_all_tokens(user)
 
 
+@transaction.atomic
+def create_user(data: dict):
+    """Admin creates an account with a temporary password, checked against the user's own details.
+
+    With `must_change_password` (the default) the person picks their own password at first sign-in.
+    """
+    password = data["password"]
+    candidate = User(
+        username=data["username"],
+        email=data["email"],
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+    )
+    validate_new_password(password, candidate, field="password")
+    user = User.objects.create_user(
+        username=data["username"],
+        email=data["email"],
+        password=password,
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        phone=data.get("phone", ""),
+        role=data["role"],
+        must_change_password=data.get("must_change_password", True),
+    )
+    if user.role == User.Role.ADMIN:
+        user.is_staff = True  # lets an admin use /admin/, like the seeded admin
+        user.save(update_fields=["is_staff"])
+    return user
+
+
 def reset_link(user) -> str:
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)

@@ -116,7 +116,7 @@ describe('DashboardPage', () => {
     expect(text(el.querySelector('.pill.overdue'))).toContain('overdue');
     expect([...el.querySelectorAll('.wl > span')].map(text)).toEqual(['18 Won', '6 Lost']);
     expect(el.querySelector('app-radial-gauge')!.getAttribute('aria-label')).toBe('62.4% collection rate');
-    expect(text(el.querySelector('.insight'))).toContain('₹6,40,000 overdue across 4 clients');
+    expect(text(el.querySelector('.create'))).toContain('Create account');
     expect(el.querySelectorAll('app-projects-card li a').length).toBe(5);
     expect(text(el.querySelector('app-projects-card'))).toContain('Over budget');
     expect(el.querySelectorAll('app-leaderboard-card li').length).toBe(5);
@@ -159,7 +159,6 @@ describe('DashboardPage', () => {
     expect(text(el.querySelector('app-cash-hero .big'))).toBe('₹0');
     expect(text(el.querySelector('app-cash-hero'))).toContain('No data for this period');
     expect(text(el.querySelector('app-attention-panel'))).toContain('Nothing is waiting on you.');
-    expect(text(el.querySelector('.insight'))).toBe("You're all caught up.");
   });
 
   it('offers the "+ New" actions with their routes', async () => {
@@ -172,13 +171,11 @@ describe('DashboardPage', () => {
       'Add lead',
       'Record payment',
       'Convert won lead',
-      'Add user',
     ]);
     expect(items.map((a) => a.getAttribute('href'))).toEqual([
       '/leads/new',
       '/accounts/payments',
       '/projects/convert',
-      '/team/users',
     ]);
   });
 

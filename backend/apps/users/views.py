@@ -9,6 +9,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
+from apps.core.permissions import HasRole
+
 from . import services
 from .exceptions import TokenInvalid
 from .serializers import (
@@ -20,6 +22,7 @@ from .serializers import (
     PasswordForgotSerializer,
     PasswordResetSerializer,
     RefreshSerializer,
+    UserCreateSerializer,
     UserSerializer,
 )
 
@@ -89,6 +92,19 @@ class MeView(RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class UserCreateView(APIView):
+    """POST /api/v1/users: an Admin creates an account for any role."""
+
+    permission_classes = [HasRole("ADMIN")]
+
+    @extend_schema(request=UserCreateSerializer, responses=UserSerializer)
+    def post(self, request):
+        data = UserCreateSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        user = services.create_user(dict(data.validated_data))
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
 class PasswordChangeView(APIView):

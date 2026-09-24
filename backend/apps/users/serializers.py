@@ -12,6 +12,33 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class UserCreateSerializer(serializers.Serializer):
+    """Admin creates an account. `password` is a temporary one the user is asked to replace."""
+
+    username = serializers.RegexField(
+        r"^[\w.@+-]+$",
+        max_length=150,
+        error_messages={"invalid": "Use letters, numbers and . _ - @ + only."},
+    )
+    email = serializers.EmailField(max_length=254)
+    first_name = serializers.CharField(max_length=150, trim_whitespace=True)
+    last_name = serializers.CharField(max_length=150, trim_whitespace=True)
+    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    role = serializers.ChoiceField(choices=User.Role.choices)
+    password = serializers.CharField(trim_whitespace=False, write_only=True, max_length=128)
+    must_change_password = serializers.BooleanField(required=False, default=True)
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return value
+
+
 class LoginSerializer(serializers.Serializer):
     """`identifier` is a username or an email. `username` is still accepted for older clients."""
 

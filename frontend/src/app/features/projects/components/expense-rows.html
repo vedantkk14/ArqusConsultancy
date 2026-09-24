@@ -19,7 +19,9 @@
         <mat-icon aria-hidden="true">more_vert</mat-icon>
       </button>
       <mat-menu #more="matMenu" xPosition="before">
-        <button mat-menu-item type="button" (click)="emit('edit', e)"><mat-icon>edit</mat-icon>Edit</button>
+        @if (allowEdit()) {
+          <button mat-menu-item type="button" (click)="emit('edit', e)"><mat-icon>edit</mat-icon>Edit</button>
+        }
         <button mat-menu-item type="button" (click)="emit('void', e)"><mat-icon>block</mat-icon>Void…</button>
       </mat-menu>
     }

@@ -7,7 +7,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { Subject, of, throwError } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
-import { fakeBreakpoints } from '../../../layout/testing/fake-breakpoints';
+import { fakeViewport } from '../testing/fake-viewport';
 import { Expense, ProjectDetail } from '../data/project.models';
 import { ProjectsApi, UploadEvent } from '../data/projects-api.service';
 import { FakeProjectsApi, makeDetail, makeExpense, makePmDetail } from '../testing/fake-projects-api';
@@ -26,7 +26,7 @@ async function setup(opts: { role?: Role; project?: ProjectDetail | null; width?
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: ProjectsApi, useValue: api },
-      fakeBreakpoints(opts.width ?? 1440),
+      fakeViewport(opts.width ?? 1440),
     ],
   });
   TestBed.inject(AuthService).login('u', 'pw').subscribe();

@@ -2,6 +2,7 @@ import { Observable, Subject, of } from 'rxjs';
 import { QueryParams } from '../../../core/api/api.service';
 import { PaginatedResponse } from '../../../core/models';
 import {
+  AlertProject,
   ConvertibleLead,
   Expense,
   ExpenseSummary,
@@ -117,6 +118,7 @@ export const CONVERTIBLE: ConvertibleLead = {
 /** Records calls; each list() returns a Subject the test resolves (or fails). */
 export class FakeProjectsApi {
   listCalls: QueryParams[] = [];
+  expenseCalls: QueryParams[] = [];
   summaryCalls: QueryParams[] = [];
   pending = new Subject<PaginatedResponse<ProjectListItem>>();
   convertible$: Observable<{ count: number; results: ConvertibleLead[] }> = of({ count: 1, results: [CONVERTIBLE] });
@@ -130,6 +132,7 @@ export class FakeProjectsApi {
   detail: ProjectDetail = makeDetail(1);
   expenseRows: Expense[] = [makeExpense(1)];
   eventRows: ProjectEvent[] = [];
+  alertRows: AlertProject[] = [];
   actions: { name: string; args: unknown[] }[] = [];
   uploadResult: Observable<UploadEvent> = of({ kind: 'done', expense: makeExpense(2) });
   expenseSummary$: Observable<ExpenseSummary> = of({ total: '1500.00', count: 1, void_count: 0, by_category: [] });
@@ -163,7 +166,8 @@ export class FakeProjectsApi {
   projectExpenses() {
     return of(page(this.expenseRows));
   }
-  expenses() {
+  expenses(params: QueryParams = {}) {
+    this.expenseCalls.push(params);
     return of(page(this.expenseRows));
   }
   expenseSummary() {
@@ -207,6 +211,6 @@ export class FakeProjectsApi {
     return of(new Blob());
   }
   alerts() {
-    return of(page([]));
+    return of(page(this.alertRows));
   }
 }

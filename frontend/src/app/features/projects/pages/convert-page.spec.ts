@@ -7,7 +7,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
-import { fakeBreakpoints } from '../../../layout/testing/fake-breakpoints';
+import { fakeViewport } from '../testing/fake-viewport';
 import { ProjectsApi } from '../data/projects-api.service';
 import { CONVERTIBLE, FakeProjectsApi, makeDetail } from '../testing/fake-projects-api';
 import { ConvertPage } from './convert-page';
@@ -20,7 +20,7 @@ async function setup(url = '/projects/convert', width = 1440) {
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: ProjectsApi, useValue: api },
-      fakeBreakpoints(width),
+      fakeViewport(width),
     ],
   });
   TestBed.inject(AuthService).login('u', 'pw').subscribe();
@@ -77,7 +77,7 @@ describe('ConvertPage', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ProjectsApi, useValue: api },
-        fakeBreakpoints(1440),
+        fakeViewport(1440),
       ],
     });
     TestBed.inject(AuthService).login('u', 'pw').subscribe();

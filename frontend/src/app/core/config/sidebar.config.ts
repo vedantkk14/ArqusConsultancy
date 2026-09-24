@@ -65,7 +65,7 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     roles: [Admin, ProjectManager],
     children: [
       { label: 'All Expenses', icon: 'receipt', route: '/expenses/all', roles: [Admin, ProjectManager] },
-      { label: 'Budget Alerts', icon: 'warning', route: '/expenses/alerts', roles: [Admin, ProjectManager] },
+      { label: 'Budget Alerts', icon: 'warning', route: '/expenses/alerts', roles: [Admin] },
     ],
   },
   {

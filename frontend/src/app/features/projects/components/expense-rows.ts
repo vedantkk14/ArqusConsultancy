@@ -36,6 +36,8 @@ export class ExpenseRows {
   /** The all-expenses page shows the project (as a link) and who logged it. */
   readonly showProject = input(false);
   readonly skeleton = input(false);
+  /** The all-expenses page can void but not edit (edit needs the project's budget context). */
+  readonly allowEdit = input(true);
   readonly action = output<ExpenseAction>();
 
   protected readonly placeholders = Array.from({ length: 5 }, (_, i) => i);

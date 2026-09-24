@@ -5,7 +5,7 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
-import { fakeBreakpoints } from '../../../layout/testing/fake-breakpoints';
+import { fakeViewport } from '../testing/fake-viewport';
 import { activeChip, filtersFromQuery, listInsight, toQuery } from '../data/projects-list.store';
 import { EMPTY_FILTERS } from '../data/project.models';
 import { ProjectsApi } from '../data/projects-api.service';
@@ -23,7 +23,7 @@ async function setup(role: Role = Role.Admin, url = '/projects/running') {
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: ProjectsApi, useValue: api },
-      fakeBreakpoints(1440),
+      fakeViewport(1440),
     ],
   });
   TestBed.inject(AuthService).login('u', 'pw').subscribe();
@@ -105,7 +105,9 @@ describe('ProjectsListPage', () => {
   it('a project manager has no PM filter, no Assign action and no convert link', async () => {
     const { el, resolve } = await setup(Role.ProjectManager);
     resolve([makePmProject(1, { pm_name: null })]);
-    expect(el.textContent).not.toContain('Project manager'); // the PM filter and its column are admin-only
+    const filters = text(el.querySelector('app-project-filters'));
+    expect(filters).not.toContain('Project manager'); // the manager filter is admin-only
+    expect(filters).not.toContain('No project manager'); // and so is its chip
     expect(buttonByText(el, 'Assign')).toBeUndefined();
     expect(el.querySelector('a[href="/projects/convert"]')).toBeNull();
   });

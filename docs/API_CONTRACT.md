@@ -165,17 +165,25 @@ Response (money = string with 2 decimals; counts = integers; `received_delta_pct
     "leads_total": 0, "leads_new": 0, "leads_new_prev": 0,
     "open_count": 0, "open_value": "0.00",
     "won_count": 0, "lost_count": 0, "win_rate_pct": "0.0",
-    "projects_running": 0, "projects_completed": 0
+    "projects_running": 0, "projects_completed": 0,
+    "spent": "0.00", "net": "0.00", "net_margin_pct": "0.0", "collection_rate_pct": "0.0"
   },
   "trends": {"months": ["2026-04", "…", "2026-09"], "leads_new": [0, 0, 0, 0, 0, 0], "received": ["0.00", "…"]},
-  "cashflow": {"months": ["2026-04", "…"], "collected": ["0.00", "…"], "spent": ["0.00", "…"]},
+  "cashflow": {"months": ["2026-04", "…"], "collected": ["0.00", "…"], "spent": ["0.00", "…"], "net": ["0.00", "…"]},
   "attention": [{"key": "overdue_payments", "label": "Payments overdue", "count": 4, "severity": "high", "route": "/accounts/pending"}],
-  "funnel": [{"status": "NEW", "label": "New", "count": 64}],
-  "sales_by_exec": [{"user_id": 3, "name": "Eva Exec", "won_count": 7, "won_value": "3240000.00"}],
+  "funnel": [{"status": "NEW", "label": "New", "count": 64, "value": "9600000.00"}],
+  "sales_by_exec": [{"user_id": 3, "name": "Eva Exec", "won_count": 7, "won_value": "3240000.00",
+                     "share_pct": "100.0", "win_rate_pct": "70.0"}],
+  "lead_sources": [{"source": "Referral", "count": 48, "pct": "31.2"}],
+  "collections_aging": [{"bucket": "0-30", "count": 0, "amount": "0.00"}, {"bucket": "31-60", …},
+                        {"bucket": "61-90", …}, {"bucket": "90+", …}],
+  "top_overdue_clients": [{"ledger_id": 12, "client": "…", "outstanding": "420000.00", "days": 97}],
+  "projects_burn": [{"id": 5, "name": "…", "sanctioned": "800000.00", "spent": "840000.00",
+                     "pct": "105.0", "state": "over"}],
   "recent": {
     "payments": [{"date": "2026-09-23", "client": "…", "reference": "…", "amount": "250000.00"}],
     "expenses": [{"date": "2026-09-22", "project": "…", "category": "…", "amount": "185000.00"}],
-    "activity": [{"when": "2026-09-24T09:40:00Z", "actor": "…", "action": "…"}]
+    "activity": [{"when": "2026-09-24T09:40:00Z", "actor": "…", "action": "…", "type": "payment"}]
   }
 }
 ```
@@ -192,6 +200,14 @@ Definitions (each is one named function/constant in `apps/reports/services.py`):
 - Outstanding figures are snapshots as of now; **overdue** = ledger older than 30 days (`OVERDUE_AFTER_DAYS`).
 - `leads_total` is the all-time snapshot; `leads_new` is the period figure.
 - `attention` lists only counts above zero, most severe first.
+- `spent` / `net` = expenses and received minus expenses in the period; `net_margin_pct` = net / received.
+- `collection_rate_pct` = all money received / total finalized project value (snapshot).
+- `collections_aging`: unpaid ledgers by days since the last payment (or ledger creation), buckets
+  0-30 / 31-60 / 61-90 / 90+ (always all four); `top_overdue_clients`: the 3 oldest.
+- `projects_burn`: up to 5 running projects by spent / **sanctioned budget** (never the total amount);
+  `state` = `ok` below 80%, `warn` from 80%, `over` from 100%.
+- `sales_by_exec[].share_pct` = won value / the top exec's won value; `lead_sources` = top 5 + "Other".
+- Note: these live at the top level (`cashflow`, `funnel`, …), not under a `charts` key.
 
 **Status:** the endpoint, shape and definitions are implemented and tested. The figures are real zeros until the
 `leads.Lead`, `projects.Project/Expense` and `accounts.Ledger/Payment` models exist (`data_sources` says which are

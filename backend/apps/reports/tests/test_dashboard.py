@@ -9,9 +9,13 @@ from rest_framework.test import APIClient
 
 from apps.reports.services import (
     PERIODS,
+    aging_bucket,
     attention_items,
+    burn_state,
+    collection_rate_pct,
     delta_pct,
     money,
+    pct,
     period_range,
     trend_months,
     win_rate_pct,
@@ -37,6 +41,10 @@ KPI_TYPES = {
     "win_rate_pct": str,
     "projects_running": int,
     "projects_completed": int,
+    "spent": str,
+    "net": str,
+    "net_margin_pct": str,
+    "collection_rate_pct": str,
 }
 
 
@@ -195,3 +203,59 @@ def test_no_model_changes_pending():
     out = StringIO()
     call_command("makemigrations", "--check", "--dry-run", stdout=out)
     assert "No changes detected" in out.getvalue()
+
+
+# ---- Extra fields (bento dashboard) --------------------------------------------------------------
+
+
+def test_collection_rate_and_pct():
+    assert collection_rate_pct(Decimal("620"), Decimal("1000")) == "62.0"
+    assert collection_rate_pct(Decimal("5"), Decimal("0")) == "0.0"
+    assert pct(1, 3) == "33.3"
+
+
+@pytest.mark.parametrize(
+    "days,bucket",
+    [
+        (0, "0-30"),
+        (30, "0-30"),
+        (31, "31-60"),
+        (60, "31-60"),
+        (61, "61-90"),
+        (90, "61-90"),
+        (91, "90+"),
+        (400, "90+"),
+    ],
+)
+def test_aging_buckets(days, bucket):
+    assert aging_bucket(days) == bucket
+
+
+@pytest.mark.parametrize(
+    "spent,sanctioned,state",
+    [
+        ("0", "100", "ok"),
+        ("79.99", "100", "ok"),
+        ("80", "100", "warn"),
+        ("99.9", "100", "warn"),
+        ("100", "100", "over"),
+        ("150", "100", "over"),
+        ("10", "0", "ok"),
+    ],
+)
+def test_burn_state_uses_the_sanctioned_budget(spent, sanctioned, state):
+    assert burn_state(Decimal(spent), Decimal(sanctioned)) == state
+
+
+@pytest.mark.django_db
+def test_extra_fields_have_the_right_shape(client, django_assert_max_num_queries):
+    client.force_authenticate(_user("ADMIN"))
+    with django_assert_max_num_queries(20):
+        body = client.get(URL).json()
+    assert body["kpis"]["collection_rate_pct"] == "0.0"
+    assert body["kpis"]["spent"] == "0.00" and body["kpis"]["net"] == "0.00"
+    assert body["cashflow"]["net"] == ["0.00"] * 6
+    assert [b["bucket"] for b in body["collections_aging"]] == ["0-30", "31-60", "61-90", "90+"]
+    assert all(b["amount"] == "0.00" and b["count"] == 0 for b in body["collections_aging"])
+    for key in ("lead_sources", "top_overdue_clients", "projects_burn"):
+        assert body[key] == []  # the source models do not exist yet

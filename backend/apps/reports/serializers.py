@@ -1,4 +1,5 @@
 """Admin dashboard: query validation and the documented response shape (for OpenAPI)."""
+
 from rest_framework import serializers
 
 from .services import DEFAULT_PERIOD, PERIODS
@@ -36,6 +37,10 @@ class _Kpis(serializers.Serializer):
     win_rate_pct = serializers.CharField()
     projects_running = serializers.IntegerField()
     projects_completed = serializers.IntegerField()
+    spent = _money()
+    net = _money()
+    net_margin_pct = serializers.CharField()
+    collection_rate_pct = serializers.CharField()
 
 
 class _Trends(serializers.Serializer):
@@ -48,6 +53,7 @@ class _Cashflow(serializers.Serializer):
     months = serializers.ListField(child=serializers.CharField())
     collected = serializers.ListField(child=_money())
     spent = serializers.ListField(child=_money())
+    net = serializers.ListField(child=_money())
 
 
 class _Attention(serializers.Serializer):
@@ -68,4 +74,8 @@ class AdminDashboardSerializer(serializers.Serializer):
     attention = _Attention(many=True)
     funnel = serializers.ListField(child=serializers.DictField())
     sales_by_exec = serializers.ListField(child=serializers.DictField())
+    lead_sources = serializers.ListField(child=serializers.DictField())
+    collections_aging = serializers.ListField(child=serializers.DictField())
+    top_overdue_clients = serializers.ListField(child=serializers.DictField())
+    projects_burn = serializers.ListField(child=serializers.DictField())
     recent = serializers.DictField(child=serializers.ListField(child=serializers.DictField()))

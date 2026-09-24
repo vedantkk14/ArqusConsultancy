@@ -4,6 +4,7 @@ The admin dashboard reads other apps' models through `apps.get_model`, so this a
 them and keeps working while those models don't exist yet. Every figure is an aggregate; money
 leaves this module as a string with 2 decimals.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -29,6 +30,13 @@ LEAD_CLOSED_STATUSES = ("WON", "LOST")
 
 #: Months shown in sparklines and the revenue vs expenses chart.
 TREND_MONTHS = 6
+
+#: Collections aging buckets: days since the last payment (or ledger creation) of an unpaid ledger.
+AGING_BUCKETS = (("0-30", 0, 30), ("31-60", 31, 60), ("61-90", 61, 90), ("90+", 91, None))
+
+#: Budget usage (spent / sanctioned budget, %) at which a running project is "warn" / "over".
+BURN_WARN_PCT = Decimal("80")
+BURN_OVER_PCT = Decimal("100")
 
 TWO_PLACES = Decimal("0.01")
 ONE_PLACE = Decimal("0.1")
@@ -107,6 +115,42 @@ def delta_pct(current: Decimal, previous: Decimal, period: str) -> str | None:
     return str(change.quantize(ONE_PLACE, rounding=ROUND_HALF_UP))
 
 
+def pct(part, whole) -> str:
+    """part / whole as a percentage string with one decimal; "0.0" when whole is zero."""
+    whole = Decimal(whole or 0)
+    if whole == 0:
+        return "0.0"
+    return str((Decimal(part or 0) * 100 / whole).quantize(ONE_PLACE, rounding=ROUND_HALF_UP))
+
+
+def collection_rate_pct(received_total, finalized_value) -> str:
+    """All money received / total finalized project value (snapshot), one decimal."""
+    return pct(received_total, finalized_value)
+
+
+def aging_bucket(days: int) -> str:
+    """The AGING_BUCKETS label for an age in days."""
+    for label, low, high in AGING_BUCKETS:
+        if days >= low and (high is None or days <= high):
+            return label
+    return AGING_BUCKETS[0][0]
+
+
+def burn_state(spent, sanctioned) -> str:
+    """ok < 80% <= warn < 100% <= over, measured against the sanctioned budget only."""
+    sanctioned = Decimal(sanctioned or 0)
+    if sanctioned <= 0:
+        return "ok"
+    usage = Decimal(spent or 0) * 100 / sanctioned  # exact, not the rounded display value
+    if usage >= BURN_OVER_PCT:
+        return "over"
+    return "warn" if usage >= BURN_WARN_PCT else "ok"
+
+
+def empty_aging() -> list[dict]:
+    return [{"bucket": label, "count": 0, "amount": money(ZERO)} for label, _, _ in AGING_BUCKETS]
+
+
 def _model(app_label: str, model_name: str):
     """The model if the owning app has defined it yet, else None."""
     try:
@@ -157,10 +201,26 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
     #   outstanding_overdue = the part of `outstanding` on ledgers older than OVERDUE_AFTER_DAYS
     #   trends.received and cashflow.collected = payments per month
     #   cashflow.spent = expenses per month
-    received = received_prev = outstanding = outstanding_overdue = ZERO
+    #   spent (period) = Sum(Expense.amount) in the period; net = received - spent
+    #   collection_rate_pct = all payments / Sum(finalized ledger total) (snapshot)
+    #   collections_aging / top_overdue_clients: unpaid ledgers by days since the last payment
+    #     (or ledger creation), bucketed with aging_bucket(); top 3 by days
+    received = received_prev = outstanding = outstanding_overdue = spent = ZERO
+    received_all = finalized_value = ZERO
     outstanding_clients = 0
     received_trend = [ZERO] * len(months)
     spent_trend = [ZERO] * len(months)
+    collections_aging = empty_aging()
+    top_overdue_clients: list[dict] = []
+    net = received - spent
+
+    # TODO(depends on projects.Project / projects.Expense, Dev B): projects_burn = up to 5 running
+    #   projects by spent / sanctioned_budget (never the total project amount),
+    #   state = burn_state().
+    projects_burn: list[dict] = []
+
+    # TODO(depends on leads.Lead.source, Dev A): lead_sources = top 5 sources + "Other", with pct().
+    lead_sources: list[dict] = []
 
     # --- Waiting on you -------------------------------------------------------------------------
     # TODO(depends on leads/projects/accounts): one count per item; only counts > 0 are sent.
@@ -202,6 +262,10 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
             "win_rate_pct": win_rate_pct(won_count, lost_count),
             "projects_running": projects_running,
             "projects_completed": projects_completed,
+            "spent": money(spent),
+            "net": money(net),
+            "net_margin_pct": pct(net, received),
+            "collection_rate_pct": collection_rate_pct(received_all, finalized_value),
         },
         "trends": {
             "months": months,
@@ -212,10 +276,18 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
             "months": months,
             "collected": [money(v) for v in received_trend],
             "spent": [money(v) for v in spent_trend],
+            "net": [money(r - s) for r, s in zip(received_trend, spent_trend, strict=True)],
         },
         "attention": attention_items(attention_counts),
+        # funnel items: {status, label, count, value};
+        # sales_by_exec items: {user_id, name, won_count, won_value, share_pct, win_rate_pct}
         "funnel": funnel,
         "sales_by_exec": sales_by_exec,
+        "lead_sources": lead_sources,
+        "collections_aging": collections_aging,
+        "top_overdue_clients": top_overdue_clients,
+        "projects_burn": projects_burn,
+        # activity items: {when, actor, action, type}; type is lead|payment|expense|project|user
         "recent": {"payments": [], "expenses": [], "activity": []},
     }
 

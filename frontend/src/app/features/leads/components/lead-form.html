@@ -1,0 +1,156 @@
+<form [formGroup]="form" (ngSubmit)="submit(false)" novalidate>
+  <fieldset class="sec">
+    <legend>Contact</legend>
+    <div class="grid">
+      <div class="field">
+        <label for="lf-name">Name</label>
+        <input
+          id="lf-name"
+          formControlName="name"
+          autocomplete="name"
+          [attr.aria-invalid]="showError('name') || null"
+          [attr.aria-describedby]="showError('name') ? 'lf-name-err' : null"
+        />
+        @if (showError('name')) {
+          <p class="err" id="lf-name-err">{{ errorText('name') }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="lf-phone">Mobile number</label>
+        <span class="prefixed" [class.invalid]="showError('phone')">
+          <span class="pre" aria-hidden="true">+91</span>
+          <input
+            id="lf-phone"
+            formControlName="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel-national"
+            placeholder="98765 43210"
+            [attr.aria-invalid]="showError('phone') || null"
+            [attr.aria-describedby]="(showError('phone') ? 'lf-phone-err ' : '') + (duplicate() ? 'lf-dup' : '') || null"
+            (paste)="onPhonePaste($event)"
+            (blur)="checkDuplicate()"
+          />
+        </span>
+        @if (showError('phone')) {
+          <p class="err" id="lf-phone-err">{{ errorText('phone') }}</p>
+        }
+        @if (duplicate(); as d) {
+          <p class="dup" id="lf-dup" role="status">
+            <mat-icon aria-hidden="true">warning</mat-icon>
+            <span>
+              This number is already lead <strong>{{ d.name }}</strong>
+              ({{ statusLabels[d.status] }}{{ d.assigned_to_name ? ', ' + d.assigned_to_name : '' }}).
+              <a [routerLink]="['/leads', d.id]" target="_blank">Open lead</a>
+            </span>
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="lf-email">Email <span class="opt">(optional)</span></label>
+        <input
+          id="lf-email"
+          formControlName="email"
+          type="email"
+          autocomplete="email"
+          [attr.aria-invalid]="showError('email') || null"
+          [attr.aria-describedby]="showError('email') ? 'lf-email-err' : null"
+        />
+        @if (showError('email')) {
+          <p class="err" id="lf-email-err">{{ errorText('email') }}</p>
+        }
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="sec">
+    <legend>Source</legend>
+    <div class="grid">
+      <div class="field">
+        <label for="lf-source">Where did this lead come from?</label>
+        <select id="lf-source" formControlName="source">
+          @for (s of sources; track s[0]) {
+            <option [value]="s[0]">{{ s[1] }}</option>
+          }
+        </select>
+      </div>
+      @if (isOther()) {
+        <div class="field">
+          <label for="lf-source-other">Describe the source</label>
+          <input id="lf-source-other" formControlName="source_other" />
+        </div>
+      }
+    </div>
+  </fieldset>
+
+  <fieldset class="sec">
+    <legend>Requirements</legend>
+    <div class="field">
+      <label for="lf-req">What does the client need? <span class="opt">(optional)</span></label>
+      <textarea id="lf-req" formControlName="requirements" rows="4" aria-describedby="lf-req-count"></textarea>
+      <p class="hint" id="lf-req-count" [class.over]="reqLength() > maxReq">{{ reqLength() }} / {{ maxReq }}</p>
+    </div>
+  </fieldset>
+
+  @if (canAssign() && !isEdit()) {
+    <fieldset class="sec">
+      <legend>Assignment</legend>
+      <div class="row">
+        <div class="field grow">
+          <label for="lf-assign">Assign to</label>
+          <select id="lf-assign" formControlName="assigned_to">
+            <option value="">Assign later</option>
+            @for (a of assignees(); track a.id) {
+              <option [value]="'' + a.id">{{ a.name }} · {{ a.open_count }} open</option>
+            }
+          </select>
+        </div>
+        <button matButton="outlined" type="button" class="auto" [disabled]="!assignees().length" (click)="autoPick()">
+          Auto-pick least loaded
+        </button>
+      </div>
+    </fieldset>
+  }
+
+  @if (!limited()) {
+    <fieldset class="sec">
+      <legend>Follow-up</legend>
+      <div class="field">
+        <label for="lf-fu">Next follow-up <span class="opt">(optional, IST)</span></label>
+        <input
+          id="lf-fu"
+          type="datetime-local"
+          formControlName="next_followup_at"
+          [attr.aria-invalid]="showError('next_followup_at') || null"
+          [attr.aria-describedby]="showError('next_followup_at') ? 'lf-fu-err' : 'lf-fu-hint'"
+        />
+        <div class="chips" role="group" aria-label="Quick follow-up times">
+          @for (c of followupChips; track c.label) {
+            <button type="button" class="chip" (click)="setFollowup(c.at())">{{ c.label }}</button>
+          }
+        </div>
+        @if (showError('next_followup_at')) {
+          <p class="err" id="lf-fu-err">{{ errorText('next_followup_at') }}</p>
+        } @else if (followupPreview()) {
+          <p class="hint" id="lf-fu-hint">{{ followupPreview() }}</p>
+        }
+      </div>
+    </fieldset>
+  }
+
+  @if (formError()) {
+    <p class="form-err" role="alert">{{ formError() }}</p>
+  }
+
+  <div class="bar">
+    @if (isEdit()) {
+      <button matButton type="button" (click)="cancelled.emit()">Cancel</button>
+      <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save changes' }}</button>
+    } @else {
+      <button matButton="outlined" type="button" [disabled]="saving()" (click)="submit(true)">Save &amp; add another</button>
+      <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save lead' }}</button>
+    }
+  </div>
+</form>

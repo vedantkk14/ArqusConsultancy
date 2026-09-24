@@ -5,6 +5,7 @@ import { roleGuard } from '../../core/auth/role.guard';
 import { findNavItem, placeholderRoutes } from '../../core/config/route-helpers';
 import { Role } from '../../core/models';
 import { ListMode } from './data/lead.models';
+import { unsavedChangesGuard } from './pages/lead-new-page';
 
 /** Execs only ever see their own leads, so their list is "My leads". */
 const allLeadsTitle: ResolveFn<string> = () => (inject(AuthService).role() === Role.SalesExec ? 'My leads' : 'All leads');
@@ -26,5 +27,13 @@ export const LEADS_ROUTES: Routes = [
   listRoute('all', 'all', allLeadsTitle),
   listRoute('overdue', 'overdue', 'Overdue follow-ups'),
   listRoute('won-awaiting', 'won-awaiting', 'Won - awaiting finalization'),
+  {
+    path: 'new',
+    title: 'Add lead',
+    canActivate: [roleGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { roles: findNavItem('/leads/new')?.roles },
+    loadComponent: () => import('./pages/lead-new-page').then((m) => m.LeadNewPage),
+  },
   ...placeholderRoutes('/leads').filter((r) => r.path !== ''),
 ];

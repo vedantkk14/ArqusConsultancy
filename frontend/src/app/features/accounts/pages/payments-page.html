@@ -1,0 +1,77 @@
+<header class="head">
+  <div class="head-t">
+    <p class="insight">Every payment received across clients. Voided entries stay visible but are not counted.</p>
+    <p class="count" aria-live="polite">{{ countText() }}</p>
+  </div>
+  <div class="head-a">
+    <button matButton="outlined" type="button" (click)="exportCsv()"><mat-icon>download</mat-icon>Export CSV</button>
+    <button matButton="filled" type="button" (click)="recordPayment()"><mat-icon>add</mat-icon>Record payment</button>
+  </div>
+</header>
+
+<app-payment-filters
+  class="filters"
+  [filters]="filters()"
+  [compact]="!wide()"
+  (changed)="setFilters($event)"
+  (cleared)="clearFilters()"
+/>
+
+@if (store.summary(); as s) {
+  <section class="card totals" aria-label="Totals for the current filters">
+    <div class="tot">
+      <span class="lbl">Total for these filters</span>
+      <strong class="big num">{{ s.total | inr: 'paise' }}</strong>
+      <span class="small">
+        {{ s.count }} {{ s.count === 1 ? 'payment' : 'payments' }}{{ s.void_count ? ' · ' + s.void_count + ' voided, not counted' : '' }}
+      </span>
+    </div>
+    @if (bars().length) {
+      <ul class="cats" aria-label="By mode">
+        @for (b of bars(); track b.mode) {
+          <li>
+            <span class="c-name">{{ b.label }}</span>
+            <span class="c-bar" aria-hidden="true"><span [style.width.%]="b.width"></span></span>
+            <span class="c-val num">{{ b.total | inr }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+} @else if (!store.error()) {
+  <section class="card totals" aria-hidden="true">
+    <div class="tot">
+      <app-skeleton width="140px" height="13px" />
+      <app-skeleton width="200px" height="34px" />
+    </div>
+  </section>
+}
+
+@if (store.error() && !store.rows().length) {
+  <app-error-state title="Couldn't load payments" (retry)="store.reload()" />
+} @else if (store.loaded() && !store.rows().length) {
+  @if (hasFilters()) {
+    <app-empty-state icon="filter_alt_off" title="No payments match these filters" message="Try a different search or clear the filters.">
+      <button matButton="outlined" type="button" (click)="clearFilters()">Clear filters</button>
+    </app-empty-state>
+  } @else {
+    <app-empty-state icon="payments" title="No payments yet" message="Payments recorded against a client appear here." />
+  }
+} @else {
+  <section class="card list" [class.busy]="store.loading() && store.loaded()" [attr.aria-busy]="store.loading()" aria-label="Payments">
+    <app-payment-rows
+      [rows]="store.rows()"
+      [layout]="wide() ? 'table' : 'cards'"
+      [showClient]="true"
+      [skeleton]="!store.loaded()"
+      (action)="onAction($event)"
+    />
+  </section>
+  @if (store.hasMore()) {
+    <div class="more">
+      <button matButton="outlined" type="button" [disabled]="store.loading()" (click)="store.loadMore()">
+        {{ store.loading() ? 'Loading…' : 'Load more' }}
+      </button>
+    </div>
+  }
+}

@@ -1,0 +1,63 @@
+<app-report-frame
+  title="Sales"
+  subtitle="Leads, wins and commission per executive"
+  [hasData]="!!state.data()"
+  [loading]="state.loading()"
+  [error]="state.error()"
+  [exporting]="state.exporting()"
+  (retry)="state.reload()"
+  (exported)="state.exportCsv()"
+>
+  @if (state.data(); as d) {
+    <section class="card panel rise-in" aria-label="Sales by executive">
+      <div class="tiles">
+        <div class="tile"><span class="k">Leads worked</span><span class="v num">{{ d.totals.leads_worked }}</span></div>
+        <div class="tile"><span class="k">Won</span><span class="v num">{{ d.totals.won }}</span></div>
+        <div class="tile"><span class="k">Won value</span><span class="v num">{{ d.totals.won_value | inr }}</span></div>
+        <div class="tile"><span class="k">Commission</span><span class="v num">{{ d.totals.commission | inr }}</span></div>
+      </div>
+    </section>
+
+    @if (!d.rows.length) {
+      <p class="cap">No sales executives yet.</p>
+    } @else {
+      <section class="card list" aria-label="Executives">
+        @if (wide()) {
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Executive</th><th class="r">Leads</th><th class="r">Won</th><th class="r">Lost</th><th class="r">Conversion</th><th>Won value</th><th class="r">Commission</th></tr></thead>
+              <tbody>
+                @for (r of d.rows; track r.user_id) {
+                  <tr>
+                    <td><strong>{{ r.name }}</strong></td>
+                    <td class="r num">{{ r.leads_worked }}</td>
+                    <td class="r num">{{ r.won }}</td>
+                    <td class="r num">{{ r.lost }}</td>
+                    <td class="r num">{{ r.conversion_pct }}%</td>
+                    <td><span class="num">{{ r.won_value | inr }}</span><span class="track" aria-hidden="true"><span class="bar" [style.width.%]="widths().get(r.user_id)"></span></span></td>
+                    <td class="r num">{{ r.commission | inr }} <span class="muted">({{ r.commission_rate }}%)</span></td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr><td>Team</td><td class="r num">{{ d.totals.leads_worked }}</td><td class="r num">{{ d.totals.won }}</td><td class="r num">{{ d.totals.lost }}</td><td class="r num">{{ d.totals.conversion_pct }}%</td><td class="num">{{ d.totals.won_value | inr }}</td><td class="r num">{{ d.totals.commission | inr }}</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        } @else {
+          <ul class="cards">
+            @for (r of d.rows; track r.user_id) {
+              <li class="card lc">
+                <strong>{{ r.name }}</strong>
+                <span class="meta"><span>{{ r.leads_worked }} leads</span><span>{{ r.won }} won</span><span>{{ r.lost }} lost</span><span>{{ r.conversion_pct }}% conversion</span></span>
+                <span class="num">{{ r.won_value | inr }} won</span>
+                <span class="track" aria-hidden="true"><span class="bar" [style.width.%]="widths().get(r.user_id)"></span></span>
+                <span class="muted">Commission {{ r.commission | inr }} ({{ r.commission_rate }}%)</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  }
+</app-report-frame>

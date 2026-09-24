@@ -1,0 +1,54 @@
+<app-report-frame
+  title="Project margin"
+  subtitle="Budget use and margin for each project"
+  [hasData]="!!state.data()"
+  [loading]="state.loading()"
+  [error]="state.error()"
+  [exporting]="state.exporting()"
+  [note]="state.data()?.note ?? null"
+  (retry)="state.reload()"
+  (exported)="state.exportCsv()"
+>
+  @if (state.data(); as d) {
+    @if (!d.rows.length) {
+      <app-empty-state icon="query_stats" title="No projects to show yet" message="Projects appear here once the projects module has data." [bordered]="true" />
+    } @else {
+      <section class="card list" aria-label="Project margin">
+        @if (wide()) {
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Project</th><th>PM</th><th class="r">Sanctioned</th><th class="r">Spent</th><th class="r">Usage</th><th class="r">Total</th><th class="r">Received</th><th class="r">Planned margin</th>
+                  <th class="r" [attr.aria-sort]="desc() ? 'descending' : 'ascending'"><button type="button" (click)="flip()">Live margin {{ desc() ? '↓' : '↑' }}</button></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of rows(); track r.id) {
+                  <tr>
+                    <td><strong>{{ r.name }}</strong></td><td>{{ r.pm }}</td>
+                    <td class="r num">{{ r.sanctioned | inr }}</td><td class="r num">{{ r.spent | inr }}</td><td class="r num">{{ r.usage_pct }}%</td>
+                    <td class="r num">{{ r.total ? (r.total | inr) : '—' }}</td><td class="r num">{{ r.received ? (r.received | inr) : '—' }}</td>
+                    <td class="r num">{{ r.planned_margin ? (r.planned_margin | inr) : '—' }}</td>
+                    <td class="r num" [class]="tone(r.live_margin)">{{ r.live_margin ? (r.live_margin | inr) : '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <button type="button" class="ib" style="width: auto; padding: 0 12px" (click)="flip()">Sort by live margin {{ desc() ? '↓' : '↑' }}</button>
+          <ul class="cards">
+            @for (r of rows(); track r.id) {
+              <li class="card lc">
+                <strong>{{ r.name }}</strong><span class="muted">PM: {{ r.pm }}</span>
+                <span class="meta"><span>Sanctioned {{ r.sanctioned | inr }}</span><span>Spent {{ r.spent | inr }} ({{ r.usage_pct }}%)</span></span>
+                <span [class]="tone(r.live_margin)">Live margin: {{ r.live_margin ? (r.live_margin | inr) : '—' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  }
+</app-report-frame>

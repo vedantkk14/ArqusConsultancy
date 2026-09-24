@@ -2,6 +2,7 @@
 
 from rest_framework import serializers
 
+from .report_services import PERIODS_WITH_CUSTOM
 from .services import DEFAULT_PERIOD, PERIODS
 
 
@@ -79,3 +80,26 @@ class AdminDashboardSerializer(serializers.Serializer):
     top_overdue_clients = serializers.ListField(child=serializers.DictField())
     projects_burn = serializers.ListField(child=serializers.DictField())
     recent = serializers.DictField(child=serializers.ListField(child=serializers.DictField()))
+
+
+class ReportQuerySerializer(serializers.Serializer):
+    """?period=month|quarter|year|all|custom (custom needs from and to), ?export=csv."""
+
+    period = serializers.ChoiceField(choices=PERIODS_WITH_CUSTOM, default=DEFAULT_PERIOD)
+    from_ = serializers.DateField(required=False)
+    to = serializers.DateField(required=False)
+    export = serializers.ChoiceField(choices=["csv"], required=False)
+
+    def to_internal_value(self, data):
+        data = data.copy()
+        if "from" in data:
+            data["from_"] = data["from"]
+        return super().to_internal_value(data)
+
+    def validate(self, attrs):
+        if attrs["period"] == "custom":
+            if "from_" not in attrs or "to" not in attrs:
+                raise serializers.ValidationError("Custom periods need both from and to.")
+            if attrs["from_"] > attrs["to"]:
+                raise serializers.ValidationError("from must not be after to.")
+        return attrs

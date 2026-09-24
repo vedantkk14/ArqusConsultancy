@@ -1,0 +1,61 @@
+<app-report-frame
+  title="Financial health"
+  subtitle="Money in against money out, and what is still owed"
+  [hasData]="!!state.data()"
+  [loading]="state.loading()"
+  [error]="state.error()"
+  [exporting]="state.exporting()"
+  [note]="state.data()?.note ?? null"
+  (retry)="state.reload()"
+  (exported)="state.exportCsv()"
+>
+  @if (state.data(); as d) {
+    <section class="card panel rise-in" aria-label="Received versus expenses">
+      <h2>Received vs expenses</h2>
+      <div class="tiles">
+        <div class="tile"><span class="k">Received</span><span class="v num">{{ d.totals.received | inr }}</span></div>
+        <div class="tile"><span class="k">Expenses</span><span class="v num">{{ d.totals.spent | inr }}</span></div>
+        <div class="tile"><span class="k">Outstanding</span><span class="v num">{{ d.totals.outstanding | inr }}</span></div>
+        <div class="tile"><span class="k">Collection rate</span><span class="v num">{{ d.totals.collection_rate_pct }}%</span></div>
+      </div>
+      <div class="chart" role="img" [attr.aria-label]="quiet() ? 'No money movement in these months' : 'Monthly received and expenses'" style="margin-top: 16px">
+        @for (c of cols(); track c.m) {
+          <div class="col">
+            <span class="pair"><span class="b rec" [style.height.%]="c.rh" [title]="'Received ' + c.r"></span><span class="b exp" [style.height.%]="c.sh" [title]="'Expenses ' + c.s"></span></span>
+            <span class="m">{{ month(c.m) }}</span>
+          </div>
+        }
+      </div>
+      <p class="legend"><span><i class="rec"></i>Received</span><span><i class="exp"></i>Expenses</span></p>
+    </section>
+
+    <div class="two">
+      <section class="card panel rise-in" style="--i: 1" aria-label="Outstanding by age">
+        <h2>Outstanding by age</h2>
+        <table>
+          <thead><tr><th>Days overdue</th><th class="r">Ledgers</th><th class="r">Amount</th></tr></thead>
+          <tbody>
+            @for (a of d.aging; track a.bucket) {
+              <tr><td>{{ a.bucket }}</td><td class="r num">{{ a.count }}</td><td class="r num">{{ a.amount | inr }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </section>
+      <section class="card panel rise-in" style="--i: 2" aria-label="Top clients by outstanding">
+        <h2>Top clients by outstanding</h2>
+        @if (d.top_outstanding_clients.length) {
+          <table>
+            <thead><tr><th>Client</th><th class="r">Ledgers</th><th class="r">Outstanding</th></tr></thead>
+            <tbody>
+              @for (c of d.top_outstanding_clients; track c.name) {
+                <tr><td>{{ c.name }}</td><td class="r num">{{ c.ledgers }}</td><td class="r num">{{ c.outstanding | inrCompact }}</td></tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="cap">Nobody owes anything right now.</p>
+        }
+      </section>
+    </div>
+  }
+</app-report-frame>

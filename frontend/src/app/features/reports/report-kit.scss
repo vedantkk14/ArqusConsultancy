@@ -1,0 +1,21 @@
+.panel { padding: var(--space-5); }
+.panel .cap { margin: 0 0 var(--space-3); color: var(--ink-3); font-size: var(--text-sm); }
+.panel h2 { margin: 0 0 var(--space-3); padding: 0; font-size: var(--text-md); }
+.panel h2::before { display: none; }
+
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-4); border-radius: var(--radius-control); background: var(--surface-2); }
+.tile .k { color: var(--ink-3); font-size: var(--text-xs); }
+.tile .v { color: var(--ink); font-size: var(--text-lg); font-weight: 600; }
+
+.num { font-variant-numeric: tabular-nums; }
+.bar { display: block; height: 8px; min-width: 4px; border-radius: 4px; background: var(--data-cyan); }
+.track { display: block; width: 100%; min-width: 80px; height: 8px; border-radius: 4px; background: var(--surface-2); }
+tfoot td { border-bottom: 0; background: var(--subtle); color: var(--ink); font-weight: 600; }
+th button { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+.pos { color: var(--tint-teal-ink); }
+.neg { color: var(--negative); }
+
+@media (min-width: 768px) {
+  .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

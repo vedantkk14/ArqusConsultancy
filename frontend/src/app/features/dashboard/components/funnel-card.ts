@@ -14,7 +14,7 @@ import { PanelHead } from './panel-head';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'card panel', role: 'region', 'aria-labelledby': 'funnel-title' },
   template: `
-    <app-panel-head title="Lead funnel" subtitle="Open pipeline by stage" link="/reports/lead-funnel" headingId="funnel-title" />
+    <app-panel-head title="Lead funnel" subtitle="Open pipeline by stage" [link]="link()" headingId="funnel-title" />
     @if (open().length) {
       <ol>
         @for (s of open(); track s.status; let i = $index) {
@@ -95,6 +95,8 @@ import { PanelHead } from './panel-head';
 })
 export class FunnelCard {
   readonly stages = input.required<FunnelStage[]>();
+  /** "View all" target; null on the report page itself. */
+  readonly link = input<string | null>('/reports/lead-funnel');
   readonly won = input(0);
   readonly lost = input(0);
 

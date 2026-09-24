@@ -1,0 +1,46 @@
+<app-report-frame
+  title="Lead funnel"
+  subtitle="Where leads sit today, and how many move on"
+  [hasData]="!!state.data()"
+  [loading]="state.loading()"
+  [error]="state.error()"
+  [exporting]="state.exporting()"
+  (retry)="state.reload()"
+  (exported)="state.exportCsv()"
+>
+  @if (state.data(); as d) {
+    <app-funnel-card [stages]="d.stages" [won]="won()" [lost]="d.lost.count" [link]="null" />
+
+    <section class="card list" aria-label="Stage conversion">
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Stage</th><th class="r">Leads</th><th class="r">Proposed value</th><th class="r">Reached this stage</th><th class="r">From previous</th></tr></thead>
+          <tbody>
+            @for (s of d.stages; track s.status) {
+              <tr><td><strong>{{ s.label }}</strong></td><td class="r num">{{ s.count }}</td><td class="r num">{{ s.value | inr }}</td><td class="r num">{{ s.reached }}</td><td class="r num">{{ s.conversion_pct === null ? '—' : s.conversion_pct + '%' }}</td></tr>
+            }
+            <tr><td><strong>Lost</strong></td><td class="r num">{{ d.lost.count }}</td><td class="r num">{{ d.lost.value | inr }}</td><td class="r">—</td><td class="r">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card panel" aria-label="Lead sources">
+      <h2>Lead sources</h2>
+      @if (d.sources.length) {
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Source</th><th class="r">Leads</th><th class="r">Won</th><th class="r">Conversion</th><th class="r">Proposed value</th></tr></thead>
+            <tbody>
+              @for (s of d.sources; track s.source) {
+                <tr><td>{{ s.label }}</td><td class="r num">{{ s.leads }}</td><td class="r num">{{ s.won }}</td><td class="r num">{{ s.conversion_pct }}%</td><td class="r num">{{ s.value | inr }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="cap">No leads in this period.</p>
+      }
+    </section>
+  }
+</app-report-frame>

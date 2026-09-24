@@ -186,20 +186,67 @@ PM sees only own projects and only the sanctioned budget (see privacy shield).
 
 ## Reports (Dev C)
 
+All four take `?period=month|quarter|year|all|custom` (default `month`; `custom` needs `from` and `to`, `YYYY-MM-DD`, in the business time zone, Asia/Kolkata) and `?export=csv` for a file download (`text/csv`, attachment). Text cells that start with `=`, `+`, `-` or `@` are prefixed with `'`. Money is a string with 2 decimals. A module that is not merged yet gives zeros or empty lists, `data_sources` says which are connected, and `note` explains. Errors: 400 for a bad period, 403 for other roles.
+
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| 🔲 | `GET /reports/sales` | A, SM | |
-| 🔲 | `GET /reports/financial-health` | A | |
-| 🔲 | `GET /reports/project-margin` | A | |
-| 🔲 | `GET /reports/lead-funnel` | A, SM | |
+| ✅ | `GET /reports/sales` | A, SM | Per sales executive. Won and lost are decided in the period; commission = won value x the executive's rate. |
+| ✅ | `GET /reports/financial` | A | Received vs expenses per month (6 months, 12 for year/all), aging, top clients. Zeros until accounts is merged. |
+| ✅ | `GET /reports/project-margin` | A | Empty with `note` until projects and accounts are merged. |
+| ✅ | `GET /reports/lead-funnel` | A | Stages of leads created in the period, `reached` (this stage or later), conversion from the previous stage, lost, split by source. |
+
+```json
+// GET /reports/sales?period=all
+{"period": "all", "range": {"start": null, "end": "2026-09-25"}, "data_sources": {"leads": true},
+ "rows": [{"user_id": 2, "name": "Eva", "leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7",
+           "won_value": "1500.50", "commission_rate": "10.00", "commission": "150.05"}],
+ "totals": {"leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7", "won_value": "1500.50", "commission": "150.05"}}
+
+// GET /reports/financial?period=year
+{"period": "year", "range": {"start": "2026-04-01", "end": "2026-09-25"}, "data_sources": {"accounts": false, "expenses": false},
+ "note": "Financial figures pending accounts integration.", "months": ["2025-10", "...", "2026-09"],
+ "received": ["0.00"], "spent": ["0.00"],
+ "totals": {"received": "0.00", "spent": "0.00", "net": "0.00", "outstanding": "0.00", "collection_rate_pct": "0.0"},
+ "aging": [{"bucket": "0-30", "count": 0, "amount": "0.00"}], "top_outstanding_clients": [{"name": "Acme", "ledgers": 2, "outstanding": "5000.00"}]}
+
+// GET /reports/project-margin
+{"period": "month", "range": {"start": "2026-09-01", "end": "2026-09-25"}, "data_sources": {"projects": false, "accounts": false},
+ "note": "Financial figures pending accounts integration.",
+ "rows": [{"id": 1, "name": "Villa", "pm": "Pat", "sanctioned": "100000.00", "spent": "40000.00", "usage_pct": "40.0",
+           "total": "150000.00", "received": "90000.00", "planned_margin": "50000.00", "live_margin": "50000.00"}]}
+
+// GET /reports/lead-funnel?period=all
+{"period": "all", "range": {"start": null, "end": "2026-09-25"}, "data_sources": {"leads": true},
+ "stages": [{"status": "NEW", "label": "New", "count": 4, "value": "40.00", "reached": 8, "conversion_pct": null},
+            {"status": "CONTACTED", "label": "Contacted", "count": 2, "value": "40.00", "reached": 4, "conversion_pct": "50.0"}],
+ "lost": {"count": 1, "value": "5.00"},
+ "sources": [{"source": "WEBSITE", "label": "Website", "leads": 6, "won": 1, "conversion_pct": "16.7", "value": "70.00"}]}
+```
 
 ## Notifications (Dev C)
 
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| 🔲 | `GET /notifications` | any | Own notifications |
-| 🔲 | `POST /notifications/{id}/read` | any | |
-| 🔲 | `POST /notifications/read-all` | any | |
+| ✅ | `GET /notifications` | any | Own, newest first, paginated. `?is_read=`. Item: `{id, type, title, body, data, is_read, created_at}` |
+| ✅ | `GET /notifications/unread-count` | any | `{count}` |
+| ✅ | `POST /notifications/{id}/read` | any | Own only (404 otherwise) |
+| ✅ | `POST /notifications/read-all` | any | `{updated}` |
+| 🔲 | `/notifications/devices` | any | 501 `not_implemented` until push is built |
+
+## Team and settings (Dev C)
+
+| Status | Method & path | Who | Notes |
+| --- | --- | --- | --- |
+| ✅ | `GET /users`, `GET/PATCH /users/{id}` | A | `?q=&role=&is_active=`, paginated. Role changes and deactivation refuse your own account and the last active admin (400). |
+| ✅ | `POST /users/{id}/deactivate`, `/reactivate` | A | Deactivating signs the user out at once. |
+| ✅ | `POST /users/{id}/reset-password` | A | `{temporary_password, must_change_password}`, shown once, never stored in readable form. |
+| ✅ | `PATCH /users/{id}/commission-rate` | A | `{commission_rate}` 0 to 100, 2 decimals; sales executives only. |
+| ✅ | `GET /users/roles` | A | The four fixed roles and what each can do. |
+| ✅ | `GET /users/assignments-overview` | A, SM | `{data_sources, execs: [{id, name, open_leads, overdue}], pms: [{id, name, running_projects, over_budget}]}` |
+| ✅ | `GET /me`, `PATCH /me` | any | `{id, name, first_name, last_name, email, phone, role, must_change_password, commission_rate}`; commission only for executives. PATCH accepts `first_name`, `last_name`, `phone` only. |
+| ✅ | `GET /core/master-data` | A | `{lists: [{key, label, source, owner_app, available, values: [{value, label}]}]}`, read from the code's choices. |
+| ✅ | `GET /core/audit-log` | A | `?model_label=&actor=&action=CREATE|UPDATE|DELETE&from=&to=&q=`, paginated (20). Item: `{id, actor: {id, name}|null, action, model_label, object_id, object_repr, changes: {field: {old, new}}, created_at}`. Passwords are never recorded. |
+| ✅ | `GET /core/audit-log/models` | A | Model labels that have entries. |
 
 ## Dashboard (Dev C)
 

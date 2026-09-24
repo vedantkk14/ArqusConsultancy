@@ -157,3 +157,216 @@
     }
   }
 }
+
+// ---- Login card details (bento-era restyle) ----------------------------------------------------------
+.auth {
+  // Fields fade in one after another (60ms stagger); off with reduced motion via the global rule.
+  form > * {
+    animation: rise-in 360ms var(--ease-out) both;
+  }
+
+  @for $i from 1 through 8 {
+    form > :nth-child(#{$i}) {
+      animation-delay: #{120 + $i * 60}ms;
+    }
+  }
+
+  .pill {
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 4px;
+    margin: 0 auto var(--space-2);
+    padding: 3px 10px 3px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--tint-cyan);
+    color: var(--tint-cyan-ink);
+    font-size: var(--text-xs);
+    font-weight: 600;
+
+    mat-icon {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+    }
+  }
+
+  // Filled inputs with a leading icon: white + cyan ring on focus, icon tints too.
+  .control {
+    position: relative;
+  }
+
+  .control.has-icon {
+    input {
+      padding-left: 42px;
+      background: var(--surface-2);
+    }
+
+    input:focus {
+      background: var(--surface);
+    }
+
+    .lead {
+      position: absolute;
+      top: 50%;
+      left: 13px;
+      z-index: 1;
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+      color: var(--ink-3);
+      transform: translateY(-50%);
+      transition: color 150ms ease;
+      pointer-events: none;
+    }
+
+    &:focus-within .lead {
+      color: var(--brand-deep);
+    }
+  }
+
+  // Custom checkbox: still a real input with its label; ink box with a cyan check when on.
+  .check input[type='checkbox'] {
+    display: grid;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    place-content: center;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 5px;
+    background: var(--surface);
+    appearance: none;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+
+    &::after {
+      content: '';
+      width: 9px;
+      height: 5px;
+      border-bottom: 2px solid var(--brand);
+      border-left: 2px solid var(--brand);
+      opacity: 0;
+      transform: translateY(-1px) rotate(-45deg);
+    }
+
+    &:checked {
+      border-color: var(--ink);
+      background: var(--ink);
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+
+  .arrow-sm {
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+    font-size: 16px;
+    transition: transform 150ms ease;
+  }
+
+  .link:hover .arrow-sm {
+    transform: translateX(2px);
+  }
+
+  .btn-arrow {
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    font-size: 18px;
+    vertical-align: -4px;
+    transition: transform 200ms var(--ease-out);
+  }
+
+  .submit:not(:disabled):hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .help {
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+    text-align: center;
+
+    p {
+      margin: 0;
+      color: var(--ink-3);
+      font-size: var(--text-sm);
+    }
+  }
+
+  .trust {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+
+    li {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    mat-icon {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+      color: var(--brand-deep);
+    }
+  }
+
+  // Dev-only demo accounts under the card.
+  .demo {
+    width: 100%;
+    max-width: 420px;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+
+    summary {
+      min-height: 44px;
+      padding: 12px 0;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+
+      span {
+        color: var(--ink-3);
+        font-weight: 400;
+      }
+    }
+  }
+
+  .demo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  .demo-chip {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    box-shadow: var(--shadow-1);
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--line-strong);
+    }
+  }
+}

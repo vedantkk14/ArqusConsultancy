@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { environment } from '../../../environments/environment';
 import { LoginPage } from './login-page';
 
 async function setup(url = '/login') {
@@ -46,6 +47,29 @@ async function setup(url = '/login') {
 
 describe('LoginPage', () => {
   afterEach(() => vi.useRealTimers());
+
+  describe('demo accounts (dev only)', () => {
+    const original = environment.showDemoLogins;
+    afterEach(() => (environment.showDemoLogins = original));
+
+    it('render when showDemoLogins is true and fill the form without submitting', async () => {
+      environment.showDemoLogins = true;
+      const { el, harness, http } = await setup();
+      const chips = [...el.querySelectorAll<HTMLButtonElement>('.demo-chip')];
+      expect(chips.map((c) => c.textContent?.trim())).toEqual(['Admin', 'Sales Manager', 'Sales Exec', 'Project Manager']);
+      chips[1].click();
+      harness.detectChanges();
+      expect(el.querySelector<HTMLInputElement>('#identifier')!.value).toBe('sales_manager');
+      expect(el.querySelector<HTMLInputElement>('#password')!.value).toBe('Manager@123');
+      http.expectNone('/api/v1/auth/login');
+    });
+
+    it('are absent when showDemoLogins is false', async () => {
+      environment.showDemoLogins = false;
+      const { el } = await setup();
+      expect(el.querySelector('.demo')).toBeNull();
+    });
+  });
 
   it('uses real labels and password-manager friendly attributes', async () => {
     const { el } = await setup();

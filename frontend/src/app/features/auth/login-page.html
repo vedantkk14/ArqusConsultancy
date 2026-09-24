@@ -1,4 +1,5 @@
 <app-auth-layout>
+  <p class="pill"><mat-icon aria-hidden="true">lock</mat-icon>Secure sign-in</p>
   <h1>Sign in</h1>
   <p class="lede">Welcome back. Enter your details to continue.</p>
 
@@ -16,20 +17,23 @@
 
     <div class="field">
       <label for="identifier">Email or username</label>
-      <input
-        #identifier
-        id="identifier"
-        type="text"
-        formControlName="identifier"
-        autocomplete="username"
-        autocapitalize="none"
-        autocorrect="off"
-        spellcheck="false"
-        inputmode="email"
-        enterkeyhint="next"
-        [attr.aria-invalid]="showError('identifier')"
-        [attr.aria-describedby]="showError('identifier') ? 'identifier-error' : null"
-      />
+      <div class="control has-icon">
+        <mat-icon class="lead" aria-hidden="true">person</mat-icon>
+        <input
+          #identifier
+          id="identifier"
+          type="text"
+          formControlName="identifier"
+          autocomplete="username"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+          inputmode="email"
+          enterkeyhint="next"
+          [attr.aria-invalid]="showError('identifier')"
+          [attr.aria-describedby]="showError('identifier') ? 'identifier-error' : null"
+        />
+      </div>
       @if (showError('identifier')) {
         <p id="identifier-error" class="field-error" aria-live="polite">Enter your email or username.</p>
       }
@@ -38,6 +42,7 @@
     <app-password-field
       inputId="password"
       label="Password"
+      icon="lock"
       autocomplete="current-password"
       enterKeyHint="go"
       errorId="password-error"
@@ -54,7 +59,9 @@
         <input type="checkbox" formControlName="remember" />
         Remember me
       </label>
-      <a class="link" routerLink="/forgot-password">Forgot password?</a>
+      <a class="link" routerLink="/forgot-password">
+        Forgot password?<mat-icon class="arrow-sm" aria-hidden="true">arrow_forward</mat-icon>
+      </a>
     </div>
 
     <button matButton="filled" type="submit" class="submit" [disabled]="pending() || lock.running()">
@@ -62,8 +69,27 @@
         <mat-spinner diameter="18" aria-hidden="true" />
         Signing in…
       } @else {
-        Sign in
+        <span>Sign in<mat-icon class="btn-arrow" aria-hidden="true">arrow_forward</mat-icon></span>
       }
     </button>
   </form>
+
+  <div class="help">
+    <p>Need access? Ask your administrator to create your account.</p>
+    <ul class="trust">
+      <li><mat-icon aria-hidden="true">admin_panel_settings</mat-icon>Role-based access</li>
+      <li><mat-icon aria-hidden="true">verified_user</mat-icon>Protected sessions</li>
+    </ul>
+  </div>
+
+  @if (showDemoLogins) {
+    <details below class="demo">
+      <summary>Demo accounts <span>(dev only)</span></summary>
+      <div class="demo-chips">
+        @for (account of demoLogins; track account.identifier) {
+          <button type="button" class="demo-chip" (click)="useDemo(account)">{{ account.label }}</button>
+        }
+      </div>
+    </details>
+  }
 </app-auth-layout>

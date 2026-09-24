@@ -4,4 +4,6 @@ export const environment = {
   // when the frontend and backend are deployed on different origins.
   apiBaseUrl: '/api/v1',
   useMocks: false,
+  showDemoLogins: false,
+  demoLogins: [] as { label: string; identifier: string; password: string }[],
 };

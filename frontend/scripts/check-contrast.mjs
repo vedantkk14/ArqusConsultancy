@@ -50,6 +50,9 @@ const pairs = [
   ...['ink', 'deep-navy'].map((bg) => ['on-ink', bg, TEXT, `white text on --grad-ink (${bg} end)`]),
   ...['ink', 'deep-navy'].map((bg) => ['brand', bg, TEXT, `cyan text/sparkline on --grad-ink (${bg} end)`]),
   ['ink-2', 'tint-slate', TEXT, 'inactive pill-tab label on slate tint'],
+  ['ink', 'surface-2', TEXT, 'typed text in a filled input'],
+  ['ink-3', 'surface-2', GRAPHIC, 'leading icon in a filled input'],
+  ['line-strong', 'surface-2', GRAPHIC, 'filled input border'],
 ];
 
 // Cyan on light surfaces is never the only carrier of meaning: the active item is also bold with a tinted

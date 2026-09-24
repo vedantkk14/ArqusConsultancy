@@ -13,6 +13,8 @@
   --paper: #f6f7f9; // app canvas
   --surface: #ffffff; // cards, sidebar, top bar
   --subtle: #f2f4f7; // hover fill, table header
+  --surface-2: #f5f7fa; // filled input background (turns white on focus)
+  --line-cyan: #bfe7f5; // top of the auth card's gradient border
   --plate: #eaecf0; // skeletons, neutral chips, empty bar tracks
   --line: #e7e9ed; // card and divider hairlines
   --line-strong: #858d9a; // form-control borders (needs >= 3:1)
@@ -54,6 +56,7 @@
   --grad-ink: linear-gradient(135deg, var(--ink) 0%, var(--deep-navy) 100%);
   --grad-brand: linear-gradient(135deg, var(--brand) 0%, #1aa6d6 100%);
   --grad-teal: linear-gradient(90deg, #2bb59b 0%, #17866f 100%);
+  --grad-accent: linear-gradient(90deg, var(--brand), var(--brand-deep), var(--ink)); // 3px card edge
   --wash:
     radial-gradient(60% 45% at 100% 0%, rgba(50, 197, 243, 0.1), transparent 70%),
     radial-gradient(50% 40% at 0% 100%, rgba(160, 150, 140, 0.08), transparent 70%),

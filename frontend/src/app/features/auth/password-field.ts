@@ -13,7 +13,10 @@ import { MatIconModule } from '@angular/material/icon';
   template: `
     <div class="field">
       <label [for]="inputId()">{{ label() }}</label>
-      <div class="control" [class.invalid]="invalid()">
+      <div class="control" [class.invalid]="invalid()" [class.has-icon]="!!icon()">
+        @if (icon()) {
+          <mat-icon class="lead" aria-hidden="true">{{ icon() }}</mat-icon>
+        }
         <input
           #input
           [id]="inputId()"
@@ -103,6 +106,8 @@ export class PasswordField {
   readonly autocomplete = input<'current-password' | 'new-password'>('current-password');
   readonly enterKeyHint = input<'go' | 'next' | 'done'>('go');
   readonly invalid = input(false);
+  /** Optional leading Material icon, e.g. "lock". */
+  readonly icon = input<string | null>(null);
   /** Ids of error/help elements that describe this field. */
   readonly errorId = input<string | null>(null);
 

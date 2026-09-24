@@ -14,6 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/models';
 import { authErrorMessage, retryAfter } from './auth-messages';
@@ -71,6 +72,10 @@ export class LoginPage {
     return this.lock.running() ? `${base} Try again in ${this.lock.label()}.` : base;
   });
 
+  /** Dev only (environment.showDemoLogins): one-click demo accounts that fill the form, never submit. */
+  protected readonly showDemoLogins = environment.showDemoLogins === true;
+  protected readonly demoLogins = this.showDemoLogins ? environment.demoLogins : [];
+
   private readonly identifierInput = viewChild.required<ElementRef<HTMLInputElement>>('identifier');
   private readonly passwordField = viewChild.required(PasswordField);
 
@@ -118,6 +123,15 @@ export class LoginPage {
       this.form.controls.password.reset('');
       queueMicrotask(() => this.passwordField().focus());
     }
+  }
+
+  protected useDemo(account: { identifier: string; password: string }): void {
+    if (this.lock.running()) {
+      return;
+    }
+    this.form.patchValue({ identifier: account.identifier, password: account.password });
+    this.error.set(null);
+    this.passwordField().focus();
   }
 
   private focusFirstInvalid(): void {

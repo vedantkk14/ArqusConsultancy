@@ -7,9 +7,9 @@ import { InrCompactPipe } from '../../../../shared/money/inr.pipe';
 import { QueueLeadItem } from '../sales-manager-dashboard.models';
 
 /**
- * One lead in a "Needs attention" subsection. Team-wide (unlike the exec's own dashboard), so
- * every row also carries the owning exec's avatar chip - except an unassigned row, which shows
- * an inline Assign button instead of Call/WhatsApp.
+ * One lead in a "Needs attention" card. Stacked (name, then chips, then last note) so it reads well
+ * in a third-width card. Team-wide, so each row carries the owning exec's avatar - except an
+ * unassigned row, which shows an inline Assign button instead of Call/WhatsApp.
  */
 @Component({
   selector: 'app-queue-row',
@@ -18,50 +18,46 @@ import { QueueLeadItem } from '../sales-manager-dashboard.models';
   host: { class: 'queue-row' },
   template: `
     <a class="main" [routerLink]="['/leads', row().id]">
-      <span class="who">
-        <span class="name">{{ row().name }}</span>
-        <span class="meta">
-          <app-lead-status [status]="row().status" />
-          <span class="src">{{ row().source_label }}</span>
-        </span>
-      </span>
-      <span class="due">
+      <span class="name">{{ row().name }}</span>
+      <span class="meta">
+        <app-lead-status [status]="row().status" />
         <app-followup-pill [at]="row().next_followup_at" />
-        @if (row().proposed_amount) {
+        @if (row().proposed_amount && row().proposed_amount !== '0.00') {
           <span class="amt">{{ row().proposed_amount | inrCompact }}</span>
         }
       </span>
       @if (row().last_note) {
         <span class="note">{{ row().last_note }}</span>
+      } @else {
+        <span class="note">{{ row().source_label }}</span>
       }
     </a>
     <span class="side">
       @if (row().assigned_to !== undefined) {
         @if (row().assigned_to; as owner) {
-          <app-lead-avatar [name]="owner.name" [size]="28" [attr.title]="owner.name" />
+          <app-lead-avatar class="owner" [name]="owner.name" [size]="26" [attr.title]="'Owner: ' + owner.name" />
         }
-        <a class="icon-btn" [href]="tel()" [attr.aria-label]="'Call ' + row().name" [class.off]="!tel()">
-          <mat-icon aria-hidden="true">call</mat-icon>
-        </a>
-        <button
-          type="button"
-          class="icon-btn"
-          [attr.aria-label]="'WhatsApp ' + row().name"
-          (click)="whatsapp.emit(row())"
-        >
-          <mat-icon aria-hidden="true">chat</mat-icon>
-        </button>
+        <span class="acts">
+          <a class="icon-btn" [href]="tel()" [attr.aria-label]="'Call ' + row().name" [class.off]="!tel()">
+            <mat-icon aria-hidden="true">call</mat-icon>
+          </a>
+          <button type="button" class="icon-btn" [attr.aria-label]="'WhatsApp ' + row().name" (click)="whatsapp.emit(row())">
+            <mat-icon aria-hidden="true">chat</mat-icon>
+          </button>
+        </span>
       } @else {
-        <button type="button" class="assign" (click)="assign.emit(row())">Assign</button>
+        <button type="button" class="assign" [attr.aria-label]="'Assign ' + row().name" (click)="assign.emit(row())">
+          Assign
+        </button>
       }
     </span>
   `,
   styles: `
     :host {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
-      padding: 10px 4px;
+      padding: 12px 0;
       border-bottom: 1px solid var(--line);
     }
     :host:last-child {
@@ -72,55 +68,57 @@ import { QueueLeadItem } from '../sales-manager-dashboard.models';
       flex: 1;
       min-width: 0;
       flex-direction: column;
-      gap: 2px;
+      gap: 6px;
       color: inherit;
       text-decoration: none;
     }
-    .who {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      min-width: 0;
+    .main:hover .name {
+      color: var(--brand-deep);
+    }
+    .main:focus-visible {
+      border-radius: 4px;
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 2px;
     }
     .name {
       overflow: hidden;
       color: var(--ink);
+      font-size: var(--text-sm);
       font-weight: 600;
       text-overflow: ellipsis;
       white-space: nowrap;
+      transition: color var(--dur-fast) ease;
     }
     .meta {
       display: flex;
-      flex: none;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
     }
-    .src {
-      color: var(--ink-3);
-      font-size: var(--text-xs);
-    }
-    .due {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
     .amt {
       color: var(--ink-2);
-      font-size: var(--text-sm);
-      font-weight: 500;
+      font-size: var(--text-xs);
+      font-weight: 600;
     }
     .note {
+      display: -webkit-box;
       overflow: hidden;
       color: var(--ink-3);
       font-size: var(--text-xs);
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      line-height: 1.4;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
     }
     .side {
       display: flex;
       flex: none;
-      align-items: center;
-      gap: 4px;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .acts {
+      display: flex;
+      gap: 2px;
     }
     .icon-btn {
       display: grid;
@@ -138,6 +136,10 @@ import { QueueLeadItem } from '../sales-manager-dashboard.models';
       background: var(--tint-slate);
       color: var(--ink);
     }
+    .icon-btn:focus-visible {
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 1px;
+    }
     .icon-btn.off {
       pointer-events: none;
       opacity: 0.4;
@@ -149,18 +151,23 @@ import { QueueLeadItem } from '../sales-manager-dashboard.models';
     }
     .assign {
       height: 32px;
-      padding: 0 12px;
+      padding: 0 14px;
       border: 1px solid var(--brand-deep);
       border-radius: var(--radius-control);
-      background: var(--brand-tint);
-      color: var(--ink);
+      background: var(--surface);
+      color: var(--brand-deep);
       font: inherit;
       font-size: var(--text-sm);
       font-weight: 600;
       cursor: pointer;
+      transition: background-color var(--dur-fast) ease;
     }
     .assign:hover {
-      background: var(--brand-tint-strong, var(--brand-tint));
+      background: var(--brand-tint);
+    }
+    .assign:focus-visible {
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 2px;
     }
   `,
 })

@@ -42,13 +42,16 @@
               type="button"
               class="rail-item"
               [class.active]="isActiveGroup(item)"
-              [attr.aria-label]="item.label"
+              [attr.aria-label]="item.label + badgeText(item.route)"
               [matTooltip]="item.label"
               matTooltipPosition="right"
               [cdkMenuTriggerFor]="flyout"
               [cdkMenuPosition]="flyoutPositions"
             >
               <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
+              @if (layout.navBadges()[item.route]; as b) {
+                <span class="nav-dot" [class]="'nav-dot tone-' + b.tone" aria-hidden="true"></span>
+              }
             </button>
             <ng-template #flyout>
               <div class="flyout" cdkMenu [attr.aria-label]="item.label">
@@ -92,6 +95,9 @@
             >
               <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
               <span class="text">{{ item.label }}</span>
+              @if (layout.navBadges()[item.route]; as b) {
+                <span [class]="'nav-badge tone-' + b.tone"><span class="sr-only">,</span>{{ b.count }}<span class="sr-only"> need attention</span></span>
+              }
               <mat-icon class="chevron" aria-hidden="true">keyboard_arrow_down</mat-icon>
             </button>
             <div

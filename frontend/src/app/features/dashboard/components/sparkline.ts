@@ -23,14 +23,17 @@ export function sparkPoints(values: (string | number)[], width = 100, height = 3
     <svg viewBox="0 0 100 32" preserveAspectRatio="none" role="img" [attr.aria-label]="label()">
       <defs>
         <linearGradient [attr.id]="gradientId" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#32C5F3" stop-opacity="0.12" />
-          <stop offset="100%" stop-color="#32C5F3" stop-opacity="0" />
+          <stop offset="0%" class="s0" />
+          <stop offset="100%" class="s1" />
         </linearGradient>
+        <clipPath [attr.id]="clipId"><rect class="reveal" x="-2" y="-4" width="104" height="40" /></clipPath>
       </defs>
       @if (line()) {
-        <path [attr.d]="area()" [attr.fill]="'url(#' + gradientId + ')'" />
-        <path [attr.d]="line()" fill="none" stroke="#32C5F3" stroke-width="2" stroke-linejoin="round"
-              stroke-linecap="round" vector-effect="non-scaling-stroke" />
+        <g [attr.clip-path]="'url(#' + clipId + ')'">
+          <path [attr.d]="area()" [attr.fill]="'url(#' + gradientId + ')'" />
+          <path class="ln" [attr.d]="line()" fill="none" stroke-width="2" stroke-linejoin="round"
+                stroke-linecap="round" vector-effect="non-scaling-stroke" />
+        </g>
       }
     </svg>
   `,
@@ -45,6 +48,27 @@ export function sparkPoints(values: (string | number)[], width = 100, height = 3
       height: 100%;
       overflow: visible;
     }
+    .s0 {
+      stop-color: var(--data-cyan);
+      stop-opacity: 0.14;
+    }
+    .s1 {
+      stop-color: var(--data-cyan);
+      stop-opacity: 0;
+    }
+    .ln {
+      stroke: var(--data-cyan);
+    }
+    /* One-time draw-in, left to right (transform only). */
+    .reveal {
+      transform-origin: 0 0;
+      animation: reveal 900ms var(--ease-out) both;
+    }
+    @keyframes reveal {
+      from {
+        transform: scaleX(0);
+      }
+    }
   `,
 })
 export class Sparkline {
@@ -53,6 +77,7 @@ export class Sparkline {
   readonly label = input.required<string>();
 
   protected readonly gradientId = `spark-${nextId++}`;
+  protected readonly clipId = `${this.gradientId}-clip`;
   private readonly points = computed(() => sparkPoints(this.values()));
   protected readonly line = computed(() => {
     const pts = this.points();

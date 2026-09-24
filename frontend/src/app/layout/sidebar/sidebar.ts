@@ -86,4 +86,10 @@ export class Sidebar {
       this.openGroup.set(group.route);
     }
   }
+
+  /** ", 4 need attention" for the rail button's accessible name. */
+  protected badgeText(route: string): string {
+    const badge = this.layout.navBadges()[route];
+    return badge ? `, ${badge.count} need attention` : '';
+  }
 }

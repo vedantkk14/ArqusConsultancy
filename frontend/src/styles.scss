@@ -427,6 +427,42 @@ html :focus-visible:not(.mat-mdc-input-element):not(.mat-mdc-select) {
   }
 }
 
+// Sidebar count badges (global: the sidebar stylesheet is at its size budget).
+.nav-badge {
+  min-width: 22px;
+  margin-left: auto;
+  padding: 0 7px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+
+  & + .chevron {
+    margin-left: 6px;
+  }
+}
+
+.rail-item:has(.nav-dot) {
+  position: relative;
+}
+
+.nav-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  box-sizing: content-box;
+}
+
+.nav-badge.tone-rose { background: var(--tint-rose); color: var(--tint-rose-ink); }
+.nav-badge.tone-amber { background: var(--tint-amber); color: var(--tint-amber-ink); }
+.nav-dot.tone-rose { background: var(--data-rose); }
+.nav-dot.tone-amber { background: var(--data-amber); }
+
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;

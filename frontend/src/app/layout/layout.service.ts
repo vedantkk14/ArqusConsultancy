@@ -51,6 +51,9 @@ export class LayoutService {
   /** Unread notifications (drives the bell dot). TODO(depends on notifications API, Dev C). */
   readonly unreadNotifications = signal(0);
 
+  /** Count badges on sidebar sections, keyed by route (the dashboard fills them from its attention data). */
+  readonly navBadges = signal<Record<string, { count: number; tone: 'rose' | 'amber' }>>({});
+
   toggleSidebar(): void {
     this.setCollapsed(!this.collapsed());
   }

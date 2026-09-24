@@ -1,48 +1,41 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject, catchError, combineLatest, map, of, startWith, switchMap } from 'rxjs';
+import { Subject, catchError, combineLatest, interval, map, of, startWith, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-import { findNavItem } from '../../core/config/route-helpers';
 import { Role } from '../../core/models';
 import { LayoutService } from '../../layout/layout.service';
 import { DataColumn, DataList, DataRow } from '../../shared/data-list/data-list';
 import { EmptyState } from '../../shared/empty-state/empty-state';
 import { ErrorState } from '../../shared/error-state/error-state';
-import { InrCompactPipe, InrPipe, formatInrCompact } from '../../shared/money/inr.pipe';
+import { InrCompactPipe } from '../../shared/money/inr.pipe';
 import { Skeleton } from '../../shared/skeleton/skeleton';
+import { ActivityCard } from './components/activity-card';
+import { AgingCard } from './components/aging-card';
 import { AttentionPanel } from './components/attention-panel';
-import { BarList, BarRow } from './components/bar-list';
-import { CashflowChart } from './components/cashflow-chart';
+import { CashHero } from './components/cash-hero';
 import { CountUp } from './components/count-up';
+import { FunnelCard } from './components/funnel-card';
+import { LeaderboardCard } from './components/leaderboard-card';
 import { monthLabel } from './components/month-label';
+import { NewMenu } from './components/new-menu';
 import { PeriodSwitcher } from './components/period-switcher';
+import { ProjectsCard } from './components/projects-card';
+import { RadialGauge } from './components/radial-gauge';
+import { SourcesCard } from './components/sources-card';
 import { Sparkline } from './components/sparkline';
-import { SplitBar } from './components/split-bar';
-import {
-  AdminDashboard,
-  PERIOD_COMPARISON,
-  PERIOD_NOUN,
-  Period,
-  toPeriod,
-} from './dashboard.models';
+import { BarSegment, StackedBar } from './components/stacked-bar';
+import { NAV_BADGE_SOURCES, composeInsight } from './dashboard-utils';
+import { AdminDashboard, PERIOD_NOUN, Period, toPeriod } from './dashboard.models';
 import { DashboardService } from './dashboard.service';
 
 type LoadState =
   | { status: 'loading'; data: AdminDashboard | null }
   | { status: 'ready'; data: AdminDashboard }
   | { status: 'error'; data: AdminDashboard | null };
-
-const QUICK_ACTIONS = [
-  { label: 'Add lead', icon: 'person_add', route: '/leads/new' },
-  { label: 'Record payment', icon: 'payments', route: '/accounts/payments' },
-  { label: 'Convert won lead', icon: 'transform', route: '/projects/convert' },
-  { label: 'Add user', icon: 'group_add', route: '/team/users' },
-];
 
 const PAYMENT_COLUMNS: DataColumn[] = [
   { key: 'date', label: 'Date', type: 'date' },
@@ -56,33 +49,34 @@ const EXPENSE_COLUMNS: DataColumn[] = [
   { key: 'category', label: 'Category', hideOnMobile: true },
   { key: 'amount', label: 'Amount', type: 'money' },
 ];
-const ACTIVITY_COLUMNS: DataColumn[] = [
-  { key: 'when', label: 'When', type: 'date' },
-  { key: 'actor', label: 'Who' },
-  { key: 'action', label: 'What' },
-];
+const STAGE_COLORS = ['data-slate', 'data-cyan', 'data-teal', 'data-ink'];
 
 @Component({
   selector: 'app-dashboard-page',
   imports: [
+    ActivityCard,
+    AgingCard,
     AttentionPanel,
-    BarList,
-    CashflowChart,
+    CashHero,
     CountUp,
     DataList,
     EmptyState,
     ErrorState,
+    FunnelCard,
     InrCompactPipe,
-    InrPipe,
-    MatButtonModule,
+    LeaderboardCard,
     MatIconModule,
     MatTabsModule,
     MatTooltipModule,
+    NewMenu,
     PeriodSwitcher,
+    ProjectsCard,
+    RadialGauge,
     RouterLink,
     Skeleton,
+    SourcesCard,
     Sparkline,
-    SplitBar,
+    StackedBar,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard-page.html',
@@ -93,19 +87,13 @@ export class DashboardPage {
   private readonly router = inject(Router);
   private readonly service = inject(DashboardService);
   private readonly auth = inject(AuthService);
-  private readonly layout = inject(LayoutService);
+  protected readonly layout = inject(LayoutService);
 
   protected readonly paymentColumns = PAYMENT_COLUMNS;
   protected readonly expenseColumns = EXPENSE_COLUMNS;
-  protected readonly activityColumns = ACTIVITY_COLUMNS;
 
   /** The admin endpoint is admin-only; other roles get their own dashboards later. */
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
-
-  protected readonly quickActions = computed(() => {
-    const role = this.auth.role();
-    return QUICK_ACTIONS.filter((a) => role && findNavItem(a.route)?.roles.includes(role));
-  });
 
   /** The period lives in the URL (?period=quarter) so it survives reloads and can be shared. */
   protected readonly period = toSignal(this.route.queryParamMap.pipe(map((p) => toPeriod(p.get('period')))), {
@@ -117,45 +105,79 @@ export class DashboardPage {
   protected readonly data = computed(() => this.state().data);
   protected readonly refreshing = computed(() => this.state().status === 'loading' && !!this.state().data);
 
-  // ---- Derived display values --------------------------------------------------------------------
-  protected readonly comparison = computed(() => PERIOD_COMPARISON[this.period()]);
-  protected readonly periodNoun = computed(() => PERIOD_NOUN[this.period()]);
-
-  /** "+12.4%" / "-3.1%", or null when there is no comparison (All, or nothing last period). */
-  protected readonly delta = computed(() => {
-    const pct = this.data()?.kpis.received_delta_pct;
-    if (pct === null || pct === undefined) {
-      return null;
+  /** "Updated N min ago": loaded-at time plus a clock that ticks every 30s. */
+  private readonly loadedAt = signal<Date | null>(null);
+  protected readonly now = toSignal(interval(30_000).pipe(map(() => new Date())), { initialValue: new Date() });
+  protected readonly updatedText = computed(() => {
+    const at = this.loadedAt();
+    if (!at) {
+      return 'Loading';
     }
-    const negative = pct.startsWith('-');
-    return { text: `${negative ? '' : '+'}${pct}%`, negative };
+    const minutes = Math.floor((this.now().getTime() - at.getTime()) / 60_000);
+    return minutes < 1 ? 'Updated just now' : `Updated ${minutes} min ago`;
   });
 
-  protected readonly receivedSparkLabel = computed(() => this.trendLabel('Received', this.data()?.trends.received, true));
-  protected readonly leadsSparkLabel = computed(() => this.trendLabel('New leads', this.data()?.trends.leads_new, false));
+  // ---- Derived display values --------------------------------------------------------------------
+  protected readonly periodNoun = computed(() => PERIOD_NOUN[this.period()]);
+  protected readonly insight = computed(() => {
+    const d = this.data();
+    return d ? composeInsight(d) : '';
+  });
 
-  protected readonly funnelRows = computed<BarRow[]>(() =>
-    (this.data()?.funnel ?? []).map((s) => ({ label: s.label, value: s.count, display: String(s.count) })),
+  protected readonly leadsDelta = computed(() => {
+    const k = this.data()?.kpis;
+    if (!k || this.period() === 'all') {
+      return null;
+    }
+    const diff = k.leads_new - k.leads_new_prev;
+    return { text: `${diff >= 0 ? '+' : ''}${diff} vs previous`, negative: diff < 0 };
+  });
+
+  protected readonly leadsSparkLabel = computed(() => {
+    const d = this.data();
+    const parts = (d?.trends.leads_new ?? []).map((v, i) => `${monthLabel(d?.trends.months[i] ?? '')} ${v}`);
+    return `New leads per month: ${parts.join(', ')}`;
+  });
+
+  /** Open stages only (Won / Lost are closed), largest first, for the opportunities mini-bar. */
+  protected readonly openStages = computed(() =>
+    (this.data()?.funnel ?? [])
+      .filter((s) => s.status !== 'WON' && s.status !== 'LOST')
+      .map((s, i) => ({ ...s, color: STAGE_COLORS[i % STAGE_COLORS.length] })),
   );
-
-  protected readonly salesRows = computed<BarRow[]>(() =>
-    (this.data()?.sales_by_exec ?? []).map((s) => ({
-      label: s.name,
-      value: Number(s.won_value) || 0,
-      display: `${formatInrCompact(s.won_value)} · ${s.won_count} won`,
-    })),
+  protected readonly openSegments = computed<BarSegment[]>(() =>
+    this.openStages().map((s) => ({ label: s.label, value: s.count, color: s.color })),
   );
+  protected readonly topStages = computed(() => [...this.openStages()].sort((a, b) => b.count - a.count).slice(0, 3));
 
-  protected readonly recentPayments = computed(() => (this.data()?.recent.payments ?? []) as unknown as DataRow[]);
-  protected readonly recentExpenses = computed(() => (this.data()?.recent.expenses ?? []) as unknown as DataRow[]);
-  protected readonly recentActivity = computed(() => (this.data()?.recent.activity ?? []) as unknown as DataRow[]);
+  protected readonly recentPayments = computed(() => (this.data()?.recent.payments ?? []).slice(0, 5) as unknown as DataRow[]);
+  protected readonly recentExpenses = computed(() => (this.data()?.recent.expenses ?? []).slice(0, 5) as unknown as DataRow[]);
 
   constructor() {
     const today = new Date();
     this.layout.subtitle.set(
       today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
     );
-    inject(DestroyRef).onDestroy(() => this.layout.subtitle.set(''));
+    inject(DestroyRef).onDestroy(() => {
+      this.layout.subtitle.set('');
+      this.layout.navBadges.set({});
+    });
+
+    // Sidebar count badges come from the same attention data.
+    effect(() => {
+      const attention = this.data()?.attention;
+      if (!attention) {
+        return;
+      }
+      const badges: Record<string, { count: number; tone: 'rose' | 'amber' }> = {};
+      for (const src of NAV_BADGE_SOURCES) {
+        const count = attention.find((a) => a.key === src.key)?.count ?? 0;
+        if (count > 0) {
+          badges[src.route] = { count, tone: src.tone };
+        }
+      }
+      this.layout.navBadges.set(badges);
+    });
 
     combineLatest([toObservable(this.period), this.reload$.pipe(startWith(undefined))])
       .pipe(
@@ -165,6 +187,7 @@ export class DashboardPage {
           }
           return this.service.loadAdmin(period).pipe(
             map((data): LoadState => ({ status: 'ready', data })),
+            tap(() => this.loadedAt.set(new Date())),
             catchError(() => of<LoadState>({ status: 'error', data: null })),
             startWith<LoadState>({ status: 'loading', data: this.state().data }),
           );
@@ -185,13 +208,5 @@ export class DashboardPage {
 
   protected reload(): void {
     this.reload$.next();
-  }
-
-  private trendLabel(name: string, values: (string | number)[] | undefined, money: boolean): string {
-    const months = this.data()?.trends.months ?? [];
-    const parts = (values ?? []).map(
-      (v, i) => `${monthLabel(months[i] ?? '')} ${money ? formatInrCompact(String(v)) : v}`,
-    );
-    return `${name} per month, last ${parts.length} months: ${parts.join(', ')}`;
   }
 }

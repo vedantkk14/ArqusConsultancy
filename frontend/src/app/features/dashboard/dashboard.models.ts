@@ -48,6 +48,10 @@ export interface DashboardKpis {
   win_rate_pct: string;
   projects_running: number;
   projects_completed: number;
+  spent: string;
+  net: string;
+  net_margin_pct: string;
+  collection_rate_pct: string;
 }
 
 export interface AttentionItem {
@@ -62,6 +66,7 @@ export interface FunnelStage {
   status: string;
   label: string;
   count: number;
+  value: string;
 }
 
 export interface ExecSales {
@@ -69,6 +74,36 @@ export interface ExecSales {
   name: string;
   won_count: number;
   won_value: string;
+  share_pct: string;
+  win_rate_pct: string;
+}
+
+export interface LeadSource {
+  source: string;
+  count: number;
+  pct: string;
+}
+
+export interface AgingBucket {
+  bucket: '0-30' | '31-60' | '61-90' | '90+';
+  count: number;
+  amount: string;
+}
+
+export interface OverdueClient {
+  ledger_id: number;
+  client: string;
+  outstanding: string;
+  days: number;
+}
+
+export interface ProjectBurn {
+  id: number;
+  name: string;
+  sanctioned: string;
+  spent: string;
+  pct: string;
+  state: 'ok' | 'warn' | 'over';
 }
 
 export interface RecentPayment {
@@ -89,6 +124,7 @@ export interface RecentActivity {
   when: string;
   actor: string;
   action: string;
+  type?: 'lead' | 'payment' | 'expense' | 'project' | 'user';
 }
 
 export interface AdminDashboard {
@@ -97,9 +133,13 @@ export interface AdminDashboard {
   data_sources: Record<string, boolean>;
   kpis: DashboardKpis;
   trends: { months: string[]; leads_new: number[]; received: string[] };
-  cashflow: { months: string[]; collected: string[]; spent: string[] };
+  cashflow: { months: string[]; collected: string[]; spent: string[]; net: string[] };
   attention: AttentionItem[];
   funnel: FunnelStage[];
   sales_by_exec: ExecSales[];
+  lead_sources: LeadSource[];
+  collections_aging: AgingBucket[];
+  top_overdue_clients: OverdueClient[];
+  projects_burn: ProjectBurn[];
   recent: { payments: RecentPayment[]; expenses: RecentExpense[]; activity: RecentActivity[] };
 }

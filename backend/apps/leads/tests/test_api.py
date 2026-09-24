@@ -393,7 +393,12 @@ def test_assignees_have_open_counts(client_for, manager, exec_a, make_lead):
     make_lead(assigned_to=exec_a)
     make_lead(assigned_to=exec_a, status=LeadStatus.WON, proposed_amount=1)
     rows = client_for(manager).get(f"{BASE}/assignees").json()
-    assert {"id": exec_a.id, "name": exec_a.display_name, "open_count": 1} in rows
+    assert {
+        "id": exec_a.id,
+        "name": exec_a.display_name,
+        "role": "SALES_EXEC",
+        "open_count": 1,
+    } in rows
 
 
 # ---- Finalize, delete, WhatsApp ----------
@@ -539,3 +544,16 @@ def test_list_rows_carry_role_aware_transitions(client_for, exec_a, manager, mak
     assert row["allowed_transitions"] == []
     row = client_for(manager).get(BASE).json()["results"][0]
     assert row["allowed_transitions"] == ["CONTACTED"]
+
+
+def test_admin_can_own_work_and_close_a_lead(client_for, admin, make_lead):
+    lead = make_lead()
+    c = client_for(admin)
+    r = c.post(f"{BASE}/{lead.id}/assign", {"assigned_to": admin.id})
+    assert r.status_code == 200 and r.json()["assigned_to"]["id"] == admin.id
+    assert admin.id in [a["id"] for a in c.get(f"{BASE}/assignees").json()]
+    c.post(f"{BASE}/{lead.id}/interactions", {"type": "CALL", "notes": "Spoke"})
+    r = c.post(f"{BASE}/{lead.id}/status", {"status": "WON", "proposed_amount": "500000"})
+    assert r.status_code == 200 and r.json()["status"] == "WON"
+    r = c.post(f"{BASE}/{lead.id}/finalize", {"amount": "500000"})
+    assert r.status_code == 409 and err(r) == "accounts_not_ready"  # until Dev C ships finalize

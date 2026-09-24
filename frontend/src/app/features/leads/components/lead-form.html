@@ -103,10 +103,15 @@
           <select id="lf-assign" formControlName="assigned_to">
             <option value="">Assign later</option>
             @for (a of assignees(); track a.id) {
-              <option [value]="'' + a.id">{{ a.name }} · {{ a.open_count }} open</option>
+              <option [value]="'' + a.id">
+                {{ a.name }}{{ a.id === meId() ? ' (you)' : a.role === 'ADMIN' ? ' (Admin)' : '' }} · {{ a.open_count }} open
+              </option>
             }
           </select>
         </div>
+        @if (amAssignee()) {
+          <button matButton="outlined" type="button" class="auto" (click)="assignToMe()">Assign to me</button>
+        }
         <button matButton="outlined" type="button" class="auto" [disabled]="!assignees().length" (click)="autoPick()">
           Auto-pick least loaded
         </button>

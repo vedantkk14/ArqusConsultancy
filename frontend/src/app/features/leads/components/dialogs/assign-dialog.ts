@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { ApiError } from '../../../../core/models';
 import { Assignee } from '../../data/lead.models';
 import { LeadsApi } from '../../data/leads-api.service';
@@ -29,26 +30,34 @@ export interface AssignDialogData {
     label.opt:has(input:checked) { border-color: var(--brand-deep); background: var(--brand-tint); }
     .nm { flex: 1; color: var(--ink); font-weight: 500; }
     .ct { color: var(--ink-3); font-size: var(--text-sm); }
+    .tag { padding: 0 8px; border-radius: 999px; background: var(--tint-slate); color: var(--tint-slate-ink); font-size: var(--text-xs); line-height: 20px; }
+    .me { margin: 0 0 var(--space-3); }
     input[type='radio'] { width: 18px; height: 18px; accent-color: var(--brand-deep); }
   `,
   template: `
     <h2 mat-dialog-title>Assign to…</h2>
     <p class="sub">{{ data.label }}</p>
+    @if (canTakeIt()) {
+      <button matButton="outlined" type="button" class="me" (click)="choice.set(meId()); save()">Assign to me</button>
+    }
     @if (assignees(); as list) {
       <fieldset style="border:0;margin:0;padding:0">
-        <legend class="sr-only">Sales executive</legend>
+        <legend class="sr-only">Assign to</legend>
         <ul>
           @for (a of list; track a.id) {
             <li>
               <label class="opt">
                 <input type="radio" name="assignee" [value]="a.id" [checked]="choice() === a.id" (change)="choice.set(a.id)" />
                 <app-lead-avatar [name]="a.name" [size]="32" />
-                <span class="nm">{{ a.name }}</span>
+                <span class="nm">{{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}</span>
+                @if (a.role === 'ADMIN') {
+                  <span class="tag">Admin</span>
+                }
                 <span class="ct">{{ a.open_count }} open</span>
               </label>
             </li>
           } @empty {
-            <li class="sub">No active sales executives.</li>
+            <li class="sub">No one available to assign.</li>
           }
         </ul>
       </fieldset>
@@ -75,6 +84,12 @@ export class AssignDialog {
   protected readonly choice = signal<number | null>(this.data.currentId ?? null);
   protected readonly saving = signal(false);
   protected readonly error = signal('');
+  /** An admin can take a lead and work it end to end. */
+  private readonly auth = inject(AuthService);
+  protected readonly meId = computed(() => this.auth.user()?.id ?? null);
+  protected readonly canTakeIt = computed(
+    () => !!this.assignees()?.some((a) => a.id === this.meId() && a.role === 'ADMIN'),
+  );
 
   constructor() {
     this.api.assignees().subscribe({

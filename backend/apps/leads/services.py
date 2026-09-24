@@ -38,6 +38,8 @@ FINAL_AMOUNT_VISIBLE_TO = {ADMIN, SALES_MANAGER}
 REOPEN_ROLES = {ADMIN, SALES_MANAGER}
 FOLLOWUP_TOLERANCE = timedelta(minutes=5)
 BULK_ASSIGN_LIMIT = 100
+# Who can own a lead: sales execs, and admins who work a lead themselves.
+ASSIGNEE_ROLES = (SALES_EXEC, ADMIN)
 COMPANY_NAME = "ARQUS Sports Consultancy"
 
 TRANSITIONS: dict[str, set[str]] = {
@@ -115,9 +117,9 @@ def duplicate_summary(lead: Lead) -> dict:
 
 def _check_assignee(user_id):
     User = get_user_model()
-    user = User.objects.filter(pk=user_id, role=SALES_EXEC, is_active=True).first()
+    user = User.objects.filter(pk=user_id, role__in=ASSIGNEE_ROLES, is_active=True).first()
     if user is None:
-        raise ValidationError({"assigned_to": ["Choose an active sales executive."]})
+        raise ValidationError({"assigned_to": ["Choose an active sales executive or admin."]})
     return user
 
 

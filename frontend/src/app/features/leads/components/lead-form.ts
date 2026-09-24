@@ -13,6 +13,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ApiError } from '../../../core/models';
 import {
   Assignee,
@@ -167,13 +168,24 @@ export class LeadForm {
     });
   }
 
+  private readonly auth = inject(AuthService);
+  protected readonly meId = computed(() => this.auth.user()?.id ?? null);
+  protected readonly amAssignee = computed(() => this.assignees().some((a) => a.id === this.meId()));
+
+  protected assignToMe(): void {
+    this.form.controls.assigned_to.setValue(String(this.meId()));
+    this.form.controls.assigned_to.markAsDirty();
+  }
+
   protected setFollowup(iso: string): void {
     this.form.controls.next_followup_at.setValue(toBusinessInput(iso));
     this.form.controls.next_followup_at.markAsDirty();
   }
 
   protected autoPick(): void {
-    const least = [...this.assignees()].sort((a, b) => a.open_count - b.open_count || a.name.localeCompare(b.name))[0];
+    const least = this.assignees()
+      .filter((a) => a.role === 'SALES_EXEC')
+      .sort((a, b) => a.open_count - b.open_count || a.name.localeCompare(b.name))[0];
     if (least) {
       this.form.controls.assigned_to.setValue(String(least.id));
       this.form.controls.assigned_to.markAsDirty();

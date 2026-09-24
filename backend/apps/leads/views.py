@@ -12,7 +12,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from apps.core.pagination import StandardPagination
-from apps.core.permissions import ADMIN, SALES_EXEC, HasRole
+from apps.core.permissions import ADMIN, HasRole
 
 from . import integrations, selectors, services
 from .filters import SUMMARY_SKIP, apply_filters, apply_ordering
@@ -153,7 +153,7 @@ class LeadViewSet(viewsets.GenericViewSet):
         self._require_manager()
         users = (
             get_user_model()
-            .objects.filter(role=SALES_EXEC, is_active=True)
+            .objects.filter(role__in=services.ASSIGNEE_ROLES, is_active=True)
             .annotate(
                 open_count=Count(
                     "assigned_leads",
@@ -161,7 +161,7 @@ class LeadViewSet(viewsets.GenericViewSet):
                     & ~Q(assigned_leads__status__in=selectors.CLOSED_STATUSES),
                 )
             )
-            .order_by("first_name", "username")
+            .order_by("-role", "first_name", "username")
         )
         return Response(AssigneeSerializer(users, many=True).data)
 

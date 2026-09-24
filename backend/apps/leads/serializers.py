@@ -231,4 +231,5 @@ class WhatsAppTemplateSerializer(serializers.ModelSerializer):
 class AssigneeSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField(source="display_name")
+    role = serializers.CharField()
     open_count = serializers.IntegerField()

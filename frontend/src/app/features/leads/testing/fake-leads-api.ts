@@ -69,7 +69,7 @@ export class FakeLeadsApi {
     return of(SUMMARY);
   }
   assignees() {
-    return of([{ id: 7, name: 'Eva Exec', open_count: 3 }]);
+    return of([{ id: 7, name: 'Eva Exec', role: 'SALES_EXEC', open_count: 3 }]);
   }
   update(id: number, body: unknown) {
     this.updates.push({ id, body });

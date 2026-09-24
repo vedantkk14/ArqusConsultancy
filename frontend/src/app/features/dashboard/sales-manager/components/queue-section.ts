@@ -6,12 +6,12 @@ import { PanelHead } from '../../components/panel-head';
 import { QueueLeadItem } from '../sales-manager-dashboard.models';
 import { QueueRow } from './queue-row';
 
-/** One labelled "Needs attention" subsection: title, count, "View all" link, rows or an empty line. */
+/** One "Needs attention" card: title, count, "View all" link, rows or an empty line. */
 @Component({
   selector: 'app-queue-section',
   imports: [MatIconModule, PanelHead, QueueRow, RouterLink, Skeleton],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'queue-section', '[class.priority]': 'priority()' },
+  host: { class: 'card panel queue-section', role: 'region', '[class.priority]': 'priority()' },
   template: `
     <app-panel-head [title]="title()">
       @if (viewAllRoute()) {
@@ -36,10 +36,9 @@ import { QueueRow } from './queue-row';
   `,
   styles: `
     :host {
-      display: block;
-    }
-    :host + :host {
-      margin-top: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-5);
     }
     .rows {
       display: flex;

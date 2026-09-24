@@ -61,60 +61,51 @@
         </a>
       </section>
 
-      <!-- Needs attention -->
-      <section class="card b-needs rise-in" style="--i: 4" aria-label="Needs attention">
-        <app-queue-section
-          title="Unassigned leads"
-          [items]="d.queues.unassigned.items"
-          [total]="d.queues.unassigned.total"
-          [priority]="d.queues.unassigned.total > 0"
-          viewAllRoute="/leads/all"
-          [viewAllParams]="{ assigned_to: 'none' }"
-          emptyText="No unassigned leads."
-          (assign)="openAssign($event)"
-          (whatsapp)="openWhatsapp($event)"
-        />
-        <app-queue-section
-          title="Overdue follow-ups"
-          [items]="d.queues.overdue.items"
-          [total]="d.queues.overdue.total"
-          viewAllRoute="/leads/overdue"
-          emptyText="No overdue follow-ups. Nice work."
-          (assign)="openAssign($event)"
-          (whatsapp)="openWhatsapp($event)"
-        />
-        <app-queue-section
-          title="Due today"
-          [items]="d.queues.today.items"
-          [total]="d.queues.today.total"
-          viewAllRoute="/leads/all"
-          [viewAllParams]="{ followup: 'today' }"
-          emptyText="Nothing due today."
-          (assign)="openAssign($event)"
-          (whatsapp)="openWhatsapp($event)"
-        />
-        <app-queue-section
-          title="Won - awaiting finalisation"
-          [items]="d.queues.won_awaiting.items"
-          [total]="d.queues.won_awaiting.total"
-          viewAllRoute="/leads/won"
-          [viewAllParams]="{ won_awaiting: 'true' }"
-          emptyText="No deals waiting on finalisation."
-          (assign)="openAssign($event)"
-          (whatsapp)="openWhatsapp($event)"
-        />
-      </section>
-
-      <!-- Team pipeline -->
-      <app-team-pipeline-card class="b-pipeline rise-in" style="--i: 5" [stages]="d.pipeline" />
+      <!-- Needs attention: one card each -->
+      <app-queue-section
+        class="b-unassigned rise-in"
+        style="--i: 4"
+        title="Unassigned leads"
+        [items]="d.queues.unassigned.items"
+        [total]="d.queues.unassigned.total"
+        [priority]="d.queues.unassigned.total > 0"
+        viewAllRoute="/leads/all"
+        [viewAllParams]="{ assigned_to: 'none' }"
+        emptyText="No unassigned leads."
+        (assign)="openAssign($event)"
+        (whatsapp)="openWhatsapp($event)"
+      />
+      <app-queue-section
+        class="b-overdue rise-in"
+        style="--i: 5"
+        title="Overdue follow-ups"
+        [items]="d.queues.overdue.items"
+        [total]="d.queues.overdue.total"
+        viewAllRoute="/leads/overdue"
+        emptyText="No overdue follow-ups. Nice work."
+        (assign)="openAssign($event)"
+        (whatsapp)="openWhatsapp($event)"
+      />
+      <app-queue-section
+        class="b-today rise-in"
+        style="--i: 6"
+        title="Due today"
+        [items]="d.queues.today.items"
+        [total]="d.queues.today.total"
+        viewAllRoute="/leads/all"
+        [viewAllParams]="{ followup: 'today' }"
+        emptyText="Nothing due today."
+        (assign)="openAssign($event)"
+        (whatsapp)="openWhatsapp($event)"
+      />
 
       <!-- By executive -->
-      <app-by-executive-list class="b-exec rise-in" style="--i: 6" [rows]="d.by_executive" />
+      <app-by-executive-list class="b-exec rise-in" style="--i: 7" [rows]="d.by_executive" />
 
       <!-- Recent team activity -->
-      <app-activity-card class="b-activity rise-in" style="--i: 7" [rows]="activityRows()" [now]="now()" />
+      <app-activity-card class="b-activity rise-in" style="--i: 8" [rows]="activityRows()" [now]="now()" />
     } @else {
-      @for (k of ['b-kpis', 'b-needs', 'b-pipeline', 'b-exec', 'b-activity']; track k) {
+      @for (k of ['b-kpis', 'b-unassigned', 'b-overdue', 'b-today', 'b-exec', 'b-activity']; track k) {
         <div class="card skeleton-card" [class]="k" aria-hidden="true">
           <app-skeleton width="40%" height="14px" />
           <app-skeleton width="60%" height="28px" radius="8px" />

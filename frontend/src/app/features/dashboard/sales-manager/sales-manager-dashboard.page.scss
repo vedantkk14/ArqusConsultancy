@@ -63,13 +63,6 @@
   }
 }
 
-// ---- Needs attention: one card holding all four subsections -------------------------------------
-.b-needs {
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-5);
-}
-
 // ---- Grid: mobile = one column in source order ---------------------------------------------------
 .bento {
   display: grid;
@@ -112,8 +105,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .b-kpis,
-  .b-needs {
+  .b-kpis {
     grid-column: 1 / -1;
   }
 }
@@ -130,11 +122,9 @@
     gap: var(--space-4);
   }
 
-  .b-needs {
-    grid-column: span 8;
-  }
-
-  .b-pipeline {
+  .b-unassigned,
+  .b-overdue,
+  .b-today {
     grid-column: span 4;
   }
 

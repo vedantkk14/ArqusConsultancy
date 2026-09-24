@@ -19,7 +19,6 @@ import { RecentActivity } from '../dashboard.models';
 import { LayoutService } from '../../../layout/layout.service';
 import { ByExecutiveList } from './components/by-executive-list';
 import { QueueSection } from './components/queue-section';
-import { TeamPipelineCard } from './components/team-pipeline-card';
 import { PERIOD_NOUN, Period, QueueLeadItem, SalesManagerDashboard, toPeriod } from './sales-manager-dashboard.models';
 import { SalesManagerDashboardService } from './sales-manager-dashboard.service';
 
@@ -58,7 +57,6 @@ const ACTION_VERB: Record<string, string> = {
     RadialGauge,
     RouterLink,
     Skeleton,
-    TeamPipelineCard,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sales-manager-dashboard.page.html',

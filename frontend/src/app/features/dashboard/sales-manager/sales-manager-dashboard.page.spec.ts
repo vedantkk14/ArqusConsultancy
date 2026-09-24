@@ -48,13 +48,14 @@ const text = (el: Element | null) => el?.textContent?.replace(/\s+/g, ' ').trim(
 describe('SalesManagerDashboardPage', () => {
   it('shows skeletons first, then the team data', async () => {
     const { el, resolve } = await setup();
-    expect(el.querySelectorAll('.skeleton-card').length).toBe(5);
+    expect(el.querySelectorAll('.skeleton-card').length).toBe(6);
 
     resolve(mockSalesManagerDashboard('month'));
     expect(el.querySelectorAll('.skeleton-card').length).toBe(0);
     expect(el.querySelectorAll('a.kpi').length).toBe(4);
     expect(text(el.querySelector('.kpi .kpi-value'))).toBe('24');
-    expect(el.querySelectorAll('app-queue-section').length).toBe(4);
+    expect(el.querySelectorAll('app-queue-section').length).toBe(3);
+    expect(el.querySelector('app-team-pipeline-card')).toBeNull();
   });
 
   it('shows the error state and retries on demand', async () => {

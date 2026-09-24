@@ -1,0 +1,47 @@
+<div class="palette">
+  <div class="field">
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input
+      #input
+      type="text"
+      role="combobox"
+      aria-label="Search pages"
+      aria-controls="palette-results"
+      aria-expanded="true"
+      aria-autocomplete="list"
+      [attr.aria-activedescendant]="results().length ? 'palette-opt-' + active() : null"
+      placeholder="Search pages…"
+      autocomplete="off"
+      cdkFocusInitial
+      [value]="query()"
+      (input)="onInput(input.value)"
+      (keydown)="onKeydown($event)"
+    />
+    <kbd>Esc</kbd>
+  </div>
+
+  <ul id="palette-results" class="results" role="listbox" aria-label="Pages">
+    @for (page of results(); track page.route; let i = $index) {
+      <li
+        [id]="'palette-opt-' + i"
+        role="option"
+        class="result"
+        [class.active]="i === active()"
+        [attr.aria-selected]="i === active()"
+        tabindex="-1"
+        (mouseenter)="active.set(i)"
+        (click)="go(page)"
+        (keydown.enter)="go(page)"
+      >
+        <mat-icon aria-hidden="true">{{ page.icon }}</mat-icon>
+        <span class="name">{{ page.label }}</span>
+        @if (page.group) {
+          <span class="group">{{ page.group }}</span>
+        }
+      </li>
+    }
+  </ul>
+  @if (!results().length) {
+    <p class="empty" role="status">No pages match “{{ query() }}”</p>
+  }
+</div>

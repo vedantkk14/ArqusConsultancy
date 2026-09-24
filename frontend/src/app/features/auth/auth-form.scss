@@ -1,0 +1,101 @@
+// Shared form styles for the auth pages. Controls are 44px tall (thumb-friendly), with visible labels.
+:host {
+  display: block;
+}
+
+h1 {
+  font-size: var(--text-xl);
+  text-align: center;
+}
+
+// A page-level notice right under the heading (forced change, used reset link).
+h1 + .banner {
+  margin: var(--space-3) 0 var(--space-5);
+}
+
+.banner + .center {
+  margin-top: var(--space-2);
+}
+
+.lede {
+  margin: var(--space-1) 0 var(--space-6);
+  color: var(--ink-3);
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  color: var(--ink-2);
+  font-size: var(--text-base);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--ink);
+  }
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--brand-deep);
+  font-size: var(--text-base);
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.center {
+  margin: 0;
+  text-align: center;
+}
+
+.as-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (min-width: 600px) {
+  .check,
+  .link {
+    min-height: 32px;
+  }
+}

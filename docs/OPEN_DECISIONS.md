@@ -15,3 +15,5 @@ and record the final answer here.
 | 8 | **Soft delete + audit log for money records** | Ledgers, payments and expenses are never hard-deleted (`SoftDeleteModel`). Every create/update/delete writes an audit-log entry (who, when, before/after). Only an Admin can delete. |
 | 9 | **Who can reopen a completed project** | Admin only, with a reason. It is logged in the audit trail. |
 | 10 | **WhatsApp approach** | Phase 1: `wa.me` click-to-chat links with a pre-filled template message, and a manual Message Log. Phase 2 (later): WhatsApp Business (Meta Cloud) API for automated sends. |
+| 11 | **Dashboard "Year" and "Quarter"** | Indian financial year (1 April to 31 March); quarters Apr-Jun, Jul-Sep, Oct-Dec, Jan-Mar. Change `FINANCIAL_YEAR_START_MONTH` in `apps/reports/services.py` to 1 for calendar years. |
+| 12 | **Dashboard for non-admin roles** | Admin-only for now (the KPIs include money). Sales Manager and others see a "coming soon" note on /dashboard until role dashboards are specified. |

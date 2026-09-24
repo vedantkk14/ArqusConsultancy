@@ -10,7 +10,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    // Restore the session (load /me) before the first route is resolved.
-    provideAppInitializer(() => inject(AuthService).restoreSession()),
+    // Validate stored tokens (GET /me) before the first route is resolved. Meanwhile index.html shows a
+    // neutral splash (logo only), so the login page never flashes for a signed-in user.
+    provideAppInitializer(() => inject(AuthService).loadSession()),
   ],
 };

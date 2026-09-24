@@ -1,0 +1,127 @@
+// ARQUS design tokens: the single source of truth for colour, type, shape, depth and motion.
+// scripts/check-contrast.mjs parses this file, so keep one `--name: #hex;` per line for colours.
+// Direction: calm and crisp. Near-black ink, white cards on a cool off-white canvas, logo cyan as the accent.
+
+:root {
+  // ink (text)
+  --ink: #0b0d0f; // headings, primary buttons, key figures
+  --ink-2: #3b4250; // body text
+  --ink-3: #667085; // muted text, labels, icons
+  --on-ink: #ffffff; // text on an --ink fill (buttons, tooltips)
+
+  // surfaces
+  --paper: #f6f7f9; // app canvas
+  --surface: #ffffff; // cards, sidebar, top bar
+  --subtle: #f2f4f7; // hover fill, table header
+  --surface-2: #f5f7fa; // filled input background (turns white on focus)
+  --line-cyan: #bfe7f5; // top of the auth card's gradient border
+  --plate: #eaecf0; // skeletons, neutral chips, empty bar tracks
+  --line: #e7e9ed; // card and divider hairlines
+  --line-strong: #858d9a; // form-control borders (needs >= 3:1)
+
+  // brand
+  --brand: #32c5f3; // logo cyan: active bar, sparklines, fills, focus accents. Never text on light
+  --brand-deep: #086f92; // cyan for readable links/icons and focus rings on light backgrounds
+  --brand-tint: #e6f7fd; // selected / active backgrounds
+
+  // semantic (text-safe foregrounds and their tinted backgrounds)
+  --positive: #17663a;
+  --positive-bg: #e3f4e8;
+  --negative: #b42318;
+  --negative-bg: #fdecea;
+  --warning: #93370d;
+  --warning-bg: #fef4e6;
+
+  // tints: soft backgrounds (icon chips, pills, corner glows) + a text/icon tone that passes 4.5:1 on them
+  --tint-cyan: #e3f6fd;
+  --tint-cyan-ink: #075e7c;
+  --tint-teal: #dff5f1;
+  --tint-teal-ink: #0b6152;
+  --tint-amber: #fdf0d9;
+  --tint-amber-ink: #86400b;
+  --tint-rose: #fde7e7;
+  --tint-rose-ink: #a52319;
+  --tint-slate: #eef1f5;
+  --tint-slate-ink: #3b4250;
+  --deep-navy: #0e2a36; // end of --grad-ink
+
+  // data colours for chart segments and gauges (graphics only; always paired with a text label)
+  --data-cyan: #32c5f3;
+  --data-teal: #2bb59b;
+  --data-ink: #3b4250;
+  --data-amber: #e3a008;
+  --data-orange: #c2621d;
+  --data-rose: #e5484d;
+  --data-slate: #9aa4b2;
+
+  // depth (layered, ink-tinted)
+  --shadow-1: 0 1px 2px rgba(11, 13, 15, 0.05), 0 4px 12px rgba(11, 13, 15, 0.04);
+  --shadow-2: 0 8px 24px rgba(11, 13, 15, 0.08), 0 2px 8px rgba(50, 197, 243, 0.1);
+  --shadow-3: 0 20px 50px rgba(11, 13, 15, 0.14), 0 2px 6px rgba(11, 13, 15, 0.05);
+  --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --glow-cyan: 0 4px 14px -6px rgba(50, 197, 243, 0.55); // active nav item
+
+  // gradients
+  --grad-ink: linear-gradient(135deg, var(--ink) 0%, var(--deep-navy) 100%);
+  --grad-brand: linear-gradient(135deg, var(--brand) 0%, #1aa6d6 100%);
+  --grad-teal: linear-gradient(90deg, #2bb59b 0%, #17866f 100%);
+  --grad-accent: linear-gradient(90deg, var(--brand), var(--brand-deep), var(--ink)); // 3px card edge
+  --wash:
+    radial-gradient(60% 45% at 100% 0%, rgba(50, 197, 243, 0.1), transparent 70%),
+    radial-gradient(50% 40% at 0% 100%, rgba(160, 150, 140, 0.08), transparent 70%),
+    var(--paper);
+
+  // focus: 2px --brand-deep outline + a soft 3px cyan ring outside it
+  --ring: 0 0 0 5px rgba(50, 197, 243, 0.35);
+
+  // type
+  --font-sans: 'Geist Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px; // page title
+  --text-kpi: 32px; // KPI values
+  --text-kpi-hero: 36px;
+
+  // shape
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+
+  // depth
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-card-hover: 0 1px 2px rgba(16, 24, 40, 0.05), 0 6px 16px -4px rgba(16, 24, 40, 0.08);
+  --shadow-pop: 0 12px 32px -8px rgba(16, 24, 40, 0.18), 0 2px 6px rgba(16, 24, 40, 0.06);
+
+  // motion
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+
+  // spacing (4px scale)
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  // layout
+  --sidebar-w-expanded: 256px;
+  --sidebar-w-rail: 72px;
+  --topbar-h: 64px;
+  --tabbar-h: 64px;
+  --content-max: 1280px;
+  --gutter: 16px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 24px;
+  }
+}

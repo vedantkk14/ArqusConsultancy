@@ -1,0 +1,158 @@
+// Bento grid driven by the content width (container queries), so it adapts to the sidebar state too.
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+// ---- Header -----------------------------------------------------------------------------------------
+.page-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.insight {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+  line-height: 1.45;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.updated {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.icon-btn {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink-3);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--line-strong);
+    color: var(--ink);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ---- Grid: mobile = one column in source order ------------------------------------------------------
+.bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  transition: opacity var(--dur-fast) ease;
+
+  &.busy {
+    opacity: 0.6;
+  }
+
+  > * {
+    min-width: 0;
+  }
+}
+
+.b-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.panel {
+  padding: var(--space-5);
+}
+
+.recent-title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-md);
+}
+
+.b-recent {
+  padding-bottom: var(--space-2);
+}
+
+.skeleton-card {
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--space-5);
+}
+
+// ---- 768-1279: hero full width, then two columns ----------------------------------------------------
+@container (min-width: 700px) {
+  .page-head {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .controls {
+    flex: none;
+  }
+
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .b-hero,
+  .b-recent {
+    grid-column: 1 / -1;
+  }
+
+  .b-kpis {
+    grid-column: 2;
+    grid-row: span 1;
+  }
+}
+
+// ---- 1280+ (content ~1000px+): the 12-column bento --------------------------------------------------
+@container (min-width: 980px) {
+  .bento {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .b-hero { grid-column: span 8; }
+  .b-wait { grid-column: span 4; }
+
+  .b-kpis {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .b-projects { grid-column: span 5; }
+  .b-funnel { grid-column: span 7; }
+  .b-board,
+  .b-sources,
+  .b-aging { grid-column: span 4; }
+  .b-recent { grid-column: span 8; }
+  .b-activity { grid-column: span 4; }
+}

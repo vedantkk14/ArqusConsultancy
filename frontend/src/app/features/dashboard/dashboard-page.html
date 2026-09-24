@@ -1,0 +1,141 @@
+@if (!isAdmin()) {
+  <app-empty-state
+    icon="dashboard"
+    title="Your dashboard is on the way"
+    message="A dashboard for your role is being built. Use the menu to get to your pages meanwhile."
+  />
+} @else {
+  <!-- Header: insight line + controls (the title and date are in the top bar) -->
+  <header class="page-head">
+    <p class="insight" aria-live="polite">
+      @if (data()) {
+        {{ insight() }}
+      } @else {
+        <app-skeleton width="min(420px, 80%)" height="16px" />
+      }
+    </p>
+    <div class="controls">
+      <app-period-switcher class="segmented" [value]="period()" (changed)="setPeriod($event)" />
+      <span class="updated">{{ updatedText() }}</span>
+      <button
+        type="button"
+        class="icon-btn"
+        aria-label="Refresh"
+        matTooltip="Refresh"
+        [disabled]="state().status === 'loading'"
+        (click)="reload()"
+      >
+        <mat-icon aria-hidden="true" [class.spin]="refreshing()">refresh</mat-icon>
+      </button>
+      @if (layout.isDesktop()) {
+        <app-new-menu />
+      }
+    </div>
+  </header>
+  @if (!layout.isDesktop()) {
+    <app-new-menu [fab]="true" />
+  }
+
+  @if (state().status === 'error' && !data()) {
+    <app-error-state title="Couldn't load the dashboard" (retry)="reload()" />
+  } @else {
+    <div class="bento" [class.busy]="refreshing()" [attr.aria-busy]="state().status === 'loading'">
+      @if (data(); as d) {
+        <!-- Row 1 -->
+        <app-cash-hero class="b-hero rise-in" style="--i: 0" [data]="d" />
+        <app-attention-panel class="b-wait rise-in" style="--i: 1" [items]="d.attention" />
+
+        <!-- Row 2: KPIs -->
+        <section class="b-kpis" aria-label="Key figures">
+          <a class="card card-link kpi rise-in" style="--i: 2" routerLink="/accounts/pending">
+            <span class="kpi-label">Outstanding</span>
+            <span class="kpi-body">
+              <app-radial-gauge [pct]="d.kpis.collection_rate_pct" caption="collected" [size]="72" label="collection rate" />
+              <span class="kpi-figs">
+                <span class="kpi-value num" [appCountUp]="d.kpis.outstanding" countFormat="inr"></span>
+                <span class="kpi-context">{{ d.kpis.outstanding_clients }} {{ d.kpis.outstanding_clients === 1 ? 'client' : 'clients' }}</span>
+              </span>
+            </span>
+            @if (d.kpis.outstanding_overdue !== '0.00') {
+              <span class="pill overdue"><mat-icon aria-hidden="true">error_outline</mat-icon>{{ d.kpis.outstanding_overdue | inrCompact }} overdue</span>
+            } @else {
+              <span class="kpi-context">Nothing overdue</span>
+            }
+          </a>
+
+          <a class="card card-link kpi rise-in" style="--i: 3" routerLink="/leads/all">
+            <span class="kpi-label">Total leads</span>
+            <span class="kpi-value num" [appCountUp]="d.kpis.leads_total"></span>
+            <span class="kpi-context">
+              +{{ d.kpis.leads_new }} new {{ periodNoun() }}
+              @if (leadsDelta(); as ld) {
+                <span class="delta" [class.neg]="ld.negative">{{ ld.text }}</span>
+              }
+            </span>
+            <app-sparkline class="spark" [values]="d.trends.leads_new" [label]="leadsSparkLabel()" />
+          </a>
+
+          <a class="card card-link kpi rise-in" style="--i: 4" routerLink="/leads/all" [queryParams]="{ status: 'open' }">
+            <span class="kpi-label">Active opportunities</span>
+            <span class="kpi-value num" [appCountUp]="d.kpis.open_count"></span>
+            <span class="kpi-context">{{ d.kpis.open_value | inrCompact }} proposed value</span>
+            <app-stacked-bar [segments]="openSegments()" />
+            <span class="legend">
+              @for (s of topStages(); track s.status) {
+                <span><i [style.background]="'var(--' + s.color + ')'"></i>{{ s.label }} <b class="num">{{ s.count }}</b></span>
+              }
+            </span>
+          </a>
+
+          <a class="card card-link kpi rise-in" style="--i: 5" routerLink="/leads/won-awaiting">
+            <span class="kpi-label">Win rate</span>
+            <span class="kpi-body">
+              <app-radial-gauge [pct]="d.kpis.win_rate_pct" tone="teal" [size]="72" label="win rate" />
+              <span class="wl">
+                <span><b class="num">{{ d.kpis.won_count }}</b> Won</span>
+                <span><b class="num">{{ d.kpis.lost_count }}</b> Lost</span>
+              </span>
+            </span>
+          </a>
+        </section>
+
+        <!-- Row 3 -->
+        <app-projects-card
+          class="b-projects rise-in"
+          style="--i: 6"
+          [running]="d.kpis.projects_running"
+          [completed]="d.kpis.projects_completed"
+          [burn]="d.projects_burn"
+        />
+        <app-funnel-card class="b-funnel rise-in" style="--i: 7" [stages]="d.funnel" [won]="d.kpis.won_count" [lost]="d.kpis.lost_count" />
+
+        <!-- Row 4 -->
+        <app-leaderboard-card class="b-board rise-in" style="--i: 8" [rows]="d.sales_by_exec" [periodNoun]="periodNoun()" />
+        <app-sources-card class="b-sources rise-in" style="--i: 9" [rows]="d.lead_sources" />
+        <app-aging-card class="b-aging rise-in" style="--i: 10" [buckets]="d.collections_aging" [clients]="d.top_overdue_clients" />
+
+        <!-- Row 5 -->
+        <section class="card panel b-recent rise-in" style="--i: 11" aria-labelledby="recent-title">
+          <h2 id="recent-title" class="recent-title">Recent</h2>
+          <mat-tab-group class="pill-tabs" mat-stretch-tabs="false" animationDuration="0ms">
+            <mat-tab label="Payments">
+              <app-data-list label="Recent payments" [columns]="paymentColumns" [rows]="recentPayments()" emptyText="No payments yet" />
+            </mat-tab>
+            <mat-tab label="Expenses">
+              <app-data-list label="Recent expenses" [columns]="expenseColumns" [rows]="recentExpenses()" emptyText="No expenses yet" />
+            </mat-tab>
+          </mat-tab-group>
+        </section>
+        <app-activity-card class="b-activity rise-in" style="--i: 12" [rows]="d.recent.activity" [now]="now()" />
+      } @else {
+        @for (k of ['b-hero', 'b-wait', 'b-kpis', 'b-projects', 'b-funnel', 'b-board', 'b-sources', 'b-aging', 'b-recent', 'b-activity']; track k) {
+          <div class="card skeleton-card" [class]="k" aria-hidden="true">
+            <app-skeleton width="40%" height="14px" />
+            <app-skeleton width="60%" height="28px" radius="8px" />
+            <app-skeleton height="96px" radius="10px" />
+          </div>
+        }
+      }
+    </div>
+  }
+}

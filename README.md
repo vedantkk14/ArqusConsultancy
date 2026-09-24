@@ -73,14 +73,31 @@ Other commands: `npm run build`, `npm test`, `npm run lint` (`ng lint`).
 
 ## Demo logins (dev only)
 
-Created by `seed_demo_data`, which refuses to run when `DEBUG=False`.
+Created by `seed_demo_data`, which refuses to run when `DEBUG=False` and prints this table at the end. Sign in
+with the username **or** the email. Every role lands on `/dashboard`.
 
-| Role | Username | Password | Lands on |
+| Role | Username | Email | Password |
 | --- | --- | --- | --- |
-| Admin | `admin` | `Admin@123` | `/dashboard` |
-| Sales Manager | `sales_manager` | `Manager@123` | `/dashboard` |
-| Sales Executive | `sales_exec` | `Exec@123` | `/leads/all` |
-| Project Manager | `project_manager` | `Project@123` | `/projects/running` |
+| Admin | `admin` | admin@crm.local | `Admin@123` |
+| Sales Manager | `sales_manager` | sales.manager@crm.local | `Manager@123` |
+| Sales Executive | `sales_exec` | sales.exec@crm.local | `Exec@123` |
+| Project Manager | `project_manager` | pm@crm.local | `Project@123` |
+| Sales Executive, **must change password** | `newuser.demo` | newuser@crm.local | `Welcome@123` |
+
+`newuser.demo` has a temporary password: after signing in it can only open "Change password" until it sets a new
+one. Re-run `python manage.py seed_demo_data` to reset all demo passwords and the flag.
+
+### Password reset emails in development
+
+In dev, `EMAIL_BACKEND` is the console backend: emails are **printed in the backend terminal** (where
+`python manage.py runserver` runs) instead of being sent. To test "Forgot password":
+
+1. Open http://localhost:4200/forgot-password and enter a demo email, e.g. `sales.manager@crm.local`.
+2. In the backend terminal, find the email and copy the link `http://localhost:4200/reset-password/<uid>/<token>`.
+   Long lines may be wrapped with a trailing `=` (quoted-printable): join them and turn `=3D` back into `=`.
+3. Open it, set a new password, sign in. The link works once and expires after an hour.
+
+For real email set the SMTP variables in `.env` (see `.env.example`).
 
 ## Project structure
 

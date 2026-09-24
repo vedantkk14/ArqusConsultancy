@@ -1,3 +1,7 @@
-from django.urls import path  # noqa: F401
+from django.urls import path
 
-urlpatterns = []
+from .views import AdminDashboardView
+
+urlpatterns = [
+    path("dashboard/admin", AdminDashboardView.as_view(), name="dashboard-admin"),
+]

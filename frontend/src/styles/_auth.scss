@@ -1,0 +1,372 @@
+// Auth pages (login, forgot, reset, change password): controls, banners and the primary button.
+// Global so the five auth components share one copy; scoped under .auth (the shared layout).
+
+.auth {
+  label {
+    transition: color 150ms ease;
+  }
+
+  .field:focus-within > label {
+    color: var(--brand-deep);
+  }
+
+  input[type='text'],
+  input[type='email'],
+  input[type='password'] {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: inset 0 1px 2px rgba(11, 13, 15, 0.05);
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--text-md); // 16px: stops iOS from zooming into the field
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+
+    &:hover {
+      border-color: var(--ink-2);
+    }
+
+    &:focus-visible {
+      border-color: var(--brand-deep);
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 0;
+      box-shadow: var(--ring);
+    }
+
+    &:disabled {
+      background: var(--subtle);
+      color: var(--ink-3);
+    }
+
+    // No pale-blue autofill fill: keep the white field and ink text.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--ink);
+      box-shadow: 0 0 0 40px var(--surface) inset;
+      caret-color: var(--ink);
+    }
+  }
+
+  .invalid input,
+  input[aria-invalid='true'] {
+    border-color: var(--negative);
+  }
+
+  .field-error {
+    margin: 6px 0 0;
+    color: var(--negative);
+    font-size: var(--text-sm);
+  }
+
+  // Banners: tint + left accent bar + icon (role="alert"/"status" stays in the templates).
+  .banner {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 11px 12px 11px 16px;
+    border-radius: 12px;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: currentColor;
+    }
+
+    mat-icon {
+      width: 18px;
+      height: 18px;
+      flex: none;
+      font-size: 18px;
+    }
+
+    &.error {
+      background: var(--tint-rose);
+      color: var(--tint-rose-ink);
+    }
+
+    &.info {
+      background: var(--tint-cyan);
+      color: var(--tint-cyan-ink);
+    }
+
+    &.success {
+      background: var(--tint-teal);
+      color: var(--tint-teal-ink);
+    }
+  }
+
+  // Primary button: ink gradient, layered shadow, lift + slow light sweep on hover, sink on press.
+  .submit {
+    --mat-button-filled-container-height: 48px;
+    --mat-button-filled-container-shape: 12px;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    transition:
+      transform 150ms var(--ease-out),
+      box-shadow 150ms ease;
+
+    mat-spinner {
+      display: inline-block;
+      margin-right: var(--space-2);
+      vertical-align: middle;
+      --mat-progress-spinner-active-indicator-color: var(--on-ink);
+    }
+
+    &:not(:disabled) {
+      background: var(--grad-ink);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 1px 2px rgba(11, 13, 15, 0.2),
+        0 8px 20px -6px rgba(11, 13, 15, 0.45);
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
+        transform: translateX(-110%);
+        pointer-events: none;
+      }
+
+      &:hover {
+        transform: translateY(-1px);
+
+        &::after {
+          transform: translateX(110%);
+          transition: transform 900ms ease;
+        }
+      }
+
+      &:active {
+        transform: translateY(1px);
+      }
+    }
+  }
+}
+
+// ---- Login card details (bento-era restyle) ----------------------------------------------------------
+.auth {
+  // Fields fade in one after another (60ms stagger); off with reduced motion via the global rule.
+  form > * {
+    animation: rise-in 360ms var(--ease-out) both;
+  }
+
+  @for $i from 1 through 8 {
+    form > :nth-child(#{$i}) {
+      animation-delay: #{120 + $i * 60}ms;
+    }
+  }
+
+  .pill {
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 4px;
+    margin: 0 auto var(--space-2);
+    padding: 3px 10px 3px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--tint-cyan);
+    color: var(--tint-cyan-ink);
+    font-size: var(--text-xs);
+    font-weight: 600;
+
+    mat-icon {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+    }
+  }
+
+  // Filled inputs with a leading icon: white + cyan ring on focus, icon tints too.
+  .control {
+    position: relative;
+  }
+
+  .control.has-icon {
+    input {
+      padding-left: 42px;
+      background: var(--surface-2);
+    }
+
+    input:focus {
+      background: var(--surface);
+    }
+
+    .lead {
+      position: absolute;
+      top: 50%;
+      left: 13px;
+      z-index: 1;
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+      color: var(--ink-3);
+      transform: translateY(-50%);
+      transition: color 150ms ease;
+      pointer-events: none;
+    }
+
+    &:focus-within .lead {
+      color: var(--brand-deep);
+    }
+  }
+
+  // Custom checkbox: still a real input with its label; ink box with a cyan check when on.
+  .check input[type='checkbox'] {
+    display: grid;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    place-content: center;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 5px;
+    background: var(--surface);
+    appearance: none;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+
+    &::after {
+      content: '';
+      width: 9px;
+      height: 5px;
+      border-bottom: 2px solid var(--brand);
+      border-left: 2px solid var(--brand);
+      opacity: 0;
+      transform: translateY(-1px) rotate(-45deg);
+    }
+
+    &:checked {
+      border-color: var(--ink);
+      background: var(--ink);
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+
+  .arrow-sm {
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+    font-size: 16px;
+    transition: transform 150ms ease;
+  }
+
+  .link:hover .arrow-sm {
+    transform: translateX(2px);
+  }
+
+  .btn-arrow {
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    font-size: 18px;
+    vertical-align: -4px;
+    transition: transform 200ms var(--ease-out);
+  }
+
+  .submit:not(:disabled):hover .btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .help {
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+    text-align: center;
+
+    p {
+      margin: 0;
+      color: var(--ink-3);
+      font-size: var(--text-sm);
+    }
+  }
+
+  .trust {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+
+    li {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    mat-icon {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+      color: var(--brand-deep);
+    }
+  }
+
+  // Dev-only demo accounts under the card.
+  .demo {
+    width: 100%;
+    max-width: 420px;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+
+    summary {
+      min-height: 44px;
+      padding: 12px 0;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+
+      span {
+        color: var(--ink-3);
+        font-weight: 400;
+      }
+    }
+  }
+
+  .demo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  .demo-chip {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    box-shadow: var(--shadow-1);
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--line-strong);
+    }
+  }
+}

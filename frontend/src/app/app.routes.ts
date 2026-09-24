@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { authGuard, guestGuard, mustChangePasswordGuard } from './core/auth/auth.guard';
 import { AuthService } from './core/auth/auth.service';
 import { featureRoute } from './core/config/route-helpers';
 import { Shell } from './layout/shell/shell';
@@ -13,9 +13,28 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login-page').then((m) => m.LoginPage),
   },
   {
+    path: 'forgot-password',
+    title: 'Forgot password',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/forgot-password-page').then((m) => m.ForgotPasswordPage),
+  },
+  {
+    path: 'reset-password/:uid/:token',
+    title: 'Set a new password',
+    // No guestGuard: a reset link must work even in a browser that is signed in.
+    loadComponent: () => import('./features/auth/reset-password-page').then((m) => m.ResetPasswordPage),
+  },
+  {
+    path: 'account/change-password',
+    title: 'Change password',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/auth/change-password-page').then((m) => m.ChangePasswordPage),
+  },
+  {
     path: '',
     component: Shell,
-    canActivate: [authGuard],
+    canActivate: [authGuard, mustChangePasswordGuard],
+    canActivateChild: [mustChangePasswordGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: () => inject(AuthService).homeRoute() },
       featureRoute('dashboard', () =>

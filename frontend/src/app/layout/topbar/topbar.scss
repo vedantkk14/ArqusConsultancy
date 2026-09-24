@@ -24,47 +24,53 @@
   margin-right: var(--space-1);
 }
 
+// Left: who is signed in (greeting over role). Right: the page, then search, bell and account.
+.who {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  line-height: 1.2;
+}
+
+.hi {
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+
+  strong {
+    color: var(--ink);
+    font-size: var(--text-md);
+    font-weight: 600;
+  }
+}
+
 .titles {
   display: flex;
   min-width: 0;
   flex-direction: column;
+  align-items: flex-end;
+  margin-right: var(--space-2);
   line-height: 1.2;
+  text-align: right;
 }
 
 .page-title {
+  max-width: 100%;
   overflow: hidden;
   color: var(--ink);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: 600;
   letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.meta {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 8px;
-  color: var(--ink-3);
-  font-size: var(--text-sm);
-}
-
-.hi {
-  white-space: nowrap;
-
-  strong {
-    color: var(--ink-2);
-    font-weight: 600;
-  }
-}
-
 .subtitle {
   display: none;
-  overflow: hidden;
-  padding-left: 8px;
-  border-left: 1px solid var(--line);
-  text-overflow: ellipsis;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
   white-space: nowrap;
 }
 
@@ -186,12 +192,18 @@
 
 @media (min-width: 640px) {
   .subtitle {
-    display: inline;
+    display: block;
   }
 }
 
 @media (min-width: 1024px) {
   .page-title {
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
+  }
+
+  .titles {
+    padding-right: var(--space-4);
+    margin-right: var(--space-3);
+    border-right: 1px solid var(--line);
   }
 }

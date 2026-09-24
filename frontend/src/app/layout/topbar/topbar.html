@@ -2,19 +2,20 @@
   @if (!layout.isDesktop()) {
     <img class="emblem" src="brand/arqus-emblem.png" alt="ARQUS" width="48" height="24" decoding="async" />
   }
+  @if (auth.user(); as user) {
+    <div class="who">
+      <span class="hi">Hi, <strong>{{ firstName(user.name) }}</strong></span>
+      <app-role-badge [role]="user.role" />
+    </div>
+  }
+  <span class="spacer"></span>
+
   <div class="titles">
     <h1 class="page-title">{{ pageTitle() }}</h1>
-    <div class="meta">
-      @if (auth.user(); as user) {
-        <span class="hi">Hi, <strong>{{ firstName(user.name) }}</strong></span>
-        <app-role-badge [role]="user.role" />
-      }
-      @if (layout.subtitle()) {
-        <span class="subtitle">{{ layout.subtitle() }}</span>
-      }
-    </div>
+    @if (layout.subtitle()) {
+      <span class="subtitle">{{ layout.subtitle() }}</span>
+    }
   </div>
-  <span class="spacer"></span>
 
   @if (layout.isDesktop()) {
     <button type="button" class="search" (click)="searchOpen.emit()">

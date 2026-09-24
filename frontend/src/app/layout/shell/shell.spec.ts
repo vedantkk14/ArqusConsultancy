@@ -150,7 +150,7 @@ describe('Personal header', () => {
 
   it('greets the user by first name and shows their role on every page', () => {
     const { el } = render();
-    const meta = el.querySelector('.topbar .meta')!.textContent!.replace(/\s+/g, ' ');
+    const meta = el.querySelector('.topbar .who')!.textContent!.replace(/\s+/g, ' ');
     expect(meta).toContain('Hi, Alice');
     expect(meta).toContain('Admin');
     expect(el.querySelector('.topbar app-role-badge')).not.toBeNull();

@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, catchError, combineLatest, map, of, startWith, switchMap } from 'rxjs';
+import { Subject, catchError, combineLatest, interval, map, merge, of, startWith, switchMap } from 'rxjs';
 import { AssignDialog, AssignDialogData } from '../../leads/components/dialogs/assign-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../../leads/components/dialogs/whatsapp-dialog';
 import { ErrorState } from '../../../shared/error-state/error-state';
@@ -24,6 +24,9 @@ type LoadState =
   | { status: 'loading'; data: SalesManagerDashboard | null }
   | { status: 'ready'; data: SalesManagerDashboard }
   | { status: 'error'; data: null };
+
+/** Auto-refresh cadence while a manager is sitting on this page (leads change under them). */
+const POLL_MS = 45_000;
 
 /** What an interaction's `type` reads like in a one-line activity sentence. */
 const ACTION_VERB: Record<string, string> = {
@@ -93,7 +96,10 @@ export class SalesManagerDashboardPage {
     inject(DestroyRef).onDestroy(() => this.layout.subtitle.set(''));
     this.layout.subtitle.set(this.today);
 
-    combineLatest([toObservable(this.period), this.reload$.pipe(startWith(undefined))])
+    // Refetch on: a period change, the manual refresh button, a successful assign, and every
+    // POLL_MS while the page stays open (leads change under a manager without them clicking anything).
+    const trigger$ = merge(this.reload$, interval(POLL_MS)).pipe(startWith(undefined));
+    combineLatest([toObservable(this.period), trigger$])
       .pipe(
         switchMap(([period]) =>
           this.service.load(period).pipe(

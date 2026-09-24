@@ -104,7 +104,7 @@ describe('DashboardPage', () => {
 
   it('shows skeletons first, then the bento with the fixture values', async () => {
     const { el, resolve } = await setup();
-    expect(el.querySelectorAll('.skeleton-card').length).toBe(10);
+    expect(el.querySelectorAll('.skeleton-card').length).toBe(7);
     expect(el.querySelector('app-cash-hero')).toBeNull();
 
     resolve(DASHBOARD_MOCK);
@@ -119,7 +119,6 @@ describe('DashboardPage', () => {
     expect(text(el.querySelector('.create'))).toContain('Create account');
     expect(el.querySelectorAll('app-projects-card li a').length).toBe(5);
     expect(text(el.querySelector('app-projects-card'))).toContain('Over budget');
-    expect(el.querySelectorAll('app-leaderboard-card li').length).toBe(5);
     expect(el.querySelectorAll('app-activity-card li').length).toBe(8);
   });
 
@@ -199,7 +198,7 @@ describe('DashboardPage', () => {
     el.querySelector<HTMLButtonElement>('app-error-state button')!.click();
     harness.detectChanges();
     expect(service.calls.length).toBe(2);
-    expect(el.querySelectorAll('.skeleton-card').length).toBe(10);
+    expect(el.querySelectorAll('.skeleton-card').length).toBe(7);
     resolve(DASHBOARD_MOCK);
     expect(el.querySelectorAll('a.kpi').length).toBe(4);
   });

@@ -2,15 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService, QueryParams } from '../../core/api/api.service';
 import { PaginatedResponse } from '../../core/models';
-import { AuditEntry, MasterList, Profile } from './settings.models';
+import { AuditEntry, Profile } from './settings.models';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsApi {
   private readonly api = inject(ApiService);
-
-  masterData(): Observable<{ lists: MasterList[] }> {
-    return this.api.get('/core/master-data');
-  }
 
   audit(params: QueryParams): Observable<PaginatedResponse<AuditEntry>> {
     return this.api.list<AuditEntry>('/core/audit-log', params);

@@ -25,6 +25,8 @@
       </div>
     </section>
 
+    <app-sources-card [rows]="shares()" />
+
     <section class="card panel" aria-label="Lead sources">
       <h2>Lead sources</h2>
       @if (d.sources.length) {

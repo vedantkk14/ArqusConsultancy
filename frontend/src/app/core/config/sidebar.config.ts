@@ -87,7 +87,6 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     roles: [Admin, SalesManager],
     children: [
       { label: 'Users', icon: 'person', route: '/team/users', roles: [Admin] },
-      { label: 'Roles', icon: 'admin_panel_settings', route: '/team/roles', roles: [Admin] },
       { label: 'Commission Rates', icon: 'sell', route: '/team/commission-rates', roles: [Admin] },
       { label: 'Assignments', icon: 'assignment_ind', route: '/team/assignments', roles: [Admin, SalesManager] },
     ],
@@ -109,7 +108,6 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     route: '/settings',
     roles: ALL,
     children: [
-      { label: 'Master Data', icon: 'database', route: '/settings/master-data', roles: [Admin] },
       { label: 'Audit Log', icon: 'fact_check', route: '/settings/audit-log', roles: [Admin] },
       { label: 'Profile', icon: 'account_circle', route: '/settings/profile', roles: ALL },
     ],

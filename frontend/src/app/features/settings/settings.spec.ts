@@ -7,7 +7,6 @@ import { AuthService } from '../../core/auth/auth.service';
 import { Role } from '../../core/models';
 import { fakeBreakpoints } from '../../layout/testing/fake-breakpoints';
 import { AuditLogPage } from './audit-log/audit-log-page';
-import { MasterDataPage } from './master-data/master-data-page';
 import { ProfilePage } from './profile/profile-page';
 import { fieldLabel, modelName, showValue } from './settings.models';
 
@@ -18,7 +17,6 @@ async function setup(url: string, component: unknown, width = 1440) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([
-        { path: 'settings/master-data', component: MasterDataPage },
         { path: 'settings/audit-log', component: AuditLogPage },
         { path: 'settings/profile', component: ProfilePage },
       ]),
@@ -46,33 +44,6 @@ describe('settings helpers', () => {
     expect(showValue(null)).toBe('—');
     expect(showValue('')).toBe('—');
     expect(showValue(0)).toBe('0');
-  });
-});
-
-describe('MasterDataPage', () => {
-  it('shows one panel per list as chips, with the read-only note and no edit controls', async () => {
-    const { http, harness, el } = await setup('/settings/master-data', MasterDataPage);
-    http.expectOne('/api/v1/core/master-data').flush({
-      lists: [
-        {
-          key: 'lead_sources',
-          label: 'Lead sources',
-          source: 'leads.Lead.source',
-          owner_app: 'leads',
-          available: true,
-          values: [
-            { value: 'WEB', label: 'Website' },
-            { value: 'REF', label: 'Referral' },
-          ],
-        },
-        { key: 'payment_modes', label: 'Payment modes', source: 'accounts.Payment.mode', owner_app: 'accounts', available: false, values: [] },
-      ],
-    });
-    harness.detectChanges();
-    expect(text(el)).toContain('ask the relevant developer');
-    expect([...el.querySelectorAll('.chip')].map(text)).toEqual(['Website', 'Referral']);
-    expect(text(el)).toContain('Not available until the accounts module is merged');
-    expect(el.querySelectorAll('button, input').length).toBe(0);
   });
 });
 

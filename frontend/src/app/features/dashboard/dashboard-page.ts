@@ -17,19 +17,16 @@ import { ErrorState } from '../../shared/error-state/error-state';
 import { InrCompactPipe } from '../../shared/money/inr.pipe';
 import { Skeleton } from '../../shared/skeleton/skeleton';
 import { ActivityCard } from './components/activity-card';
-import { AgingCard } from './components/aging-card';
 import { AttentionPanel } from './components/attention-panel';
 import { CashHero } from './components/cash-hero';
 import { CreateAccountDialog, CreatedAccount } from './components/create-account-dialog';
 import { CountUp } from './components/count-up';
 import { FunnelCard } from './components/funnel-card';
-import { LeaderboardCard } from './components/leaderboard-card';
 import { monthLabel } from './components/month-label';
 import { NewMenu } from './components/new-menu';
 import { PeriodSwitcher } from './components/period-switcher';
 import { ProjectsCard } from './components/projects-card';
 import { RadialGauge } from './components/radial-gauge';
-import { SourcesCard } from './components/sources-card';
 import { Sparkline } from './components/sparkline';
 import { BarSegment, StackedBar } from './components/stacked-bar';
 import { NAV_BADGE_SOURCES } from './dashboard-utils';
@@ -59,7 +56,6 @@ const STAGE_COLORS = ['data-slate', 'data-cyan', 'data-teal', 'data-ink'];
   selector: 'app-dashboard-page',
   imports: [
     ActivityCard,
-    AgingCard,
     AttentionPanel,
     CashHero,
     CountUp,
@@ -68,7 +64,6 @@ const STAGE_COLORS = ['data-slate', 'data-cyan', 'data-teal', 'data-ink'];
     ErrorState,
     FunnelCard,
     InrCompactPipe,
-    LeaderboardCard,
     MatIconModule,
     MatTabsModule,
     MatTooltipModule,
@@ -78,7 +73,6 @@ const STAGE_COLORS = ['data-slate', 'data-cyan', 'data-teal', 'data-ink'];
     RadialGauge,
     RouterLink,
     Skeleton,
-    SourcesCard,
     Sparkline,
     StackedBar,
   ],

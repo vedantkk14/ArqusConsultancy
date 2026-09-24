@@ -17,13 +17,6 @@ export interface TeamUser {
   date_joined: string;
 }
 
-export interface RoleReference {
-  role: Role;
-  label: string;
-  description: string;
-  can: string[];
-}
-
 export interface ExecLoad {
   id: number;
   name: string;

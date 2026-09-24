@@ -13,7 +13,6 @@ function page(path: string, title: string, load: () => Promise<unknown>): Route 
 }
 
 export const SETTINGS_ROUTES: Routes = [
-  page('master-data', 'Master data', () => import('./master-data/master-data-page').then((m) => m.MasterDataPage)),
   page('audit-log', 'Audit log', () => import('./audit-log/audit-log-page').then((m) => m.AuditLogPage)),
   page('profile', 'Profile', () => import('./profile/profile-page').then((m) => m.ProfilePage)),
   ...placeholderRoutes('/settings').filter((r) => r.path === ''),

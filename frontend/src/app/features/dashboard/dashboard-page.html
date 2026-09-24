@@ -106,11 +106,6 @@
         <app-funnel-card class="b-funnel rise-in" style="--i: 7" [stages]="d.funnel" [won]="d.kpis.won_count" [lost]="d.kpis.lost_count" />
 
         <!-- Row 4 -->
-        <app-leaderboard-card class="b-board rise-in" style="--i: 8" [rows]="d.sales_by_exec" [periodNoun]="periodNoun()" />
-        <app-sources-card class="b-sources rise-in" style="--i: 9" [rows]="d.lead_sources" />
-        <app-aging-card class="b-aging rise-in" style="--i: 10" [buckets]="d.collections_aging" [clients]="d.top_overdue_clients" />
-
-        <!-- Row 5 -->
         <section class="card panel b-recent rise-in" style="--i: 11" aria-labelledby="recent-title">
           <h2 id="recent-title" class="recent-title">Recent</h2>
           <mat-tab-group class="pill-tabs" mat-stretch-tabs="false" animationDuration="0ms">
@@ -124,7 +119,7 @@
         </section>
         <app-activity-card class="b-activity rise-in" style="--i: 12" [rows]="d.recent.activity" [now]="now()" />
       } @else {
-        @for (k of ['b-hero', 'b-wait', 'b-kpis', 'b-projects', 'b-funnel', 'b-board', 'b-sources', 'b-aging', 'b-recent', 'b-activity']; track k) {
+        @for (k of ['b-hero', 'b-wait', 'b-kpis', 'b-projects', 'b-funnel', 'b-recent', 'b-activity']; track k) {
           <div class="card skeleton-card" [class]="k" aria-hidden="true">
             <app-skeleton width="40%" height="14px" />
             <app-skeleton width="60%" height="28px" radius="8px" />

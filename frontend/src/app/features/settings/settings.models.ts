@@ -1,14 +1,3 @@
-export interface MasterList {
-  key: string;
-  label: string;
-  /** e.g. leads.Lead.source: where the values are defined in code. */
-  source: string;
-  owner_app: string;
-  /** False while the owning module isn't merged yet. */
-  available: boolean;
-  values: { value: string; label: string }[];
-}
-
 export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE';
 
 export interface AuditEntry {

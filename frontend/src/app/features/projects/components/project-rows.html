@@ -1,0 +1,103 @@
+<ng-template #pmCell let-p>
+  @if (p.pm_name) {
+    <span class="who sm"><app-person-avatar [name]="p.pm_name" [size]="24" />{{ p.pm_name }}</span>
+  } @else {
+    <span class="who sm">
+      <span class="nopm">No PM</span>
+      @if (canAssign() && p.status === 'RUNNING') {
+        <button type="button" class="assign" [attr.aria-label]="'Assign a project manager to ' + p.name" (click)="assign.emit(p)">Assign</button>
+      }
+    </span>
+  }
+</ng-template>
+
+@if (layout() === 'table') {
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Project manager</th>
+          <th class="c-bar">Budget used</th>
+          <th class="r">Sanctioned</th>
+          <th class="r">Spent</th>
+          <th class="r">Remaining</th>
+          <th class="c-due">Due date</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (skeleton()) {
+          @for (i of placeholders; track i) {
+            <tr class="sk" aria-hidden="true">
+              <td colspan="7">
+                <span class="sk-row">
+                  <app-skeleton width="30%" height="14px" />
+                  <app-skeleton width="14%" height="14px" />
+                  <app-skeleton width="16%" height="10px" radius="999px" />
+                  <app-skeleton width="10%" height="14px" />
+                </span>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (p of rows(); track p.id) {
+            <tr>
+              <td>
+                <span class="who-t">
+                  <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
+                  <span class="ph">{{ p.client_name }}</span>
+                </span>
+              </td>
+              <td><ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" /></td>
+              <td class="c-bar"><app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" /></td>
+              <td class="r num">{{ p.sanctioned_budget | inrCompact }}</td>
+              <td class="r num">{{ p.spent | inrCompact }}</td>
+              <td class="r num" [class.neg]="p.state === 'over'">{{ p.remaining | inrCompact }}</td>
+              <td class="c-due">
+                {{ day(p.expected_end_date) || '—' }}
+                @if (due(p); as label) {
+                  <span class="ph">{{ label }}</span>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <ul class="cards">
+    @if (skeleton()) {
+      @for (i of placeholders.slice(0, 4); track i) {
+        <li class="card lc" aria-hidden="true">
+          <app-skeleton width="55%" height="16px" />
+          <app-skeleton width="35%" height="13px" />
+          <app-skeleton height="10px" radius="999px" />
+        </li>
+      }
+    } @else {
+      @for (p of rows(); track p.id; let i = $index) {
+        <li class="card lc rise-in" [style.--i]="i % 10">
+          <span class="lc-top">
+            <span class="who-t">
+              <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
+              <span class="ph">{{ p.client_name }}</span>
+            </span>
+          </span>
+          <app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" />
+          <span class="lc-fig">
+            <span><span class="lbl">Sanctioned</span><strong class="num">{{ p.sanctioned_budget | inrCompact }}</strong></span>
+            <span><span class="lbl">Spent</span><strong class="num">{{ p.spent | inrCompact }}</strong></span>
+            <span><span class="lbl">Remaining</span><strong class="num" [class.neg]="p.state === 'over'">{{ p.remaining | inrCompact }}</strong></span>
+          </span>
+          <span class="lc-meta">
+            <ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" />
+            @if (p.expected_end_date) {
+              <span>{{ day(p.expected_end_date) }}{{ due(p) ? ' · ' + due(p) : '' }}</span>
+            }
+          </span>
+        </li>
+      }
+    }
+  </ul>
+}

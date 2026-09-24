@@ -1,0 +1,121 @@
+<header class="head">
+  <div class="head-t">
+    <p class="insight">Won and finalized deals that are not projects yet.</p>
+    <p class="count" aria-live="polite">{{ countText() }}</p>
+  </div>
+</header>
+
+@if (blocked(); as b) {
+  <section class="card blocked" role="status">
+    <mat-icon aria-hidden="true">info</mat-icon>
+    <div>
+      <p class="b-t">{{ b.name }} can't be converted yet</p>
+      @if (b.ineligible_reason === 'project_exists' && b.project_id) {
+        <p class="b-m">Already a project: <a [routerLink]="['/projects', b.project_id]">open it</a>.</p>
+      } @else {
+        <p class="b-m">
+          {{ reasonText(b) }}
+          <a [routerLink]="['/leads', b.lead]">Open the lead</a>
+        </p>
+      }
+    </div>
+  </section>
+}
+
+@if (error()) {
+  <app-error-state title="Couldn't load won deals" (retry)="load()" />
+} @else if (!loading() && !rows().length) {
+  <app-empty-state icon="transform" title="No won deals to convert" message="Finalized deals appear here." />
+} @else {
+  <section class="card list" [attr.aria-busy]="loading()" aria-label="Won deals">
+    @if (wide()) {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Deal</th>
+              <th>Sales executive</th>
+              <th>Won</th>
+              <th class="r">Proposed</th>
+              <th class="r">Deal total</th>
+              <th class="r"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading()) {
+              @for (i of placeholders; track i) {
+                <tr aria-hidden="true">
+                  <td colspan="6"><app-skeleton width="60%" height="14px" /></td>
+                </tr>
+              }
+            } @else {
+              @for (row of rows(); track row.lead) {
+                <tr>
+                  <td>
+                    <a class="nm" [routerLink]="['/leads', row.lead]">{{ row.name }}</a>
+                  </td>
+                  <td>
+                    @if (row.exec_name) {
+                      <span class="who"><app-person-avatar [name]="row.exec_name" [size]="24" />{{ row.exec_name }}</span>
+                    } @else {
+                      <span class="muted-s">Unassigned</span>
+                    }
+                  </td>
+                  <td [attr.title]="full(row.won_at)">
+                    {{ row.won_at ? day(row.won_at.slice(0, 10)) : '' }}
+                    <span class="ph">Waiting {{ waiting(row) }}</span>
+                  </td>
+                  <td class="r num">{{ row.proposed_amount ? (row.proposed_amount | inrCompact) : '—' }}</td>
+                  <td class="r num">{{ row.total_amount ? (row.total_amount | inrCompact) : '—' }}</td>
+                  <td class="r">
+                    <button matButton="filled" type="button" [attr.aria-label]="'Convert ' + row.name + ' to a project'" (click)="open(row)">Convert</button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <ul class="cards">
+        @if (loading()) {
+          @for (i of placeholders.slice(0, 3); track i) {
+            <li class="card lc" aria-hidden="true">
+              <app-skeleton width="55%" height="16px" />
+              <app-skeleton width="80%" height="13px" />
+            </li>
+          }
+        } @else {
+          @for (row of rows(); track row.lead; let i = $index) {
+            <li class="card lc rise-in" [style.--i]="i % 10">
+              <a class="nm" [routerLink]="['/leads', row.lead]">{{ row.name }}</a>
+              <span class="lc-meta">
+                <span>{{ row.exec_name ?? 'Unassigned' }}</span>
+                <span>Won {{ row.won_at ? day(row.won_at.slice(0, 10)) : '' }} · waiting {{ waiting(row) }}</span>
+              </span>
+              <span class="lc-fig">
+                <span><span class="lbl">Proposed</span><strong class="num">{{ row.proposed_amount ? (row.proposed_amount | inrCompact) : '—' }}</strong></span>
+                <span><span class="lbl">Deal total</span><strong class="num">{{ row.total_amount ? (row.total_amount | inrCompact) : '—' }}</strong></span>
+              </span>
+              <button matButton="filled" type="button" [attr.aria-label]="'Convert ' + row.name + ' to a project'" (click)="open(row)">Convert</button>
+            </li>
+          }
+        }
+      </ul>
+    }
+  </section>
+}
+
+<ng-template #panel>
+  @if (active(); as lead) {
+    <div class="panel-body" [class.in-sheet]="!wide()">
+      <app-dialog-head
+        [headingId]="titleId"
+        title="Convert to project"
+        [subtitle]="lead.name + (lead.total_amount ? ' · deal ' + (lead.total_amount | inr) : '')"
+        (closed)="close()"
+      />
+      <app-convert-form [lead]="lead" [managers]="managers()" [inSheet]="true" (converted)="onConverted($event)" (cancelled)="close()" />
+    </div>
+  }
+</ng-template>

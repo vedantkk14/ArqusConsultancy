@@ -39,11 +39,11 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     label: 'Projects',
     icon: 'assignment',
     route: '/projects',
-    roles: [Admin, SalesManager, ProjectManager],
+    roles: [Admin, ProjectManager],
     children: [
-      { label: 'Convert Won Lead', icon: 'transform', route: '/projects/convert', roles: [Admin, SalesManager] },
-      { label: 'Running', icon: 'play_circle', route: '/projects/running', roles: [Admin, SalesManager, ProjectManager] },
-      { label: 'Completed', icon: 'check_circle', route: '/projects/completed', roles: [Admin, SalesManager, ProjectManager] },
+      { label: 'Convert Won Lead', icon: 'transform', route: '/projects/convert', roles: [Admin] },
+      { label: 'Running', icon: 'play_circle', route: '/projects/running', roles: [Admin, ProjectManager] },
+      { label: 'Completed', icon: 'check_circle', route: '/projects/completed', roles: [Admin, ProjectManager] },
     ],
   },
   {

@@ -1,4 +1,5 @@
-"""Tell every admin about ledgers that just became overdue. Safe to run daily: each ledger is notified once
+# ruff: noqa: E501
+"""Tell every admin about ledgers that just became overdue. Safe to run daily: each ledger is announced once
 (`Ledger.overdue_notified_at`); a new payment resets it."""
 
 from django.contrib.auth import get_user_model

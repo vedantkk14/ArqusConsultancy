@@ -299,5 +299,13 @@ INFO  1.83:1   (decorative)  --brand on --brand-tint  cyan accent on brand-tint
 - **Header card glow** follows the state (cyan, amber, rose); expense category chips use the five tints (Materials cyan, Labour teal, Equipment amber, Food rose, others slate); "Void" is a rose tag and "Override" an amber tag.
 - **Forms on phones** (add expense, convert, filters) are bottom sheets; on desktop the convert panel is a right-hand side panel and the expense form a dialog. Both show the same form component.
 
+## Accounts
+
+- **Ledger state tints** (always with the words): Awaiting finalization = amber, Unpaid = rose, Partial = cyan, Paid = teal, from the existing `--tint-*` pairs, so the contrast table above already covers them. "12d overdue" is a rose pill.
+- **Collected bar** (`app-collect-bar`): an 8px pill on `--plate`, filled with `--data-teal` (graphics only) and "42% collected" written beside it. The fraction is cut, so 99.9% never reads as 100%.
+- **Money hero** on the ledger page uses `--grad-ink` with white text (14.97:1 on the deep-navy end) and a `--brand` progress line (7.42:1 on that gradient), like the dashboard's hero KPI.
+- **Printable pages** (statement, receipt): a body class `acc-print` is added while the page is open; its print CSS hides the sidebar, top bar, tab bar and anything marked `.no-print`, and prints white on white.
+- **Forms on phones** (record payment, filters) are bottom sheets; on desktop, a dialog. The amount field offers a "Fill balance" chip and the reference label follows the payment mode.
+
 49/49 pairs pass
 

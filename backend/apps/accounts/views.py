@@ -11,6 +11,7 @@ from django.utils.dateparse import parse_date
 from rest_framework import status as http
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.negotiation import DefaultContentNegotiation
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -39,6 +40,13 @@ from .serializers import (
 from .utils import csv_safe, receipt_number
 
 
+class _IgnoreFormatParam(DefaultContentNegotiation):
+    """?format=csv (the statement) is ours, not DRF's renderer switch, which would answer 404."""
+
+    def select_renderer(self, request, renderers, format_suffix=None):
+        return renderers[0], renderers[0].media_type
+
+
 class _Echo:
     def write(self, value):
         return value
@@ -57,6 +65,7 @@ def _csv_response(name: str, header: list[str], rows) -> StreamingHttpResponse:
 
 
 class LedgerViewSet(GenericViewSet):
+    content_negotiation_class = _IgnoreFormatParam
     permission_classes = [HasRole(*rules.ACCOUNTS_ROLES)]
     pagination_class = StandardPagination
     lookup_value_regex = r"\d+"

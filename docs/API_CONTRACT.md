@@ -157,17 +157,76 @@ Once these exist, finalize, `won_awaiting`, `finance` and the `has_ledger` delet
 Notifications use `core.services.notify(user, type, payload)` with types `lead_assigned`,
 `lead_reassigned_away`, `lead_won`.
 
-## Accounts (Dev C)
+## Accounts (Dev B)
 
-Never accessible to PM.
+**Admin only, everywhere.** Anonymous requests get 401 and every other role 403, with an error body that never
+carries an amount. Money is a decimal string ("1234.50"), never a number. Only **finalized** ledgers count in
+outstanding, collection rate and aging. Routes have no trailing slash.
 
-| Status | Method & path | Who | Notes |
-| --- | --- | --- | --- |
-| 🔲 | `GET /accounts/ledgers` | A | Holds `total_amount` |
-| 🔲 | `GET/PATCH /accounts/ledgers/{id}` | A | Finalise total amount |
-| 🔲 | `GET/POST /accounts/payments` | A | |
-| 🔲 | `GET /accounts/ledgers/{id}/statement` | A | Customer statement |
-| 🔲 | `GET /accounts/pending-collections` | A, SM | |
+| Status | Method & path | Notes |
+| --- | --- | --- |
+| ✅ | `GET /ledgers` | Paginated (20). Row: `id, lead, client, phone, exec_name, state, state_label, finalized, is_overdue, total, received, outstanding, collected_pct, days_since, last_payment_on, created_at` |
+| ✅ | `GET /ledgers/summary` | `total_value, received, outstanding, overdue_amount, clients_with_balance, overdue_clients, collection_rate_pct, awaiting_finalization, counts{state}, aging[{bucket,count,amount}], top_overdue[3]`. Accepts `q`, `created_from`, `created_to` |
+| ✅ | `GET /ledgers/options?q=` | Up to 10 finalized ledgers with a balance (the record-payment select) |
+| ✅ | `GET /ledgers/{id}` | Row + `lead_block`, `project` (id, name, status, sanctioned_budget, spent, planned_margin, live_margin, or null), `finalized_at/by/note`, `proposed_amount`, `allowed_actions` |
+| ✅ | `POST /ledgers/{id}/finalize` | `{amount, note?}`. Sets the total, notifies the exec (`deal_finalized`, no amounts). Twice: 409 `already_finalized` |
+| ✅ | `POST /ledgers/{id}/revise-total` | `{amount, reason}`, finalized only. Not below received (`total_below_received`) or the linked project's sanctioned budget (`total_below_budget`) |
+| ✅ | `POST /ledgers/{id}/reminder` | Returns `{text, url}` (a `wa.me` link) and logs `REMINDER_SENT`. Unusable phone: 400 `invalid_phone` |
+| ✅ | `GET/POST /ledgers/{id}/payments` | POST is `multipart/form-data`: `amount, mode, reference, received_on, note?, proof?, confirm_duplicate?` |
+| ✅ | `GET /ledgers/{id}/events` | Append-only timeline, newest first, paginated |
+| ✅ | `GET /ledgers/{id}/statement?from&to&format=json\|csv` | Deal total, active payments as credits with a running balance. Never the sanctioned budget, expenses or margin |
+| ✅ | `GET /ledgers/export` | CSV, at most 5000 rows, current filters, formula-prefix |
+| ✅ | `GET /payments` | Paginated. Filters below |
+| ✅ | `GET /payments/summary` | `{total, count, void_count, by_mode[]}` for the current filters; void payments are never counted |
+| ✅ | `GET /payments/{id}` | Adds `balance_after`, `amount_in_words`, `client_phone`, `company` (the receipt) |
+| ✅ | `POST /payments/{id}/void` | `{reason}`, any age. The row stays visible with `is_void` |
+| ✅ | `GET /payments/{id}/proof` | The file, inline, `nosniff`, `Cache-Control: private, no-store`. No public URL: fetch with the JWT and show from a blob |
+| ✅ | `GET /payments/export` | CSV, at most 5000 rows |
+
+**`GET /ledgers` filters** (names are a contract with the dashboard links, e.g. `/accounts/pending?overdue=true`):
+`state` (`AWAITING_FINALIZATION, UNPAID, PARTIAL, PAID`, comma separated), `q` (client, email, phone), `overdue=true`,
+`finalized=true|false`, `has_balance=true`, `aging=0-30|31-60|61-90|90+` (URL-encode the plus: `90%2B`),
+`created_from`, `created_to`, `ordering` (`-created_at` default, `client`, `-outstanding`, `outstanding`, `-total`,
+`total`, `-received`, `-days_since` = waiting longest, `-last_payment_on`).
+
+**`GET /payments` filters**: `ledger`, `mode` (comma separated), `q` (client, reference, note), `date_from`, `date_to`,
+`has_proof`, `state` (`active`, `void`), `ordering` (`-received_on` default, `received_on`, `-amount`, `amount`).
+
+**Rules** (all in `apps/accounts/rules.py`): payments need a finalized ledger; amount above zero, at most 10 digits and
+2 decimals (floats refused); modes `CASH BANK_TRANSFER UPI CHEQUE CARD OTHER`, a reference for every mode but cash;
+`received_on` a business-timezone date, not in the future and at most 90 days back; overpayment is blocked with no
+override; an identical payment within 60 seconds needs `confirm_duplicate=true`; proof is optional (JPG, PNG, WebP or
+PDF up to 5 MB, checked by its bytes, images re-encoded and stripped of EXIF); receipt number `RC-<year>-<id, 6 digits>`.
+Overdue means finalized, a balance left and more than 30 days since the last active payment (else the finalization
+date), counted in business-timezone dates.
+
+**Error codes:** `already_finalized` 409, `not_finalized` 409, `total_below_received` 400, `total_below_budget` 400,
+`overpayment` 409 (`details.outstanding`), `duplicate_payment` 409, `payment_void` 409, `invalid_phone` 400,
+`invalid_proof` 400, `validation_error` 400 (`details.<field>`).
+
+**Notifications** (through `core.services.notify`): `payment_received`, `payment_voided` (the other active admins),
+`deal_finalized` (the lead's exec; payload is only `{lead_id, lead_name}`), `payment_overdue` (every admin, from
+`python manage.py notify_overdue_payments`, once per ledger until a new payment resets `overdue_notified_at`).
+
+### Adapter functions (called by Leads and Projects)
+
+Implemented in `apps/accounts/services.py` with exactly the signatures the callers use:
+
+| Function | Caller | Behaviour |
+| --- | --- | --- |
+| `create_ledger(lead)` | `leads.integrations.create_ledger`, inside the Won transaction | `get_or_create`; total = the lead's proposed amount (0 if none); unfinalized |
+| `finalize_ledger(lead, amount, by)` | `leads.integrations.finalize` | Admin only; validates the amount; 409 `already_finalized` the second time. The leads note is not passed through (the caller sends three arguments) |
+| `get_project_finance(lead)` | `projects.integrations` | `{total_amount, received, outstanding, finalized}` (Decimals), or `None` without a ledger. Its existence is the finalization marker Projects checks |
+| `cancel_ledger(lead)` | `leads.integrations.cancel_ledger` on Won to Lost | Deletes the ledger when it has no payments (Leads already refuses when payments exist) |
+| `Ledger.lead` (1:1), `total_amount`, `finalized_at` | `leads.integrations._ledger_model()` | The marker fields Leads looks for |
+
+### What Dev C can import from accounts (Reports)
+
+`apps.accounts.selectors`: `with_figures(qs)` (annotates `received`, `outstanding`, `last_payment_on`, `aging_base`),
+`overdue_q()`, `aging_q(bucket)`, `aging_buckets(rows)`, `collection_rate(total, received)`, `ledger_state(...)`,
+`summary(qs)` (the exact numbers behind `/ledgers/summary`), `PAYMENT_OVERDUE_DAYS`, `AGING_BUCKETS`, `now()` (patch
+it in tests). The dashboard's Received, Outstanding, overdue and aging figures should come from `selectors.summary`
+so they match Accounts exactly; `Payment.objects.filter(is_void=False)` is "money received".
 
 ## Projects and expenses (Dev B)
 
@@ -243,9 +302,9 @@ required except for `LABOUR`. Images are re-encoded (EXIF removed, at most 1600 
 Projects reads the deal's money through one adapter, `apps/projects/integrations.py`. It needs:
 
 * `accounts.services.get_project_finance(lead) -> {total_amount, received, outstanding, finalized} | None`
-  (Decimals; `None` when the lead has no ledger). **Missing today**, so:
-  * conversion is allowed without finalization, and the budget ceiling is the lead's `proposed_amount`;
-  * the admin detail returns `finance: null` ("Awaiting accounts data"), so no margin is shown.
+  (Decimals; `None` when the lead has no ledger). **Implemented by the accounts module** (see "Adapter functions"). Before it existed:
+  * conversion was allowed without finalization, and the budget ceiling was the lead's `proposed_amount`;
+  * the admin detail returned `finance: null`.
 * The existence of that function is the "finalization marker": once it exists, `POST /projects` returns
   `409 not_finalized` unless `finalized` is true, and `/projects/convertible` lists only finalized deals.
 

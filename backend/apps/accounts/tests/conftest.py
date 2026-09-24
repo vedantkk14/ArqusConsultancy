@@ -17,7 +17,7 @@ LEDGERS = "/api/v1/ledgers"
 PAYMENTS = "/api/v1/payments"
 TOTAL = Decimal("100000.00")
 LEAD_PHONE = "+919812345678"
-BUDGET = "60000.00"  # sanctioned budget the statement must never show
+BUDGET = "61234.56"  # sanctioned budget the statement must never show
 
 
 @pytest.fixture(autouse=True)

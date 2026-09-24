@@ -20,6 +20,8 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
     # Percentage, e.g. 2.50 = 2.5%. Definition still open: see docs/OPEN_DECISIONS.md.
     commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    # Set when an admin gives the user a temporary password; the app forces a change first.
+    must_change_password = models.BooleanField(default=False)
 
     objects = UserManager()
 

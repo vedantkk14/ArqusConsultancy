@@ -16,11 +16,80 @@ Planned endpoints are proposals; the owner may refine them, but must update this
 
 ## Auth
 
+All under `/api/v1/`. "public" endpoints ignore any `Authorization` header. Tokens are JWTs: access 15 min,
+refresh 7 days, refresh **rotates** on every use and the old one is blacklisted.
+
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| ✅ | `POST /auth/login` | public | Body `{username, password}` → `{access, refresh, user: {id, name, email, role}}` |
-| ✅ | `POST /auth/refresh` | public | Body `{refresh}` → `{access}` |
-| ✅ | `GET /me` | any | `{id, name, email, role}` |
+| ✅ | `POST /auth/login` | public | Throttled 20/min per IP; lockout after 5 failures per identifier + IP |
+| ✅ | `POST /auth/refresh` | public | Rotation + blacklist |
+| ✅ | `POST /auth/logout` | public | Blacklists the refresh token; always 204 |
+| ✅ | `GET /me` | any | Current user |
+| ✅ | `POST /auth/password/change` | any | Revokes all other sessions, returns new tokens |
+| ✅ | `POST /auth/password/forgot` | public | Always the same 200; throttled 5/hour per IP |
+| ✅ | `POST /auth/password/reset` | public | Single-use link; throttled 10/hour per IP |
+
+**Login.** `identifier` is a username or an email (case-insensitive). The older `username` field is still accepted.
+
+```http
+POST /api/v1/auth/login
+{"identifier": "admin@crm.local", "password": "Admin@123"}
+
+200
+{"access": "eyJ…", "refresh": "eyJ…", "must_change_password": false,
+ "user": {"id": 1, "name": "Alice Admin", "email": "admin@crm.local", "role": "ADMIN", "must_change_password": false}}
+```
+
+**Refresh.** `{"refresh": "eyJ…"}` → `200 {"access": "eyJ…", "refresh": "eyJ… (new)"}`. Store the new refresh token;
+the one you sent no longer works.
+
+**Logout.** `{"refresh": "eyJ…"}` → `204` (also for a missing, invalid or already revoked token).
+
+**Me.** `GET /me` → `{"id", "name", "email", "role", "must_change_password"}`.
+
+**Change password** (Bearer token required):
+
+```http
+POST /api/v1/auth/password/change
+{"old_password": "Welcome@123", "new_password": "A-much-better-one-7"}
+
+200 {"access": "…", "refresh": "…", "user": {…, "must_change_password": false}, "must_change_password": false}
+400 {"error": {"code": "validation_error", "message": "Validation failed.",
+               "details": {"old_password": ["Your current password is incorrect."]}}}
+400 … "details": {"new_password": ["This password is too common."]}
+```
+
+**Forgot password.** `{"email": "…"}` → always `200 {"message": "If that email is registered, we've sent a reset link."}`.
+Active accounts get an email with `{FRONTEND_URL}/reset-password/{uid}/{token}` (valid `PASSWORD_RESET_TIMEOUT`
+seconds, single use).
+
+**Reset password.**
+
+```http
+POST /api/v1/auth/password/reset
+{"uid": "MQ", "token": "c9x…", "new_password": "A-much-better-one-7"}
+
+200 {"message": "Password updated. Sign in with your new password."}
+400 {"error": {"code": "reset_link_invalid", …}}           bad, used or expired link
+400 {"error": {"code": "validation_error", … "details": {"new_password": [...]}}}
+```
+
+A change or reset clears `must_change_password` and revokes every refresh token of the user.
+
+### Auth error codes
+
+| HTTP | `code` | When | `details` |
+| --- | --- | --- | --- |
+| 401 | `invalid_credentials` | Unknown account **or** wrong password (identical responses) | `{}` |
+| 403 | `account_disabled` | Correct password, `is_active=False` | `{}` |
+| 429 | `account_locked` | 5 failures for this identifier + IP; also refuses the right password until it ends | `{"retry_after": 900}` |
+| 429 | `too_many_requests` | Per-IP throttle (login, forgot, reset) | `{"retry_after": 42}` |
+| 401 | `token_invalid` | Refresh token (or access token) invalid, expired or revoked | `{}` or token info |
+| 400 | `reset_link_invalid` | Reset uid/token wrong, used or expired | `{}` |
+| 400 | `validation_error` | Missing fields, wrong current password, weak new password | field → messages |
+| 401 | `not_authenticated` | Protected endpoint without a token | `{}` |
+
+`retry_after` is in seconds.
 
 ## Leads (Dev A)
 

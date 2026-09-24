@@ -15,6 +15,17 @@ env = environ.Env(
     DB_PORT=(str, "3306"),
     JWT_ACCESS_MINUTES=(int, 15),
     JWT_REFRESH_DAYS=(int, 7),
+    FRONTEND_URL=(str, "http://localhost:4200"),
+    EMAIL_BACKEND=(str, "django.core.mail.backends.console.EmailBackend"),
+    EMAIL_HOST=(str, "localhost"),
+    EMAIL_PORT=(int, 587),
+    EMAIL_HOST_USER=(str, ""),
+    EMAIL_HOST_PASSWORD=(str, ""),
+    EMAIL_USE_TLS=(bool, True),
+    DEFAULT_FROM_EMAIL=(str, "ARQUS CRM <no-reply@localhost>"),
+    LOGIN_MAX_ATTEMPTS=(int, 5),
+    LOGIN_LOCKOUT_MINUTES=(int, 15),
+    PASSWORD_RESET_TIMEOUT=(int, 60 * 60),
 )
 # .env lives in the repo root (next to .env.example); a backend/.env also works.
 for _env_file in (REPO_ROOT / ".env", BASE_DIR / ".env"):
@@ -35,6 +46,7 @@ INSTALLED_APPS = [
     # third party
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
     "drf_spectacular",
@@ -99,7 +111,10 @@ AUTH_USER_MODEL = "users.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8},
+    },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
@@ -127,13 +142,43 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
+    # Per-IP limits for the unauthenticated auth endpoints (views set `throttle_scope`).
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "20/min",
+        "password_forgot": "5/hour",
+        "password_reset": "10/hour",
+    },
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env("JWT_ACCESS_MINUTES")),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=env("JWT_REFRESH_DAYS")),
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
 }
+
+# --- Auth: lockout, password reset, email ---------------------------------------------------------
+LOGIN_MAX_ATTEMPTS = env("LOGIN_MAX_ATTEMPTS")
+LOGIN_LOCKOUT_MINUTES = env("LOGIN_LOCKOUT_MINUTES")
+PASSWORD_RESET_TIMEOUT = env("PASSWORD_RESET_TIMEOUT")  # seconds; used by default_token_generator
+FRONTEND_URL = env("FRONTEND_URL").rstrip("/")
+
+EMAIL_BACKEND = env("EMAIL_BACKEND")
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = env("EMAIL_PORT")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+
+# Throttles and the login lockout live in this cache. LocMemCache is per process: with several
+# workers in production use a shared cache, e.g. the database cache
+# (run `python manage.py createcachetable` first):
+#   CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache",
+#                         "LOCATION": "django_cache"}}
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "CRM + Project Management API",

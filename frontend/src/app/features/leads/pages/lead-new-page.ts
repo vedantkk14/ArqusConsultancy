@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CanDeactivateFn, Router } from '@angular/router';
 import { Observable, map } from 'rxjs';
@@ -33,18 +34,43 @@ export const unsavedChangesGuard: CanDeactivateFn<LeavesWithChanges> = (componen
 
 @Component({
   selector: 'app-lead-new-page',
-  imports: [LeadForm, PanelHead],
+  imports: [LeadForm, MatIconModule, PanelHead],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="card panel rise-in" aria-labelledby="new-lead-title">
-      <app-panel-head title="New lead" subtitle="Contact details first; everything else can wait." headingId="new-lead-title" />
-      <app-lead-form [canAssign]="canAssign()" (saved)="onSaved($event)" />
-    </section>
+    <div class="layout">
+      <section class="main rise-in" aria-labelledby="new-lead-title">
+        <header class="intro">
+          <app-panel-head title="New lead" subtitle="Only name and mobile number are required." headingId="new-lead-title" />
+        </header>
+        <app-lead-form [canAssign]="canAssign()" (saved)="onSaved($event)" />
+      </section>
+      <aside class="tips card" aria-label="Tips">
+        <h2>Good to know</h2>
+        <ul>
+          <li><mat-icon aria-hidden="true">content_paste</mat-icon>Paste a number in any format; we tidy it to +91.</li>
+          <li><mat-icon aria-hidden="true">warning</mat-icon>You'll be warned if the number already belongs to a lead.</li>
+          <li><mat-icon aria-hidden="true">person_add</mat-icon>Assign to an executive, to yourself, or decide later.</li>
+          <li><mat-icon aria-hidden="true">schedule</mat-icon>Follow-ups are in IST and show up in Overdue once missed.</li>
+        </ul>
+      </aside>
+    </div>
   `,
   styles: `
-    :host { display: block; max-width: 880px; }
-    .panel { padding: var(--space-5); }
-    @media (min-width: 768px) { .panel { padding: var(--space-6); } }
+    :host { display: block; max-width: 1180px; }
+    .layout { display: grid; gap: var(--space-5); align-items: start; }
+    .intro { padding: var(--space-5); margin-bottom: var(--space-4); border-radius: var(--radius-card); background: var(--grad-ink); }
+    .intro ::ng-deep h2 { color: var(--on-ink); font-size: var(--text-lg); }
+    .intro ::ng-deep p { color: rgba(255, 255, 255, 0.78); }
+    .intro ::ng-deep app-panel-head { margin: 0; }
+    .tips { display: none; padding: var(--space-5); }
+    .tips h2 { margin: 0 0 var(--space-3); font-size: var(--text-md); }
+    .tips ul { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+    .tips li { display: flex; gap: 10px; color: var(--ink-2); font-size: var(--text-sm); line-height: 1.45; }
+    .tips mat-icon { flex: none; width: 20px; height: 20px; font-size: 20px; color: var(--brand-deep); }
+    @media (min-width: 1100px) {
+      .layout { grid-template-columns: minmax(0, 1fr) 300px; }
+      .tips { display: block; }
+    }
   `,
 })
 export class LeadNewPage implements LeavesWithChanges {

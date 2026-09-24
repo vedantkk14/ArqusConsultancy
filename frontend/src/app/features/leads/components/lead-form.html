@@ -1,6 +1,6 @@
 <form [formGroup]="form" (ngSubmit)="submit(false)" novalidate>
   <fieldset class="sec">
-    <legend>Contact</legend>
+    <legend><span class="ic" aria-hidden="true"><mat-icon>person</mat-icon></span><span class="lg"><span class="lt">Contact</span><span class="lh">Who should we talk to?</span></span></legend>
     <div class="grid">
       <div class="field">
         <label for="lf-name">Name</label>
@@ -66,7 +66,7 @@
   </fieldset>
 
   <fieldset class="sec">
-    <legend>Source</legend>
+    <legend><span class="ic" aria-hidden="true"><mat-icon>travel_explore</mat-icon></span><span class="lg"><span class="lt">Source</span><span class="lh">Helps us see which channels work.</span></span></legend>
     <div class="grid">
       <div class="field">
         <label for="lf-source">Where did this lead come from?</label>
@@ -86,7 +86,7 @@
   </fieldset>
 
   <fieldset class="sec">
-    <legend>Requirements</legend>
+    <legend><span class="ic" aria-hidden="true"><mat-icon>description</mat-icon></span><span class="lg"><span class="lt">Requirements</span><span class="lh">A line or two is enough.</span></span></legend>
     <div class="field">
       <label for="lf-req">What does the client need? <span class="opt">(optional)</span></label>
       <textarea id="lf-req" formControlName="requirements" rows="4" aria-describedby="lf-req-count"></textarea>
@@ -96,7 +96,7 @@
 
   @if (canAssign() && !isEdit()) {
     <fieldset class="sec">
-      <legend>Assignment</legend>
+      <legend><span class="ic" aria-hidden="true"><mat-icon>group</mat-icon></span><span class="lg"><span class="lt">Assignment</span><span class="lh">Who will work this lead.</span></span></legend>
       <div class="row">
         <div class="field grow">
           <label for="lf-assign">Assign to</label>
@@ -121,7 +121,7 @@
 
   @if (!limited()) {
     <fieldset class="sec">
-      <legend>Follow-up</legend>
+      <legend><span class="ic" aria-hidden="true"><mat-icon>event</mat-icon></span><span class="lg"><span class="lt">Follow-up</span><span class="lh">When to reach out next.</span></span></legend>
       <div class="field">
         <label for="lf-fu">Next follow-up <span class="opt">(optional, IST)</span></label>
         <input

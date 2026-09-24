@@ -1,0 +1,87 @@
+<header class="page-head">
+  <button type="button" class="icon-btn" aria-label="Refresh" matTooltip="Refresh" [disabled]="state().status === 'loading'" (click)="reload()">
+    <mat-icon aria-hidden="true" [class.spin]="refreshing()">refresh</mat-icon>
+  </button>
+</header>
+
+@if (state().status === 'error' && !data()) {
+  <app-error-state title="Couldn't load the team dashboard" (retry)="reload()" />
+} @else if (data(); as d) {
+  <div class="layout" [class.busy]="refreshing()" [attr.aria-busy]="state().status === 'loading'">
+    <section class="needs" aria-label="Needs attention">
+      <app-queue-section
+        title="Unassigned leads"
+        [items]="d.queues.unassigned.items"
+        [total]="d.queues.unassigned.total"
+        [priority]="d.queues.unassigned.total > 0"
+        viewAllRoute="/leads/all"
+        [viewAllParams]="{ assigned_to: 'none' }"
+        emptyText="No unassigned leads."
+        (assign)="openAssign($event)"
+        (whatsapp)="openWhatsapp($event)"
+      />
+      <app-queue-section
+        title="Overdue follow-ups"
+        [items]="d.queues.overdue.items"
+        [total]="d.queues.overdue.total"
+        viewAllRoute="/leads/overdue"
+        emptyText="No overdue follow-ups. Nice work."
+        (assign)="openAssign($event)"
+        (whatsapp)="openWhatsapp($event)"
+      />
+      <app-queue-section
+        title="Due today"
+        [items]="d.queues.today.items"
+        [total]="d.queues.today.total"
+        viewAllRoute="/leads/all"
+        [viewAllParams]="{ followup: 'today' }"
+        emptyText="Nothing due today."
+        (assign)="openAssign($event)"
+        (whatsapp)="openWhatsapp($event)"
+      />
+      <app-queue-section
+        title="Won - awaiting finalisation"
+        [items]="d.queues.won_awaiting.items"
+        [total]="d.queues.won_awaiting.total"
+        viewAllRoute="/leads/won"
+        [viewAllParams]="{ won_awaiting: 'true' }"
+        emptyText="No deals waiting on finalisation."
+        (assign)="openAssign($event)"
+        (whatsapp)="openWhatsapp($event)"
+      />
+    </section>
+
+    <aside class="side">
+      <app-team-pipeline-card [stages]="d.pipeline" />
+      <app-team-results-strip [kpis]="d.kpis" [period]="period()" (periodChanged)="setPeriod($event)" />
+      <app-activity-card [rows]="activityRows()" />
+    </aside>
+
+    <app-by-executive-list class="by-exec" [rows]="d.by_executive" />
+  </div>
+} @else {
+  <div class="layout skeleton-layout" aria-hidden="true">
+    <section class="needs">
+      @for (i of [0, 1, 2]; track i) {
+        <div class="card panel">
+          <app-skeleton width="40%" height="16px" />
+          <app-skeleton height="52px" radius="10px" />
+          <app-skeleton height="52px" radius="10px" />
+        </div>
+      }
+    </section>
+    <aside class="side">
+      @for (i of [0, 1, 2]; track i) {
+        <div class="card panel">
+          <app-skeleton width="40%" height="16px" />
+          <app-skeleton height="80px" radius="10px" />
+        </div>
+      }
+    </aside>
+    <div class="card panel by-exec">
+      <app-skeleton width="30%" height="16px" />
+      <app-skeleton height="52px" radius="10px" />
+      <app-skeleton height="52px" radius="10px" />
+    </div>
+  </div>
+}

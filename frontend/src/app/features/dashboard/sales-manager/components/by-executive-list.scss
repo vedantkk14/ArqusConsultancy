@@ -1,0 +1,125 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+}
+
+.head {
+  display: none;
+  padding: 0 10px 8px;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  align-items: center;
+  min-height: 52px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: background-color var(--dur-fast) ease;
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row:hover {
+  background: var(--surface-2);
+}
+
+.row.hot {
+  background: var(--tint-amber);
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.nm {
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.num {
+  font-weight: 500;
+  text-align: right;
+}
+
+.pill {
+  display: inline-block;
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--tint-rose);
+  color: var(--tint-rose-ink);
+  font-weight: 600;
+}
+
+.none {
+  padding: 24px 4px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* Stacked cards below 768px: each stat gets its own labelled line. */
+@media (max-width: 767px) {
+  .head {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 6px;
+    padding: 12px 10px;
+  }
+
+  .who {
+    grid-column: 1 / -1;
+  }
+
+  .num {
+    text-align: left;
+  }
+
+  .num::before {
+    display: block;
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    content: attr(data-label);
+  }
+}
+
+/* >= 768px: a proper grid "table". */
+@media (min-width: 768px) {
+  .head,
+  .row {
+    grid-template-columns: 2fr 0.6fr 0.7fr 0.6fr 0.9fr 0.7fr;
+    gap: 8px;
+  }
+
+  .head {
+    display: grid;
+  }
+
+  .head span:not(:first-child),
+  .num {
+    text-align: right;
+  }
+}

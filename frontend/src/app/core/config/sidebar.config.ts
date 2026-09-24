@@ -1,4 +1,4 @@
-import { Role } from '../models';
+﻿import { Role } from '../models';
 
 export interface NavItem {
   label: string;
@@ -77,7 +77,7 @@ export const SIDEBAR_CONFIG: NavItem[] = [
       { label: 'Sales', icon: 'trending_up', route: '/reports/sales', roles: [Admin, SalesManager] },
       { label: 'Financial Health', icon: 'monitor_heart', route: '/reports/financial-health', roles: [Admin] },
       { label: 'Project Margin', icon: 'percent', route: '/reports/project-margin', roles: [Admin] },
-      { label: 'Lead Funnel', icon: 'filter_alt', route: '/reports/lead-funnel', roles: [Admin, SalesManager] },
+      { label: 'Lead Funnel', icon: 'filter_alt', route: '/reports/lead-funnel', roles: [Admin] },
     ],
   },
   {
@@ -126,3 +126,4 @@ export function filterNavByRole(items: NavItem[], role: Role | null | undefined)
     .map((item) => (item.children ? { ...item, children: filterNavByRole(item.children, role) } : item))
     .filter((item) => !item.children || item.children.length > 0);
 }
+

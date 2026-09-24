@@ -69,6 +69,13 @@
         </select>
         @if (show('role')) { <p class="err">{{ message('role') }}</p> }
       </div>
+      @if (isExec()) {
+        <div class="field">
+          <label for="ca-commission_rate">Commission rate (%)</label>
+          <input id="ca-commission_rate" inputmode="decimal" formControlName="commission_rate" autocomplete="off" [attr.aria-invalid]="show('commission_rate') || null" />
+          @if (show('commission_rate')) { <p class="err">{{ message('commission_rate') }}</p> }
+        </div>
+      }
     </div>
     <p class="hint" id="ca-role-hint"><mat-icon aria-hidden="true">info</mat-icon>{{ roleHint() }}</p>
 

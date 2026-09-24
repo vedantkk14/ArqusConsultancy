@@ -1,11 +1,12 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { of } from 'rxjs';
-import { DESKTOP_QUERY, WIDE_QUERY } from '../layout.service';
 
-/** Fake viewport: `width` decides which media queries match. */
+/** Fake viewport: `width` decides which `(min-width: Npx)` media queries match. */
 export function fakeBreakpoints(width: number) {
-  const matches = (q: string) =>
-    (q === DESKTOP_QUERY && width >= 1024) || (q === WIDE_QUERY && width >= 1280);
+  const matches = (q: string) => {
+    const min = /min-width:\s*(\d+)px/.exec(q);
+    return min ? width >= Number(min[1]) : false;
+  };
   return {
     provide: BreakpointObserver,
     useValue: {

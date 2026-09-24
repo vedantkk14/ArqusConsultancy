@@ -1,0 +1,81 @@
+<ng-template #editor let-u>
+  <span class="ed">
+    <label class="sr-only" [for]="'rate-' + u.id">Commission rate for {{ u.name }}</label>
+    <input [id]="'rate-' + u.id" class="rate" inputmode="decimal" [(ngModel)]="draft" (keydown.enter)="save(u)" (keydown.escape)="cancel()" [attr.aria-invalid]="error() ? true : null" />
+    <span class="pc">%</span>
+    <button matButton="filled" type="button" [disabled]="saving()" (click)="save(u)">Save</button>
+    <button matButton type="button" (click)="cancel()">Cancel</button>
+  </span>
+  @if (error()) { <span class="err" role="alert">{{ error() }}</span> }
+</ng-template>
+
+<header class="head">
+  <p class="count">{{ list.loaded() ? list.count() + ' sales executives' : 'Loading…' }}</p>
+  <p class="note">Commission is a percentage of the payments received on a won deal.</p>
+</header>
+
+<app-filter-shell [compact]="!wide()" [active]="!!q()" (cleared)="clear()">
+  <label search class="search">
+    <span class="sr-only">Search executives</span>
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input type="search" placeholder="Search name or email" autocomplete="off" [value]="q()" (input)="onSearch($any($event.target).value)" />
+  </label>
+</app-filter-shell>
+
+@if (list.error() && !list.rows().length) {
+  <app-error-state title="Couldn't load executives" (retry)="list.reload()" />
+} @else if (list.loaded() && !list.rows().length) {
+  <app-empty-state icon="sell" title="No sales executives" message="Executives appear here once you add them under Users." />
+} @else {
+  <section class="card list" [class.busy]="list.loading() && list.loaded()" aria-label="Commission rates">
+    @if (wide()) {
+      <table>
+        <thead><tr><th>Executive</th><th>Status</th><th>Commission rate</th></tr></thead>
+        <tbody>
+          @if (!list.loaded()) {
+            @for (i of placeholders; track i) { <tr aria-hidden="true"><td colspan="3"><app-skeleton width="50%" /></td></tr> }
+          } @else {
+            @for (u of list.rows(); track u.id) {
+              <tr>
+                <td><span class="who"><app-user-avatar [name]="u.name" [size]="36" /><span class="who-t"><strong>{{ u.name }}</strong><span>{{ u.email }}</span></span></span></td>
+                <td><span class="pill" [class.ok]="u.is_active" [class.off]="!u.is_active">{{ u.is_active ? 'Active' : 'Inactive' }}</span></td>
+                <td>
+                  @if (editing() === u.id) {
+                    <ng-container *ngTemplateOutlet="editor; context: { $implicit: u }" />
+                  } @else {
+                    <span class="show"><strong class="num">{{ u.commission_rate }}%</strong>
+                      <button type="button" class="link" (click)="edit(u)" [attr.aria-label]="'Edit commission rate for ' + u.name">Edit</button></span>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    } @else {
+      <ul class="cards">
+        @if (!list.loaded()) {
+          @for (i of placeholders.slice(0, 3); track i) { <li class="card lc" aria-hidden="true"><app-skeleton width="50%" /></li> }
+        } @else {
+          @for (u of list.rows(); track u.id) {
+            <li class="card lc">
+              <span class="top">
+                <span class="who"><app-user-avatar [name]="u.name" [size]="40" /><span class="who-t"><strong>{{ u.name }}</strong><span>{{ u.email }}</span></span></span>
+                <span class="pill" [class.ok]="u.is_active" [class.off]="!u.is_active">{{ u.is_active ? 'Active' : 'Inactive' }}</span>
+              </span>
+              @if (editing() === u.id) {
+                <ng-container *ngTemplateOutlet="editor; context: { $implicit: u }" />
+              } @else {
+                <span class="show"><strong class="num">{{ u.commission_rate }}%</strong>
+                  <button type="button" class="link" (click)="edit(u)" [attr.aria-label]="'Edit commission rate for ' + u.name">Edit</button></span>
+              }
+            </li>
+          }
+        }
+      </ul>
+    }
+  </section>
+  @if (list.hasMore()) {
+    <div class="more"><button matButton="outlined" type="button" [disabled]="list.loading()" (click)="list.more()">Load more</button></div>
+  }
+}

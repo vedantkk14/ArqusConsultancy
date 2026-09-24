@@ -166,6 +166,7 @@ select {
 }
 
 .note { margin: 0; color: var(--ink-2); font-size: var(--text-sm); }
+.hint.warn { background: var(--tint-amber); color: var(--tint-amber-ink); }
 
 @media (min-width: 520px) {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -38,3 +38,27 @@ class ResetLinkInvalid(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "reset_link_invalid"
     default_detail = "This reset link is invalid or has expired. Request a new one."
+
+
+class CannotSelfDeactivate(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "cannot_self_deactivate"
+    default_detail = "You can't deactivate your own account."
+
+
+class LastAdmin(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "last_admin"
+    default_detail = "There must be at least one active admin."
+
+
+class CannotChangeOwnRole(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "cannot_change_own_role"
+    default_detail = "You can't change your own role."
+
+
+class NotASalesExec(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "not_a_sales_exec"
+    default_detail = "Only sales executives have a commission rate."

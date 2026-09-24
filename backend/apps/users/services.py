@@ -23,7 +23,16 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .exceptions import AccountDisabled, AccountLocked, InvalidCredentials, ResetLinkInvalid
+from .exceptions import (
+    AccountDisabled,
+    AccountLocked,
+    CannotChangeOwnRole,
+    CannotSelfDeactivate,
+    InvalidCredentials,
+    LastAdmin,
+    NotASalesExec,
+    ResetLinkInvalid,
+)
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -183,6 +192,7 @@ def create_user(data: dict):
         phone=data.get("phone", ""),
         role=data["role"],
         must_change_password=data.get("must_change_password", True),
+        **({"commission_rate": data["commission_rate"]} if "commission_rate" in data else {}),
     )
     if user.role == User.Role.ADMIN:
         user.is_staff = True  # lets an admin use /admin/, like the seeded admin
@@ -262,3 +272,183 @@ def validate_new_password(password: str, user=None, field: str = "new_password")
         password_validation.validate_password(password, user)
     except Exception as exc:  # django.core.exceptions.ValidationError
         raise ValidationError({field: list(getattr(exc, "messages", [str(exc)]))}) from None
+
+
+# ---- Team: admin actions on other accounts ----------------------------------------------
+
+_TEMP_LOWER = "abcdefghijkmnopqrstuvwxyz"
+_TEMP_UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+_TEMP_DIGITS = "23456789"
+_TEMP_SYMBOLS = "#@$%&*!?"
+
+
+def generate_temporary_password(length: int = 14) -> str:
+    """Random, easy to read out loud (no look-alike characters), one of each kind at least."""
+    import secrets
+
+    pick = secrets.choice
+    every = _TEMP_LOWER + _TEMP_UPPER + _TEMP_DIGITS + _TEMP_SYMBOLS
+    chars = [pick(_TEMP_LOWER), pick(_TEMP_UPPER), pick(_TEMP_DIGITS), pick(_TEMP_SYMBOLS)]
+    chars += [pick(every) for _ in range(length - len(chars))]
+    secrets.SystemRandom().shuffle(chars)
+    return "".join(chars)
+
+
+def active_admin_count() -> int:
+    return User.objects.filter(role=User.Role.ADMIN, is_active=True).count()
+
+
+@transaction.atomic
+def update_user(user, data: dict, by):
+    """Name, email, phone and role. An admin can't change their own role (no self-lockout)."""
+    if "role" in data and data["role"] != user.role:
+        if user.pk == by.pk:
+            raise CannotChangeOwnRole()
+        if user.role == User.Role.ADMIN and active_admin_count() <= 1 and user.is_active:
+            raise LastAdmin()
+    if (
+        "email" in data
+        and User.objects.filter(email__iexact=data["email"]).exclude(pk=user.pk).exists()
+    ):
+        from rest_framework.exceptions import ValidationError
+
+        raise ValidationError({"email": ["An account with this email already exists."]})
+    for field, value in data.items():
+        setattr(user, field, value)
+    user.save()
+    return user
+
+
+@transaction.atomic
+def deactivate_user(user, by):
+    if user.pk == by.pk:
+        raise CannotSelfDeactivate()
+    if user.is_active and user.role == User.Role.ADMIN and active_admin_count() <= 1:
+        raise LastAdmin()
+    user.is_active = False
+    user.save(update_fields=["is_active"])
+    blacklist_all_tokens(user)  # signed out everywhere, now
+    return user
+
+
+@transaction.atomic
+def reactivate_user(user):
+    user.is_active = True
+    user.save(update_fields=["is_active"])
+    return user
+
+
+def admin_reset_password(user) -> str:
+    """New temporary password for `user`, returned once (never emailed here).
+
+    TODO(SMTP): send it (or a reset link) by email once an email backend is configured.
+    """
+    password = generate_temporary_password()
+    for _ in range(5):
+        try:
+            password_validation.validate_password(password, user)
+            break
+        except Exception:  # noqa: BLE001 - too similar to the user's details: draw another
+            password = generate_temporary_password()
+    set_temporary_password(user, password)
+    return password
+
+
+def set_commission_rate(user, rate):
+    if user.role != User.Role.SALES_EXEC:
+        raise NotASalesExec()
+    user.commission_rate = rate
+    user.save(update_fields=["commission_rate"])
+    return user
+
+
+def _model(app_label: str, name: str):
+    from django.apps import apps
+
+    try:
+        return apps.get_model(app_label, name)
+    except LookupError:
+        return None
+
+
+def assignments_overview() -> dict:
+    """Open and overdue leads per exec, running and over-budget projects per PM.
+
+    Other apps' models are read through apps.get_model, so this works whatever is merged: a missing
+    model gives zeros and `data_sources[...] = False`.
+    """
+    from django.core.exceptions import FieldError
+    from django.db.models import Count, F, Q
+    from django.utils import timezone
+
+    execs = list(
+        User.objects.filter(role=User.Role.SALES_EXEC, is_active=True).order_by(
+            "first_name", "username"
+        )
+    )
+    pms = list(
+        User.objects.filter(role=User.Role.PROJECT_MANAGER, is_active=True).order_by(
+            "first_name", "username"
+        )
+    )
+
+    lead_counts: dict = {}
+    leads_ok = False
+    lead_model = _model("leads", "Lead")
+    if lead_model is not None:
+        try:
+            rows = (
+                lead_model.objects.exclude(status__in=("WON", "LOST"))
+                .filter(assigned_to__in=[u.pk for u in execs])
+                .values("assigned_to")
+                .annotate(
+                    open=Count("id"),
+                    overdue=Count("id", filter=Q(next_followup_at__lt=timezone.now())),
+                )
+            )
+            lead_counts = {r["assigned_to"]: r for r in rows}
+            leads_ok = True
+        except FieldError:  # pragma: no cover - the leads model changed shape
+            pass
+
+    project_counts: dict = {}
+    projects_ok = False
+    project_model = _model("projects", "Project")
+    if (
+        project_model is not None
+    ):  # TODO(depends on projects.Project, Dev B): field names when it lands
+        try:
+            rows = (
+                project_model.objects.exclude(status="COMPLETED")
+                .values("project_manager")
+                .annotate(
+                    running=Count("id"),
+                    over=Count("id", filter=Q(spent__gt=F("sanctioned_budget"))),
+                )
+            )
+            project_counts = {r["project_manager"]: r for r in rows}
+            projects_ok = True
+        except FieldError:
+            pass
+
+    return {
+        "data_sources": {"leads": leads_ok, "projects": projects_ok},
+        "execs": [
+            {
+                "id": u.pk,
+                "name": u.display_name,
+                "open_leads": lead_counts.get(u.pk, {}).get("open", 0),
+                "overdue": lead_counts.get(u.pk, {}).get("overdue", 0),
+            }
+            for u in execs
+        ],
+        "pms": [
+            {
+                "id": u.pk,
+                "name": u.display_name,
+                "running_projects": project_counts.get(u.pk, {}).get("running", 0),
+                "over_budget": project_counts.get(u.pk, {}).get("over", 0),
+            }
+            for u in pms
+        ],
+    }

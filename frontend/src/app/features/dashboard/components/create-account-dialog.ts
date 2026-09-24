@@ -6,6 +6,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { ApiService } from '../../../core/api/api.service';
 import { ApiError, ROLE_LABELS, Role } from '../../../core/models';
+import { isValidRate } from '../../team/team.models';
 import { ROLE_HINTS, generatePassword, suggestUsername } from './account-utils';
 
 export interface CreatedAccount {
@@ -16,7 +17,7 @@ export interface CreatedAccount {
   must_change_password: boolean;
 }
 
-const FIELDS = ['first_name', 'last_name', 'email', 'phone', 'username', 'role', 'password'] as const;
+const FIELDS = ['first_name', 'last_name', 'email', 'phone', 'username', 'role', 'commission_rate', 'password'] as const;
 
 /** Admin creates a login for any role. Ends on a "created" view with the sign-in details to hand over. */
 @Component({
@@ -50,10 +51,13 @@ export class CreateAccountDialog {
     username: ['', [Validators.required, Validators.pattern(/^[\w.@+-]+$/), Validators.maxLength(150)]],
     role: ['' as Role | '', Validators.required],
     password: ['', [Validators.required, Validators.minLength(8)]],
+    commission_rate: ['0.00'],
     must_change_password: [true],
   });
 
   private readonly values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+  /** The commission rate only exists for sales executives. */
+  protected readonly isExec = computed(() => this.values().role === Role.SalesExec);
   protected readonly roleHint = computed(() => {
     const role = this.values().role as Role | '';
     return role ? this.hints[role] : 'Choose what this person can do.';
@@ -71,6 +75,7 @@ export class CreateAccountDialog {
     if (e['email']) return 'Enter a valid email address.';
     if (e['pattern']) return 'Use letters, numbers and . _ - @ + only.';
     if (e['minlength']) return 'Use at least 8 characters.';
+    if (e['rate']) return 'Enter 0 to 100, up to two decimals.';
     return 'Check this field.';
   }
 
@@ -101,9 +106,16 @@ export class CreateAccountDialog {
       return;
     }
     const v = this.form.getRawValue();
+    if (this.isExec() && !isValidRate(v.commission_rate)) {
+      this.form.controls.commission_rate.setErrors({ rate: true });
+      this.focusFirstInvalid();
+      return;
+    }
     this.lastPassword = v.password;
     this.saving.set(true);
-    this.api.post<CreatedAccount>('/users', { ...v, first_name: v.first_name.trim(), last_name: v.last_name.trim() }).subscribe({
+    const { commission_rate, ...rest } = v;
+    const body = { ...rest, first_name: v.first_name.trim(), last_name: v.last_name.trim(), ...(this.isExec() ? { commission_rate } : {}) };
+    this.api.post<CreatedAccount>('/users', body).subscribe({
       next: (user) => {
         this.saving.set(false);
         this.created.set(user);
@@ -136,7 +148,7 @@ export class CreateAccountDialog {
     this.submitted.set(false);
     this.usernameEdited = false;
     this.showPassword.set(false);
-    this.form.reset({ must_change_password: true });
+    this.form.reset({ must_change_password: true, commission_rate: '0.00' });
   }
 
   protected done(): void {

@@ -1,5 +1,7 @@
 from django.urls import path
 
+from apps.core.routers import OptionalSlashRouter
+
 from .views import (
     LoginView,
     LogoutView,
@@ -8,7 +10,7 @@ from .views import (
     PasswordForgotView,
     PasswordResetView,
     RefreshView,
-    UserCreateView,
+    UserViewSet,
 )
 
 urlpatterns = [
@@ -19,5 +21,8 @@ urlpatterns = [
     path("auth/password/forgot", PasswordForgotView.as_view(), name="auth-password-forgot"),
     path("auth/password/reset", PasswordResetView.as_view(), name="auth-password-reset"),
     path("me", MeView.as_view(), name="me"),
-    path("users", UserCreateView.as_view(), name="users-create"),
 ]
+
+router = OptionalSlashRouter()
+router.register("users", UserViewSet, basename="users")
+urlpatterns += router.urls

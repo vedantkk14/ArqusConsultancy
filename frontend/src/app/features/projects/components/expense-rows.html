@@ -1,0 +1,128 @@
+<ng-template #tags let-e>
+  @if (e.is_void) {
+    <span class="tag void" [attr.title]="e.void_reason">Void</span>
+  }
+  @if (e.is_override) {
+    <span class="tag over" [attr.title]="e.override_reason || null">Override</span>
+  }
+</ng-template>
+
+<ng-template #acts let-e>
+  <span class="acts">
+    @if (e.has_receipt) {
+      <button type="button" class="ib" [attr.aria-label]="'View receipt: ' + label(e)" (click)="emit('receipt', e)">
+        <mat-icon aria-hidden="true">{{ e.receipt_kind === 'pdf' ? 'picture_as_pdf' : 'image' }}</mat-icon>
+      </button>
+    }
+    @if (e.can_edit) {
+      <button type="button" class="ib" [matMenuTriggerFor]="more" [attr.aria-label]="'More actions: ' + label(e)">
+        <mat-icon aria-hidden="true">more_vert</mat-icon>
+      </button>
+      <mat-menu #more="matMenu" xPosition="before">
+        <button mat-menu-item type="button" (click)="emit('edit', e)"><mat-icon>edit</mat-icon>Edit</button>
+        <button mat-menu-item type="button" (click)="emit('void', e)"><mat-icon>block</mat-icon>Void…</button>
+      </mat-menu>
+    }
+  </span>
+</ng-template>
+
+@if (layout() === 'table') {
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Details</th>
+          @if (showProject()) {
+            <th>Project</th>
+            <th class="c-by">Logged by</th>
+          }
+          <th class="r">Amount</th>
+          <th class="r"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (skeleton()) {
+          @for (i of placeholders; track i) {
+            <tr class="sk" aria-hidden="true">
+              <td [attr.colspan]="showProject() ? 7 : 5">
+                <span class="sk-row">
+                  <app-skeleton width="12%" height="14px" />
+                  <app-skeleton width="10%" height="22px" radius="999px" />
+                  <app-skeleton width="30%" height="14px" />
+                  <app-skeleton width="10%" height="14px" />
+                </span>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (e of rows(); track e.id) {
+            <tr [class.is-void]="e.is_void">
+              <td class="nw" [attr.title]="full(e.created_at)">{{ day(e.spent_on) }}</td>
+              <td><span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span></td>
+              <td class="det">
+                <span class="det-t">{{ e.vendor || e.description || '—' }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }" /></span>
+                @if (e.vendor && e.description) {
+                  <span class="ph">{{ e.description }}</span>
+                }
+                @if (e.is_void && e.void_reason) {
+                  <span class="ph">Voided: {{ e.void_reason }}</span>
+                }
+              </td>
+              @if (showProject()) {
+                <td><a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a></td>
+                <td class="c-by">
+                  @if (e.logged_by) {
+                    <span class="who"><app-person-avatar [name]="e.logged_by.name" [size]="24" />{{ e.logged_by.name }}</span>
+                  }
+                </td>
+              }
+              <td class="r num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</td>
+              <td class="r"><ng-container *ngTemplateOutlet="acts; context: { $implicit: e }" /></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <ul class="cards">
+    @if (skeleton()) {
+      @for (i of placeholders.slice(0, 3); track i) {
+        <li class="card lc" aria-hidden="true">
+          <app-skeleton width="45%" height="16px" />
+          <app-skeleton width="70%" height="13px" />
+        </li>
+      }
+    } @else {
+      @for (e of rows(); track e.id; let i = $index) {
+        <li class="card lc rise-in" [style.--i]="i % 10" [class.is-void]="e.is_void">
+          <span class="lc-top">
+            <span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span>
+            <strong class="num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</strong>
+          </span>
+          <span class="det-t">{{ e.vendor || e.description || '—' }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }" /></span>
+          @if (e.vendor && e.description) {
+            <span class="ph">{{ e.description }}</span>
+          }
+          @if (e.is_void && e.void_reason) {
+            <span class="ph">Voided: {{ e.void_reason }}</span>
+          }
+          <span class="lc-meta">
+            <span>{{ day(e.spent_on) }}</span>
+            @if (showProject()) {
+              <a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a>
+              @if (e.logged_by) {
+                <span>{{ e.logged_by.name }}</span>
+              }
+            }
+          </span>
+          @if (e.has_receipt || e.can_edit) {
+            <span class="lc-acts"><ng-container *ngTemplateOutlet="acts; context: { $implicit: e }" /></span>
+          }
+        </li>
+      }
+    }
+  </ul>
+}

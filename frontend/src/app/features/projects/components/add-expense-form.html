@@ -1,0 +1,131 @@
+<form (ngSubmit)="submit()" novalidate>
+  <p class="remaining">Remaining <strong class="num">{{ project().remaining | inr }}</strong> on {{ project().name }}</p>
+
+  <div class="field">
+    <label for="ae-amount">Amount</label>
+    <app-money-input
+      inputId="ae-amount"
+      name="amount"
+      [(ngModel)]="amount"
+      [invalid]="!!errors().amount"
+      [describedBy]="errors().amount ? 'ae-amount-err' : null"
+    />
+    @if (errors().amount) {
+      <p class="error" id="ae-amount-err">{{ errors().amount }}</p>
+    }
+  </div>
+
+  <div class="field">
+    <span class="lbl" id="ae-cat-label">Category</span>
+    <fieldset class="cats" aria-labelledby="ae-cat-label">
+      @for (c of categories; track c[0]) {
+        <label class="cat">
+          <input type="radio" name="category" [id]="'ae-cat-' + c[0]" [value]="c[0]" [ngModel]="category()" (ngModelChange)="category.set($event)" />
+          <span>{{ c[1] }}</span>
+        </label>
+      }
+    </fieldset>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label for="ae-date">Date</label>
+      <input
+        id="ae-date"
+        name="spent_on"
+        type="date"
+        [min]="earliest"
+        [max]="today"
+        [(ngModel)]="spentOn"
+        [attr.aria-invalid]="errors().spent_on ? true : null"
+        [attr.aria-describedby]="errors().spent_on ? 'ae-date-err' : null"
+      />
+      @if (errors().spent_on) {
+        <p class="error" id="ae-date-err">{{ errors().spent_on }}</p>
+      }
+    </div>
+    <div class="field">
+      <label for="ae-vendor">Vendor (optional)</label>
+      <input id="ae-vendor" name="vendor" type="text" maxlength="150" autocomplete="off" [(ngModel)]="vendor" />
+      @if (errors().vendor) {
+        <p class="error">{{ errors().vendor }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="ae-desc">Description (optional)</label>
+    <textarea id="ae-desc" name="description" maxlength="500" [(ngModel)]="description"></textarea>
+    <span class="count num">{{ description.length }}/500</span>
+    @if (errors().description) {
+      <p class="error">{{ errors().description }}</p>
+    }
+  </div>
+
+  <div class="field">
+    <span class="lbl" id="ae-receipt-label">Receipt{{ receiptOptional() ? ' (optional for labour)' : '' }}</span>
+    @if (file(); as f) {
+      <div class="picked">
+        @if (preview(); as url) {
+          <img [src]="url" alt="Receipt preview" />
+        } @else {
+          <span class="pdf" aria-hidden="true"><mat-icon>picture_as_pdf</mat-icon></span>
+        }
+        <span class="nm">{{ f.name }}</span>
+        <button type="button" class="rm" aria-label="Remove receipt" (click)="removeFile()"><mat-icon aria-hidden="true">close</mat-icon>Remove</button>
+      </div>
+    } @else {
+      @if (editing() && expense()?.has_receipt) {
+        <p class="hint">The current receipt is kept. Choose a file to replace it.</p>
+      }
+      <div class="pick" role="group" aria-labelledby="ae-receipt-label">
+        <button type="button" id="ae-receipt" (click)="camera.click()"><mat-icon aria-hidden="true">photo_camera</mat-icon>Take photo</button>
+        <button type="button" (click)="chooser.click()"><mat-icon aria-hidden="true">upload_file</mat-icon>Choose file</button>
+      </div>
+    }
+    <input #camera class="sr-only" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true" (change)="onFile(camera)" />
+    <input #chooser class="sr-only" type="file" accept="image/*,application/pdf" tabindex="-1" aria-hidden="true" (change)="onFile(chooser)" />
+    <p class="hint">JPG, PNG, WebP or PDF, up to 5 MB.</p>
+    @if (errors().receipt) {
+      <p class="error" role="alert">{{ errors().receipt }}</p>
+    }
+  </div>
+
+  @if (overRemaining() !== null) {
+    <p class="note warn" role="alert" id="ae-over">{{ overMessage() }}</p>
+    @if (isAdmin()) {
+      <div class="override">
+        <label class="sw">
+          <input type="checkbox" name="override" role="switch" [checked]="override()" (change)="override.set($any($event.target).checked)" />
+          Override budget limit
+        </label>
+        @if (override()) {
+          <div class="field">
+            <label for="ae-override-reason">Reason for going over budget</label>
+            <textarea id="ae-override-reason" name="override_reason" maxlength="300" [(ngModel)]="overrideReason"></textarea>
+            @if (errors().override_reason) {
+              <p class="error">{{ errors().override_reason }}</p>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  @if (saving()) {
+    <div class="prog" role="progressbar" aria-label="Uploading" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+      <span [style.transform]="'scaleX(' + (progress() ?? 0) / 100 + ')'"></span>
+    </div>
+  }
+
+  <div class="actions">
+    <button matButton type="button" (click)="cancelled.emit()">Cancel</button>
+    <button matButton="filled" type="submit" [disabled]="saving()">
+      {{ saving() ? (progress() === null ? 'Saving…' : 'Uploading… ' + progress() + '%') : editing() ? 'Save changes' : 'Add expense' }}
+    </button>
+  </div>
+</form>

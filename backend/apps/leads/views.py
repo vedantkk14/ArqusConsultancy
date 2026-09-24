@@ -4,17 +4,18 @@ import csv
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Q
-from django.http import StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from apps.core.pagination import StandardPagination
 from apps.core.permissions import ADMIN, HasRole
 
-from . import integrations, selectors, services
+from . import importer, integrations, selectors, services
 from .filters import SUMMARY_SKIP, apply_filters, apply_ordering
 from .models import Interaction, WhatsAppTemplate
 from .serializers import (
@@ -207,6 +208,30 @@ class LeadViewSet(viewsets.GenericViewSet):
 
         response = StreamingHttpResponse(stream(), content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = 'attachment; filename="leads.csv"'
+        return response
+
+    @action(detail=False, methods=["post"], url_path="import", parser_classes=[MultiPartParser])
+    def import_leads(self, request):
+        """Create leads from an uploaded .xlsx/.csv. ?dry_run=1 only checks and reports."""
+        if not services.can_create(request.user):
+            raise PermissionDenied()
+        upload = request.FILES.get("file")
+        if upload is None:
+            raise ValidationError({"file": ["Choose a file to import."]})
+        dry_run = str(request.query_params.get("dry_run", "")).lower() in ("1", "true")
+        skip = str(request.data.get("skip_duplicates", "true")).lower() not in ("0", "false")
+        report = importer.import_leads(upload, request.user, dry_run=dry_run, skip_duplicates=skip)
+        return Response(report.as_dict())
+
+    @action(detail=False, methods=["get"], url_path="import-template")
+    def import_template(self, request):
+        if not services.can_create(request.user):
+            raise PermissionDenied()
+        response = HttpResponse(
+            importer.template_workbook(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="leads-import-template.xlsx"'
         return response
 
     # ---- One lead ----------

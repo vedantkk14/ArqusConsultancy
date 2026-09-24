@@ -1,11 +1,12 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, of, shareReplay } from 'rxjs';
-import { ApiService, QueryParams } from '../../../core/api/api.service';
+import { Observable, catchError, of, shareReplay, throwError } from 'rxjs';
+import { ApiService, QueryParams, toApiError } from '../../../core/api/api.service';
 import { PaginatedResponse } from '../../../core/models';
 import {
   Assignee,
   DuplicateInfo,
+  ImportReport,
   Interaction,
   LeadDetail,
   LeadInput,
@@ -117,5 +118,18 @@ export class LeadsApi {
       }
     }
     return this.http.get(`${this.api.baseUrl}${BASE}/export`, { params: httpParams, responseType: 'blob' });
+  }
+
+  /** Upload an .xlsx/.csv. `dryRun` only checks it and reports what would happen. */
+  importFile(file: File, dryRun: boolean): Observable<ImportReport> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http
+      .post<ImportReport>(`${this.api.baseUrl}${BASE}/import`, body, { params: dryRun ? { dry_run: '1' } : {} })
+      .pipe(catchError((err: HttpErrorResponse) => throwError(() => toApiError(err))));
+  }
+
+  importTemplate(): Observable<Blob> {
+    return this.http.get(`${this.api.baseUrl}${BASE}/import-template`, { responseType: 'blob' });
   }
 }

@@ -198,3 +198,22 @@ export const ORDERINGS: { value: string; label: string }[] = [
   { value: '-last_activity_at', label: 'Recent activity' },
   { value: '-won_at', label: 'Recently won' },
 ];
+
+export interface ImportProblem {
+  row: number;
+  name: string;
+  phone: string;
+  reason: string;
+}
+
+/** POST /leads/import (dry_run=1 previews; otherwise `created` leads exist). */
+export interface ImportReport {
+  dry_run: boolean;
+  total: number;
+  ready: number;
+  created: number;
+  duplicate_count: number;
+  error_count: number;
+  duplicates: ImportProblem[];
+  errors: ImportProblem[];
+}

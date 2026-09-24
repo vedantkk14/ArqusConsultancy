@@ -88,4 +88,7 @@ export class FakeLeadsApi {
   exportCsv() {
     return of(new Blob());
   }
+  importTemplate() {
+    return of(new Blob());
+  }
 }

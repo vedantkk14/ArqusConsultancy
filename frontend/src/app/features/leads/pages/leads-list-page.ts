@@ -11,6 +11,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
+import { ImportDialog } from '../components/dialogs/import-dialog';
 import { AssignDialog, AssignDialogData } from '../components/dialogs/assign-dialog';
 import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finalize-dialog';
 import { SnoozeDialog } from '../components/dialogs/snooze-dialog';
@@ -167,6 +168,18 @@ export class LeadsListPage {
   protected bulkAssign(): void {
     const ids = this.store.selectedIds();
     this.openAssign(ids, `${ids.length} ${ids.length === 1 ? 'lead' : 'leads'}`);
+  }
+
+  protected importLeads(): void {
+    this.dialog
+      .open<ImportDialog, void, number>(ImportDialog, { width: '640px', maxWidth: 'calc(100vw - 32px)' })
+      .afterClosed()
+      .subscribe((created) => {
+        if (created) {
+          this.store.reload();
+          this.snack.open(`${created} ${created === 1 ? 'lead' : 'leads'} imported.`, undefined, { duration: 4000 });
+        }
+      });
   }
 
   protected exportCsv(): void {

@@ -157,6 +157,13 @@ Once these exist, finalize, `won_awaiting`, `finance` and the `has_ledger` delet
 Notifications use `core.services.notify(user, type, payload)` with types `lead_assigned`,
 `lead_reassigned_away`, `lead_won`.
 
+### Lead import (Excel / CSV)
+
+| Status | Method & path | Who | Notes |
+| --- | --- | --- | --- |
+| ✅ | `POST /leads/import` | A, SM | `multipart/form-data`, field `file` (.xlsx or .csv, up to 2 MB and 1,000 rows). `?dry_run=1` only checks. Columns (headers are matched loosely): Name and Phone required; Email, Source, Assigned to (email or full name), Requirements, Proposed value optional. Returns `{dry_run, total, ready, created, duplicate_count, error_count, duplicates: [{row, name, phone, reason}], errors: [...]}` (first 50 of each listed). Bad rows and duplicate phones (existing or repeated in the file) are skipped, never fatal. 400 `{file: [...]}` for an unusable file. |
+| ✅ | `GET /leads/import-template` | A, SM | The .xlsx template with an example row and a Notes sheet. |
+
 ## Accounts (Dev C)
 
 Never accessible to PM.

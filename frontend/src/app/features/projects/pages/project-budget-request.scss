@@ -1,0 +1,36 @@
+// A PM's request for more budget, shown to both roles until the admin decides.
+.breq {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--tint-amber-ink) 30%, transparent);
+  background: var(--tint-amber);
+}
+
+.breq-ico {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--tint-amber-ink);
+}
+
+.breq-t {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 2px;
+
+  strong { color: var(--ink); }
+  span { color: var(--ink-2); font-size: var(--text-sm); overflow-wrap: anywhere; }
+}
+
+.breq-a { display: flex; gap: 8px; }
+.pill-wait { padding: 4px 10px; border-radius: var(--radius-pill); background: var(--surface); color: var(--tint-amber-ink); font-size: var(--text-xs); font-weight: 600; }
+

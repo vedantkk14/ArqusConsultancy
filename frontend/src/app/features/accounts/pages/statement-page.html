@@ -3,8 +3,25 @@
     <label class="search">
       <span class="sr-only">Search a client</span>
       <mat-icon aria-hidden="true">search</mat-icon>
-      <input type="search" placeholder="Search a client" autocomplete="off" [value]="search()" (input)="searchClients($any($event.target).value)" />
+      <input
+        type="search"
+        placeholder="Search a client by name or phone"
+        autocomplete="off"
+        [value]="search()"
+        (input)="searchClients($any($event.target).value)"
+        (focus)="searchClients(search())"
+        [matAutocomplete]="clientList"
+      />
     </label>
+    <mat-autocomplete #clientList="matAutocomplete" class="client-list" (optionSelected)="pick($event.option.value)">
+      @for (o of options(); track o.id) {
+        <mat-option [value]="o">
+          <span class="opt-row"><span class="opt-nm">{{ o.client }}</span><span class="opt-ph num">{{ o.phone }}</span></span>
+        </mat-option>
+      } @empty {
+        <mat-option disabled>No client matches “{{ search() }}”.</mat-option>
+      }
+    </mat-autocomplete>
     <label class="dd">
       <span class="lbl">From</span>
       <input class="ctl" type="date" [value]="from()" (change)="setPeriod('from', $any($event.target).value)" />
@@ -18,18 +35,6 @@
       <button matButton="outlined" type="button" (click)="exportCsv()"><mat-icon>download</mat-icon>Export CSV</button>
     }
   </div>
-  @if (options().length) {
-    <ul class="opts" aria-label="Clients">
-      @for (o of options(); track o.id) {
-        <li>
-          <button type="button" [attr.aria-pressed]="ledgerId() === o.id" (click)="pick(o)">
-            <span>{{ o.client }}</span>
-            <span class="ph num">{{ o.phone }}</span>
-          </button>
-        </li>
-      }
-    </ul>
-  }
 </section>
 
 @if (error()) {

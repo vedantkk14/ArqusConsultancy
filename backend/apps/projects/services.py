@@ -25,6 +25,7 @@ from .exceptions import (
 )
 from .models import (
     AlertState,
+    BudgetRequest,
     EventType,
     Expense,
     Project,
@@ -423,3 +424,127 @@ def void_expense(expense_id, by, reason: str) -> Expense:
     )
     _sync_alert(project, selectors.spent_for(project))
     return expense
+
+
+# ---- Budget requests and releases ----------
+
+
+def pending_request(project):
+    return project.budget_requests.filter(status=BudgetRequest.Status.PENDING).first()
+
+
+@transaction.atomic
+def request_budget(project_id, by, amount: Decimal, reason: str) -> BudgetRequest:
+    """The project's PM asks for `amount` more. Every admin is told."""
+    project = _lock(project_id)
+    if project.pm_id != by.pk:
+        raise PermissionDenied()
+    if project.status != ProjectStatus.RUNNING:
+        raise ProjectCompleted()
+    if amount <= 0:
+        raise ValidationError({"amount": ["Enter an amount above zero."]})
+    if not (reason or "").strip():
+        raise ValidationError({"reason": ["Say why the extra budget is needed."]})
+    if pending_request(project):
+        raise ValidationError(
+            {"amount": ["A request for this project is already waiting for the admin."]}
+        )
+    req = BudgetRequest.objects.create(
+        project=project, amount=amount, reason=reason.strip()[:500], requested_by=by
+    )
+    _event(
+        project,
+        EventType.BUDGET_REQUESTED,
+        by,
+        amount=selectors.money_str(amount),
+        reason=req.reason,
+    )
+    payload = _payload(project, amount=selectors.money_str(amount), requested_by=by.display_name)
+    for admin in _admins():
+        integrations.notify(admin, "budget_requested", payload)
+    return req
+
+
+@transaction.atomic
+def decide_budget_request(project_id, by, approve: bool, note: str = "") -> BudgetRequest:
+    """Admin approves (the budget grows by the amount asked) or rejects the pending request."""
+    if by.role != ADMIN:
+        raise PermissionDenied()
+    project = _lock(project_id)
+    req = pending_request(project)
+    if req is None:
+        raise ValidationError({"request": ["There is no pending request for this project."]})
+    if approve:
+        change_budget(
+            project.pk,
+            project.sanctioned_budget + req.amount,
+            f"Approved request: {req.reason}",
+            by,
+        )
+    req.status = BudgetRequest.Status.APPROVED if approve else BudgetRequest.Status.REJECTED
+    req.decided_by, req.decided_at, req.decision_note = by, timezone.now(), (note or "")[:300]
+    req.save(update_fields=["status", "decided_by", "decided_at", "decision_note"])
+    _event(
+        project,
+        EventType.BUDGET_REQUEST_DECIDED,
+        by,
+        amount=selectors.money_str(req.amount),
+        approved=approve,
+        note=req.decision_note,
+    )
+    if req.requested_by:
+        kind = "budget_request_approved" if approve else "budget_request_rejected"
+        integrations.notify(
+            req.requested_by,
+            kind,
+            _payload(project, amount=selectors.money_str(req.amount), note=req.decision_note),
+        )
+    return req
+
+
+@transaction.atomic
+def release_budget(project_id, by, target_project_id=None) -> dict:
+    """A completed project under budget gives back what it did not spend.
+
+    The sanctioned budget drops to what was spent, so the unused part counts as project margin.
+    With `target_project_id`, the same amount is added to that running project's budget instead.
+    """
+    if by.role != ADMIN:
+        raise PermissionDenied()
+    project = _lock(project_id)
+    if project.status != ProjectStatus.COMPLETED:
+        raise ValidationError({"project": ["Only a completed project can release its budget."]})
+    spent = selectors.spent_for(project)
+    unused = project.sanctioned_budget - spent
+    if unused <= 0:
+        raise ValidationError({"project": ["This project used its whole budget."]})
+    target = None
+    if target_project_id:
+        if int(target_project_id) == project.pk:
+            raise ValidationError({"target_project": ["Choose a different project."]})
+        target = Project.objects.filter(pk=target_project_id, status=ProjectStatus.RUNNING).first()
+        if target is None:
+            raise ValidationError({"target_project": ["Choose a running project."]})
+    old = project.sanctioned_budget
+    project.sanctioned_budget = spent
+    project.save(update_fields=["sanctioned_budget", "updated_at"])
+    _event(
+        project,
+        EventType.BUDGET_RELEASED,
+        by,
+        old=selectors.money_str(old),
+        new=selectors.money_str(spent),
+        amount=selectors.money_str(unused),
+        to_project=target.name if target else None,
+    )
+    if target:
+        change_budget(
+            target.pk,
+            target.sanctioned_budget + unused,
+            f"Unused budget moved from {project.name}",
+            by,
+        )
+    return {
+        "released": selectors.money_str(unused),
+        "to_project": {"id": target.pk, "name": target.name} if target else None,
+    }

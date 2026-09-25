@@ -57,11 +57,35 @@
       @if (can('adjust_budget')) {
         <button matButton="outlined" type="button" [attr.aria-label]="'Adjust the budget of ' + p.name" (click)="adjustBudget(p)"><mat-icon>tune</mat-icon>Adjust budget</button>
       }
+      @if (can('request_budget')) {
+        <button [matButton]="p.state === 'over' ? 'filled' : 'outlined'" type="button" (click)="requestBudget(p)"><mat-icon>request_quote</mat-icon>Request budget</button>
+      }
+      @if (can('release_budget')) {
+        <button matButton="filled" type="button" (click)="releaseBudget(p)"><mat-icon>savings</mat-icon>Use unused budget</button>
+      }
       @if (can('reopen')) {
         <button matButton="outlined" type="button" [attr.aria-label]="'Reopen ' + p.name" (click)="reopen(p)"><mat-icon>restart_alt</mat-icon>Reopen</button>
       }
     </div>
   </section>
+
+  @if (p.pending_budget_request; as r) {
+    <section class="card breq rise-in" aria-label="Budget request">
+      <span class="breq-ico" aria-hidden="true"><mat-icon>request_quote</mat-icon></span>
+      <div class="breq-t">
+        <strong>{{ r.requested_by || 'The project manager' }} asked for {{ r.amount | inr }} more</strong>
+        <span>{{ r.reason }} · {{ rel(r.created_at) }}</span>
+      </div>
+      @if (can('decide_budget_request')) {
+        <span class="breq-a">
+          <button matButton type="button" [disabled]="deciding()" (click)="decide(p, false)">Reject</button>
+          <button matButton="filled" type="button" [disabled]="deciding()" (click)="decide(p, true)">Approve</button>
+        </span>
+      } @else {
+        <span class="pill-wait">Waiting for the admin</span>
+      }
+    </section>
+  }
 
   <div class="grid">
     <div class="main">

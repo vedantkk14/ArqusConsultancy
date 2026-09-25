@@ -1,54 +1,79 @@
 @if (error()) {
   <app-error-state title="Couldn't load your profile" (retry)="load()" />
 } @else if (profile(); as p) {
-  <div class="wrap">
-    <section class="card panel rise-in" aria-label="Your details">
-      <header class="panel-head">
-        <h2>Your details</h2>
+  <section class="hero rise-in" aria-label="You">
+    <app-user-avatar [name]="p.name" [size]="72" />
+    <div class="hero-t">
+      <h2>{{ p.name }}</h2>
+      <p class="mail">{{ p.email || 'No email on file' }}</p>
+      <div class="chips">
         <app-role-badge [role]="asRole(p.role)" />
+        @if (p.date_joined) {
+          <span class="chip"><mat-icon aria-hidden="true">event</mat-icon>Member since {{ p.date_joined | date: 'MMM y' }}</span>
+        }
+        @if (p.commission_rate !== null) {
+          <span class="chip"><mat-icon aria-hidden="true">sell</mat-icon>{{ p.commission_rate }}% commission</span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="card panel rise-in" style="--i: 1" aria-labelledby="pf-details">
+      <header class="panel-head">
+        <span class="ico" aria-hidden="true"><mat-icon>badge</mat-icon></span>
+        <div><h2 id="pf-details">Personal details</h2><p>How colleagues see you across ARQUS.</p></div>
       </header>
       <form [formGroup]="form" (ngSubmit)="save()" novalidate>
-        <div class="grid">
+        <div class="fields">
           <div class="field">
             <label for="pf-first">First name</label>
             <input id="pf-first" formControlName="first_name" autocomplete="given-name" [attr.aria-invalid]="invalid('first_name') || null" />
-            @if (invalid('first_name')) { <p class="err">This is required.</p> }
+            @if (invalid('first_name')) { <p class="err">Enter your first name.</p> }
           </div>
           <div class="field">
-            <label for="pf-last">Last name</label>
+            <label for="pf-last">Last name <span class="opt">(optional)</span></label>
             <input id="pf-last" formControlName="last_name" autocomplete="family-name" [attr.aria-invalid]="invalid('last_name') || null" />
-            @if (invalid('last_name')) { <p class="err">This is required.</p> }
           </div>
-          <div class="field">
+          <div class="field full">
             <label for="pf-phone">Phone <span class="opt">(optional)</span></label>
-            <input id="pf-phone" type="tel" formControlName="phone" autocomplete="tel" />
+            <span class="pre-wrap">
+              <mat-icon aria-hidden="true">call</mat-icon>
+              <input id="pf-phone" type="tel" formControlName="phone" autocomplete="tel" placeholder="98765 43210" />
+            </span>
           </div>
-          <div class="field">
-            <label for="pf-email">Email</label>
-            <input id="pf-email" [value]="p.email" readonly aria-describedby="pf-email-h" />
-            <p class="h" id="pf-email-h">Ask an admin if this needs to change.</p>
-          </div>
-          @if (p.commission_rate !== null) {
-            <div class="field">
-              <label for="pf-rate">Commission rate</label>
-              <input id="pf-rate" [value]="p.commission_rate + '%'" readonly aria-describedby="pf-rate-h" />
-              <p class="h" id="pf-rate-h">Set by an admin.</p>
-            </div>
-          }
         </div>
         @if (formError()) { <p class="err" role="alert">{{ formError() }}</p> }
         <div class="actions">
+          @if (!form.pristine) { <button matButton type="button" (click)="reset()">Discard</button> }
           <button matButton="filled" type="submit" [disabled]="saving() || form.pristine">{{ saving() ? 'Saving…' : 'Save changes' }}</button>
         </div>
       </form>
     </section>
 
-    <section class="card panel rise-in" style="--i: 1" aria-label="Security">
-      <header class="panel-head"><h2>Password</h2></header>
-      <p class="note">Choose a new password. You stay signed in on this device.</p>
-      <a matButton="outlined" routerLink="/account/change-password"><mat-icon>lock</mat-icon>Change password</a>
-    </section>
+    <div class="side">
+      <section class="card panel rise-in" style="--i: 2" aria-labelledby="pf-acct">
+        <header class="panel-head">
+          <span class="ico" aria-hidden="true"><mat-icon>account_circle</mat-icon></span>
+          <div><h2 id="pf-acct">Account</h2><p>Managed by an admin.</p></div>
+        </header>
+        <dl class="kv">
+          <dt>Email</dt><dd>{{ p.email || '—' }}</dd>
+          @if (p.username) { <dt>Username</dt><dd>{{ p.username }}</dd> }
+          <dt>Role</dt><dd>{{ roleLabels[asRole(p.role)] }}</dd>
+          @if (p.commission_rate !== null) { <dt>Commission</dt><dd>{{ p.commission_rate }}%</dd> }
+        </dl>
+      </section>
+
+      <section class="card panel rise-in" style="--i: 3" aria-labelledby="pf-sec">
+        <header class="panel-head">
+          <span class="ico" aria-hidden="true"><mat-icon>lock</mat-icon></span>
+          <div><h2 id="pf-sec">Password</h2><p>You stay signed in on this device.</p></div>
+        </header>
+        <a matButton="outlined" class="wide" routerLink="/account/change-password"><mat-icon>key</mat-icon>Change password</a>
+      </section>
+    </div>
   </div>
 } @else {
-  <div class="card panel" aria-hidden="true"><app-skeleton width="30%" height="20px" /><app-skeleton height="120px" /></div>
+  <div class="card panel" aria-hidden="true"><app-skeleton width="40%" height="24px" /><app-skeleton height="120px" /></div>
 }

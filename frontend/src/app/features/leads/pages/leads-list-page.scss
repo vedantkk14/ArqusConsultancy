@@ -119,11 +119,24 @@
     box-shadow: none;
   }
 
+  .lg {
+    display: none;
+  }
+
   .head-a {
+    display: grid;
     width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 
     > * {
-      flex: 1;
+      min-width: 0;
+      padding-inline: 12px;
+      white-space: nowrap;
+    }
+
+    // The main action gets the full row under the two secondary ones.
+    > :last-child:nth-child(odd) {
+      grid-column: 1 / -1;
     }
   }
 }

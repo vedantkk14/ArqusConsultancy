@@ -310,9 +310,13 @@ def test_allowed_actions_come_from_the_server(client_for, admin, pm1, project):
     assert client_for(pm1).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == [
         "add_expense",
         "complete",
+        "request_budget",
     ]
     services.complete(project.pk, pm1)
-    assert client_for(admin).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == ["reopen"]
+    assert client_for(admin).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == [
+        "reopen",
+        "release_budget",  # nothing was spent, so the whole budget is unused
+    ]
     assert client_for(pm1).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == []
 
 

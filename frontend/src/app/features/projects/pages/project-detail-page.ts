@@ -1,3 +1,5 @@
+import { RequestBudgetDialog, RequestBudgetDialogData } from '../components/dialogs/request-budget-dialog';
+import { ReleaseBudgetDialog, ReleaseBudgetDialogData, ReleaseResult } from '../components/dialogs/release-budget-dialog';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -10,7 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
-import { Role } from '../../../core/models';
+import { ApiError, Role } from '../../../core/models';
 import { LayoutService } from '../../../layout/layout.service';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
@@ -58,7 +60,7 @@ const EXPENSE_TITLE_ID = 'ae-title';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-detail-page.html',
-  styleUrl: './project-detail-page.scss',
+  styleUrls: ['./project-detail-page.scss', './project-budget-request.scss'],
 })
 export class ProjectDetailPage {
   private readonly route = inject(ActivatedRoute);
@@ -293,6 +295,48 @@ export class ProjectDetailPage {
         if (done) {
           this.snack.open(done.pm ? `${done.pm.name} is now managing ${project.name}.` : 'Project manager removed.', undefined, { duration: 3000 });
           this.apply(done);
+        }
+      });
+  }
+
+  protected readonly deciding = signal(false);
+
+  protected requestBudget(project: ProjectDetail): void {
+    this.dialog
+      .open<RequestBudgetDialog, RequestBudgetDialogData, ProjectDetail>(RequestBudgetDialog, dialogConfig({ project }))
+      .afterClosed()
+      .subscribe((done) => {
+        if (done) {
+          this.snack.open('Request sent to the admin.', undefined, { duration: 3000 });
+          this.apply(done);
+        }
+      });
+  }
+
+  protected decide(project: ProjectDetail, approve: boolean): void {
+    this.deciding.set(true);
+    this.api.decideBudgetRequest(project.id, approve).subscribe({
+      next: (fresh) => {
+        this.deciding.set(false);
+        this.snack.open(approve ? 'Budget increased.' : 'Request rejected.', undefined, { duration: 3000 });
+        this.apply(fresh);
+      },
+      error: (err: ApiError) => {
+        this.deciding.set(false);
+        this.snack.open(err.message, 'Dismiss', { duration: 6000 });
+      },
+    });
+  }
+
+  protected releaseBudget(project: ProjectDetail): void {
+    this.dialog
+      .open<ReleaseBudgetDialog, ReleaseBudgetDialogData, ReleaseResult>(ReleaseBudgetDialog, dialogConfig({ project }))
+      .afterClosed()
+      .subscribe((done) => {
+        if (done) {
+          const where = done.to_project ? `moved to ${done.to_project.name}` : 'kept as margin';
+          this.snack.open(`Unused budget ${where}.`, undefined, { duration: 4000 });
+          this.apply(done.project);
         }
       });
   }

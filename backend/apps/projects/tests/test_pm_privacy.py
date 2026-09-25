@@ -49,7 +49,7 @@ def test_pm_response_has_exactly_the_allowed_keys(client_for, pm1, full_project)
     assert set(body) == {
         "id", "name", "client_name", "status", "start_date", "expected_end_date", "completed_at",
         "created_at", "pm_name", "sanctioned_budget", "spent", "remaining", "usage_pct", "state",
-        "scope", "allowed_actions",
+        "scope", "allowed_actions", "pending_budget_request",
     }  # fmt: skip
 
 

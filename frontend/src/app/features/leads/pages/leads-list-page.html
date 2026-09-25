@@ -12,7 +12,7 @@
     @if (isManager()) {
       <button matButton="outlined" type="button" (click)="exportCsv()"><mat-icon>download</mat-icon>Export CSV</button>
       @if (mode === 'all') {
-        <button matButton="outlined" type="button" (click)="importLeads()"><mat-icon>upload_file</mat-icon>Import from Excel</button>
+        <button matButton="outlined" type="button" (click)="importLeads()"><mat-icon>upload_file</mat-icon>Import<span class="lg">&nbsp;from Excel</span></button>
         <a matButton="filled" routerLink="/leads/new"><mat-icon>add</mat-icon>Add lead</a>
       }
     }

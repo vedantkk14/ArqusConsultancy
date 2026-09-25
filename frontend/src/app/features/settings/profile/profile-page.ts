@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,16 +10,17 @@ import { ApiError, ROLE_LABELS, Role } from '../../../core/models';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { RoleBadge } from '../../../shared/role-badge/role-badge';
 import { Skeleton } from '../../../shared/skeleton/skeleton';
+import { UserAvatar } from '../../../shared/user-avatar/user-avatar';
 import { SettingsApi } from '../settings.api';
 import { Profile } from '../settings.models';
 
 /** Any signed-in user: edit your own name and phone. Email, role and commission are shown, not editable. */
 @Component({
   selector: 'app-profile-page',
-  imports: [ErrorState, MatButtonModule, MatIconModule, ReactiveFormsModule, RoleBadge, RouterLink, Skeleton],
+  imports: [DatePipe, ErrorState, MatButtonModule, MatIconModule, ReactiveFormsModule, RoleBadge, RouterLink, Skeleton, UserAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-page.html',
-  styleUrls: ['../../team/ui/list-kit.scss', './profile-page.scss'],
+  styleUrl: './profile-page.scss',
 })
 export class ProfilePage {
   private readonly api = inject(SettingsApi);
@@ -32,7 +34,7 @@ export class ProfilePage {
   protected readonly roleLabels = ROLE_LABELS;
   protected readonly form = inject(FormBuilder).nonNullable.group({
     first_name: ['', [Validators.required, Validators.maxLength(150)]],
-    last_name: ['', [Validators.required, Validators.maxLength(150)]],
+    last_name: ['', Validators.maxLength(150)],
     phone: ['', Validators.maxLength(20)],
   });
 
@@ -74,6 +76,13 @@ export class ProfilePage {
   protected invalid(key: 'first_name' | 'last_name' | 'phone'): boolean {
     const c = this.form.controls[key];
     return c.invalid && c.touched;
+  }
+
+  protected reset(): void {
+    const p = this.profile();
+    if (p) {
+      this.fill(p);
+    }
   }
 
   private fill(p: Profile): void {

@@ -46,6 +46,9 @@
                 <span class="who-t">
                   <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
                   <span class="ph">{{ p.client_name }}</span>
+                  @if (p.pending_budget_request; as r) {
+                    <span class="breq-pill"><mat-icon aria-hidden="true">request_quote</mat-icon>Asks for {{ r.amount | inrCompact }} more</span>
+                  }
                 </span>
               </td>
               <td><ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" /></td>
@@ -84,6 +87,9 @@
               <span class="ph">{{ p.client_name }}</span>
             </span>
           </span>
+          @if (p.pending_budget_request; as r) {
+            <span class="breq-pill"><mat-icon aria-hidden="true">request_quote</mat-icon>Asks for {{ r.amount | inrCompact }} more</span>
+          }
           <app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" />
           <span class="lc-fig">
             <span><span class="lbl">Sanctioned</span><strong class="num">{{ p.sanctioned_budget | inrCompact }}</strong></span>

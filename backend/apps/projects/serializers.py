@@ -57,6 +57,7 @@ class ProjectPMSerializer(serializers.ModelSerializer):
     remaining = serializers.SerializerMethodField()
     usage_pct = serializers.SerializerMethodField()
     state = serializers.SerializerMethodField()
+    pending_budget_request = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -75,6 +76,7 @@ class ProjectPMSerializer(serializers.ModelSerializer):
             "remaining",
             "usage_pct",
             "state",
+            "pending_budget_request",
         )
 
     def get_pm_name(self, obj):
@@ -94,6 +96,23 @@ class ProjectPMSerializer(serializers.ModelSerializer):
 
     def get_state(self, obj):
         return selectors.budget_state(obj.spent, obj.sanctioned_budget)
+
+    def get_pending_budget_request(self, obj):
+        pending = getattr(obj, "pending_requests", None)
+        if pending is None:
+            pending = list(
+                obj.budget_requests.filter(status="PENDING").select_related("requested_by")
+            )
+        if not pending:
+            return None
+        req = pending[0]
+        return {
+            "id": req.pk,
+            "amount": selectors.money_str(req.amount),
+            "reason": req.reason,
+            "requested_by": req.requested_by.display_name if req.requested_by else None,
+            "created_at": req.created_at.isoformat(),
+        }
 
 
 class ProjectPMDetailSerializer(ProjectPMSerializer):

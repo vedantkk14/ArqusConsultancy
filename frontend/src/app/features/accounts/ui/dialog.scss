@@ -32,6 +32,10 @@
 select,
 textarea,
 input[type='text'],
+input[type='search'],
+input[type='email'],
+input[type='tel'],
+input[type='number'],
 input[type='date'] {
   width: 100%;
   min-height: 44px;

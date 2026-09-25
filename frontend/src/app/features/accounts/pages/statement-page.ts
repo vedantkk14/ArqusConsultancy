@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -27,7 +28,7 @@ import { PRINT_CSS, enablePrintMode } from '../ui/print';
  */
 @Component({
   selector: 'app-statement-page',
-  imports: [EmptyState, ErrorState, InrPipe, MatButtonModule, MatIconModule, Skeleton],
+  imports: [EmptyState, ErrorState, InrPipe, MatAutocompleteModule, MatButtonModule, MatIconModule, Skeleton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   templateUrl: './statement-page.html',
@@ -65,13 +66,14 @@ export class StatementPage {
 
   protected searchClients(q: string): void {
     this.search.set(q);
-    this.api.ledgers({ q: q.trim(), finalized: 'true', page_size: 8, ordering: 'client' }).subscribe({
+    this.api.ledgers({ q: q.trim(), finalized: 'true', page_size: 20, ordering: 'client' }).subscribe({
       next: (res) => this.options.set(res.results),
       error: () => this.options.set([]),
     });
   }
 
   protected pick(row: LedgerRow): void {
+    this.search.set(row.client);
     this.navigate({ ledger: String(row.id) });
   }
 
@@ -99,6 +101,9 @@ export class StatementPage {
     this.api.statement(id, this.from(), this.to()).subscribe({
       next: (s) => {
         this.statement.set(s);
+        if (!this.search()) {
+          this.search.set(s.client.name);
+        }
         this.loading.set(false);
       },
       error: () => {

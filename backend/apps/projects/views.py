@@ -1,14 +1,15 @@
 """Projects and expenses API. Every query starts from selectors.projects_for / expenses_for."""
 
 import csv
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Prefetch, Q, Sum
 from django.http import FileResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status as http
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -23,7 +24,7 @@ from .filters import (
     apply_project_filters,
     apply_project_ordering,
 )
-from .models import AlertState, Expense, ProjectEvent, ProjectStatus
+from .models import AlertState, BudgetRequest, Expense, ProjectEvent, ProjectStatus
 from .serializers import (
     AlertSerializer,
     AssignPMSerializer,
@@ -39,6 +40,18 @@ from .serializers import (
 
 ROLES = (ADMIN, PROJECT_MANAGER)
 INELIGIBLE_MAX = 200
+
+
+def _money_field(value) -> Decimal:
+    from decimal import InvalidOperation
+
+    try:
+        amount = Decimal(str(value).strip())
+    except (InvalidOperation, ValueError):
+        raise ValidationError({"amount": ["Enter an amount, e.g. 25000."]}) from None
+    if amount != amount.quantize(Decimal("0.01")) or amount.as_tuple().exponent < -2:
+        raise ValidationError({"amount": ["Use at most two decimals."]})
+    return amount
 
 
 class _Echo:
@@ -65,7 +78,15 @@ class ProjectViewSet(GenericViewSet):
     lookup_value_regex = r"\d+"
 
     def get_queryset(self):
-        return selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+        pending = Prefetch(
+            "budget_requests",
+            queryset=BudgetRequest.objects.filter(status="PENDING").select_related("requested_by"),
+            to_attr="pending_requests",
+        )
+        qs = selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+        if (self.request.query_params.get("budget_request") or "") == "pending":
+            qs = qs.filter(budget_requests__status="PENDING").distinct()
+        return qs.prefetch_related(pending)
 
     def _require_admin(self):
         if self.request.user.role != ADMIN:
@@ -224,6 +245,37 @@ class ProjectViewSet(GenericViewSet):
         project = self._project(pk)
         services.complete(project.pk, request.user)
         return Response(self._detail(project.pk))
+
+    @action(detail=True, methods=["post"], url_path="budget-request")
+    def budget_request(self, request, pk=None):
+        """PM: ask for more budget. Body: amount (extra, not the new total), reason."""
+        project = self._project(pk)
+        amount = _money_field(request.data.get("amount"))
+        services.request_budget(
+            project.pk, request.user, amount, str(request.data.get("reason", ""))
+        )
+        return Response(self._detail(project.pk), status=http.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="budget-request/decide")
+    def decide_budget_request(self, request, pk=None):
+        """Admin: approve or reject the pending request. Body: approve (bool), note."""
+        self._require_admin()
+        project = self._project(pk)
+        approve = str(request.data.get("approve", "")).lower() in ("1", "true")
+        services.decide_budget_request(
+            project.pk, request.user, approve, str(request.data.get("note", ""))
+        )
+        return Response(self._detail(project.pk))
+
+    @action(detail=True, methods=["post"], url_path="release-budget")
+    def release_budget(self, request, pk=None):
+        """Admin, completed project under budget: keep the unused part as margin, or move it."""
+        self._require_admin()
+        project = self._project(pk)
+        result = services.release_budget(
+            project.pk, request.user, request.data.get("target_project") or None
+        )
+        return Response({**result, "project": self._detail(project.pk)})
 
     @action(detail=True, methods=["post"])
     def reopen(self, request, pk=None):

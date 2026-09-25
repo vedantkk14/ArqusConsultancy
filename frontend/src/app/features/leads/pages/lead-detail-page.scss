@@ -1,7 +1,10 @@
 :host {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: var(--space-4);
+
+  > * { min-width: 0; }
 }
 
 // ---- Header card: soft glow tinted by the status --------------------------------------------------
@@ -136,7 +139,16 @@
 }
 
 .stage {
+  min-width: 0;
+  max-width: 100%;
   padding: var(--space-3) var(--space-4);
+
+  // The steps scroll sideways inside the card; they must never widen the page on a phone.
+  app-stage-stepper {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+  }
 }
 
 .lost {
@@ -180,7 +192,11 @@
   a,
   button {
     display: inline-flex;
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0; // three equal buttons that always fit the phone's width
+    padding: 0 8px;
+    overflow: hidden;
+    white-space: nowrap;
     align-items: center;
     justify-content: center;
     gap: 6px;

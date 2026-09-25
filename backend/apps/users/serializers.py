@@ -32,6 +32,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "role",
             "must_change_password",
             "commission_rate",
+            "username",
+            "date_joined",
+            "last_login",
         )
         read_only_fields = fields
 
@@ -45,7 +48,7 @@ class ProfileUpdateSerializer(serializers.Serializer):
     """What a person may change about themselves: name and phone (not email or role)."""
 
     first_name = serializers.CharField(max_length=150, required=False)
-    last_name = serializers.CharField(max_length=150, required=False)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
 
 

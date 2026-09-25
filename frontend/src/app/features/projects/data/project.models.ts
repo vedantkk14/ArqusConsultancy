@@ -18,7 +18,25 @@ export interface Person {
   name: string;
 }
 
-export type ProjectAction = 'add_expense' | 'complete' | 'adjust_budget' | 'reassign' | 'edit' | 'reopen';
+export type ProjectAction =
+  | 'add_expense'
+  | 'complete'
+  | 'adjust_budget'
+  | 'reassign'
+  | 'edit'
+  | 'reopen'
+  | 'request_budget'
+  | 'decide_budget_request'
+  | 'release_budget';
+
+/** A PM's request for more budget, waiting for the Admin. */
+export interface PendingBudgetRequest {
+  id: number;
+  amount: string;
+  reason: string;
+  requested_by: string | null;
+  created_at: string;
+}
 
 /** What a project manager may see. Never gains a finance or lead field. */
 export interface ProjectListItem {
@@ -38,6 +56,7 @@ export interface ProjectListItem {
   remaining: string;
   usage_pct: string;
   state: BudgetState;
+  pending_budget_request?: PendingBudgetRequest | null;
 }
 
 /** Admin only: ledger figures from accounts. Null until accounts can answer. */

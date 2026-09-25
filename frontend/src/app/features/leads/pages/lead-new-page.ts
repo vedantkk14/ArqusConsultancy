@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from 
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CanDeactivateFn, Router } from '@angular/router';
+import { CanDeactivateFn, Router, RouterLink } from '@angular/router';
 import { Observable, map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
@@ -33,9 +33,10 @@ export const unsavedChangesGuard: CanDeactivateFn<LeavesWithChanges> = (componen
 
 @Component({
   selector: 'app-lead-new-page',
-  imports: [LeadForm, MatIconModule],
+  imports: [LeadForm, MatIconModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <a class="back" routerLink="/leads/all"><mat-icon aria-hidden="true">arrow_back</mat-icon>All leads</a>
     <div class="layout">
       <section class="main rise-in" aria-labelledby="new-lead-title">
         <header class="intro">
@@ -61,6 +62,14 @@ export const unsavedChangesGuard: CanDeactivateFn<LeavesWithChanges> = (componen
     </div>
   `,
   styles: `
+    :host { display: flex; flex-direction: column; gap: var(--space-3); }
+    .back {
+      display: inline-flex; align-items: center; align-self: flex-start; gap: 6px; min-height: 44px; margin-left: -8px;
+      padding: 0 12px 0 8px; border-radius: var(--radius-pill); color: var(--ink-2); font-size: var(--text-sm);
+      font-weight: 500; text-decoration: none;
+    }
+    .back:hover { background: var(--subtle); color: var(--ink); }
+    .back mat-icon { width: 20px; height: 20px; font-size: 20px; }
     :host { display: block; container-type: inline-size; max-width: 1180px; }
     .layout { display: grid; gap: var(--space-5); align-items: start; }
     .intro {

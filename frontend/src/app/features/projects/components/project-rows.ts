@@ -1,3 +1,4 @@
+import { MatIconModule } from '@angular/material/icon';
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -10,7 +11,7 @@ import { dueLabel, formatDay } from '../ui/business-time';
 /** Projects as a table (>= 768px) or stacked cards (phones). The name is the link; buttons stay clickable. */
 @Component({
   selector: 'app-project-rows',
-  imports: [BudgetBar, InrCompactPipe, NgTemplateOutlet, PersonAvatar, RouterLink, Skeleton],
+  imports: [MatIconModule, BudgetBar, InrCompactPipe, NgTemplateOutlet, PersonAvatar, RouterLink, Skeleton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-rows.html',
   styleUrl: './project-rows.scss',

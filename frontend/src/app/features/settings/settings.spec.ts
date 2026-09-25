@@ -117,8 +117,10 @@ describe('ProfilePage', () => {
     const { http, harness, el } = await setup('/settings/profile', ProfilePage);
     http.expectOne('/api/v1/me').flush(profile);
     harness.detectChanges();
-    expect(el.querySelector<HTMLInputElement>('#pf-email')!.readOnly).toBe(true);
-    expect(el.querySelector<HTMLInputElement>('#pf-rate')!.value).toBe('2.50%');
+    const account = text(el.querySelector('.kv'));
+    expect(account).toContain('eva@x.com');
+    expect(account).toContain('2.50%');
+    expect(el.querySelector('#pf-email')).toBeNull(); // shown, never editable
     expect(el.querySelector('a[href="/account/change-password"]')).not.toBeNull();
 
     const phone = el.querySelector<HTMLInputElement>('#pf-phone')!;
@@ -137,6 +139,6 @@ describe('ProfilePage', () => {
     const { http, harness, el } = await setup('/settings/profile', ProfilePage);
     http.expectOne('/api/v1/me').flush({ ...profile, role: 'ADMIN', commission_rate: null });
     harness.detectChanges();
-    expect(el.querySelector('#pf-rate')).toBeNull();
+    expect(text(el.querySelector('.kv'))).not.toContain('Commission');
   });
 });

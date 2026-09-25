@@ -186,6 +186,18 @@ def allowed_actions(user, project) -> list[str]:
         actions += ["adjust_budget", "reassign", "edit"]
     if not running and is_admin:
         actions.append("reopen")
+        if Decimal(getattr(project, "spent", 0) or 0) < project.sanctioned_budget:
+            actions.append("release_budget")
+    pending = getattr(project, "pending_requests", None)
+    has_pending = (
+        bool(pending)
+        if pending is not None
+        else project.budget_requests.filter(status="PENDING").exists()
+    )
+    if running and is_pm and not has_pending:
+        actions.append("request_budget")
+    if running and is_admin and has_pending:
+        actions.append("decide_budget_request")
     return actions
 
 

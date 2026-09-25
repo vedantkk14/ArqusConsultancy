@@ -20,6 +20,9 @@ export interface Profile {
   phone: string;
   role: string;
   commission_rate: string | null;
+  username?: string;
+  date_joined?: string;
+  last_login?: string | null;
 }
 
 export const ACTION_LABELS: Record<AuditAction, string> = { CREATE: 'Created', UPDATE: 'Updated', DELETE: 'Deleted' };

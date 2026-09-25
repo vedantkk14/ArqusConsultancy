@@ -48,7 +48,7 @@ const TRACK: LeadStatus[] = ['NEW', 'CONTACTED', 'INTERESTED', 'WON'];
     </ol>
   `,
   styles: `
-    :host { display: block; overflow-x: auto; scrollbar-width: none; }
+    :host { position: relative; display: block; overflow-x: auto; scrollbar-width: none; } /* relative: keeps the absolute sr-only labels inside the scroll box */
     .track { display: flex; align-items: center; min-width: max-content; margin: 0; padding: 4px 2px; list-style: none; }
     .st { display: flex; align-items: center; }
     .st:not(:last-child)::after { width: 32px; height: 2px; margin: 0 6px; border-radius: 2px; background: var(--line); content: ''; }

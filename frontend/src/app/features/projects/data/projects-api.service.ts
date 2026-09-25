@@ -84,6 +84,23 @@ export class ProjectsApi {
     return this.api.patch<ProjectDetail>(`${PROJECTS}/${id}`, body);
   }
 
+  /** PM: ask the Admin for `amount` more (the extra, not the new total). */
+  requestBudget(id: number, amount: string, reason: string): Observable<ProjectDetail> {
+    return this.api.post<ProjectDetail>(`${PROJECTS}/${id}/budget-request`, { amount, reason });
+  }
+
+  decideBudgetRequest(id: number, approve: boolean, note = ''): Observable<ProjectDetail> {
+    return this.api.post<ProjectDetail>(`${PROJECTS}/${id}/budget-request/decide`, { approve, note });
+  }
+
+  /** Admin, completed project: keep the unused budget as margin, or move it to a running project. */
+  releaseBudget(
+    id: number,
+    targetProject: number | null,
+  ): Observable<{ released: string; to_project: { id: number; name: string } | null; project: ProjectDetail }> {
+    return this.api.post(`${PROJECTS}/${id}/release-budget`, targetProject ? { target_project: targetProject } : {});
+  }
+
   changeBudget(id: number, sanctioned_budget: string, reason: string): Observable<ProjectDetail> {
     return this.api.post<ProjectDetail>(`${PROJECTS}/${id}/budget`, { sanctioned_budget, reason });
   }

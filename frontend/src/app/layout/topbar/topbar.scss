@@ -53,19 +53,30 @@
 .actions { display: flex; flex: none; align-items: center; gap: 6px; }
 
 .avatar-btn {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 4px 0 4px;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-pill);
   background: transparent;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
-  transition: box-shadow var(--dur-fast);
+  transition: background-color var(--dur-fast);
 
   &:hover,
-  &[aria-expanded='true'] { box-shadow: 0 0 0 3px var(--brand-tint); }
+  &[aria-expanded='true'] { background: var(--subtle); }
+}
+
+.hi {
+  display: none;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+
+  strong { color: var(--ink); font-weight: 600; }
 }
 
 .menu-user {
@@ -85,6 +96,8 @@
 
 @media (min-width: 640px) {
   .subtitle { display: block; }
+  .hi { display: inline; }
+  .avatar-btn { padding-left: 14px; }
 }
 
 @media (min-width: 1024px) {

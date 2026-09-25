@@ -5,7 +5,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-import { greeting } from '../../core/models/user-display';
+import { firstName, greeting } from '../../core/models/user-display';
 import { NotificationBell } from '../notification-bell/notification-bell';
 import { RoleBadge } from '../../shared/role-badge/role-badge';
 import { UserAvatar } from '../../shared/user-avatar/user-avatar';
@@ -31,6 +31,7 @@ export class Topbar {
 
   protected readonly auth = inject(AuthService);
   protected readonly layout = inject(LayoutService);
+  protected readonly firstName = firstName;
   protected readonly greeting = greeting;
 
   /** Current page name, taken from the active route's `title`. */

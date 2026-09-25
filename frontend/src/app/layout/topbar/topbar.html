@@ -15,6 +15,7 @@
 
   @if (auth.user(); as user) {
       <button type="button" class="avatar-btn" [attr.aria-label]="'Account menu for ' + user.name" [matMenuTriggerFor]="accountMenu">
+      <span class="hi">Hi, <strong>{{ firstName(user.name) }}</strong></span>
       <app-user-avatar [name]="user.name" [size]="36" />
     </button>
     <mat-menu #accountMenu="matMenu" xPosition="before">

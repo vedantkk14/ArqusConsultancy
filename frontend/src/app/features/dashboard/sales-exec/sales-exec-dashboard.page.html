@@ -1,0 +1,101 @@
+<header class="page-head">
+  <div class="controls">
+    <span class="updated">{{ updatedText() }}</span>
+    <button
+      type="button"
+      class="icon-btn"
+      aria-label="Refresh"
+      matTooltip="Refresh"
+      [disabled]="state().status === 'loading'"
+      (click)="reload()"
+    >
+      <mat-icon aria-hidden="true" [class.spin]="refreshing()">refresh</mat-icon>
+    </button>
+  </div>
+</header>
+
+@if (state().status === 'error' && !data()) {
+  <app-error-state title="Couldn't load your dashboard" (retry)="reload()" />
+} @else if (hasNoLeads()) {
+  <app-empty-state
+    icon="contacts"
+    title="No leads assigned yet"
+    message="New leads appear here when your manager assigns them."
+  />
+} @else {
+  <div class="bento" [class.busy]="refreshing()" [attr.aria-busy]="state().status === 'loading'">
+    @if (data(); as d) {
+      <div class="col b-left">
+        <!-- Follow up now: overdue then today, one card -->
+        <app-follow-up-now-card class="rise-in" style="--i: 0" [overdue]="d.queues.overdue" [today]="d.queues.today" />
+
+        <!-- New leads -->
+        <app-exec-queue-section
+          class="rise-in"
+          style="--i: 1"
+          title="New leads"
+          subtitle="Untouched"
+          icon="person_add"
+          tone="teal"
+          [showFollowup]="false"
+          [items]="d.queues.new_leads.items"
+          [total]="d.queues.new_leads.total"
+          viewAllRoute="/leads/all"
+          [viewAllParams]="{ untouched: 'true' }"
+          emptyText="No new leads waiting."
+        />
+
+        <!-- No next step: hidden entirely when empty -->
+        @if (d.queues.no_followup.total > 0) {
+          <app-exec-queue-section
+            class="rise-in"
+            style="--i: 2"
+            title="No next step"
+            subtitle="Set a follow-up so these don't go cold"
+            icon="event_busy"
+            tone="amber"
+            hint="Set a follow-up date so these don't go cold."
+            [showFollowup]="false"
+            [items]="d.queues.no_followup.items"
+            [total]="d.queues.no_followup.total"
+            viewAllRoute="/leads/all"
+            [viewAllParams]="{ followup: 'none' }"
+          />
+        }
+      </div>
+
+      <div class="col b-right">
+        <!-- My pipeline -->
+        <app-my-pipeline-card class="rise-in" style="--i: 3" [stages]="d.pipeline" />
+
+        <!-- My results -->
+        <app-my-results-strip class="rise-in" style="--i: 4" [kpis]="d.kpis" [period]="period()" (periodChanged)="setPeriod($event)" />
+
+        <!-- Coming up -->
+        <app-upcoming-card class="rise-in" style="--i: 5" [upcoming]="d.upcoming" />
+
+        <!-- My recent activity -->
+        <app-activity-card class="rise-in" style="--i: 6" [rows]="activityRows()" [now]="now()" />
+      </div>
+    } @else {
+      <div class="col b-left">
+        @for (k of ['a', 'b']; track k) {
+          <div class="card skeleton-card" aria-hidden="true">
+            <app-skeleton width="40%" height="14px" />
+            <app-skeleton width="60%" height="28px" radius="8px" />
+            <app-skeleton height="96px" radius="10px" />
+          </div>
+        }
+      </div>
+      <div class="col b-right">
+        @for (k of ['a', 'b', 'c', 'd']; track k) {
+          <div class="card skeleton-card" aria-hidden="true">
+            <app-skeleton width="40%" height="14px" />
+            <app-skeleton width="60%" height="28px" radius="8px" />
+            <app-skeleton height="96px" radius="10px" />
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

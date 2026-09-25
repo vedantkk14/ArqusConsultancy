@@ -17,7 +17,7 @@ from apps.core.permissions import PROJECT_MANAGER, HasRole
 from apps.reports.services import DEFAULT_PERIOD, PERIODS, period_range
 
 from . import selectors
-from .models import EventType, Expense, ProjectEvent, ProjectStatus
+from .models import EventType, ProjectEvent, ProjectStatus
 
 RECENT_EXPENSE_COUNT = 8
 RECENT_ACTIVITY_COUNT = 8
@@ -41,9 +41,8 @@ def _iso(moment) -> str:
 
 def _activity_text(event) -> tuple[str, str]:
     kind, text = _ACTIVITY_TYPES[event.type]
-    if event.type == EventType.EXPENSE_ADDED and event.data.get("amount"):
-        category = str(event.data.get("category", "")).title()
-        text = f"Expense added: {category} ₹{event.data['amount']}"
+    if event.type == EventType.EXPENSE_ADDED and event.data.get("category"):
+        text = f"Expense added: {str(event.data['category']).title()}"
     return kind, text
 
 

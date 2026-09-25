@@ -2,7 +2,6 @@
 
 from decimal import Decimal
 
-import pytest
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
@@ -160,7 +159,7 @@ def test_money_is_strings_everywhere(client_for, pm1, project, make_expense):
 
 
 def test_query_budget(client_for, pm1, make_project, make_expense, django_assert_max_num_queries):
-    for n in range(3):
+    for _ in range(3):
         make_expense(pm1, "100.00", proj=make_project(pm=pm1))
     client = client_for(pm1)
     with CaptureQueriesContext(connection) as ctx:
@@ -168,9 +167,7 @@ def test_query_budget(client_for, pm1, make_project, make_expense, django_assert
     assert len(ctx) < 12, [q["sql"][:80] for q in ctx]
 
 
-def test_budget_numbers_match_the_project_detail_exactly(
-    client_for, pm1, project, make_expense
-):
+def test_budget_numbers_match_the_project_detail_exactly(client_for, pm1, project, make_expense):
     make_expense(pm1, "487333.33")
     row = get(client_for, pm1).json()["projects"][0]
     detail = client_for(pm1).get(f"{BASE}/{project.pk}").json()

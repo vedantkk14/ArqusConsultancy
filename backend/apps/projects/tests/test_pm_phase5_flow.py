@@ -1,6 +1,6 @@
 """Phase 5 end to end, through the API: Admin assigns -> PM tracks budget/expenses -> completion."""
 
-from apps.projects import selectors
+from decimal import Decimal
 
 from .conftest import BASE, assert_no_leak, expense_form
 
@@ -75,7 +75,7 @@ def test_phase5_workflow(client_for, admin, pm1, make_lead, notes):
     assert dash["kpis"]["total_remaining"] == detail["remaining"] == "-9000.00"
     assert (row["usage_pct"], row["state"]) == (detail["usage_pct"], detail["state"])
     assert dash["alerts"][0]["state"] == "over"
-    assert selectors.money_str(sum(float(x["amount"]) for x in dash["recent_expenses"])) == "69000.00"
+    assert sum(Decimal(x["amount"]) for x in dash["recent_expenses"]) == Decimal("69000.00")
 
     # 7. The PM completes it. `complete` notifies every admin plus the PM, except the actor.
     before = dash["kpis"]["projects_completed"]

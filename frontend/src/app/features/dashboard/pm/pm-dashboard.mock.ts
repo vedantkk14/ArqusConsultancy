@@ -114,7 +114,7 @@ export function mockPmDashboard(): PmDashboard {
         type: 'expense_added',
         project_id: 1,
         project_name: 'Riverside Court Renovation',
-        text: 'Expense added: Materials ₹24000.00',
+        text: 'Expense added: Materials',
       },
       {
         at: iso(1500),

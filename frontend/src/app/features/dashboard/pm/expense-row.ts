@@ -29,7 +29,13 @@ import { PmExpense } from './pm-dashboard.models';
         </span>
       </span>
       <span class="amt num">{{ e.amount | inr }}</span>
-      <mat-icon class="rc" [class.on]="e.has_receipt" aria-hidden="true">receipt_long</mat-icon>
+      <mat-icon
+        class="rc"
+        [class.on]="e.has_receipt"
+        aria-hidden="true"
+        [attr.title]="e.has_receipt ? 'Receipt attached' : 'No receipt'"
+        >receipt_long</mat-icon
+      >
       <span class="sr-only">{{ e.has_receipt ? 'Receipt attached' : 'No receipt' }}</span>
     </a>
   `,

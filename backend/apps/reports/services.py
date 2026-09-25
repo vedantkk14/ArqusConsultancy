@@ -158,9 +158,6 @@ def _model(app_label: str, model_name: str):
         return None
 
 
-# ---- Dashboard -----------------------------------------------------------------------------------
-
-
 def business_today() -> date:
     """Today in the business time zone (the server clock is UTC; the office is not)."""
     from datetime import datetime
@@ -208,12 +205,13 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
     spent = ZERO
     spent_trend = [ZERO] * len(months)
     recent_expenses: list[dict] = []
+    project_events: list[dict] = []
     if project_model is not None and expense_model is not None:
         p = live.project_figures(rng, months)
         projects_running, projects_completed = p["running"], p["completed"]
         projects_burn, budget_alerts, spent = p["burn"], p["over"], p["spent"]
         spent_trend = [p["spent_by_month"].get(m, ZERO) for m in months]
-        recent_expenses = p["recent_expenses"]
+        recent_expenses, project_events = p["recent_expenses"], p["events"]
 
     received = received_prev = outstanding = outstanding_overdue = ZERO
     received_all = finalized_value = ZERO
@@ -242,15 +240,7 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
             "type": "payment",
         }
         for r in recent_payments
-    ] + [
-        {
-            "when": r["at"].isoformat(),
-            "actor": "Projects",
-            "action": f"logged {r['category']} {r['amount']} on {r['project']}",
-            "type": "expense",
-        }
-        for r in recent_expenses
-    ]
+    ] + project_events
     activity = sorted(activity + feed, key=lambda r: r["when"], reverse=True)[:8]
     for row in recent_payments + recent_expenses:
         row.pop("at", None)

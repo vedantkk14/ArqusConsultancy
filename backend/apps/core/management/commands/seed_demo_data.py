@@ -92,6 +92,11 @@ NOTES = [
 class Command(BaseCommand):
     help = "Create demo users (one per role) and, later, demo business data. DEBUG only."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--pm", default="project_manager", help="PM username for the 4 flow projects"
+        )
+
     def handle(self, *args, **options):
         if not settings.DEBUG:
             raise CommandError("Refusing to seed demo data because DEBUG is False.")
@@ -102,6 +107,9 @@ class Command(BaseCommand):
         self._seed_notifications(users)
         self._seed_ledgers(users)  # before projects: converting a deal needs a finalized ledger
         self._seed_projects(users)
+        from apps.projects.demo import seed_pm_flow
+
+        seed_pm_flow(self, users, options["pm"])
         self._seed_payments(users)
         self.stdout.write(self.style.SUCCESS("Demo data ready."))
         self._print_credentials()

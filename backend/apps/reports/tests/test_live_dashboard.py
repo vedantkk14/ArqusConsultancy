@@ -105,7 +105,7 @@ def test_lists_and_attention_come_from_real_rows(world):
     }  # fmt: skip
     assert len(body["recent"]["payments"]) == 2 and len(body["recent"]["expenses"]) == 1
     types = {a["type"] for a in body["recent"]["activity"]}
-    assert {"lead", "payment", "expense"} <= types
+    assert {"lead", "payment"} <= types  # project events come from the projects services
     assert all("at" not in r for r in body["recent"]["payments"])
 
 

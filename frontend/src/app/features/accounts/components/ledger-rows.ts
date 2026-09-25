@@ -9,7 +9,10 @@ import { LedgerRow } from '../data/account.models';
 import { CollectBar, LedgerStateChip, OverduePill, PersonAvatar } from '../ui/bits';
 import { formatDay } from '../ui/business-time';
 
-export type RowAction = { kind: 'pay' | 'remind' | 'finalize'; row: LedgerRow };
+export interface RowAction {
+  kind: 'pay' | 'remind' | 'finalize';
+  row: LedgerRow;
+}
 
 /** Ledgers as a table (>= 768px) or stacked cards (phones). The client name is the link; buttons stay clickable. */
 @Component({

@@ -199,7 +199,7 @@ def project_figures(rng, months: list[str]) -> dict:
         }
         for p in annotated.order_by("-usage")[:TOP_PROJECTS]
     ]
-    over = annotated.filter(selectors.state_q("over")).count()
+    alerts = annotated.exclude(selectors.state_q("ok")).count()  # warn or over, as the PM sees it
     expenses = selectors.active_expenses()
     monthly = {
         _month_key(r["m"]): Decimal(r["t"] or 0)
@@ -219,11 +219,25 @@ def project_figures(rng, months: list[str]) -> dict:
         }
         for e in expenses.select_related("project").order_by("-spent_on", "-id")[:RECENT]
     ]
+    from apps.projects.models import ProjectEvent
+
+    events = [
+        {
+            "when": ev.created_at.isoformat(),
+            "actor": ev.actor.display_name if ev.actor else "System",
+            "action": f"{ev.get_type_display().lower()}: {ev.project.name}",
+            "type": "expense" if ev.type.startswith("EXPENSE") else "project",
+        }
+        for ev in ProjectEvent.objects.select_related("project", "actor").order_by(
+            "-created_at", "-id"
+        )[:ACTIVITY]
+    ]
     return {
         "running": counts.get(ProjectStatus.RUNNING, 0),
         "completed": counts.get(ProjectStatus.COMPLETED, 0),
         "burn": burn,
-        "over": over,
+        "over": alerts,
+        "events": events,
         "spent": _sum(expenses.filter(_in("spent_on", rng.start, rng.end))),
         "spent_by_month": monthly,
         "recent_expenses": recent,

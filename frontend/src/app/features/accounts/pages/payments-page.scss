@@ -105,3 +105,6 @@
     > * { flex: 1; }
   }
 }
+
+.head-a button { white-space: nowrap; }
+@media (max-width: 767px) { .head-a { flex-wrap: nowrap; } }

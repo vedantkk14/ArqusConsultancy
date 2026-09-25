@@ -187,3 +187,73 @@ def _seed_expenses(project, logger, admin, budget, usage, count, override, rnd) 
                 voided_at=now - timedelta(days=9),
                 voided_by=admin,
             )
+
+
+# A small set for one PM: (client, project, deal total, usage %, status, admin override)
+FLOW_DEMO = [
+    ("Rajesh Sharma", "Sharma Farmhouse Turf", 500000, 45, "RUNNING", False),
+    ("Anjali Iyer", "Iyer Residency Lawn", 400000, 85, "RUNNING", False),
+    ("Vikram Singh Rathore", "Rathore Cricket Academy Nets", 800000, 104, "RUNNING", True),
+    ("Sunita Deshmukh", "Deshmukh Society Play Area", 300000, 92, "COMPLETED", False),
+]
+
+
+def seed_pm_flow(command, users, pm_username: str = "project_manager") -> None:
+    """Four projects with Indian client names for one PM: on track, near limit, over, completed."""
+    from apps.accounts.models import Ledger
+
+    pm = get_user_model().objects.filter(username=pm_username, role="PROJECT_MANAGER").first()
+    if pm is None:
+        command.stdout.write(f"  pm flow: no project manager '{pm_username}', skipped")
+        return
+    admin = users["ADMIN"]
+    lead_model = integrations.lead_model()
+    rnd = random.Random(11)
+    now = timezone.now()
+    made = 0
+    for i, (client, name, total, usage, status, override) in enumerate(FLOW_DEMO):
+        phone = f"+9195{pm.pk:04d}{i:04d}"  # one set per PM
+        if Project.objects.filter(pm=pm, name=name).exists():
+            continue
+        lead = lead_model.objects.create(
+            name=client,
+            phone=phone,
+            email=f"{client.split()[0].lower()}@example.in",
+            status="WON",
+            source="REFERRAL",
+            proposed_amount=total,
+            won_at=now - timedelta(days=30 + i),
+            created_by=admin,
+            assigned_to=None,
+        )
+        Ledger.objects.create(
+            lead=lead,
+            total_amount=total,
+            finalized_at=now - timedelta(days=28),
+            finalized_on=selectors.business_today(),
+            finalized_by=admin,
+        )
+        budget = (Decimal(total) * Decimal("0.6")).quantize(Decimal("1"))
+        project = services.convert(
+            lead.pk,
+            name=name,
+            sanctioned_budget=budget,
+            pm_id=pm.pk,
+            start_date=(now - timedelta(days=25)).date(),
+            expected_end_date=(now + timedelta(days=45)).date(),
+            scope="Site preparation, turf laying and finishing.",
+            by=admin,
+        )
+        _seed_expenses(project, pm, admin, budget, usage, 5, override, rnd)
+        if status == "COMPLETED":
+            Project.objects.filter(pk=project.pk).update(
+                status=ProjectStatus.COMPLETED,
+                completed_at=now - timedelta(days=2),
+                completed_by=pm,
+            )
+        spent = selectors.spent_for(project)
+        Project.objects.filter(pk=project.pk).update(
+            alert_state=selectors.budget_state(spent, budget).upper()
+        )
+        made += 1
+    command.stdout.write(f"  pm flow: {made} projects created for {pm_username}")

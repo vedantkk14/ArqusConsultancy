@@ -410,7 +410,8 @@ def test_finalize_reports_accounts_not_ready(client_for, admin, make_lead, monke
 
     monkeypatch.setattr(integrations, "accounts_missing", lambda: ["accounts.Ledger"])
     lead = make_lead(status=LeadStatus.WON, proposed_amount=100)
-    r = client_for(admin).post(f"{BASE}/{lead.id}/finalize", {"amount": "100"})
+    with mock.patch.object(integrations, "accounts_missing", return_value=["accounts.Ledger"]):
+        r = client_for(admin).post(f"{BASE}/{lead.id}/finalize", {"amount": "100"})
     assert r.status_code == 409 and err(r) == "accounts_not_ready"
     assert r.json()["error"]["details"]["missing"]
 
@@ -569,7 +570,7 @@ def test_admin_can_own_work_and_close_a_lead(client_for, admin, make_lead):
     r = c.post(f"{BASE}/{lead.id}/status", {"status": "WON", "proposed_amount": "500000"})
     assert r.status_code == 200 and r.json()["status"] == "WON"
     r = c.post(f"{BASE}/{lead.id}/finalize", {"amount": "500000"})
-    assert r.status_code == 200  # accounts is merged, so finalizing works
+    assert r.status_code == 200 and r.json()["finance"]["finalized"] is True
 
 
 def test_interested_cannot_go_back_to_contacted(client_for, manager, make_lead):

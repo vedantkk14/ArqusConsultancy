@@ -159,8 +159,6 @@ Once these exist, finalize, `won_awaiting`, `finance` and the `has_ledger` delet
 Notifications use `core.services.notify(user, type, payload)` with types `lead_assigned`,
 `lead_reassigned_away`, `lead_won`.
 
-### Lead import (Excel / CSV)
-
 ### Sales Manager dashboard
 
 `GET /dashboard/sales-manager?period=month|quarter|year|all` (registered in `apps/leads/urls.py`; default
@@ -249,6 +247,8 @@ exec whose `overdue` exceeds 3 gets an amber highlight in the UI ("overdue > 3",
 ## Accounts (Dev C)
 
 Never accessible to PM.
+
+### Lead import (Excel / CSV)
 
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
@@ -417,6 +417,45 @@ Projects reads the deal's money through one adapter, `apps/projects/integrations
 * Notification types sent through `core.services.notify`: `budget_warn`, `budget_over` (every active admin, once per
   upward change), `project_assigned`, `project_unassigned`, `budget_changed`, `project_completed`, `project_reopened`.
   Payloads carry `project_id` and `project_name` (alerts add `usage_pct`, `spent`, `sanctioned_budget`).
+
+### PM dashboard (Dev B)
+
+| Status | Method & path | Who | Notes |
+| --- | --- | --- | --- |
+| ✅ | `GET /dashboard/pm?period=month\|quarter\|year\|all` | PM | PM home (`apps/projects/dashboard_pm_views.py`). 401 anonymous, 403 every other role, 400 bad period |
+
+Scoped to the caller's own projects. Budget figures come from the same `selectors` as the project detail page, so `state`, `usage_pct`, `spent` and `remaining` always match it. Never contains the deal total, payments, margins or lead data. `period` changes only `expenses_logged_period` / `expenses_amount_period` (non-void expenses dated in the period); the budget snapshot never depends on it. `projects` lists running first, then completed. `alerts` = running projects whose `state` is `warn` or `over`, over first, worst `usage_pct` first. `recent_expenses` = newest 8 on the PM's projects (voided ones included, flagged `is_void`). `recent_activity` = last 8 of project_assigned, budget_changed, expense_added, project_completed, project_reopened. Under 12 queries.
+
+```json
+{
+  "as_of": "2026-09-25T09:30:00Z",
+  "business_date": "2026-09-25",
+  "period": {"key": "month", "from": "2026-09-01", "to": "2026-09-25"},
+  "kpis": {
+    "projects_running": 2, "projects_completed": 1,
+    "total_sanctioned": "900000.00", "total_spent": "627500.00", "total_remaining": "272500.00",
+    "expenses_logged_period": 4, "expenses_amount_period": "63500.00"
+  },
+  "projects": [
+    {"id": 1, "name": "Riverside Court Renovation", "client_name": "Riverside Sports Club", "status": "RUNNING",
+     "sanctioned_budget": "600000.00", "spent": "492000.00", "remaining": "108000.00",
+     "usage_pct": "82.00", "state": "warn", "expected_end_date": "2026-10-25"}
+  ],
+  "alerts": [
+    {"project_id": 1, "project_name": "Riverside Court Renovation", "state": "warn", "usage_pct": "82.00", "remaining": "108000.00"}
+  ],
+  "recent_expenses": [
+    {"id": 11, "project_id": 1, "project_name": "Riverside Court Renovation", "category": "MATERIALS",
+     "amount": "24000.00", "spent_on": "2026-09-25", "has_receipt": true, "is_void": false}
+  ],
+  "recent_activity": [
+    {"at": "2026-09-25T09:25:00Z", "type": "project_completed", "project_id": 3,
+     "project_name": "Kondhwa Cricket Nets", "text": "Project marked Completed"}
+  ]
+}
+```
+
+`usage_pct` has two decimals (the same string the project endpoints return, truncated never rounded up). `complete` notifies every admin plus the project's PM, except the person who completed it.
 
 ## Reports (Dev C)
 

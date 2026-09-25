@@ -1,67 +1,44 @@
-﻿.topbar {
+.topbar {
   position: sticky;
   top: 0;
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   height: var(--topbar-h);
   padding: 0 var(--gutter);
-  background: var(--surface); // fallback without backdrop-filter
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 6px 16px -12px rgba(15, 23, 42, 0.18);
 
   @supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 }
 
 .emblem {
   display: block;
   width: auto;
-  height: 30px;
-  margin-right: var(--space-1);
+  height: 28px;
 }
 
-// Left: who is signed in (greeting over role). Right: the page, then the account menu.
-.who {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-  line-height: 1.2;
-}
-
-.hi {
-  color: var(--ink-3);
-  font-size: var(--text-sm);
-  white-space: nowrap;
-
-  strong {
-    color: var(--ink);
-    font-size: var(--text-md);
-    font-weight: 600;
-  }
-}
-
+// Left: the page you're on. Right: notifications, then who you are (opens the account menu).
 .titles {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  align-items: flex-end;
-  margin-right: var(--space-2);
+  gap: 1px;
   line-height: 1.2;
-  text-align: right;
 }
 
 .page-title {
-  max-width: 100%;
+  margin: 0;
   overflow: hidden;
   color: var(--ink);
   font-size: var(--text-md);
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -74,38 +51,62 @@
   white-space: nowrap;
 }
 
-.spacer {
-  flex: 1;
+.spacer { flex: 1; }
+
+.sep {
+  display: none;
+  width: 1px;
+  height: 28px;
+  background: var(--line);
 }
 
-.avatar-btn {
-  position: relative;
-  display: grid;
-  place-items: center;
+.account {
+  display: flex;
   flex: none;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-control);
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
   background: transparent;
-  color: var(--ink-3);
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
+  transition: background-color var(--dur-fast), border-color var(--dur-fast);
 
-  &:hover {
+  &:hover,
+  &[aria-expanded='true'] {
+    border-color: var(--line);
     background: var(--subtle);
-    color: var(--ink);
-  }
-
-  mat-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
   }
 }
 
-.avatar-btn {
-  border-radius: 50%;
+.who {
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 1.15;
+}
+
+.hi {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+
+  strong { color: var(--ink); font-size: var(--text-sm); font-weight: 600; }
+}
+
+.who app-role-badge { transform: scale(0.9); transform-origin: left center; }
+
+.chev {
+  display: none;
+  width: 18px;
+  height: 18px;
+  color: var(--ink-3);
+  font-size: 18px;
 }
 
 .menu-user {
@@ -114,42 +115,21 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 8px 16px 12px;
   margin-bottom: 4px;
+  padding: 8px 16px 12px;
   border-bottom: 1px solid var(--line);
 
-  strong {
-    color: var(--ink);
-    font-size: var(--text-md);
-    font-weight: 600;
-  }
-
-  .greet,
-  .mail {
-    color: var(--ink-3);
-    font-size: var(--text-xs);
-  }
-
-  app-role-badge {
-    margin-top: 6px;
-  }
+  strong { color: var(--ink); font-size: var(--text-md); font-weight: 600; }
+  .greet, .mail { color: var(--ink-3); font-size: var(--text-xs); }
+  app-role-badge { margin-top: 6px; }
 }
 
 @media (min-width: 640px) {
-  .subtitle {
-    display: block;
-  }
+  .subtitle { display: block; }
+  .who, .chev, .sep { display: flex; }
+  .account { padding: 0 8px 0 4px; }
 }
 
 @media (min-width: 1024px) {
-  .page-title {
-    font-size: var(--text-lg);
-  }
-
-  .titles {
-    padding-right: var(--space-4);
-    margin-right: var(--space-3);
-    border-right: 1px solid var(--line);
-  }
+  .page-title { font-size: var(--text-lg); }
 }
-

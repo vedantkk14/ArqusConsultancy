@@ -303,14 +303,14 @@ html :focus-visible:not(.mat-mdc-input-element):not(.mat-mdc-select):not(textare
 
 // Text fields: one clean focus state everywhere, the border turns brand and a soft halo appears.
 // A field that wraps an input (money, search, password) shows it on the wrapper, never twice.
-html :is(input:not([type='checkbox']):not([type='radio']), textarea, select):focus {
+html :where(input:not([type='checkbox']):not([type='radio']), textarea, select):focus {
   outline: none;
   border-color: var(--brand-deep);
   box-shadow: var(--field-ring);
 }
 
 html :is(.wrap, .pwbox, .search, .prefixed) :is(input, textarea, select):focus {
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
 // Pill tabs (Recent panel): the active tab is a raised pill, no underline.

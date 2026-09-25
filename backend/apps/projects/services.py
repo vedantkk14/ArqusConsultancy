@@ -320,6 +320,15 @@ def add_expense(project_id, by, data: dict, upload=None) -> Expense:
                 is_override=override,
             )
             _sync_alert(project, spent + expense.amount)
+            payload = _payload(
+                project,
+                expense_id=expense.pk,
+                amount=selectors.money_str(expense.amount),
+                category=expense.get_category_display(),
+                logged_by=by.display_name,
+            )
+            for admin in _admins().exclude(pk=by.pk):  # an admin logging it is not told about it
+                integrations.notify(admin, "expense_added", payload)
             return expense
     except Exception:
         _discard(stored)

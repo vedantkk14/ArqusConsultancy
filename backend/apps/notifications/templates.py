@@ -35,8 +35,23 @@ TEMPLATES: dict[str, tuple[str, str]] = {
     "budget_over": ("Budget exceeded", "{project_name} is over its sanctioned budget."),
     "payment_received": ("Payment received", "{client_name} paid {amount}."),
     "account_created": ("Welcome to ARQUS", "Your account is ready. Sign in to get started."),
+    "expense_added": (
+        "Expense added",
+        "{logged_by} logged {category} {amount} on {project_name}.",
+    ),
+    "payment_voided": ("Payment voided", "A payment of {amount} from {lead_name} was voided."),
+    "payment_overdue": (
+        "Payment overdue",
+        "{lead_name} has not paid for {days_since} days.",
+    ),
+    "deal_finalized": ("Deal finalised", "{lead_name} is final. The project can start."),
+    "project_assigned": ("Project assigned", "You now manage {project_name}."),
+    "project_unassigned": ("Project reassigned", "{project_name} moved to another manager."),
+    "project_completed": ("Project completed", "{project_name} was marked complete."),
+    "project_reopened": ("Project reopened", "{project_name} was reopened: {reason}"),
+    "budget_changed": ("Budget changed", "{project_name} budget changed from {old} to {new}."),
 }
-MONEY_KEYS = {"proposed_amount", "amount", "total_amount"}
+MONEY_KEYS = {"proposed_amount", "amount", "total_amount", "old", "new"}
 
 
 def render(type_: str, payload: dict | None) -> tuple[str, str]:

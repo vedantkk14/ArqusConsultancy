@@ -75,6 +75,10 @@ describe('notification utils', () => {
     expect(routeFor({ type: 'lead_won', data: {} })).toEqual(['/leads/all']);
     expect(routeFor(note(1, 'budget_warn'))).toEqual(['/expenses/alerts']);
     expect(routeFor(note(1, 'payment_received'))).toEqual(['/accounts/payments']);
+    expect(routeFor({ type: 'payment_received', data: { ledger_id: 4 } })).toEqual(['/accounts/ledgers', 4]);
+    expect(routeFor({ type: 'expense_added', data: { project_id: 9 } })).toEqual(['/projects', 9]);
+    expect(routeFor({ type: 'budget_changed', data: {} })).toEqual(['/projects/running']);
+    expect(metaFor('expense_added').icon).toBe('receipt_long');
     expect(routeFor(note(1, 'account_created'))).toBeNull();
   });
 });

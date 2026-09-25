@@ -385,3 +385,23 @@ def test_replacing_a_receipt_on_edit(client_for, pm1, make_expense):
     fresh = Expense.objects.get(pk=expense.pk)
     assert fresh.receipt.name != old_name and fresh.receipt
     assert not Expense._meta.get_field("receipt").storage.exists(old_name)
+
+
+# ---- Notifications -----------------------------------------------------------------------------
+
+
+def test_admins_are_notified_when_a_pm_adds_an_expense(client_for, admin, pm1, project):
+    from apps.notifications.models import Notification
+
+    assert add(client_for(pm1), project, amount="1500").status_code == 201
+    note = Notification.objects.get(recipient=admin, type="expense_added")
+    assert project.name in note.body and "₹1,500" in note.body
+    assert note.data["project_id"] == project.pk
+    assert not Notification.objects.filter(recipient=pm1, type="expense_added").exists()
+
+
+def test_an_admin_is_not_notified_about_their_own_expense(client_for, admin, project):
+    from apps.notifications.models import Notification
+
+    assert add(client_for(admin), project, amount="10").status_code == 201
+    assert not Notification.objects.filter(recipient=admin, type="expense_added").exists()

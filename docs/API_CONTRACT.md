@@ -122,6 +122,7 @@ payment, project or total keys.
 | ✅ | `POST /leads/{id}/finalize` | A | `{amount, note?}`; 409 `accounts_not_ready` `{missing:[...]}` until Dev C ships the contract below |
 | ✅ | `GET /leads/export` | A, SM | CSV of the filtered list, max 5000 rows, formula cells prefixed with `'` |
 | ✅ | `GET /dashboard/sales-manager?period=month\|quarter\|year\|all` | SM only | Team dashboard - see below |
+| ✅ | `GET /dashboard/sales-exec?period=month\|quarter\|year\|all` | SE only | Own-leads dashboard - see below |
 
 **List filters (contract with the dashboards' "View all" links):** `status` (comma list), `assigned_to`
 (id or `none`), `source` (comma list), `q` (name, email, phone digits), `followup=overdue|today|upcoming|none`,
@@ -196,6 +197,48 @@ docs/OPEN_DECISIONS.md #15 - `Lead` has no `lost_at`).
     "lead_name": "Ratnagiri Rowing Club", "type": "MEETING", "text": "Shared the brochure and past projects."}]
 }
 ```
+
+### Sales Exec dashboard
+
+`GET /dashboard/sales-exec?period=month|quarter|year|all` (registered in `apps/leads/urls.py`; default
+`month`). SALES_EXEC only - 401 anonymous, 403 for ADMIN, SALES_MANAGER and PROJECT_MANAGER, 400 for a
+bad `period`. Scoped to this Exec's own leads (`selectors.leads_for(user)`); shares its KPI/period math
+with the Sales Manager dashboard through `apps/leads/dashboard_common.py` (`base_kpis`, `pipeline_counts`,
+`queue`) - neither restates the other's aggregates. Sees `proposed_amount` only, same privacy shield as
+everywhere else in Leads. `SHOW_COMMISSION_TO_EXEC` (default `False`, see docs/OPEN_DECISIONS.md #16)
+adds `kpis.estimated_commission` when on.
+
+```json
+{
+  "as_of": "2026-09-24T20:48:44.485Z",
+  "business_date": "2026-09-25",
+  "period": {"key": "all", "from": null, "to": "2026-09-24"},
+  "kpis": {
+    "open_leads": 8, "new_untouched": 1, "followups_today": 0, "overdue": 4,
+    "won_count": 6, "lost_count": 2, "conversion_pct": "75.0", "won_value": "1321456.00"
+  },
+  "queues": {
+    "overdue": {"total": 4, "items": [{"id": 4, "name": "Deccan Sports Academy", "phone": "+919800000003",
+      "source": "FACEBOOK", "status": "CONTACTED", "created_at": "2026-07-14T08:13:20Z",
+      "next_followup_at": "2026-09-18T12:13:20Z", "days_overdue": 7,
+      "last_note": "Discussed scope and timelines.", "last_interaction_at": "2026-07-24T09:13:20Z",
+      "proposed_amount": "225000.00"}]},
+    "today": {"total": 0, "items": []},
+    "new_leads": {"total": 1, "items": [{"...": "same shape; proposed_amount is null until proposed"}]},
+    "no_followup": {"total": 3, "items": []}
+  },
+  "pipeline": [{"status": "NEW", "count": 4}, {"status": "CONTACTED", "count": 2},
+               {"status": "INTERESTED", "count": 2}, {"status": "WON", "count": 6}, {"status": "LOST", "count": 2}],
+  "upcoming": [{"date": "2026-10-02", "count": 1, "items": [{"...": "lead item, max 5/day"}]}],
+  "recent_activity": [{"at": "2026-09-16T23:13:20Z", "lead_id": 16, "lead_name": "Karan Mehta",
+    "type": "EMAIL", "text": "Shared the brochure and past projects."}]
+}
+```
+
+`upcoming` covers the next 7 business days after today (business timezone), grouped by the date the
+follow-up actually falls on in that timezone - not UTC's date - and only includes days with at least
+one lead; each day is capped at 5 items with `count` still showing the day's real total. `last_note` is
+truncated to 80 characters. Query budget: 9 measured, under 15.
 
 `by_executive` includes every active SALES_EXEC, even one with zero leads (all zeros, never omitted); an
 exec whose `overdue` exceeds 3 gets an amber highlight in the UI ("overdue > 3", not a performance verdict).

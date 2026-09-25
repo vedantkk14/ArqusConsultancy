@@ -295,10 +295,22 @@ mat-icon.mat-icon {
 }
 
 // Focus ring: 2px --brand-deep, 2px offset. Text inputs show it as their outline instead.
-html :focus-visible:not(.mat-mdc-input-element):not(.mat-mdc-select) {
+html :focus-visible:not(.mat-mdc-input-element):not(.mat-mdc-select):not(textarea):not(select):not(input:not([type='checkbox']):not([type='radio'])) {
   outline: 2px solid var(--brand-deep);
   outline-offset: 2px;
   box-shadow: var(--ring);
+}
+
+// Text fields: one clean focus state everywhere, the border turns brand and a soft halo appears.
+// A field that wraps an input (money, search, password) shows it on the wrapper, never twice.
+html :is(input:not([type='checkbox']):not([type='radio']), textarea, select):focus {
+  outline: none;
+  border-color: var(--brand-deep);
+  box-shadow: var(--field-ring);
+}
+
+html :is(.wrap, .pwbox, .search, .prefixed) :is(input, textarea, select):focus {
+  box-shadow: none;
 }
 
 // Pill tabs (Recent panel): the active tab is a raised pill, no underline.

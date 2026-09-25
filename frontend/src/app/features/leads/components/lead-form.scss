@@ -100,10 +100,10 @@ textarea {
   }
 
   &:focus {
-    border-color: var(--brand-deep);
     background: var(--surface);
-    outline: 2px solid var(--brand-deep);
-    outline-offset: 1px;
+    outline: none;
+    border-color: var(--brand-deep);
+    box-shadow: var(--field-ring);
   }
 
   &[aria-invalid='true'] {
@@ -129,10 +129,10 @@ textarea {
   overflow: hidden;
 
   &:focus-within {
-    border-color: var(--brand-deep);
     background: var(--surface);
-    outline: 2px solid var(--brand-deep);
-    outline-offset: 1px;
+    outline: none;
+    border-color: var(--brand-deep);
+    box-shadow: var(--field-ring);
   }
 
   &.invalid {

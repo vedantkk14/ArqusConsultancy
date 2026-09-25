@@ -63,7 +63,7 @@ select {
   font: inherit;
 
   &[aria-invalid='true'] { border-color: var(--negative); }
-  &:focus { outline: 2px solid var(--brand-deep); outline-offset: 1px; }
+  &:focus { outline: none; border-color: var(--brand-deep); box-shadow: var(--field-ring); }
 }
 
 .hint {
@@ -90,7 +90,7 @@ select {
   border-radius: var(--radius-control);
   background: var(--surface);
 
-  &:focus-within { outline: 2px solid var(--brand-deep); outline-offset: 1px; }
+  &:focus-within { outline: none; border-color: var(--brand-deep); box-shadow: var(--field-ring); }
   &.bad { border-color: var(--negative); }
   input { border: 0 !important; outline: none !important; background: transparent; font-family: var(--font-mono, ui-monospace, monospace); }
 }

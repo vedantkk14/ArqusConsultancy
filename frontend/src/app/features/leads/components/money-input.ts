@@ -56,7 +56,7 @@ export function isPositiveMoney(value: string | null | undefined): boolean {
       border-radius: var(--radius-control);
       background: var(--surface);
     }
-    .wrap:focus-within { outline: 2px solid var(--brand-deep); outline-offset: 1px; box-shadow: var(--ring); }
+    .wrap:focus-within { outline: none; border-color: var(--brand-deep); box-shadow: var(--field-ring); }
     .wrap.invalid { border-color: var(--negative); }
     .prefix { padding: 0 4px 0 12px; color: var(--ink-3); font-weight: 500; }
     input {

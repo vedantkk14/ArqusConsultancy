@@ -73,6 +73,7 @@
 
   // focus: 2px --brand-deep outline + a soft 3px cyan ring outside it
   --ring: 0 0 0 5px rgba(50, 197, 243, 0.35);
+  --field-ring: 0 0 0 3px color-mix(in srgb, var(--brand-deep) 18%, transparent); // focused text field
 
   // type
   --font-sans: 'Geist Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;

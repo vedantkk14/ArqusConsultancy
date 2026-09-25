@@ -23,8 +23,9 @@
   background: var(--surface);
 
   &:focus-within {
-    outline: 2px solid var(--brand-deep);
-    outline-offset: 1px;
+    outline: none;
+    border-color: var(--brand-deep);
+    box-shadow: var(--field-ring);
   }
 
   mat-icon {

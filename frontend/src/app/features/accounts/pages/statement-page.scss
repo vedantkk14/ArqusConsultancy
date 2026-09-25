@@ -18,7 +18,7 @@ app-statement-page .search {
   border-radius: var(--radius-control);
   background: var(--surface);
 
-  &:focus-within { outline: 2px solid var(--brand-deep); outline-offset: 1px; }
+  &:focus-within { outline: none; border-color: var(--brand-deep); box-shadow: var(--field-ring); }
   mat-icon { color: var(--ink-3); }
   input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--ink); font: inherit; outline: none !important; }
 }

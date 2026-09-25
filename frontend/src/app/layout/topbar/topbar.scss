@@ -1,3 +1,4 @@
+// One calm row: the page on the left, notifications and the account on the right.
 .topbar {
   position: sticky;
   top: 0;
@@ -7,30 +8,24 @@
   gap: var(--space-3);
   height: var(--topbar-h);
   padding: 0 var(--gutter);
-  background: var(--surface);
   border-bottom: 1px solid var(--line);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 6px 16px -12px rgba(15, 23, 42, 0.18);
+  background: var(--surface);
 
   @supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: saturate(1.4) blur(10px);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px);
   }
 }
 
-.emblem {
-  display: block;
-  width: auto;
-  height: 28px;
-}
+.emblem { display: block; width: auto; height: 26px; }
 
-// Left: the page you're on. Right: notifications, then who you are (opens the account menu).
 .titles {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 1px;
-  line-height: 1.2;
+  justify-content: center;
+  gap: 2px;
 }
 
 .page-title {
@@ -38,8 +33,9 @@
   overflow: hidden;
   color: var(--ink);
   font-size: var(--text-md);
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -48,65 +44,28 @@
   display: none;
   color: var(--ink-3);
   font-size: var(--text-xs);
+  line-height: 1.2;
   white-space: nowrap;
 }
 
 .spacer { flex: 1; }
 
-.sep {
-  display: none;
-  width: 1px;
-  height: 28px;
-  background: var(--line);
-}
+.actions { display: flex; flex: none; align-items: center; gap: 6px; }
 
-.account {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 10px;
-  height: 46px;
-  padding: 0 4px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+.avatar-btn {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
   background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
   cursor: pointer;
-  transition: background-color var(--dur-fast), border-color var(--dur-fast);
+  transition: box-shadow var(--dur-fast);
 
   &:hover,
-  &[aria-expanded='true'] {
-    border-color: var(--line);
-    background: var(--subtle);
-  }
-}
-
-.who {
-  display: none;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  line-height: 1.15;
-}
-
-.hi {
-  color: var(--ink-3);
-  font-size: var(--text-xs);
-  white-space: nowrap;
-
-  strong { color: var(--ink); font-size: var(--text-sm); font-weight: 600; }
-}
-
-.who app-role-badge { transform: scale(0.9); transform-origin: left center; }
-
-.chev {
-  display: none;
-  width: 18px;
-  height: 18px;
-  color: var(--ink-3);
-  font-size: 18px;
+  &[aria-expanded='true'] { box-shadow: 0 0 0 3px var(--brand-tint); }
 }
 
 .menu-user {
@@ -126,8 +85,6 @@
 
 @media (min-width: 640px) {
   .subtitle { display: block; }
-  .who, .chev, .sep { display: flex; }
-  .account { padding: 0 8px 0 4px; }
 }
 
 @media (min-width: 1024px) {

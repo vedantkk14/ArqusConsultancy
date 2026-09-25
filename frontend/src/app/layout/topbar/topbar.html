@@ -10,17 +10,12 @@
   </div>
   <span class="spacer"></span>
 
-  <app-notification-bell />
+  <div class="actions">
+    <app-notification-bell />
 
   @if (auth.user(); as user) {
-    <span class="sep" aria-hidden="true"></span>
-    <button type="button" class="account" aria-label="Account menu" [matMenuTriggerFor]="accountMenu">
-      <app-user-avatar [name]="user.name" [size]="34" />
-      <span class="who">
-        <span class="hi">Hi, <strong>{{ firstName(user.name) }}</strong></span>
-        <app-role-badge [role]="user.role" />
-      </span>
-      <mat-icon class="chev" aria-hidden="true">expand_more</mat-icon>
+      <button type="button" class="avatar-btn" [attr.aria-label]="'Account menu for ' + user.name" [matMenuTriggerFor]="accountMenu">
+      <app-user-avatar [name]="user.name" [size]="36" />
     </button>
     <mat-menu #accountMenu="matMenu" xPosition="before">
       <div class="menu-user">
@@ -43,4 +38,5 @@
       </button>
     </mat-menu>
   }
+  </div>
 </header>

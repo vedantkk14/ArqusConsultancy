@@ -149,12 +149,9 @@ describe('Shell and sidebar', () => {
 describe('Personal header', () => {
   afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => (n.innerHTML = '')));
 
-  it('greets the user by first name and shows their role on every page', () => {
+  it('shows who is signed in: avatar in the top bar, name and role in the sidebar', () => {
     const { el } = render();
-    const meta = el.querySelector('.topbar .who')!.textContent!.replace(/\s+/g, ' ');
-    expect(meta).toContain('Hi, Alice');
-    expect(meta).toContain('Admin');
-    expect(el.querySelector('.topbar app-role-badge')).not.toBeNull();
+    expect(el.querySelector('.topbar .avatar-btn')!.getAttribute('aria-label')).toContain('Alice');
     expect(el.querySelector('app-sidebar-user app-role-badge')).not.toBeNull();
   });
 

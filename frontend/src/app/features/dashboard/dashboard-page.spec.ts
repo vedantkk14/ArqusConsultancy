@@ -219,7 +219,7 @@ describe('DashboardPage', () => {
   });
 
   it('does not call the admin endpoint for other roles', async () => {
-    const { el, service } = await setup(Role.ProjectManager);
+    const { el, service } = await setup(Role.SalesExec);
     expect(service.calls).toEqual([]);
     expect(text(el)).toContain('Hi Alice, your dashboard is on the way');
   });

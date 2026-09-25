@@ -1,4 +1,6 @@
-@if (!isAdmin()) {
+@if (isPm()) {
+  <app-pm-dashboard />
+} @else if (!isAdmin()) {
   <app-empty-state
     icon="dashboard"
     [title]="'Hi ' + firstName() + ', your dashboard is on the way'"

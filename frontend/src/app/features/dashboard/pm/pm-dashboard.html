@@ -1,0 +1,187 @@
+<header class="page-head">
+  <p class="insight" aria-live="polite">{{ insight() }}</p>
+  <div class="controls">
+    <span class="updated">{{ updatedText() }}</span>
+    <button
+      type="button"
+      class="icon-btn"
+      aria-label="Refresh dashboard"
+      [disabled]="state().status === 'loading'"
+      (click)="reload()"
+    >
+      <mat-icon aria-hidden="true" [class.spin]="refreshing()">refresh</mat-icon>
+    </button>
+    @if (layout.isDesktop() && canAdd()) {
+      <button type="button" class="create" (click)="quickAdd()">
+        <mat-icon aria-hidden="true">add</mat-icon>Add expense
+      </button>
+    }
+  </div>
+</header>
+
+@if (state().status === 'error') {
+  <app-error-state title="Couldn't load your dashboard" (retry)="reload()" />
+} @else if (!data()) {
+  <div class="grid" aria-busy="true" aria-label="Loading dashboard">
+    <section class="card panel main">
+      <app-skeleton width="40%" height="20px" />
+      <div class="sk-cards">
+        @for (i of [1, 2]; track i) {
+          <div class="sk-card">
+            <app-skeleton width="60%" height="18px" />
+            <app-skeleton height="14px" radius="999px" />
+            <app-skeleton width="80%" height="14px" />
+          </div>
+        }
+      </div>
+    </section>
+    <div class="side">
+      <section class="card panel">
+        <app-skeleton width="50%" height="20px" />
+        @for (i of [1, 2, 3]; track i) {
+          <app-skeleton height="44px" />
+        }
+      </section>
+    </div>
+  </div>
+} @else {
+  @if (data(); as d) {
+    @if (!d.projects.length) {
+      <app-empty-state
+        icon="assignment"
+        title="No projects assigned yet"
+        message="Your admin will assign you a project to get started."
+      />
+    } @else {
+      <div class="grid" [class.busy]="refreshing()">
+        @if (alerts().length) {
+          <section class="card panel alerts" aria-labelledby="pm-alerts-title">
+            <app-panel-head
+              title="Budget alerts"
+              [subtitle]="
+                alerts().length === 1
+                  ? '1 project needs attention'
+                  : alerts().length + ' projects need attention'
+              "
+              headingId="pm-alerts-title"
+            />
+            @for (a of alerts(); track a.project_id) {
+              <app-pm-alert-row [alert]="a" />
+            }
+          </section>
+        }
+
+        <section class="main" aria-labelledby="pm-projects-title">
+          <app-panel-head
+            title="My projects"
+            [subtitle]="
+              d.kpis.projects_running + ' running · ' + d.kpis.projects_completed + ' completed'
+            "
+            headingId="pm-projects-title"
+          />
+          <div class="cards">
+            @for (p of visibleProjects(); track p.id) {
+              <app-pm-project-card [project]="p" />
+            }
+          </div>
+          @if (hiddenCount() > 0) {
+            <button type="button" class="show-all" matButton="outlined" (click)="showAll.set(true)">
+              Show all {{ projects().length }} projects
+            </button>
+          }
+        </section>
+
+        <div class="side">
+          <section class="card panel" aria-labelledby="pm-exp-title">
+            <app-panel-head
+              title="Recent expenses"
+              [subtitle]="
+                d.kpis.expenses_logged_period + ' logged · ' + (d.kpis.expenses_amount_period | inr)
+              "
+              headingId="pm-exp-title"
+            />
+            @if (d.recent_expenses.length) {
+              @for (e of d.recent_expenses; track e.id) {
+                <app-pm-expense-row [expense]="e" />
+              }
+            } @else {
+              <p class="none">No expenses logged yet.</p>
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="pm-act-title">
+            <app-panel-head
+              title="Recent activity"
+              subtitle="Latest changes on your projects"
+              headingId="pm-act-title"
+            />
+            @if (d.recent_activity.length) {
+              <app-pm-activity-list [items]="d.recent_activity" />
+            } @else {
+              <p class="none">Nothing has happened yet.</p>
+            }
+          </section>
+        </div>
+      </div>
+
+      @if (!layout.isDesktop() && canAdd()) {
+        <button
+          type="button"
+          class="fab"
+          [attr.aria-label]="
+            running().length === 1 ? 'Add expense to ' + running()[0].name : 'Add expense'
+          "
+          (click)="quickAdd()"
+        >
+          <mat-icon aria-hidden="true">add</mat-icon>Add expense
+        </button>
+      }
+    }
+  }
+}
+
+<ng-template #picker>
+  <div class="xp" [class.in-sheet]="!layout.isDesktop()">
+    <app-dialog-head
+      [headingId]="pickerTitleId"
+      title="Add expense"
+      subtitle="Which project is it for?"
+      (closed)="closeOverlay()"
+    />
+    <ul class="proj-pick">
+      @for (p of running(); track p.id) {
+        <li>
+          <button
+            type="button"
+            (click)="openExpense(p)"
+            [attr.aria-label]="'Add expense to ' + p.name"
+          >
+            <span class="pn">{{ p.name }}</span>
+            <span class="pr num">{{ p.remaining | inr }} left</span>
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
+</ng-template>
+
+<ng-template #expenseForm>
+  @if (target(); as t) {
+    <div class="xp" [class.in-sheet]="!layout.isDesktop()">
+      <app-dialog-head
+        [headingId]="expenseTitleId"
+        title="Add expense"
+        [subtitle]="t.name"
+        (closed)="closeOverlay()"
+      />
+      <app-add-expense-form
+        [project]="t"
+        [expense]="null"
+        [isAdmin]="false"
+        [inSheet]="true"
+        (saved)="onSaved()"
+        (cancelled)="closeOverlay()"
+      />
+    </div>
+  }
+</ng-template>

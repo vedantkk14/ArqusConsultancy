@@ -32,6 +32,7 @@ import { RadialGauge } from './components/radial-gauge';
 import { SourcesCard } from './components/sources-card';
 import { Sparkline } from './components/sparkline';
 import { BarSegment, StackedBar } from './components/stacked-bar';
+import { PmDashboardPage } from './pm/pm-dashboard';
 import { NAV_BADGE_SOURCES } from './dashboard-utils';
 import { AdminDashboard, PERIOD_NOUN, Period, toPeriod } from './dashboard.models';
 import { DashboardService } from './dashboard.service';
@@ -74,6 +75,7 @@ const STAGE_COLORS = ['data-slate', 'data-cyan', 'data-teal', 'data-ink'];
     MatTooltipModule,
     NewMenu,
     PeriodSwitcher,
+    PmDashboardPage,
     ProjectsCard,
     RadialGauge,
     RouterLink,
@@ -100,6 +102,7 @@ export class DashboardPage {
 
   /** The admin endpoint is admin-only; other roles get their own dashboards later. */
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  protected readonly isPm = computed(() => this.auth.role() === Role.ProjectManager);
   protected readonly firstName = computed(() => firstName(this.auth.user()?.name));
 
   /** The period lives in the URL (?period=quarter) so it survives reloads and can be shared. */

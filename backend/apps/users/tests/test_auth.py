@@ -214,16 +214,13 @@ def test_change_rejects_a_wrong_current_password(client):
     assert "old_password" in err["details"]
 
 
-@pytest.mark.parametrize("weak", ["short1", "12345678901", "password123"])
-def test_change_rejects_weak_passwords_with_field_details(client, weak):
+@pytest.mark.parametrize("simple", ["1", "1234", "password", "pm1"])
+def test_change_accepts_any_password(client, simple):
     make_user()
     _signed_in(client)
-    err = assert_error(
-        client.post(CHANGE, {"old_password": PASSWORD, "new_password": weak}),
-        400,
-        "validation_error",
-    )
-    assert err["details"]["new_password"]
+    res = client.post(CHANGE, {"old_password": PASSWORD, "new_password": simple})
+    assert res.status_code == 200
+    assert login(client, "pm1", simple).status_code == 200
 
 
 def test_change_success_revokes_old_sessions_and_returns_working_tokens(client):
@@ -311,7 +308,7 @@ def test_reset_works_exactly_once_and_clears_the_flag(client):
     assert_error(again, 400, "reset_link_invalid")
 
 
-def test_reset_rejects_tampered_links_and_weak_passwords(client):
+def test_reset_rejects_tampered_links_but_not_simple_passwords(client):
     make_user(email="pat@example.com")
     client.post(FORGOT, {"email": "pat@example.com"})
     uid, token = _link_parts(mail.outbox[0])
@@ -327,12 +324,8 @@ def test_reset_rejects_tampered_links_and_weak_passwords(client):
         400,
         "reset_link_invalid",
     )
-    err = assert_error(
-        client.post(RESET, {"uid": uid, "token": token, "new_password": "1234"}),
-        400,
-        "validation_error",
-    )
-    assert err["details"]["new_password"]
+    ok = client.post(RESET, {"uid": uid, "token": token, "new_password": "1234"})
+    assert ok.status_code == 200  # no strength rules: a short numeric password is fine
 
 
 # ---- Logs ----------------------------------------------------------------------------------------

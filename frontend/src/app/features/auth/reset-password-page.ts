@@ -9,9 +9,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/models';
 import { AUTH_MESSAGES, authErrorMessage, fieldError } from './auth-messages';
 import { AuthLayout } from './auth-layout';
-import { PasswordChecklist } from './password-checklist';
 import { PasswordField } from './password-field';
-import { matchValidator, strongPassword } from './password-rules';
+import { matchValidator } from './password-rules';
 
 @Component({
   selector: 'app-reset-password-page',
@@ -20,7 +19,6 @@ import { matchValidator, strongPassword } from './password-rules';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    PasswordChecklist,
     PasswordField,
     ReactiveFormsModule,
     RouterLink,
@@ -53,12 +51,11 @@ import { matchValidator, strongPassword } from './password-rules';
             [control]="form.controls.password"
             [invalid]="showPasswordError()"
           >
-            <app-password-checklist fieldError listId="new-password-rules" [value]="password()" />
             @if (serverError(); as text) {
               <p fieldError id="new-password-error" class="field-error" aria-live="polite">{{ text }}</p>
             } @else if (showPasswordError()) {
               <p fieldError id="new-password-error" class="field-error" aria-live="polite">
-                Your password doesn't meet the requirements yet.
+                Enter a new password.
               </p>
             }
           </app-password-field>
@@ -99,7 +96,7 @@ export class ResetPasswordPage {
   protected readonly messages = AUTH_MESSAGES;
   protected readonly form = inject(FormBuilder).nonNullable.group(
     {
-      password: ['', [Validators.required, strongPassword]],
+      password: ['', [Validators.required]],
       confirm: ['', Validators.required],
     },
     { validators: matchValidator('password', 'confirm') },

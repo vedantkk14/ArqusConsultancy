@@ -11,9 +11,8 @@ import { safeReturnUrl } from '../../core/auth/safe-return-url';
 import { ApiError } from '../../core/models';
 import { authErrorMessage, fieldError } from './auth-messages';
 import { AuthLayout } from './auth-layout';
-import { PasswordChecklist } from './password-checklist';
 import { PasswordField } from './password-field';
-import { matchValidator, strongPassword } from './password-rules';
+import { matchValidator } from './password-rules';
 
 type Field = 'current' | 'password' | 'confirm';
 
@@ -24,7 +23,6 @@ type Field = 'current' | 'password' | 'confirm';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    PasswordChecklist,
     PasswordField,
     ReactiveFormsModule,
     RouterLink,
@@ -46,7 +44,7 @@ export class ChangePasswordPage {
   protected readonly form = inject(FormBuilder).nonNullable.group(
     {
       current: ['', Validators.required],
-      password: ['', [Validators.required, strongPassword]],
+      password: ['', [Validators.required]],
       confirm: ['', Validators.required],
     },
     { validators: matchValidator('password', 'confirm') },

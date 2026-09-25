@@ -3,20 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { passwordChecks } from './password-rules';
 import { ResetPasswordPage } from './reset-password-page';
-
-describe('password rules', () => {
-  const ok = (value: string) => Object.fromEntries(passwordChecks(value).map((c) => [c.key, c.ok]));
-
-  it('mirrors the server validators', () => {
-    expect(ok('')).toEqual({ length: false, numeric: false, common: false });
-    expect(ok('short1')).toEqual({ length: false, numeric: true, common: false });
-    expect(ok('12345678901')).toEqual({ length: true, numeric: false, common: true });
-    expect(ok('Password123')).toEqual({ length: true, numeric: true, common: false });
-    expect(ok('Blue-Harbour-42')).toEqual({ length: true, numeric: true, common: true });
-  });
-});
 
 describe('ResetPasswordPage', () => {
   async function setup() {
@@ -48,14 +35,12 @@ describe('ResetPasswordPage', () => {
     return { harness, el, type, submit, met, http: TestBed.inject(HttpTestingController) };
   }
 
-  it('updates the requirements checklist as you type', async () => {
-    const { type, met, el } = await setup();
-    expect(met()).toEqual([false, false, false]);
+  it('accepts any password, even a short one of only numbers', async () => {
+    const { type, submit, http } = await setup();
     type('#new-password', '1234');
-    expect(met()).toEqual([false, false, false]);
-    type('#new-password', 'Blue-Harbour-42');
-    expect(met()).toEqual([true, true, true]);
-    expect(el.querySelector('.checks li')!.textContent).toContain('(met)');
+    type('#confirm-password', '1234');
+    submit();
+    expect(http.expectOne('/api/v1/auth/password/reset').request.body.new_password).toBe('1234');
   });
 
   it('flags a mismatched confirmation and does not submit', async () => {

@@ -95,8 +95,8 @@ def test_duplicates_and_bad_input_are_field_errors(admin):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("weak", ["short1", "password123", "12345678", "riya.kapoor"])
-def test_weak_passwords_are_rejected(admin, weak):
-    res = as_user(admin).post(URL, body(password=weak), format="json")
-    assert res.status_code == 400 and "password" in res.json()["error"]["details"]
-    assert not User.objects.filter(username="riya.k").exists()
+@pytest.mark.parametrize("simple", ["1", "1234", "password", "riya.kapoor"])
+def test_any_password_is_accepted(admin, simple):
+    res = as_user(admin).post(URL, body(password=simple), format="json")
+    assert res.status_code == 201
+    assert User.objects.get(username="riya.k").check_password(simple)

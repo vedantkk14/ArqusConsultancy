@@ -50,7 +50,7 @@ export class CreateAccountDialog {
     phone: ['', Validators.maxLength(20)],
     username: ['', [Validators.required, Validators.pattern(/^[\w.@+-]+$/), Validators.maxLength(150)]],
     role: ['' as Role | '', Validators.required],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: ['', Validators.required],
     commission_rate: ['0.00'],
     must_change_password: [true],
   });
@@ -74,7 +74,6 @@ export class CreateAccountDialog {
     if (e['required']) return key === 'role' ? 'Choose a role.' : 'This is required.';
     if (e['email']) return 'Enter a valid email address.';
     if (e['pattern']) return 'Use letters, numbers and . _ - @ + only.';
-    if (e['minlength']) return 'Use at least 8 characters.';
     if (e['rate']) return 'Enter 0 to 100, up to two decimals.';
     return 'Check this field.';
   }

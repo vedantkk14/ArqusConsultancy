@@ -25,9 +25,16 @@ from django.utils import timezone
 from apps.core.permissions import ADMIN, SALES_EXEC, SALES_MANAGER
 
 from . import integrations
-from .models import Interaction, Lead, LeadStatus
+from .models import Interaction, InteractionType, Lead, LeadStatus
 
 CLOSED_STATUSES = (LeadStatus.WON, LeadStatus.LOST)
+#: Logged automatically by the system (assign, status change, amount edit), never by a person
+#: choosing to act on the lead - so these don't count as "touched" for untouched_q().
+SYSTEM_INTERACTION_TYPES = (
+    InteractionType.STATUS_CHANGE,
+    InteractionType.ASSIGNMENT,
+    InteractionType.AMOUNT_CHANGE,
+)
 OPEN_STATUSES = (LeadStatus.NEW, LeadStatus.CONTACTED, LeadStatus.INTERESTED)
 LIST_ROLES = (ADMIN, SALES_MANAGER, SALES_EXEC)
 MANAGER_ROLES = (ADMIN, SALES_MANAGER)
@@ -77,8 +84,15 @@ def no_followup_q() -> Q:
 
 
 def untouched_q() -> Q:
-    """NEW with no interactions at all."""
-    return Q(status=LeadStatus.NEW) & ~Q(Exists(Interaction.objects.filter(lead=OuterRef("pk"))))
+    """NEW with no interaction from a person yet.
+
+    A system-logged ASSIGNMENT/STATUS_CHANGE/AMOUNT_CHANGE doesn't count as a touch - a lead a
+    manager just assigned, with nothing else done to it, is still untouched from the Exec's side.
+    """
+    human_touch = Interaction.objects.filter(lead=OuterRef("pk")).exclude(
+        type__in=SYSTEM_INTERACTION_TYPES
+    )
+    return Q(status=LeadStatus.NEW) & ~Q(Exists(human_touch))
 
 
 def won_awaiting_q() -> Q:

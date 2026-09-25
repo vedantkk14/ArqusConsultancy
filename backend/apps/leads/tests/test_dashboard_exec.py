@@ -89,6 +89,35 @@ class TestScoping:
         assert all(row["count"] == 0 for row in body["pipeline"])
 
 
+class TestAssignmentFlow:
+    """A lead a manager just assigned must show up as "new" on the Exec's own dashboard - the
+    ASSIGNMENT interaction that `services.assign()` logs must never disqualify it as "touched"."""
+
+    def test_freshly_assigned_new_lead_appears_in_new_leads(
+        self, client_for, manager, exec_a, make_lead
+    ):
+        from apps.leads import services
+
+        lead = make_lead(assigned_to=None, status=LeadStatus.NEW)
+        before = client_for(exec_a).get(BASE, {"period": "all"}).json()
+        assert lead.id not in {i["id"] for i in before["queues"]["new_leads"]["items"]}
+
+        services.assign(lead, exec_a.id, manager)
+
+        after = client_for(exec_a).get(BASE, {"period": "all"}).json()
+        new_ids = {i["id"] for i in after["queues"]["new_leads"]["items"]}
+        assert lead.id in new_ids
+        assert after["kpis"]["new_untouched"] >= before["kpis"]["new_untouched"] + 1
+
+    def test_a_lead_created_with_an_assignee_is_still_untouched(self, client_for, manager, exec_a):
+        from apps.leads import services
+
+        data = {"name": "Direct Assign Co", "phone": "+919812340000", "assigned_to": exec_a.id}
+        lead = services.create_lead(data, manager)
+        body = client_for(exec_a).get(BASE, {"period": "all"}).json()
+        assert lead.id in {i["id"] for i in body["queues"]["new_leads"]["items"]}
+
+
 class TestShape:
     def test_no_finance_leak(self, client_for, scenario):
         body = client_for(scenario["exec_a"]).get(BASE, {"period": "all"}).json()

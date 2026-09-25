@@ -1,5 +1,6 @@
 """Remove every business record (leads, accounts, projects, notifications, audit log) so each
-page starts empty. User accounts are kept so people can still sign in. Refill with `seed_demo_data`. DEBUG only.
+page starts empty. User accounts are kept so people can still sign in.
+Refill with `seed_demo_data`. DEBUG only.
 """
 
 import shutil

@@ -61,10 +61,10 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
       gap: 10px;
       margin: 8px 12px 12px;
       padding: 10px 8px 10px 10px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 14px;
-      background: var(--surface);
-      box-shadow: var(--highlight), var(--shadow-1);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
     :host(.rail) {
       justify-content: center;
@@ -83,7 +83,7 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
     }
     .who strong {
       overflow: hidden;
-      color: var(--ink);
+      color: var(--on-ink);
       font-size: var(--text-sm);
       font-weight: 600;
       text-overflow: ellipsis;
@@ -102,14 +102,23 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
       cursor: pointer;
     }
     .icon-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-sm);
-      color: var(--ink-3);
+      width: 36px;
+      height: 36px;
+      flex: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.8);
+      transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
     }
     .icon-btn:hover {
-      background: var(--subtle);
-      color: var(--ink);
+      border-color: rgba(255, 138, 138, 0.5);
+      background: rgba(239, 68, 68, 0.18);
+      color: #ffd4d4;
+    }
+    .icon-btn:focus-visible {
+      outline: 2px solid var(--sb-accent, #6fe3cb);
+      outline-offset: 2px;
     }
     .icon-btn mat-icon {
       width: 18px;

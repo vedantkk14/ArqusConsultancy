@@ -178,7 +178,7 @@
   </div>
 
   <!-- Phones: sticky Add expense | Complete | More -->
-  @if (!layout.isDesktop() && (can('add_expense') || can('complete') || can('adjust_budget') || can('reopen'))) {
+  @if (!layout.isDesktop() && (can('add_expense') || can('complete') || can('adjust_budget') || can('reopen') || can('request_budget') || can('release_budget'))) {
     <nav class="mbar" aria-label="Project actions">
       @if (can('add_expense')) {
         <button type="button" class="pri" [attr.aria-label]="'Add expense to ' + p.name" (click)="addExpense()"><mat-icon aria-hidden="true">add</mat-icon>Add expense</button>
@@ -189,11 +189,20 @@
       @if (can('reopen')) {
         <button type="button" class="pri" [attr.aria-label]="'Reopen ' + p.name" (click)="reopen(p)"><mat-icon aria-hidden="true">restart_alt</mat-icon>Reopen</button>
       }
-      @if (can('adjust_budget') || can('reassign')) {
+      @if (can('request_budget') && p.state !== 'ok') {
+        <button type="button" (click)="requestBudget(p)"><mat-icon aria-hidden="true">request_quote</mat-icon>Request budget</button>
+      }
+      @if (can('release_budget')) {
+        <button type="button" class="pri" (click)="releaseBudget(p)"><mat-icon aria-hidden="true">savings</mat-icon>Use unused</button>
+      }
+      @if (can('adjust_budget') || can('reassign') || (can('request_budget') && p.state === 'ok')) {
         <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + p.name">
           <mat-icon aria-hidden="true">more_vert</mat-icon>
         </button>
         <mat-menu #over="matMenu" xPosition="before">
+          @if (can('request_budget') && p.state === 'ok') {
+            <button mat-menu-item type="button" (click)="requestBudget(p)"><mat-icon>request_quote</mat-icon>Request more budget</button>
+          }
           @if (can('adjust_budget')) {
             <button mat-menu-item type="button" (click)="adjustBudget(p)"><mat-icon>tune</mat-icon>Adjust budget</button>
           }

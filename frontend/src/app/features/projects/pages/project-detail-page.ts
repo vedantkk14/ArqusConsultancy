@@ -116,6 +116,11 @@ export class ProjectDetailPage {
 
   constructor() {
     this.loadExpenses(1);
+    // Opened from "Request more budget" on the PM dashboard: go straight to the form.
+    const project = this.project();
+    if (project && this.route.snapshot.queryParamMap.get('request_budget') && this.can('request_budget')) {
+      queueMicrotask(() => this.requestBudget(project));
+    }
   }
 
   protected can(action: ProjectAction): boolean {

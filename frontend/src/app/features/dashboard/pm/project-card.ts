@@ -48,6 +48,11 @@ import { PmProject } from './pm-dashboard.models';
         >
           <mat-icon aria-hidden="true">add</mat-icon>Add expense
         </button>
+        @if (project().state !== 'ok') {
+          <a class="add ask" [routerLink]="['/projects', project().id]" [queryParams]="{ request_budget: 1 }">
+            <mat-icon aria-hidden="true">request_quote</mat-icon>Request more budget
+          </a>
+        }
       }
     </div>
   `,
@@ -84,6 +89,7 @@ import { PmProject } from './pm-dashboard.models';
       font-weight: 600;
       cursor: pointer;
     }
+    .ask { margin-top: 8px; border-color: color-mix(in srgb, var(--tint-amber-ink) 35%, transparent); background: var(--tint-amber); color: var(--tint-amber-ink); text-decoration: none; }
     .add:hover {
       background: var(--subtle);
     }

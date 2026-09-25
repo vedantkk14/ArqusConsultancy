@@ -159,6 +159,84 @@ def _model(app_label: str, model_name: str):
         return None
 
 
+def _project_figures(rng: PeriodRange, months: list[str]) -> dict | None:
+    """Projects and expenses figures for the admin dashboard, or None until those models exist.
+
+    Budget state comes from projects.selectors so the admin and the project manager always agree.
+    """
+    project_model = _model("projects", "Project")
+    expense_model = _model("projects", "Expense")
+    event_model = _model("projects", "ProjectEvent")
+    if project_model is None or expense_model is None:
+        return None
+    from django.db.models import Count, Q, Sum
+    from django.db.models.functions import TruncMonth
+
+    from apps.projects import selectors as ps
+
+    counts = project_model.objects.aggregate(
+        running=Count("id", filter=Q(status="RUNNING")),
+        completed=Count("id", filter=Q(status="COMPLETED")),
+    )
+    running = list(
+        ps.budget_usage_qs(project_model.objects.filter(status="RUNNING")).order_by("-usage", "id")
+    )
+    burn = [
+        {
+            "id": p.pk,
+            "name": p.name,
+            "sanctioned": money(p.sanctioned_budget),
+            "spent": money(p.spent),
+            "pct": ps.usage_pct(p.spent, p.sanctioned_budget),
+            "state": ps.budget_state(p.spent, p.sanctioned_budget),
+        }
+        for p in running
+    ]
+    live = expense_model.objects.filter(is_void=False)
+    in_period = live.filter(spent_on__lte=rng.end)
+    if rng.start:
+        in_period = in_period.filter(spent_on__gte=rng.start)
+    per_month = {
+        row["m"].strftime("%Y-%m"): row["t"]
+        for row in live.filter(spent_on__gte=f"{months[0]}-01")
+        .annotate(m=TruncMonth("spent_on"))
+        .values("m")
+        .annotate(t=Sum("amount"))
+    }
+    recent_expenses = [
+        {
+            "date": e.spent_on.isoformat(),
+            "project": e.project.name,
+            "category": e.get_category_display(),
+            "amount": money(e.amount),
+        }
+        for e in live.select_related("project").order_by("-spent_on", "-id")[:5]
+    ]
+    activity = []
+    if event_model is not None:
+        for ev in event_model.objects.select_related("project", "actor").order_by(
+            "-created_at", "-id"
+        )[:8]:
+            activity.append(
+                {
+                    "when": ev.created_at.isoformat(),
+                    "actor": ev.actor.display_name if ev.actor else "System",
+                    "action": f"{ev.get_type_display().lower()}: {ev.project.name}",
+                    "type": "expense" if ev.type.startswith("EXPENSE") else "project",
+                }
+            )
+    return {
+        "running": counts["running"],
+        "completed": counts["completed"],
+        "spent": in_period.aggregate(t=Sum("amount"))["t"] or ZERO,
+        "spent_trend": [per_month.get(m, ZERO) for m in months],
+        "burn": burn[:5],
+        "budget_alerts": sum(b["state"] != "ok" for b in burn),
+        "recent_expenses": recent_expenses,
+        "activity": activity,
+    }
+
+
 # ---- Dashboard -----------------------------------------------------------------------------------
 
 
@@ -212,12 +290,16 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
     spent_trend = [ZERO] * len(months)
     collections_aging = empty_aging()
     top_overdue_clients: list[dict] = []
+    proj = _project_figures(rng, months)
+    if proj:
+        projects_running, projects_completed = proj["running"], proj["completed"]
+        spent, spent_trend = proj["spent"], proj["spent_trend"]
     net = received - spent
 
     # TODO(depends on projects.Project / projects.Expense, Dev B): projects_burn = up to 5 running
     #   projects by spent / sanctioned_budget (never the total project amount),
     #   state = burn_state().
-    projects_burn: list[dict] = []
+    projects_burn: list[dict] = proj["burn"] if proj else []
 
     # TODO(depends on leads.Lead.source, Dev A): lead_sources = top 5 sources + "Other", with pct().
     lead_sources: list[dict] = []
@@ -228,7 +310,7 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
         "overdue_followups": 0,
         "won_awaiting_finalization": 0,
         "overdue_payments": 0,
-        "budget_alerts": 0,
+        "budget_alerts": proj["budget_alerts"] if proj else 0,
     }
 
     return {
@@ -288,7 +370,11 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
         "top_overdue_clients": top_overdue_clients,
         "projects_burn": projects_burn,
         # activity items: {when, actor, action, type}; type is lead|payment|expense|project|user
-        "recent": {"payments": [], "expenses": [], "activity": []},
+        "recent": {
+            "payments": [],
+            "expenses": proj["recent_expenses"] if proj else [],
+            "activity": proj["activity"] if proj else [],
+        },
     }
 
 

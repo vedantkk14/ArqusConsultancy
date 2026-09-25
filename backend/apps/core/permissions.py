@@ -1,4 +1,5 @@
 """Role-based DRF permissions. Roles live on `users.User.role`."""
+
 from rest_framework.permissions import BasePermission
 
 ADMIN = "ADMIN"

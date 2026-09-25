@@ -341,3 +341,17 @@ def test_query_budgets(client_for, admin, make_ledger, make_lead, make_payment):
         assert c.get(f"{LEDGERS}/summary").status_code == 200
     assert len(sum_q) < 8
     assert Payment.objects.count() == 5
+
+
+def test_the_admin_dashboard_matches_the_ledger_summary(client_for, admin, book):
+    dash = client_for(admin).get("/api/v1/dashboard/admin?period=all").json()
+    summary = client_for(admin).get(f"{LEDGERS}/summary").json()
+    kpis = dash["kpis"]
+    assert kpis["received"] == summary["received"] == "165000.00"
+    assert kpis["outstanding"] == summary["outstanding"]
+    assert kpis["outstanding_overdue"] == summary["overdue_amount"]
+    assert kpis["outstanding_clients"] == summary["clients_with_balance"]
+    assert dash["collections_aging"] == summary["aging"]
+    assert [t["ledger_id"] for t in dash["top_overdue_clients"]] == [
+        t["ledger"] for t in summary["top_overdue"]
+    ]

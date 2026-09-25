@@ -82,7 +82,9 @@ def test_the_whole_deal_flow(
     blocked = admin_api.post(
         f"{LEDGERS}/{ledger.pk}/payments", payment_form(amount="1000"), format="multipart"
     )
-    assert blocked.status_code == 409 and blocked.json()["error"]["code"] == "not_finalized", blocked.content
+    assert blocked.status_code == 409 and blocked.json()["error"]["code"] == "not_finalized", (
+        blocked.content
+    )
     assert (
         client_for(admin)
         .post(

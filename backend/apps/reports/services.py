@@ -159,6 +159,70 @@ def _model(app_label: str, model_name: str):
         return None
 
 
+def _account_figures(rng: PeriodRange, months: list[str]) -> dict | None:
+    """Received, outstanding, overdue and aging for the dashboard, or None until accounts exist.
+
+    Every number comes from accounts.selectors, so the dashboard and Accounts always agree.
+    """
+    ledger_model = _model("accounts", "Ledger")
+    payment_model = _model("accounts", "Payment")
+    if ledger_model is None or payment_model is None:
+        return None
+    from django.db.models import Sum
+    from django.db.models.functions import TruncMonth
+
+    from apps.accounts import selectors as acs
+
+    summary = acs.summary(acs.with_figures(ledger_model.objects.select_related("lead")))
+    live = payment_model.objects.filter(is_void=False)
+
+    def total(start, end):
+        qs = live if end is None else live.filter(received_on__lte=end)
+        if start:
+            qs = qs.filter(received_on__gte=start)
+        return qs.aggregate(t=Sum("amount"))["t"] or ZERO
+
+    per_month = {
+        row["m"].strftime("%Y-%m"): row["t"]
+        for row in live.filter(received_on__gte=f"{months[0]}-01")
+        .annotate(m=TruncMonth("received_on"))
+        .values("m")
+        .annotate(t=Sum("amount"))
+    }
+    recent = [
+        {
+            "date": p.received_on.isoformat(),
+            "client": p.ledger.lead.name,
+            "reference": p.reference,
+            "amount": money(p.amount),
+        }
+        for p in live.select_related("ledger__lead").order_by("-received_on", "-id")[:5]
+    ]
+    return {
+        "received": total(rng.start, rng.end),
+        "received_prev": total(rng.prev_start, rng.prev_end) if rng.prev_end else ZERO,
+        "received_all": Decimal(summary["received"]),
+        "finalized_value": Decimal(summary["total_value"]),
+        "outstanding": Decimal(summary["outstanding"]),
+        "outstanding_overdue": Decimal(summary["overdue_amount"]),
+        "outstanding_clients": summary["clients_with_balance"],
+        "received_trend": [per_month.get(m, ZERO) for m in months],
+        "aging": summary["aging"],
+        "top_overdue": [
+            {
+                "ledger_id": t["ledger"],
+                "client": t["client"],
+                "outstanding": t["outstanding"],
+                "days": t["days_since"],
+            }
+            for t in summary["top_overdue"]
+        ],
+        "recent_payments": recent,
+        "overdue_clients": summary["overdue_clients"],
+        "awaiting_finalization": summary["awaiting_finalization"],
+    }
+
+
 def _project_figures(rng: PeriodRange, months: list[str]) -> dict | None:
     """Projects and expenses figures for the admin dashboard, or None until those models exist.
 
@@ -231,6 +295,7 @@ def _project_figures(rng: PeriodRange, months: list[str]) -> dict | None:
         "spent": in_period.aggregate(t=Sum("amount"))["t"] or ZERO,
         "spent_trend": [per_month.get(m, ZERO) for m in months],
         "burn": burn[:5],
+        "alerts": sum(1 for p in burn if p["state"] != "ok"),
         "budget_alerts": sum(b["state"] != "ok" for b in burn),
         "recent_expenses": recent_expenses,
         "activity": activity,
@@ -290,6 +355,13 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
     spent_trend = [ZERO] * len(months)
     collections_aging = empty_aging()
     top_overdue_clients: list[dict] = []
+    acc = _account_figures(rng, months)
+    if acc:
+        received, received_prev = acc["received"], acc["received_prev"]
+        received_all, finalized_value = acc["received_all"], acc["finalized_value"]
+        outstanding, outstanding_overdue = acc["outstanding"], acc["outstanding_overdue"]
+        outstanding_clients, received_trend = acc["outstanding_clients"], acc["received_trend"]
+        collections_aging, top_overdue_clients = acc["aging"], acc["top_overdue"]
     proj = _project_figures(rng, months)
     if proj:
         projects_running, projects_completed = proj["running"], proj["completed"]
@@ -312,6 +384,11 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
         "overdue_payments": 0,
         "budget_alerts": proj["budget_alerts"] if proj else 0,
     }
+    if proj:
+        attention_counts["budget_alerts"] = proj["alerts"]
+    if acc:
+        attention_counts["overdue_payments"] = acc["overdue_clients"]
+        attention_counts["won_awaiting_finalization"] = acc["awaiting_finalization"]
 
     return {
         "period": period,
@@ -371,7 +448,7 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
         "projects_burn": projects_burn,
         # activity items: {when, actor, action, type}; type is lead|payment|expense|project|user
         "recent": {
-            "payments": [],
+            "payments": acc["recent_payments"] if acc else [],
             "expenses": proj["recent_expenses"] if proj else [],
             "activity": proj["activity"] if proj else [],
         },

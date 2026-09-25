@@ -144,7 +144,7 @@ describe('LeadsListPage', () => {
 
     TestBed.resetTestingModule();
     const exec = await setup(Role.SalesExec, '/leads/won');
-    exec.resolve(rows.map(({ finalized: _f, ...r }) => r));
+    exec.resolve(rows.map((r) => ({ ...r, finalized: undefined })));
     expect(text(exec.el)).not.toContain('Finalization');
   });
 

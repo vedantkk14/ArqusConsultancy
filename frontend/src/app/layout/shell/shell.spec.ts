@@ -140,7 +140,8 @@ describe('Shell and sidebar', () => {
   it('the command palette filters role-visible pages', () => {
     const pm = pagesForRole(Role.ProjectManager);
     expect(pm.some((p) => p.route.startsWith('/accounts'))).toBe(false);
-    expect(filterPages(pm, 'budget').map((p) => p.label)).toEqual(['Budget Alerts']);
+    expect(filterPages(pm, 'budget')).toEqual([]); // alerts are admin only
+    expect(filterPages(pagesForRole(Role.Admin), 'budget').map((p) => p.label)).toEqual(['Budget Alerts']);
     expect(filterPages(pagesForRole(Role.Admin), 'reports').length).toBe(4); // matches the group name
   });
 });

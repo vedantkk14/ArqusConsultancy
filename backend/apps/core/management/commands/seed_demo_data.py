@@ -250,7 +250,7 @@ class Command(BaseCommand):
         seed_ledgers(self, users)
 
     def _seed_payments(self, users):
-        """Payments over ~6 months in every mode, some with proof, some voided; covers every aging bucket."""
+        """Payments over ~6 months in every mode, some with proof or voided; every aging bucket."""
         from apps.accounts.demo import seed_payments
 
         seed_payments(self, users)

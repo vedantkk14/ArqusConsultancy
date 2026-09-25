@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   ElementRef,
   computed,
   inject,
@@ -56,7 +57,7 @@ export interface LeadFormSaved {
   templateUrl: './lead-form.html',
   styleUrls: ['./lead-form.scss', './lead-form-pick.scss'],
 })
-export class LeadForm {
+export class LeadForm implements OnInit {
   /** Edit mode when set. */
   readonly lead = input<LeadDetail | null>(null);
   /** Managers edit everything and assign; an exec edits only email and requirements. */

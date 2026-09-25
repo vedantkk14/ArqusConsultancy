@@ -24,6 +24,9 @@ export const TYPE_META: Record<string, TypeMeta> = {
   project_completed: { icon: 'task_alt', tone: 'teal' },
   project_reopened: { icon: 'replay', tone: 'amber' },
   budget_changed: { icon: 'tune', tone: 'cyan' },
+  budget_requested: { icon: 'request_quote', tone: 'amber' },
+  budget_request_approved: { icon: 'thumb_up', tone: 'teal' },
+  budget_request_rejected: { icon: 'thumb_down', tone: 'rose' },
 };
 const FALLBACK: TypeMeta = { icon: 'notifications', tone: 'slate' };
 
@@ -39,7 +42,7 @@ export function routeFor(n: Pick<AppNotification, 'type' | 'data'>): unknown[] |
     return ['/expenses/alerts'];
   }
   const projectId = Number(n.data?.['project_id']);
-  if (n.type.startsWith('project_') || n.type === 'expense_added' || n.type === 'budget_changed') {
+  if (n.type.startsWith('project_') || n.type === 'expense_added' || n.type === 'budget_changed' || n.type.startsWith('budget_request')) {
     return projectId ? ['/projects', projectId] : ['/projects/running'];
   }
   const ledgerId = Number(n.data?.['ledger_id']);

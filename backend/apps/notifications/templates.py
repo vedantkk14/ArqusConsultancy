@@ -49,6 +49,18 @@ TEMPLATES: dict[str, tuple[str, str]] = {
     "project_unassigned": ("Project reassigned", "{project_name} moved to another manager."),
     "project_completed": ("Project completed", "{project_name} was marked complete."),
     "project_reopened": ("Project reopened", "{project_name} was reopened: {reason}"),
+    "budget_requested": (
+        "Budget request",
+        "{requested_by} asked for {amount} more on {project_name}.",
+    ),
+    "budget_request_approved": (
+        "Budget approved",
+        "Your request for {amount} more on {project_name} was approved.",
+    ),
+    "budget_request_rejected": (
+        "Budget request declined",
+        "Your request for {amount} more on {project_name} was declined.",
+    ),
     "budget_changed": ("Budget changed", "{project_name} budget changed from {old} to {new}."),
 }
 MONEY_KEYS = {"proposed_amount", "amount", "total_amount", "old", "new"}

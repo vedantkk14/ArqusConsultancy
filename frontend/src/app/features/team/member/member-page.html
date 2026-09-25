@@ -1,0 +1,99 @@
+<a class="back" [routerLink]="backTo()"><mat-icon aria-hidden="true">arrow_back</mat-icon>Team</a>
+
+@if (error()) {
+  <app-error-state [title]="error()!.status === 404 ? 'You can\u2019t open this person' : 'Couldn\u2019t load this person'" (retry)="load()" />
+} @else if (data(); as d) {
+  <section class="card panel who-card rise-in" aria-label="Details">
+    <app-user-avatar [name]="d.user.name" [size]="56" />
+    <div class="who-main">
+      <h2>{{ d.user.name }}</h2>
+      <div class="meta">
+        <app-role-badge [role]="d.user.role" />
+        <span class="pill" [class.ok]="d.user.is_active" [class.off]="!d.user.is_active">{{ d.user.is_active ? 'Active' : 'Inactive' }}</span>
+      </div>
+    </div>
+    <dl class="kv">
+      <dt>Email</dt><dd>{{ d.user.email || '—' }}</dd>
+      <dt>Phone</dt><dd>{{ d.user.phone || '—' }}</dd>
+      <dt>Username</dt><dd>{{ d.user.username }}</dd>
+      <dt>Joined</dt><dd>{{ d.user.date_joined | date: 'd MMM y' }}</dd>
+      <dt>Last sign-in</dt><dd>{{ d.user.last_login ? ago(d.user.last_login) : 'Never' }}</dd>
+      @if (d.user.commission_rate !== null) { <dt>Commission rate</dt><dd>{{ d.user.commission_rate }}%</dd> }
+    </dl>
+  </section>
+
+  @if (d.leads; as l) {
+    <section class="card panel rise-in" style="--i: 1" aria-labelledby="sales-t">
+      <app-panel-head title="Sales performance" subtitle="All leads assigned to them" headingId="sales-t" />
+      <div class="tiles">
+        <div class="tile"><span class="k">Won</span><span class="v ok num">{{ l.won }}</span></div>
+        <div class="tile"><span class="k">Lost</span><span class="v bad num">{{ l.lost }}</span></div>
+        <div class="tile"><span class="k">Conversion</span><span class="v num">{{ l.conversion_pct }}%</span></div>
+        <div class="tile"><span class="k">Won value</span><span class="v num">{{ l.won_value | inr }}</span></div>
+        <div class="tile"><span class="k">Open leads</span><span class="v num">{{ l.open }}</span><span class="s">{{ l.open_value | inr }} in play</span></div>
+        <div class="tile"><span class="k">Overdue follow-ups</span><span class="v num" [class.bad]="l.overdue_followups">{{ l.overdue_followups }}</span></div>
+        <div class="tile"><span class="k">Won this month</span><span class="v num">{{ l.won_this_month }}</span></div>
+        @if (l.commission_earned !== null) {
+          <div class="tile"><span class="k">Commission earned</span><span class="v num">{{ l.commission_earned | inr }}</span></div>
+        } @else {
+          <div class="tile"><span class="k">Leads created</span><span class="v num">{{ l.leads_created }}</span></div>
+        }
+      </div>
+      @if (l.won + l.lost) {
+        <div class="split" role="img" [attr.aria-label]="l.won + ' won, ' + l.lost + ' lost'">
+          <span class="w" [style.width.%]="split()"></span><span class="l" [style.width.%]="100 - split()"></span>
+        </div>
+      }
+      <div class="two">
+        <div>
+          <h3>Recently closed</h3>
+          <ul class="rows">
+            @for (x of l.recent_closed; track x.id) {
+              <li>
+                <a [routerLink]="['/leads', x.id]">{{ x.name }}</a>
+                <span class="pill" [class.ok]="x.status === 'WON'" [class.bad]="x.status === 'LOST'">{{ x.status === 'WON' ? 'Won' : 'Lost' }}</span>
+                <span class="muted num">{{ x.value ? (x.value | inr) : '—' }}</span>
+              </li>
+            } @empty { <li class="none">No closed leads yet.</li> }
+          </ul>
+        </div>
+        <div>
+          <h3>Why leads were lost</h3>
+          <ul class="rows">
+            @for (r of l.lost_reasons; track r.reason) {
+              <li><span>{{ r.reason }}</span><span class="num">{{ r.count }}</span></li>
+            } @empty { <li class="none">Nothing lost.</li> }
+          </ul>
+        </div>
+      </div>
+    </section>
+  }
+
+  @if (d.projects; as p) {
+    <section class="card panel rise-in" style="--i: 2" aria-labelledby="proj-t">
+      <app-panel-head title="Project delivery" subtitle="Completed against the expected end date, and budget use" headingId="proj-t" />
+      <div class="tiles">
+        <div class="tile"><span class="k">Running</span><span class="v num">{{ p.running }}</span></div>
+        <div class="tile"><span class="k">Completed</span><span class="v num">{{ p.completed }}</span></div>
+        <div class="tile"><span class="k">On time</span><span class="v ok num">{{ p.completed_on_time }}</span><span class="s">{{ p.on_time_pct }}% of those with a deadline</span></div>
+        <div class="tile"><span class="k">Late</span><span class="v num" [class.bad]="p.completed_late">{{ p.completed_late }}</span></div>
+        <div class="tile"><span class="k">Past deadline now</span><span class="v num" [class.bad]="p.running_overdue">{{ p.running_overdue }}</span></div>
+        <div class="tile"><span class="k">Over budget</span><span class="v num" [class.bad]="p.over_budget">{{ p.over_budget }}</span></div>
+        <div class="tile"><span class="k">Sanctioned</span><span class="v num">{{ p.sanctioned | inr }}</span></div>
+        <div class="tile"><span class="k">Spent</span><span class="v num">{{ p.spent | inr }}</span></div>
+      </div>
+      <ul class="rows projects">
+        @for (x of p.projects; track x.id) {
+          <li>
+            <a [routerLink]="['/projects', x.id]"><strong>{{ x.name }}</strong></a>
+            <span class="pill" [class.ok]="x.delivery === 'on_time'" [class.bad]="x.delivery === 'late' || x.delivery === 'overdue'" [class.off]="x.delivery === 'in_progress' || x.delivery === 'no_deadline'">{{ delivery[x.delivery] }}</span>
+            <span class="muted">Due {{ x.expected_end_date ? (x.expected_end_date | date: 'd MMM y') : '—' }}@if (x.completed_on) { · done {{ x.completed_on | date: 'd MMM y' }} }</span>
+            <span class="num" [class.bad]="x.budget_state === 'over'">{{ x.spent | inr }} / {{ x.sanctioned | inr }} ({{ x.usage_pct }}%)</span>
+          </li>
+        } @empty { <li class="none">No projects assigned yet.</li> }
+      </ul>
+    </section>
+  }
+} @else {
+  <div class="card panel" aria-hidden="true"><app-skeleton width="30%" height="24px" /><app-skeleton height="120px" /></div>
+}

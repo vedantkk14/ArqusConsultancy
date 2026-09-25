@@ -1,5 +1,5 @@
 @if (readOnly()) {
-  <p class="note ro"><mat-icon aria-hidden="true">visibility</mat-icon>Read-only view.</p>
+  <p class="note ro"><mat-icon aria-hidden="true">visibility</mat-icon>Your sales executives. Open anyone to see their results.</p>
 }
 
 @if (error()) {
@@ -14,7 +14,7 @@
         } @else {
           @for (e of data()!.execs; track e.id) {
             <li>
-              <span class="who"><app-user-avatar [name]="e.name" [size]="36" /><span class="who-t"><strong>{{ e.name }}</strong></span></span>
+              <span class="who"><app-user-avatar [name]="e.name" [size]="36" /><span class="who-t"><a class="nm" [routerLink]="['/team/members', e.id]"><strong>{{ e.name }}</strong></a></span></span>
               <span class="ch">
                 <a class="chip" [routerLink]="['/leads/all']" [queryParams]="{ assigned_to: e.id }" [attr.aria-label]="e.open_leads + ' open leads for ' + e.name">
                   <b class="num">{{ e.open_leads }}</b> open
@@ -33,6 +33,7 @@
       </ul>
     </section>
 
+    @if (!readOnly()) {
     <section class="card panel rise-in" style="--i: 1" aria-labelledby="pm-title">
       <app-panel-head title="Project managers" subtitle="Running projects and budget alerts" headingId="pm-title" />
       @if (data() && !data()!.data_sources.projects) {
@@ -44,7 +45,7 @@
         } @else {
           @for (p of data()!.pms; track p.id) {
             <li>
-              <span class="who"><app-user-avatar [name]="p.name" [size]="36" /><span class="who-t"><strong>{{ p.name }}</strong></span></span>
+              <span class="who"><app-user-avatar [name]="p.name" [size]="36" /><span class="who-t"><a class="nm" [routerLink]="['/team/members', p.id]"><strong>{{ p.name }}</strong></a></span></span>
               <span class="ch">
                 <a class="chip" [routerLink]="['/projects/running']" [queryParams]="{ project_manager: p.id }"><b class="num">{{ p.running_projects }}</b> running</a>
                 @if (p.over_budget) {
@@ -60,5 +61,6 @@
         }
       </ul>
     </section>
+    }
   </div>
 }

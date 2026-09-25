@@ -292,13 +292,45 @@ describe('AssignmentsPage', () => {
     expect(text(el)).not.toContain('Read-only view.');
   });
 
-  it('is read-only for the Sales Manager', async () => {
+  it('shows the Sales Manager their executives only, each linking to their details', async () => {
     configure();
     const http = await signIn(Role.SalesManager);
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/team/assignments', AssignmentsPage);
     http.expectOne('/api/v1/users/assignments-overview').flush(overview);
     harness.detectChanges();
-    expect(text(harness.routeNativeElement)).toContain('Read-only view.');
+    const el = harness.routeNativeElement as HTMLElement;
+    expect(text(el)).toContain('Your sales executives');
+    expect(text(el)).not.toContain('Project managers');
+    expect(el.querySelector('a.nm')!.getAttribute('href')).toMatch(/^\/team\/members\/\d+$/);
+  });
+});
+
+describe('MemberPage', () => {
+  const perf = {
+    user: { id: 5, name: 'Eva Exec', username: 'eva', email: 'e@x.com', phone: '', role: Role.SalesExec, is_active: true, date_joined: '2026-01-01T00:00:00Z', last_login: null, commission_rate: '10.00' },
+    leads: {
+      assigned: 4, open: 1, won: 2, lost: 1, conversion_pct: '66.7', won_value: '1500.00', open_value: '200.00', overdue_followups: 1,
+      won_this_month: 2, leads_created: 0, commission_earned: '150.00', lost_reasons: [{ reason: 'Price', count: 1 }],
+      recent_closed: [{ id: 9, name: 'Acme', status: 'WON', value: '1000.00', when: '2026-09-20T00:00:00Z' }],
+    },
+    projects: null,
+  };
+
+  it('shows details and sales results for the member in the URL', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideRouter([{ path: 'team/members/:id', loadComponent: () => import('./member/member-page').then((m) => m.MemberPage) }]), provideHttpClient(), provideHttpClientTesting(), fakeBreakpoints(1440)],
+    });
+    const http = await signIn(Role.SalesManager, 2);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/team/members/5');
+    http.expectOne('/api/v1/users/5/performance').flush(perf);
+    harness.detectChanges();
+    const el = harness.routeNativeElement as HTMLElement;
+    expect(text(el)).toContain('Eva Exec');
+    expect(text(el)).toContain('66.7%');
+    expect(text(el)).toContain('Price');
+    expect(text(el)).not.toContain('Project delivery');
+    expect(el.querySelector('a.back')!.getAttribute('href')).toBe('/team/assignments');
   });
 });

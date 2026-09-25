@@ -17,5 +17,13 @@ export const TEAM_ROUTES: Routes = [
   page('users', 'Users', () => import('./users/users-page').then((m) => m.UsersPage)),
   page('commission-rates', 'Commission rates', () => import('./commission/commission-page').then((m) => m.CommissionPage)),
   page('assignments', 'Assignments', () => import('./assignments/assignments-page').then((m) => m.AssignmentsPage)),
+  {
+    // Not in the sidebar: opened from Users and Assignments. A Sales Manager may open executives only.
+    path: 'members/:id',
+    title: 'Team member',
+    canActivate: [roleGuard],
+    data: { roles: findNavItem('/team/assignments')?.roles },
+    loadComponent: () => import('./member/member-page').then((m) => m.MemberPage),
+  },
   ...placeholderRoutes('/team').filter((r) => r.path === ''),
 ];

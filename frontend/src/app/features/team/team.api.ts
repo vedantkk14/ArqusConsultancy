@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService, QueryParams } from '../../core/api/api.service';
 import { PaginatedResponse } from '../../core/models';
-import { AssignmentsOverview, TeamUser, UserEdit } from './team.models';
+import { AssignmentsOverview, MemberPerformance, TeamUser, UserEdit } from './team.models';
 
 @Injectable({ providedIn: 'root' })
 export class TeamApi {
@@ -31,6 +31,10 @@ export class TeamApi {
 
   setCommission(id: number, rate: string): Observable<TeamUser> {
     return this.api.patch<TeamUser>(`/users/${id}/commission-rate`, { commission_rate: rate });
+  }
+
+  performance(id: number): Observable<MemberPerformance> {
+    return this.api.get<MemberPerformance>(`/users/${id}/performance`);
   }
 
   assignments(): Observable<AssignmentsOverview> {

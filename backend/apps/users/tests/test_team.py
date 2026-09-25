@@ -231,7 +231,7 @@ def test_roles_are_a_fixed_read_only_reference(admin):
     assert client(admin).post(f"{URL}/roles", {}, format="json").status_code in (403, 404, 405)
 
 
-def test_assignments_overview_counts_leads_and_falls_back_without_projects(admin, exec_):
+def test_assignments_overview_counts_leads_and_projects(admin, exec_):
     from datetime import timedelta
 
     from django.utils import timezone
@@ -252,7 +252,5 @@ def test_assignments_overview_counts_leads_and_falls_back_without_projects(admin
     body = client(admin).get(f"{URL}/assignments-overview").json()
     assert body["data_sources"]["leads"] is True
     assert body["execs"] == [{"id": exec_.id, "name": "Eva", "open_leads": 2, "overdue": 1}]
-    assert (
-        body["data_sources"]["projects"] is False
-    )  # projects.Project is not merged: zeros, no error
+    assert body["data_sources"]["projects"] is True  # projects is merged: real (zero) counts
     assert body["pms"] == [{"id": pm.id, "name": "Paul", "running_projects": 0, "over_budget": 0}]

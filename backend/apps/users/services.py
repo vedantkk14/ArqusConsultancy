@@ -371,7 +371,7 @@ def _model(app_label: str, name: str):
         return None
 
 
-def assignments_overview() -> dict:
+def assignments_overview(include_pms: bool = True) -> dict:
     """Open and overdue leads per exec, running and over-budget projects per PM.
 
     Other apps' models are read through apps.get_model, so this works whatever is merged: a missing
@@ -386,10 +386,14 @@ def assignments_overview() -> dict:
             "first_name", "username"
         )
     )
-    pms = list(
-        User.objects.filter(role=User.Role.PROJECT_MANAGER, is_active=True).order_by(
-            "first_name", "username"
+    pms = (
+        list(
+            User.objects.filter(role=User.Role.PROJECT_MANAGER, is_active=True).order_by(
+                "first_name", "username"
+            )
         )
+        if include_pms
+        else []
     )
 
     lead_counts: dict = {}
@@ -414,19 +418,20 @@ def assignments_overview() -> dict:
     project_counts: dict = {}
     projects_ok = False
     project_model = _model("projects", "Project")
-    if (
-        project_model is not None
-    ):  # TODO(depends on projects.Project, Dev B): field names when it lands
+    if project_model is not None and include_pms:
         try:
+            from apps.projects import selectors as project_selectors
+
             rows = (
-                project_model.objects.exclude(status="COMPLETED")
-                .values("project_manager")
+                project_selectors.budget_usage_qs(project_model.objects.exclude(status="COMPLETED"))
+                .order_by()
+                .values("pm")
                 .annotate(
                     running=Count("id"),
                     over=Count("id", filter=Q(spent__gt=F("sanctioned_budget"))),
                 )
             )
-            project_counts = {r["project_manager"]: r for r in rows}
+            project_counts = {r["pm"]: r for r in rows}
             projects_ok = True
         except FieldError:
             pass

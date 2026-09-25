@@ -3,6 +3,7 @@
     <mat-icon aria-hidden="true">more_vert</mat-icon>
   </button>
   <mat-menu #menu="matMenu" xPosition="before">
+    <a mat-menu-item [routerLink]="['/team/members', u.id]"><mat-icon>insights</mat-icon>View details</a>
     <button mat-menu-item type="button" (click)="edit(u)"><mat-icon>edit</mat-icon>Edit</button>
     <button mat-menu-item type="button" (click)="resetPassword(u)"><mat-icon>lock_reset</mat-icon>Reset password</button>
     @if (u.id !== me()) {
@@ -78,7 +79,7 @@
                   <td>
                     <span class="who">
                       <app-user-avatar [name]="u.name" [size]="36" />
-                      <span class="who-t"><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong><span>{{ u.email }}</span></span>
+                      <span class="who-t"><a class="nm" [routerLink]="['/team/members', u.id]"><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong></a><span>{{ u.email }}</span></span>
                     </span>
                   </td>
                   <td><app-role-badge [role]="u.role" /></td>
@@ -104,7 +105,7 @@
               <span class="top">
                 <span class="who">
                   <app-user-avatar [name]="u.name" [size]="40" />
-                  <span class="who-t"><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong><span>{{ u.email }}</span></span>
+                  <span class="who-t"><a class="nm" [routerLink]="['/team/members', u.id]"><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong></a><span>{{ u.email }}</span></span>
                 </span>
                 <ng-container *ngTemplateOutlet="actions; context: { $implicit: u }" />
               </span>

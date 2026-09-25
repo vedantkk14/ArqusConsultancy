@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ApiError, ROLE_LABELS, Role } from '../../../core/models';
@@ -30,7 +30,7 @@ export const SEARCH_DEBOUNCE_MS = 300;
 
 @Component({
   selector: 'app-users-page',
-  imports: [EmptyState, ErrorState, FilterShell, MatButtonModule, MatIconModule, MatMenuModule, NgTemplateOutlet, RoleBadge, Skeleton, UserAvatar],
+  imports: [EmptyState, ErrorState, FilterShell, MatButtonModule, MatIconModule, MatMenuModule, NgTemplateOutlet, RoleBadge, RouterLink, Skeleton, UserAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './users-page.html',
   styleUrls: ['../ui/list-kit.scss', './users-page.scss'],

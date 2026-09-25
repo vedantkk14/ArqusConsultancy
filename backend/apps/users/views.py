@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -126,7 +127,8 @@ class UserViewSet(GenericViewSet):
     pagination_class = StandardPagination
 
     def get_permissions(self):
-        roles = ("ADMIN", "SALES_MANAGER") if self.action == "assignments_overview" else ("ADMIN",)
+        shared = ("assignments_overview", "performance")
+        roles = ("ADMIN", "SALES_MANAGER") if self.action in shared else ("ADMIN",)
         return [HasRole(*roles)()]
 
     def list(self, request):
@@ -192,7 +194,19 @@ class UserViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"], url_path="assignments-overview")
     def assignments_overview(self, request):
-        return Response(services.assignments_overview())
+        # A Sales Manager looks after sales executives only; project managers are not theirs.
+        return Response(services.assignments_overview(include_pms=request.user.role == "ADMIN"))
+
+    @action(detail=True, methods=["get"])
+    def performance(self, request, pk=None):
+        """Details and results of one person. A Sales Manager may open sales executives only."""
+        from .performance import member_performance
+
+        qs = self.get_queryset()
+        if request.user.role == "SALES_MANAGER":
+            qs = qs.filter(role="SALES_EXEC")
+        user = get_object_or_404(qs, pk=pk)
+        return Response(member_performance(user))
 
     @action(detail=False, methods=["get"])
     def roles(self, request):

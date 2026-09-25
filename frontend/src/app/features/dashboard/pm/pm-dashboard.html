@@ -81,7 +81,7 @@
           />
           <div class="cards">
             @for (p of visibleProjects(); track p.id) {
-              <app-pm-project-card [project]="p" />
+              <app-pm-project-card [project]="p" (addExpense)="openExpense($event)" />
             }
           </div>
           @if (hiddenCount() > 0) {

@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { InrPipe } from '../../../shared/money/inr.pipe';
 import { BudgetBar } from '../../projects/ui/bits';
@@ -7,44 +8,94 @@ import { PmProject } from './pm-dashboard.models';
 /** One of the PM's projects: name, status, the same usage bar as the detail page, and the budget triple as text. */
 @Component({
   selector: 'app-pm-project-card',
-  imports: [BudgetBar, InrPipe, RouterLink],
+  imports: [BudgetBar, InrPipe, MatIconModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let p = project();
-    <a
-      class="card card-link pc"
-      [routerLink]="['/projects', p.id]"
-      [attr.aria-label]="'Open ' + p.name"
-    >
-      <span class="top">
-        <span class="t">
-          <strong class="nm">{{ p.name }}</strong>
-          <span class="cl">{{ p.client_name }}</span>
+    <div class="card card-link pc">
+      <a class="lnk" [routerLink]="['/projects', p.id]" [attr.aria-label]="'Open ' + p.name">
+        <span class="top">
+          <span class="t">
+            <strong class="nm">{{ p.name }}</strong>
+            <span class="cl">{{ p.client_name }}</span>
+          </span>
+          <span [class]="'status ' + (p.status === 'RUNNING' ? 'run' : 'done')"
+            ><i aria-hidden="true"></i>{{ p.status === 'RUNNING' ? 'Running' : 'Completed' }}</span
+          >
         </span>
-        <span [class]="'status ' + (p.status === 'RUNNING' ? 'run' : 'done')"
-          ><i aria-hidden="true"></i>{{ p.status === 'RUNNING' ? 'Running' : 'Completed' }}</span
+        <app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" [wide]="true" />
+        <dl class="triple">
+          <div>
+            <dt>Sanctioned</dt>
+            <dd class="num">{{ p.sanctioned_budget | inr }}</dd>
+          </div>
+          <div>
+            <dt>Spent</dt>
+            <dd class="num">{{ p.spent | inr }}</dd>
+          </div>
+          <div>
+            <dt>Remaining</dt>
+            <dd class="num" [class.neg]="p.state === 'over'">{{ p.remaining | inr }}</dd>
+          </div>
+        </dl>
+      </a>
+      @if (project().status === 'RUNNING') {
+        <button
+          type="button"
+          class="add"
+          [attr.aria-label]="'Add expense to ' + project().name"
+          (click)="addExpense.emit(project())"
         >
-      </span>
-      <app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" [wide]="true" />
-      <dl class="triple">
-        <div>
-          <dt>Sanctioned</dt>
-          <dd class="num">{{ p.sanctioned_budget | inr }}</dd>
-        </div>
-        <div>
-          <dt>Spent</dt>
-          <dd class="num">{{ p.spent | inr }}</dd>
-        </div>
-        <div>
-          <dt>Remaining</dt>
-          <dd class="num" [class.neg]="p.state === 'over'">{{ p.remaining | inr }}</dd>
-        </div>
-      </dl>
-    </a>
+          <mat-icon aria-hidden="true">add</mat-icon>Add expense
+        </button>
+      }
+    </div>
   `,
   styles: `
     :host {
       display: block;
+    }
+    .lnk {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      color: inherit;
+      text-decoration: none;
+    }
+    .lnk:focus-visible {
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 4px;
+      border-radius: var(--radius-card);
+      box-shadow: var(--ring);
+    }
+    .add {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;
+      padding: 0 16px 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .add:hover {
+      background: var(--subtle);
+    }
+    .add:focus-visible {
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 2px;
+      box-shadow: var(--ring);
+    }
+    .add mat-icon {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
     }
     .pc {
       display: flex;
@@ -128,4 +179,5 @@ import { PmProject } from './pm-dashboard.models';
 })
 export class PmProjectCard {
   readonly project = input.required<PmProject>();
+  readonly addExpense = output<PmProject>();
 }

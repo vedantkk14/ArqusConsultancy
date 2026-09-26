@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ApiService } from '../../../core/api/api.service';
 import { ApiError, ROLE_LABELS, Role } from '../../../core/models';
 import { isValidRate } from '../../team/team.models';
-import { ROLE_HINTS, generatePassword, suggestUsername } from './account-utils';
+import { ROLE_HINTS, suggestUsername } from './account-utils';
 
 export interface CreatedAccount {
   id: number;
@@ -87,13 +87,6 @@ export class CreateAccountDialog {
 
   protected onUsername(): void {
     this.usernameEdited = true;
-  }
-
-  protected generate(): void {
-    const password = generatePassword();
-    this.form.controls.password.setValue(password);
-    this.form.controls.password.markAsDirty();
-    this.showPassword.set(true);
   }
 
   protected submit(): void {

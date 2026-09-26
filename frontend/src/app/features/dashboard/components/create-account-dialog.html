@@ -88,7 +88,6 @@
             <mat-icon aria-hidden="true">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
         </span>
-        <button matButton="outlined" type="button" (click)="generate()">Generate</button>
       </div>
       @if (show('password')) { <p class="err">{{ message('password') }}</p> }
     </div>

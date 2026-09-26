@@ -70,15 +70,6 @@ describe('CreateAccountDialog', () => {
     expect([...el.querySelectorAll('.err')].length).toBeGreaterThanOrEqual(5);
   });
 
-  it('generates a password and shows it', () => {
-    const { fixture, el } = setup();
-    el.querySelector<HTMLButtonElement>('.pwrow button[matButton], .pwrow > button')!.click();
-    fixture.detectChanges();
-    const input = el.querySelector<HTMLInputElement>('#ca-password')!;
-    expect(input.value).toHaveLength(14);
-    expect(input.type).toBe('text');
-  });
-
   it('creates the account and then shows the sign-in details', () => {
     const { fixture, el, http, submit, fillAll } = setup();
     fillAll('SALES_EXEC');

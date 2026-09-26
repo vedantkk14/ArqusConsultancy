@@ -263,7 +263,6 @@ class Command(BaseCommand):
                 },
             ),
             (admin, "payment_received", {"client_name": "Pune Strikers FC", "amount": "250000.00"}),
-            (admin, "budget_warn", {"project_name": "Turf installation, Baner", "usage_pct": "87"}),
             (
                 admin,
                 "lead_won",
@@ -273,7 +272,6 @@ class Command(BaseCommand):
                     "won_by": "Rohan Mehta",
                 },
             ),
-            (admin, "budget_over", {"project_name": "Stadium lighting audit"}),
             (
                 admin,
                 "payment_received",
@@ -307,9 +305,6 @@ class Command(BaseCommand):
                     "won_by": "Eva Exec",
                 },
             ),
-            (pm, "budget_warn", {"project_name": "Turf installation, Baner", "usage_pct": "87"}),
-            (pm, "budget_over", {"project_name": "Stadium lighting audit"}),
-            (pm, "budget_warn", {"project_name": "Arena seating redesign", "usage_pct": "82"}),
             (pm, "account_created", {}),
         ]
         now = timezone.now()

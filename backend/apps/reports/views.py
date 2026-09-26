@@ -52,7 +52,7 @@ class _ReportView(APIView):
 
 
 class SalesReportView(_ReportView):
-    """Per-executive leads, wins and commission. Admin and Sales Manager."""
+    """Per-executive leads, wins and running projects. Admin and Sales Manager."""
 
     permission_classes = [HasRole(ADMIN, SALES_MANAGER)]
     slug = "sales"

@@ -64,9 +64,7 @@ describe('PmDashboardPage', () => {
     resolve(mockPmDashboard());
     expect(el.querySelector('[aria-busy="true"]')).toBeNull();
     expect(el.querySelectorAll('app-pm-project-card').length).toBe(3);
-    expect(text(el.querySelector('.insight'))).toBe(
-      '1 project near its limit · 1 expense logged today',
-    );
+    expect(text(el.querySelector('.insight'))).toBe('2 projects running · 1 expense logged today');
   });
 
   it('shows an error with retry, and retry reloads', async () => {
@@ -77,15 +75,6 @@ describe('PmDashboardPage', () => {
     (el.querySelector('app-error-state button') as HTMLButtonElement).click();
     harness.detectChanges();
     expect(service.calls).toBe(2);
-  });
-
-  it('hides the alerts section when there are none, and shows it worst-first otherwise', async () => {
-    const { el, resolve } = await setup();
-    resolve(mockPmDashboard());
-    expect(el.querySelectorAll('app-pm-alert-row').length).toBe(1);
-    expect(text(el.querySelector('app-pm-alert-row'))).toContain('Near limit');
-    resolve({ ...mockPmDashboard(), alerts: [] });
-    expect(el.querySelector('.alerts')).toBeNull();
   });
 
   it('shows the empty state for a PM with no projects', async () => {

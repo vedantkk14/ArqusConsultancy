@@ -46,8 +46,8 @@ def lead(owner, status="NEW", amount=None, source="WEBSITE", **extra):
 @pytest.fixture
 def team():
     admin = make("boss", "ADMIN")
-    eva = make("eva", "SALES_EXEC", first_name="Eva", commission_rate="10.00")
-    raj = make("raj", "SALES_EXEC", first_name="Raj", commission_rate="0")
+    eva = make("eva", "SALES_EXEC", first_name="Eva")
+    raj = make("raj", "SALES_EXEC", first_name="Raj")
     return admin, eva, raj
 
 
@@ -73,21 +73,26 @@ def test_anonymous_is_401(report):
 # ---- Sales ----------
 
 
-def test_sales_aggregates_per_exec_with_commission(team):
+def test_sales_aggregates_per_exec_with_running_projects(team):
+    from apps.projects.models import Project
+
     admin, eva, raj = team
-    lead(eva, "WON", "1000.00")
-    lead(eva, "WON", "500.50")
+    first = lead(eva, "WON", "1000.00")
+    second = lead(eva, "WON", "500.50")
+    Project.objects.create(name="Running", client_name="A", lead=first)
+    Project.objects.create(name="Done", client_name="B", lead=second, status="COMPLETED")
     lead(eva, "LOST")
     lead(eva, "NEW")
     lead(raj, "WON", "200.00")
     data = client(admin).get(BASE + "sales?period=all").json()
     rows = {r["name"]: r for r in data["rows"]}
     assert rows["Eva"]["leads_worked"] == 4 and rows["Eva"]["won"] == 2 and rows["Eva"]["lost"] == 1
-    assert rows["Eva"]["won_value"] == "1500.50" and rows["Eva"]["commission"] == "150.05"
-    assert rows["Eva"]["conversion_pct"] == "66.7"
-    assert rows["Raj"]["commission"] == "0.00"
+    assert rows["Eva"]["won_value"] == "1500.50" and rows["Eva"]["conversion_pct"] == "66.7"
+    assert rows["Eva"]["running_projects"] == 1  # the completed project is not counted
+    assert rows["Raj"]["running_projects"] == 0
+    assert "commission" not in rows["Eva"] and "commission_rate" not in rows["Eva"]
     assert data["totals"]["won"] == 3 and data["totals"]["won_value"] == "1700.50"
-    assert data["totals"]["commission"] == "150.05"
+    assert data["totals"]["running_projects"] == 1 and "commission" not in data["totals"]
 
 
 def test_sales_period_filters_and_custom(team):

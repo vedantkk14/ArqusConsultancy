@@ -29,22 +29,6 @@ class NotFinalized(ProjectError):
     default_detail = "This deal is not finalized in accounts yet."
 
 
-class BudgetExceedsTotal(ProjectError):
-    default_code = "budget_exceeds_total"
-    default_detail = "The budget cannot exceed the deal total."
-
-
-class BudgetBelowSpent(ProjectError):
-    default_code = "budget_below_spent"
-    default_detail = "The budget cannot be lower than what is already spent."
-
-
-class OverBudget(ProjectError):
-    status_code = status.HTTP_409_CONFLICT
-    default_code = "over_budget"
-    default_detail = "This exceeds the remaining budget."
-
-
 class ProjectCompleted(ProjectError):
     status_code = status.HTTP_409_CONFLICT
     default_code = "project_completed"

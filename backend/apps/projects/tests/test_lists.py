@@ -15,7 +15,8 @@ from .conftest import BASE, EXPENSES
 
 @pytest.fixture
 def portfolio(admin, pm1, pm2, make_project, make_expense):
-    """ok (20%), warn (85%), warn (exactly 100%), over (override), no PM, and a completed one."""
+    """Against a deal total of 1000: ok (20%), warn (85%), warn (exactly 100%), over (120%),
+    no PM, and a completed one. Expenses are never blocked, so "over" is just a bigger expense."""
 
     def spend(project, amount, by=None):
         make_expense(by or pm1, str(amount), proj=project, category="LABOUR")
@@ -27,11 +28,7 @@ def portfolio(admin, pm1, pm2, make_project, make_expense):
     edge = make_project(pm=pm2, budget="1000.00", name="Charlie edge")
     spend(edge, 1000, pm2)
     over = make_project(pm=pm2, budget="1000.00", name="Delta over")
-    services.add_expense(
-        over.pk, admin,
-        {"amount": Decimal("1200.00"), "category": "LABOUR", "spent_on": selectors.business_today(),
-         "admin_override": True, "override_reason": "client"},
-    )  # fmt: skip
+    spend(over, 1200, pm2)
     nopm = make_project(pm=None, budget="1000.00", name="Echo no pm")
     done = make_project(pm=pm1, budget="1000.00", name="Foxtrot done")
     spend(done, 500)
@@ -102,10 +99,13 @@ def test_orderings(client_for, admin, portfolio):
     assert c.get(f"{BASE}?ordering=bogus").status_code == 200  # falls back to the default
 
 
-def test_pm_lists_are_scoped_and_filters_still_apply(client_for, pm1, portfolio):
+def test_pm_lists_are_scoped_and_budget_filters_are_ignored(client_for, pm1, portfolio):
     c = client_for(pm1)
-    assert names(c.get(f"{BASE}?ordering=name")) == ["Alpha ok", "Bravo warn", "Foxtrot done"]
-    assert names(c.get(f"{BASE}?over_budget=true")) == ["Bravo warn"]
+    mine = ["Alpha ok", "Bravo warn", "Foxtrot done"]
+    assert names(c.get(f"{BASE}?ordering=name")) == mine
+    # A PM never sees any budget, so budget filters and usage ordering reveal nothing.
+    for query in ("over_budget=true", "state=over", "near_limit=true", "ordering=-usage_pct"):
+        assert sorted(names(c.get(f"{BASE}?{query}"))) == mine, query
     assert c.get(f"{BASE}?pm=none").json()["count"] == 0  # no way to see unassigned projects
 
 
@@ -121,12 +121,12 @@ def test_summary_counts_and_totals(client_for, admin, pm1, portfolio):
     body = client_for(admin).get(f"{BASE}/summary").json()
     assert body == {
         "running": 5, "completed": 1, "ok": 2, "warn": 2, "over": 1, "no_pm": 1,
-        "sanctioned_total": "5000.00", "spent_total": "3250.00",
+        "budget_total": "5000.00", "spent_total": "3250.00",
     }  # fmt: skip
     done = client_for(admin).get(f"{BASE}/summary?status=completed").json()
     assert done["ok"] == 1 and done["spent_total"] == "500.00"
     pm = client_for(pm1).get(f"{BASE}/summary").json()
-    assert "no_pm" not in pm and pm["running"] == 2 and pm["completed"] == 1
+    assert pm == {"running": 2, "completed": 1, "spent_total": "1050.00"}  # no budget keys
 
 
 def test_expense_filters(client_for, admin, pm1, portfolio, make_expense):
@@ -144,7 +144,6 @@ def test_expense_filters(client_for, admin, pm1, portfolio, make_expense):
     assert c.get(f"{EXPENSES}?q=Alpha").json()["count"] == 3  # project name
     assert c.get(f"{EXPENSES}?state=void").json()["count"] == 1
     assert c.get(f"{EXPENSES}?state=active&project={ok_id}").json()["count"] == 2
-    assert c.get(f"{EXPENSES}?state=override").json()["count"] == 1
     assert c.get(f"{EXPENSES}?has_receipt=true").json()["count"] == 2
     assert c.get(f"{EXPENSES}?has_receipt=false&state=active").json()["count"] >= 4
     assert c.get(f"{EXPENSES}?logged_by={pm1.pk}&category=FOOD").json()["count"] == 2
@@ -184,19 +183,6 @@ def test_expense_summary_matches_the_filters_and_excludes_void(
         {"category": "FOOD", "label": "Food", "total": "10.00", "count": 1},
     ]
     assert c.get(f"{EXPENSES}/summary?category=FOOD").json()["total"] == "10.00"
-
-
-def test_alerts_lists_running_projects_at_or_over_the_line_worst_first(
-    client_for, admin, pm1, portfolio
-):
-    body = client_for(admin).get(f"{EXPENSES}/alerts").json()
-    assert [(r["name"], r["state"]) for r in body["results"]] == [
-        ("Delta over", "over"), ("Charlie edge", "warn"), ("Bravo warn", "warn"),
-    ]  # fmt: skip
-    over = body["results"][0]
-    assert over["over_by"] == "200.00" and over["remaining"] == "-200.00" and over["pm_name"]
-    assert body["results"][1]["over_by"] == "0.00" and body["results"][1]["remaining"] == "0.00"
-    assert client_for(pm1).get(f"{EXPENSES}/alerts").status_code == 403
 
 
 # ---- CSV ---------------------------------------------------------------------------------------
@@ -244,9 +230,27 @@ def test_csv_is_capped(client_for, admin, project, monkeypatch):
     assert len(read_csv(client_for(admin).get(f"{EXPENSES}/export"))) == 4  # header + 3
 
 
+def test_excel_export_of_one_projects_expenses(client_for, admin, pm1, portfolio, make_expense):
+    from openpyxl import load_workbook
+
+    void = make_expense(pm1, "50.00", proj=portfolio["ok"], category="FOOD")
+    services.void_expense(void.pk, admin, "typo")
+    res = client_for(admin).get(f"{EXPENSES}/export?project={portfolio['ok'].pk}&file=xlsx")
+    assert res.status_code == 200
+    assert res["Content-Type"].startswith("application/vnd.openxmlformats")
+    assert "expenses.xlsx" in res["Content-Disposition"]
+    sheet = load_workbook(io.BytesIO(res.content)).active
+    rows = list(sheet.iter_rows(values_only=True))
+    assert rows[0][:6] == ("Date", "Project", "Category", "Vendor", "Description", "Amount")
+    data = [r for r in rows[1:] if r and r[1] == "Alpha ok"]
+    assert len(data) == 2 and {r[8] for r in data} == {"Active", "Void"}
+    assert rows[-1][0] == "Total (active expenses)" and float(rows[-1][5]) == 200.0
+
+
 def test_export_is_admin_only(client_for, pm1, sales_manager, project):
     assert client_for(pm1).get(f"{EXPENSES}/export").status_code == 403
     assert client_for(sales_manager).get(f"{EXPENSES}/export").status_code == 403
+    assert client_for(pm1).get(f"{EXPENSES}/export?file=xlsx").status_code == 403
 
 
 # ---- Query budgets -----------------------------------------------------------------------------
@@ -276,7 +280,10 @@ def test_project_count_uses_a_single_annotated_query(client_for, admin, make_pro
         client_for(admin).get(BASE)
     selects = [q for q in ctx if q["sql"].lstrip().upper().startswith("SELECT")]
     assert (
-        sum("projects_project" in q["sql"] and "COUNT" not in q["sql"].upper() for q in selects)
+        sum(
+            "projects_project" in q["sql"] and not q["sql"].upper().startswith("SELECT COUNT(")
+            for q in selects
+        )
         == 1
     )
     assert Project.objects.count() == 3

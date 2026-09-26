@@ -23,17 +23,20 @@ EXTRA_WON = [
     ("Hadapsar Futsal Park", 480000),
 ]
 
-# (pm, target usage % of the sanctioned budget, status, override, expense count)
-# pm: 1 or 2 or None. 100 means exactly 100%; 105 is over the budget through an admin override.
+#: Demo expenses are sized as a share of this % of the deal total, so they look realistic.
+SPEND_BASE_PCT = Decimal("0.6")
+
+# (pm, expenses as % of SPEND_BASE_PCT of the deal total, status, expense count)
+# pm: 1 or 2 or None.
 PLAN = [
-    (1, 85, "RUNNING", False, 7),
-    (1, 100, "RUNNING", False, 6),
-    (2, 105, "RUNNING", True, 7),
-    (None, 0, "RUNNING", False, 0),
-    (2, 40, "RUNNING", False, 6),
-    (1, 92, "COMPLETED", False, 6),
-    (2, 60, "COMPLETED", False, 5),
-    (2, 75, "COMPLETED", False, 5),
+    (1, 85, "RUNNING", 7),
+    (1, 100, "RUNNING", 6),
+    (2, 105, "RUNNING", 7),
+    (None, 0, "RUNNING", 0),
+    (2, 40, "RUNNING", 6),
+    (1, 92, "COMPLETED", 6),
+    (2, 60, "COMPLETED", 5),
+    (2, 75, "COMPLETED", 5),
 ]
 VENDORS = ["Shree Traders", "Om Hardware", "Patil Transport", "Sai Equipments", "Kale & Sons"]
 NOTES = ["Sand and gravel", "Turf rolls", "Site labour, week 2", "Tempo hire", "Floodlight poles"]
@@ -103,15 +106,14 @@ def seed_projects(command, users) -> None:
     rnd = random.Random(7)
     now = timezone.now()
     made = 0
-    for lead, (pm_key, usage, status, override, count) in zip(leads, PLAN, strict=False):
+    for lead, (pm_key, usage, status, count) in zip(leads, PLAN, strict=False):
         if Project.objects.filter(lead=lead).exists():
             continue
         total = lead.proposed_amount or Decimal("400000")
-        budget = (Decimal(total) * Decimal("0.6")).quantize(Decimal("1"))
+        base = (Decimal(total) * SPEND_BASE_PCT).quantize(Decimal("1"))
         project = services.convert(
             lead.pk,
             name=f"{lead.name}: ground works",
-            sanctioned_budget=budget,
             pm_id=pms[pm_key].pk if pms[pm_key] else None,
             start_date=(now - timedelta(days=80)).date(),
             expected_end_date=(now + timedelta(days=40)).date(),
@@ -121,19 +123,13 @@ def seed_projects(command, users) -> None:
         started = now - timedelta(days=rnd.randint(70, 88))
         Project.objects.filter(pk=project.pk).update(created_at=started)
         if count:
-            _seed_expenses(
-                project, pms[pm_key] or admin, admin, budget, usage, count, override, rnd
-            )
+            _seed_expenses(project, pms[pm_key] or admin, admin, base, usage, count, rnd)
         if status == "COMPLETED":
             Project.objects.filter(pk=project.pk).update(
                 status=ProjectStatus.COMPLETED,
                 completed_at=now - timedelta(days=rnd.randint(2, 20)),
                 completed_by=pms[pm_key] or admin,
             )
-        spent = selectors.spent_for(project)
-        Project.objects.filter(pk=project.pk).update(
-            alert_state=selectors.budget_state(spent, budget).upper()
-        )
         made += 1
     total_expenses = Expense.objects.count()
     command.stdout.write(
@@ -142,15 +138,14 @@ def seed_projects(command, users) -> None:
     )
 
 
-def _seed_expenses(project, logger, admin, budget, usage, count, override, rnd) -> None:
+def _seed_expenses(project, logger, admin, base, usage, count, rnd) -> None:
     now = timezone.now()
-    target = (budget * Decimal(usage) / 100).quantize(Decimal("0.01"))
+    target = (base * Decimal(usage) / 100).quantize(Decimal("0.01"))
     amounts = _split(target, count, rnd)
     categories = list(ExpenseCategory.values)
     for n, amount in enumerate(amounts):
         category = categories[(n + project.pk) % len(categories)]
         day = (now - timedelta(days=rnd.randint(1, 85))).date()
-        is_last = n == count - 1
         expense = Expense(
             project=project,
             amount=amount,
@@ -158,9 +153,7 @@ def _seed_expenses(project, logger, admin, budget, usage, count, override, rnd) 
             spent_on=day,
             vendor=VENDORS[n % len(VENDORS)],
             description=NOTES[n % len(NOTES)],
-            logged_by=admin if (override and is_last) else logger,
-            is_override=bool(override and is_last),
-            override_reason="Client asked for extra floodlights." if override and is_last else "",
+            logged_by=admin if n == count - 1 and n % 2 else logger,
         )
         if category != "LABOUR" and n % 3 != 2:
             expense.receipt.save(
@@ -189,17 +182,17 @@ def _seed_expenses(project, logger, admin, budget, usage, count, override, rnd) 
             )
 
 
-# A small set for one PM: (client, project, deal total, usage %, status, admin override)
+# A small set for one PM: (client, project, deal total, spend %, status)
 FLOW_DEMO = [
-    ("Rajesh Sharma", "Sharma Farmhouse Turf", 500000, 45, "RUNNING", False),
-    ("Anjali Iyer", "Iyer Residency Lawn", 400000, 85, "RUNNING", False),
-    ("Vikram Singh Rathore", "Rathore Cricket Academy Nets", 800000, 104, "RUNNING", True),
-    ("Sunita Deshmukh", "Deshmukh Society Play Area", 300000, 92, "COMPLETED", False),
+    ("Rajesh Sharma", "Sharma Farmhouse Turf", 500000, 45, "RUNNING"),
+    ("Anjali Iyer", "Iyer Residency Lawn", 400000, 85, "RUNNING"),
+    ("Vikram Singh Rathore", "Rathore Cricket Academy Nets", 800000, 104, "RUNNING"),
+    ("Sunita Deshmukh", "Deshmukh Society Play Area", 300000, 92, "COMPLETED"),
 ]
 
 
 def seed_pm_flow(command, users, pm_username: str = "project_manager") -> None:
-    """Four projects with Indian client names for one PM: on track, near limit, over, completed."""
+    """Four projects with Indian client names for one PM, three running and one completed."""
     from apps.accounts.models import Ledger
 
     pm = get_user_model().objects.filter(username=pm_username, role="PROJECT_MANAGER").first()
@@ -211,7 +204,7 @@ def seed_pm_flow(command, users, pm_username: str = "project_manager") -> None:
     rnd = random.Random(11)
     now = timezone.now()
     made = 0
-    for i, (client, name, total, usage, status, override) in enumerate(FLOW_DEMO):
+    for i, (client, name, total, usage, status) in enumerate(FLOW_DEMO):
         phone = f"+9195{pm.pk:04d}{i:04d}"  # one set per PM
         if Project.objects.filter(pm=pm, name=name).exists():
             continue
@@ -233,27 +226,22 @@ def seed_pm_flow(command, users, pm_username: str = "project_manager") -> None:
             finalized_on=selectors.business_today(),
             finalized_by=admin,
         )
-        budget = (Decimal(total) * Decimal("0.6")).quantize(Decimal("1"))
+        base = (Decimal(total) * SPEND_BASE_PCT).quantize(Decimal("1"))
         project = services.convert(
             lead.pk,
             name=name,
-            sanctioned_budget=budget,
             pm_id=pm.pk,
             start_date=(now - timedelta(days=25)).date(),
             expected_end_date=(now + timedelta(days=45)).date(),
             scope="Site preparation, turf laying and finishing.",
             by=admin,
         )
-        _seed_expenses(project, pm, admin, budget, usage, 5, override, rnd)
+        _seed_expenses(project, pm, admin, base, usage, 5, rnd)
         if status == "COMPLETED":
             Project.objects.filter(pk=project.pk).update(
                 status=ProjectStatus.COMPLETED,
                 completed_at=now - timedelta(days=2),
                 completed_by=pm,
             )
-        spent = selectors.spent_for(project)
-        Project.objects.filter(pk=project.pk).update(
-            alert_state=selectors.budget_state(spent, budget).upper()
-        )
         made += 1
     command.stdout.write(f"  pm flow: {made} projects created for {pm_username}")

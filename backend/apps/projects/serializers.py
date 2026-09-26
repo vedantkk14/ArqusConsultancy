@@ -49,15 +49,13 @@ def _user_ref(user) -> dict | None:
 
 
 class ProjectPMSerializer(serializers.ModelSerializer):
-    """Everything a PM may see. Objects must come from budget_usage_qs (annotated `spent`)."""
+    """Everything a PM may see: the project and the expenses logged so far - never any budget.
+
+    Objects must come from budget_usage_qs (annotated `spent`).
+    """
 
     pm_name = serializers.SerializerMethodField()
-    sanctioned_budget = serializers.SerializerMethodField()
     spent = serializers.SerializerMethodField()
-    remaining = serializers.SerializerMethodField()
-    usage_pct = serializers.SerializerMethodField()
-    state = serializers.SerializerMethodField()
-    pending_budget_request = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -71,48 +69,14 @@ class ProjectPMSerializer(serializers.ModelSerializer):
             "completed_at",
             "created_at",
             "pm_name",
-            "sanctioned_budget",
             "spent",
-            "remaining",
-            "usage_pct",
-            "state",
-            "pending_budget_request",
         )
 
     def get_pm_name(self, obj):
         return obj.pm.display_name if obj.pm else None
 
-    def get_sanctioned_budget(self, obj):
-        return selectors.money_str(obj.sanctioned_budget)
-
     def get_spent(self, obj):
         return selectors.money_str(obj.spent)
-
-    def get_remaining(self, obj):
-        return selectors.money_str(selectors.remaining(obj.spent, obj.sanctioned_budget))
-
-    def get_usage_pct(self, obj):
-        return selectors.usage_pct(obj.spent, obj.sanctioned_budget)
-
-    def get_state(self, obj):
-        return selectors.budget_state(obj.spent, obj.sanctioned_budget)
-
-    def get_pending_budget_request(self, obj):
-        pending = getattr(obj, "pending_requests", None)
-        if pending is None:
-            pending = list(
-                obj.budget_requests.filter(status="PENDING").select_related("requested_by")
-            )
-        if not pending:
-            return None
-        req = pending[0]
-        return {
-            "id": req.pk,
-            "amount": selectors.money_str(req.amount),
-            "reason": req.reason,
-            "requested_by": req.requested_by.display_name if req.requested_by else None,
-            "created_at": req.created_at.isoformat(),
-        }
 
 
 class ProjectPMDetailSerializer(ProjectPMSerializer):
@@ -126,13 +90,38 @@ class ProjectPMDetailSerializer(ProjectPMSerializer):
 
 
 class ProjectAdminSerializer(ProjectPMSerializer):
+    """Adds the budget: total budget (the finalized deal total), remaining, usage and state."""
+
     pm = serializers.SerializerMethodField()
+    total_budget = serializers.SerializerMethodField()
+    remaining = serializers.SerializerMethodField()
+    usage_pct = serializers.SerializerMethodField()
+    state = serializers.SerializerMethodField()
 
     class Meta(ProjectPMSerializer.Meta):
-        fields = ProjectPMSerializer.Meta.fields + ("pm",)
+        fields = ProjectPMSerializer.Meta.fields + (
+            "pm",
+            "total_budget",
+            "remaining",
+            "usage_pct",
+            "state",
+        )
 
     def get_pm(self, obj):
         return _user_ref(obj.pm)
+
+    def get_total_budget(self, obj):
+        return None if obj.total_budget is None else selectors.money_str(obj.total_budget)
+
+    def get_remaining(self, obj):
+        left = selectors.remaining(obj.spent, obj.total_budget)
+        return None if left is None else selectors.money_str(left)
+
+    def get_usage_pct(self, obj):
+        return selectors.usage_pct(obj.spent, obj.total_budget)
+
+    def get_state(self, obj):
+        return selectors.budget_state(obj.spent, obj.total_budget)
 
 
 class ProjectAdminDetailSerializer(ProjectAdminSerializer):
@@ -164,7 +153,7 @@ class ProjectAdminDetailSerializer(ProjectAdminSerializer):
                 None if raw["outstanding"] is None else selectors.money_str(raw["outstanding"])
             ),
             "finalized": raw["finalized"],
-            **selectors.project_margins(raw, obj.spent, obj.sanctioned_budget),
+            **selectors.project_margins(raw, obj.spent),
         }
 
 
@@ -213,7 +202,6 @@ class ExpenseSerializer(serializers.ModelSerializer):
             "receipt_type",
             "is_void",
             "void_reason",
-            "is_override",
             "logged_by",
             "created_at",
             "can_edit",
@@ -232,13 +220,8 @@ class ExpenseSerializer(serializers.ModelSerializer):
         return selectors.can_change_expense(self.context["request"].user, obj)
 
 
-class ExpenseAdminSerializer(ExpenseSerializer):
-    class Meta(ExpenseSerializer.Meta):
-        fields = ExpenseSerializer.Meta.fields + ("override_reason",)
-
-
 def expense_serializer(user):
-    return ExpenseAdminSerializer if user.role == ADMIN else ExpenseSerializer
+    return ExpenseSerializer
 
 
 # ---- Input ----------
@@ -247,7 +230,6 @@ def expense_serializer(user):
 class ConvertSerializer(serializers.Serializer):
     lead = serializers.IntegerField(min_value=1)
     name = serializers.CharField(max_length=200)
-    sanctioned_budget = MoneyField()
     pm = serializers.IntegerField(required=False, allow_null=True)
     start_date = serializers.DateField(required=False, allow_null=True)
     expected_end_date = serializers.DateField(required=False, allow_null=True)
@@ -259,11 +241,6 @@ class ProjectUpdateSerializer(serializers.Serializer):
     start_date = serializers.DateField(required=False, allow_null=True)
     expected_end_date = serializers.DateField(required=False, allow_null=True)
     scope = serializers.CharField(required=False, allow_blank=True, max_length=2000)
-
-
-class BudgetSerializer(serializers.Serializer):
-    sanctioned_budget = MoneyField()
-    reason = serializers.CharField(max_length=300)
 
 
 class AssignPMSerializer(serializers.Serializer):
@@ -282,8 +259,6 @@ class ExpenseWriteSerializer(serializers.Serializer):
     description = serializers.CharField(
         required=False, allow_blank=True, max_length=rules.DESCRIPTION_MAX
     )
-    admin_override = serializers.BooleanField(required=False)
-    override_reason = serializers.CharField(required=False, allow_blank=True, max_length=300)
     receipt = serializers.FileField(required=False, allow_empty_file=False)
 
     def validate_spent_on(self, value):
@@ -295,13 +270,3 @@ class ExpenseWriteSerializer(serializers.Serializer):
                 f"The date cannot be more than {rules.BACKDATE_DAYS} days ago."
             )
         return value
-
-
-class AlertSerializer(ProjectAdminSerializer):
-    over_by = serializers.SerializerMethodField()
-
-    class Meta(ProjectAdminSerializer.Meta):
-        fields = ProjectAdminSerializer.Meta.fields + ("over_by",)
-
-    def get_over_by(self, obj):
-        return selectors.money_str(max(obj.spent - obj.sanctioned_budget, Decimal("0")))

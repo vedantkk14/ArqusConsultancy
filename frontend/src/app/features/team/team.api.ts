@@ -25,12 +25,10 @@ export class TeamApi {
   }
 
   /** The new temporary password is in this response only; it can't be read again. */
-  resetPassword(id: number): Observable<{ temporary_password: string; must_change_password: boolean }> {
+  resetPassword(
+    id: number,
+  ): Observable<{ temporary_password: string; must_change_password: boolean }> {
     return this.api.post(`/users/${id}/reset-password`);
-  }
-
-  setCommission(id: number, rate: string): Observable<TeamUser> {
-    return this.api.patch<TeamUser>(`/users/${id}/commission-rate`, { commission_rate: rate });
   }
 
   performance(id: number): Observable<MemberPerformance> {

@@ -8,7 +8,7 @@ import { ProjectsApi } from '../../data/projects-api.service';
 import { DialogHead } from '../../ui/dialog-head';
 
 export interface CompleteDialogData {
-  project: Pick<ProjectDetail, 'id' | 'name' | 'spent' | 'sanctioned_budget'>;
+  project: Pick<ProjectDetail, 'id' | 'name' | 'spent'>;
 }
 
 @Component({
@@ -23,8 +23,10 @@ export interface CompleteDialogData {
       [subtitle]="data.project.name"
       (closed)="ref.close()"
     />
-    <p class="lead">Spent {{ data.project.spent | inr }} of {{ data.project.sanctioned_budget | inr }}.</p>
-    <p class="note warn">You can't add expenses after completing. An admin can reopen the project if needed.</p>
+    <p class="lead">Expenses so far: {{ data.project.spent | inr }}.</p>
+    <p class="note warn">
+      You can't add expenses after completing. An admin can reopen the project if needed.
+    </p>
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
     }
@@ -36,7 +38,12 @@ export interface CompleteDialogData {
     </div>
   `,
   styles: `
-    .lead { margin: 0 0 var(--space-3); color: var(--ink); font-size: var(--text-md); font-weight: 500; }
+    .lead {
+      margin: 0 0 var(--space-3);
+      color: var(--ink);
+      font-size: var(--text-md);
+      font-weight: 500;
+    }
   `,
 })
 export class CompleteDialog {

@@ -35,7 +35,7 @@ def people():
     return {
         "admin": make("boss", "ADMIN"),
         "sm": make("sam", "SALES_MANAGER"),
-        "exec": make("eva", "SALES_EXEC", first_name="Eva", commission_rate="10.00"),
+        "exec": make("eva", "SALES_EXEC", first_name="Eva"),
         "pm": make("pat", "PROJECT_MANAGER", first_name="Pat"),
     }
 
@@ -69,25 +69,25 @@ def test_sales_figures(people):
     leads = body["leads"]
     assert (leads["assigned"], leads["open"], leads["won"], leads["lost"]) == (4, 1, 2, 1)
     assert leads["conversion_pct"] == "66.7" and leads["won_value"] == "1500.00"
-    assert leads["overdue_followups"] == 1 and leads["commission_earned"] == "150.00"
+    assert leads["overdue_followups"] == 1 and "commission_earned" not in leads
     assert leads["lost_reasons"] == [{"reason": "Price", "count": 1}]
     assert len(leads["recent_closed"]) == 3 and body["projects"] is None
-    assert body["user"]["commission_rate"] == "10.00"
+    assert "commission_rate" not in body["user"]
 
 
 def test_project_delivery_against_deadline(people):
     pm = people["pm"]
     today = date.today()
     on_time = Project.objects.create(
-        name="On time", client_name="A", sanctioned_budget="100.00", pm=pm, status="COMPLETED",
+        name="On time", client_name="A", pm=pm, status="COMPLETED",
         expected_end_date=today + timedelta(days=5), completed_at=timezone.now(),
     )  # fmt: skip
     Project.objects.create(
-        name="Late", client_name="B", sanctioned_budget="100.00", pm=pm, status="COMPLETED",
+        name="Late", client_name="B", pm=pm, status="COMPLETED",
         expected_end_date=today - timedelta(days=30), completed_at=timezone.now(),
     )  # fmt: skip
     running = Project.objects.create(
-        name="Behind", client_name="C", sanctioned_budget="100.00", pm=pm,
+        name="Behind", client_name="C", pm=pm,
         expected_end_date=today - timedelta(days=3),
     )  # fmt: skip
     Expense.objects.create(project=running, amount="150.00", category="OTHER", spent_on=today)
@@ -95,7 +95,8 @@ def test_project_delivery_against_deadline(people):
     p = as_(people["admin"]).get(url(pm)).json()["projects"]
     assert (p["managed"], p["running"], p["completed"]) == (3, 1, 2)
     assert (p["completed_on_time"], p["completed_late"], p["on_time_pct"]) == (1, 1, "50.0")
-    assert p["running_overdue"] == 1 and p["over_budget"] == 1 and p["spent"] == "150.00"
+    assert p["running_overdue"] == 1 and p["spent"] == "150.00"
+    assert p["over_budget"] == 0 and p["total_budget"] == "0.00"  # no deal totals (no ledgers)
     assert {x["name"]: x["delivery"] for x in p["projects"]} == {
         "On time": "on_time", "Late": "late", "Behind": "overdue",
     }  # fmt: skip

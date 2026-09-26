@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { formatInr } from '../../../shared/money/inr.pipe';
@@ -10,7 +18,6 @@ import { formatBusinessFull, relativeLabel } from '../ui/business-time';
 const META: Record<EventType, { icon: string; tint: string }> = {
   CREATED: { icon: 'add_circle', tint: 'cyan' },
   PM_ASSIGNED: { icon: 'person', tint: 'slate' },
-  BUDGET_CHANGED: { icon: 'payments', tint: 'amber' },
   EXPENSE_ADDED: { icon: 'receipt_long', tint: 'teal' },
   EXPENSE_EDITED: { icon: 'edit', tint: 'slate' },
   EXPENSE_VOIDED: { icon: 'block', tint: 'rose' },
@@ -26,17 +33,15 @@ export function describeEvent(event: ProjectEvent): string {
   const d = event.data ?? {};
   switch (event.type) {
     case 'CREATED':
-      return `Project created with a budget of ${money(d['sanctioned_budget'])}${d['pm'] ? ` and ${str(d['pm'])} as manager` : ''}.`;
+      return `Project created${d['pm'] ? ` with ${str(d['pm'])} as manager` : ''}.`;
     case 'PM_ASSIGNED':
       return d['pm']
         ? d['previous_pm']
           ? `Manager changed from ${str(d['previous_pm'])} to ${str(d['pm'])}.`
           : `${str(d['pm'])} assigned as manager.`
         : `${str(d['previous_pm'])} removed as manager.`;
-    case 'BUDGET_CHANGED':
-      return `Budget changed from ${money(d['old'])} to ${money(d['new'])}. Reason: ${str(d['reason'])}`;
     case 'EXPENSE_ADDED':
-      return `Added ${money(d['amount'])} (${categoryWord(d['category'])})${d['is_override'] ? ', over the budget limit' : ''}.`;
+      return `Added ${money(d['amount'])} (${categoryWord(d['category'])}).`;
     case 'EXPENSE_EDITED':
       return `Edited an expense: now ${money(d['amount'])} (${categoryWord(d['category'])}).`;
     case 'EXPENSE_VOIDED':
@@ -66,11 +71,17 @@ function categoryWord(value: unknown): string {
       <ol class="tl">
         @for (item of items(); track item.id) {
           <li>
-            <span [class]="'dot t-' + meta(item).tint" aria-hidden="true"><mat-icon>{{ meta(item).icon }}</mat-icon></span>
+            <span [class]="'dot t-' + meta(item).tint" aria-hidden="true"
+              ><mat-icon>{{ meta(item).icon }}</mat-icon></span
+            >
             <div class="body">
-              <p class="line"><strong>{{ item.actor_name ?? 'System' }}</strong></p>
+              <p class="line">
+                <strong>{{ item.actor_name ?? 'System' }}</strong>
+              </p>
               <p class="txt">{{ text(item) }}</p>
-              <time [attr.datetime]="item.created_at" [attr.title]="full(item.created_at)">{{ rel(item.created_at) }}</time>
+              <time [attr.datetime]="item.created_at" [attr.title]="full(item.created_at)">{{
+                rel(item.created_at)
+              }}</time>
             </div>
           </li>
         } @empty {
@@ -82,7 +93,9 @@ function categoryWord(value: unknown): string {
           @for (i of [0, 1, 2]; track i) {
             <li aria-hidden="true">
               <app-skeleton width="28px" height="28px" radius="50%" />
-              <div class="body"><app-skeleton width="40%" height="13px" /><app-skeleton width="75%" height="13px" /></div>
+              <div class="body">
+                <app-skeleton width="40%" height="13px" /><app-skeleton width="75%" height="13px" />
+              </div>
             </li>
           }
         }
@@ -93,26 +106,99 @@ function categoryWord(value: unknown): string {
     }
   `,
   styles: `
-    .tl { margin: 0; padding: 0; list-style: none; }
-    li { position: relative; display: flex; gap: 12px; padding-bottom: 18px; }
-    li:not(:last-child)::before { position: absolute; top: 32px; bottom: 4px; left: 13px; width: 1px; background: var(--line); content: ''; }
-    .dot { display: grid; width: 28px; height: 28px; flex: none; place-items: center; border-radius: 50%; }
-    .dot mat-icon { width: 16px; height: 16px; font-size: 16px; }
-    .t-cyan { background: var(--tint-cyan); color: var(--tint-cyan-ink); }
-    .t-teal { background: var(--tint-teal); color: var(--tint-teal-ink); }
-    .t-amber { background: var(--tint-amber); color: var(--tint-amber-ink); }
-    .t-slate { background: var(--tint-slate); color: var(--tint-slate-ink); }
-    .t-rose { background: var(--tint-rose); color: var(--tint-rose-ink); }
-    .body { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; }
-    p { margin: 0; }
-    .line { color: var(--ink); font-size: var(--text-sm); }
-    .line strong { font-weight: 500; }
-    .txt { color: var(--ink-2); font-size: var(--text-sm); overflow-wrap: anywhere; }
-    time { color: var(--ink-3); font-size: var(--text-xs); }
-    .none { color: var(--ink-3); font-size: var(--text-sm); }
+    .tl {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    li {
+      position: relative;
+      display: flex;
+      gap: 12px;
+      padding-bottom: 18px;
+    }
+    li:not(:last-child)::before {
+      position: absolute;
+      top: 32px;
+      bottom: 4px;
+      left: 13px;
+      width: 1px;
+      background: var(--line);
+      content: '';
+    }
+    .dot {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      flex: none;
+      place-items: center;
+      border-radius: 50%;
+    }
+    .dot mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+    .t-cyan {
+      background: var(--tint-cyan);
+      color: var(--tint-cyan-ink);
+    }
+    .t-teal {
+      background: var(--tint-teal);
+      color: var(--tint-teal-ink);
+    }
+    .t-amber {
+      background: var(--tint-amber);
+      color: var(--tint-amber-ink);
+    }
+    .t-slate {
+      background: var(--tint-slate);
+      color: var(--tint-slate-ink);
+    }
+    .t-rose {
+      background: var(--tint-rose);
+      color: var(--tint-rose-ink);
+    }
+    .body {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      flex-direction: column;
+      gap: 2px;
+    }
+    p {
+      margin: 0;
+    }
+    .line {
+      color: var(--ink);
+      font-size: var(--text-sm);
+    }
+    .line strong {
+      font-weight: 500;
+    }
+    .txt {
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+      overflow-wrap: anywhere;
+    }
+    time {
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+    }
+    .none {
+      color: var(--ink-3);
+      font-size: var(--text-sm);
+    }
     .older {
-      width: 100%; min-height: 44px; border: 1px dashed var(--line-strong); border-radius: var(--radius-control);
-      background: transparent; color: var(--ink-2); font: inherit; font-size: var(--text-sm); cursor: pointer;
+      width: 100%;
+      min-height: 44px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-control);
+      background: transparent;
+      color: var(--ink-2);
+      font: inherit;
+      font-size: var(--text-sm);
+      cursor: pointer;
     }
   `,
 })

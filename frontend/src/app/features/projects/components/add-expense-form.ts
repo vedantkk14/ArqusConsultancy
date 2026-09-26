@@ -1,9 +1,18 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ApiError } from '../../../core/models';
-import { formatInr, InrPipe } from '../../../shared/money/inr.pipe';
 import { EXPENSE_CATEGORIES, Expense, ExpenseCategory, ExpenseInput } from '../data/project.models';
 import { ProjectsApi } from '../data/projects-api.service';
 import { businessDate } from '../ui/business-time';
@@ -15,7 +24,7 @@ export const BACKDATE_DAYS = 30;
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const ALLOWED_EXT = /\.(jpe?g|png|webp|pdf)$/i;
 
-type FieldKey = 'amount' | 'category' | 'spent_on' | 'vendor' | 'description' | 'receipt' | 'override_reason';
+type FieldKey = 'amount' | 'category' | 'spent_on' | 'vendor' | 'description' | 'receipt';
 const FIELD_IDS: Record<FieldKey, string> = {
   amount: 'ae-amount',
   category: 'ae-cat-MATERIALS',
@@ -23,9 +32,8 @@ const FIELD_IDS: Record<FieldKey, string> = {
   vendor: 'ae-vendor',
   description: 'ae-desc',
   receipt: 'ae-receipt',
-  override_reason: 'ae-override-reason',
 };
-const ORDER: FieldKey[] = ['amount', 'category', 'spent_on', 'vendor', 'description', 'receipt', 'override_reason'];
+const ORDER: FieldKey[] = ['amount', 'category', 'spent_on', 'vendor', 'description', 'receipt'];
 
 /** Client-side receipt check (the server validates the real file type by its bytes). */
 export function receiptProblem(file: { name: string; type: string; size: number }): string {
@@ -38,61 +46,166 @@ export function receiptProblem(file: { name: string; type: string; size: number 
 export interface ExpenseProject {
   id: number;
   name: string;
-  remaining: string;
 }
 
 /**
  * Add (or edit) an expense. Shown in a dialog on desktop and a bottom sheet on phones. The amount, date and
- * receipt are checked here first; the server has the last word (over-budget, receipt type, completed project).
+ * receipt are checked here first; the server has the last word (receipt type, completed project). There is
+ * no budget here: expenses are never blocked, and only the Admin sees the budget on the project page.
  */
 @Component({
   selector: 'app-add-expense-form',
-  imports: [FormsModule, InrPipe, MatButtonModule, MatIconModule, MoneyInput],
+  imports: [FormsModule, MatButtonModule, MatIconModule, MoneyInput],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.in-sheet]': 'inSheet()' },
   styleUrl: '../ui/dialog.scss',
   templateUrl: './add-expense-form.html',
   styles: `
-    .cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; border: 0; }
-    .cat { position: relative; }
-    .cat input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+    .cats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    .cat {
+      position: relative;
+    }
+    .cat input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      margin: 0;
+      cursor: pointer;
+    }
     .cat span {
-      display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line);
-      border-radius: var(--radius-pill); background: var(--surface); color: var(--ink-2); font-size: var(--text-sm);
-      transition: background-color var(--dur-fast), border-color var(--dur-fast);
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+      transition:
+        background-color var(--dur-fast),
+        border-color var(--dur-fast);
     }
-    .cat:hover span { border-color: var(--line-strong); }
-    .cat input:checked + span { border-color: var(--ink); background: var(--ink); color: var(--on-ink); font-weight: 600; }
-    .cat input:focus-visible + span { outline: 2px solid var(--brand-deep); outline-offset: 2px; box-shadow: var(--ring); }
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-    .remaining { margin: 0 0 var(--space-4); padding: 8px 12px; border-radius: var(--radius-control); background: var(--subtle); color: var(--ink-2); font-size: var(--text-sm); }
-    .remaining strong { color: var(--ink); }
-    .count { align-self: flex-end; color: var(--ink-3); font-size: var(--text-xs); }
-    .pick { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .pick button, .rm {
-      display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line-strong);
-      border-radius: var(--radius-control); background: var(--surface); color: var(--ink); font: inherit; font-size: var(--text-sm); cursor: pointer;
+    .cat:hover span {
+      border-color: var(--line-strong);
     }
-    .pick button:hover, .rm:hover { background: var(--subtle); }
-    .picked { display: flex; align-items: center; gap: var(--space-3); padding: 8px; border: 1px solid var(--line); border-radius: var(--radius-control); }
-    .picked img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; }
-    .picked .pdf { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 8px; background: var(--tint-rose); color: var(--tint-rose-ink); }
-    .picked .nm { flex: 1; min-width: 0; color: var(--ink-2); font-size: var(--text-sm); overflow-wrap: anywhere; }
-    .rm { min-height: 40px; }
-    .override { margin-bottom: var(--space-4); padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--tint-amber); }
-    .override .sw { display: flex; align-items: center; gap: 10px; color: var(--tint-amber-ink); font-weight: 600; }
-    .override input[type='checkbox'] { width: 20px; height: 20px; accent-color: var(--ink); }
-    .override .field { margin: 12px 0 0; }
-    .prog { height: 6px; overflow: hidden; border-radius: var(--radius-pill); background: var(--plate); }
-    .prog span { display: block; height: 100%; background: var(--data-cyan); transform-origin: left; transition: transform var(--dur-base); }
-    @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+    .cat input:checked + span {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--on-ink);
+      font-weight: 600;
+    }
+    .cat input:focus-visible + span {
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 2px;
+      box-shadow: var(--ring);
+    }
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+    }
+    .for {
+      margin: 0 0 var(--space-4);
+      color: var(--ink-3);
+      font-size: var(--text-sm);
+    }
+    .for strong {
+      color: var(--ink);
+    }
+    .count {
+      align-self: flex-end;
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+    }
+    .pick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .pick button,
+    .rm {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;
+      padding: 0 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      font-size: var(--text-sm);
+      cursor: pointer;
+    }
+    .pick button:hover,
+    .rm:hover {
+      background: var(--subtle);
+    }
+    .picked {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+    }
+    .picked img {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .picked .pdf {
+      display: grid;
+      width: 56px;
+      height: 56px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--tint-rose);
+      color: var(--tint-rose-ink);
+    }
+    .picked .nm {
+      flex: 1;
+      min-width: 0;
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+      overflow-wrap: anywhere;
+    }
+    .rm {
+      min-height: 40px;
+    }
+    .prog {
+      height: 6px;
+      overflow: hidden;
+      border-radius: var(--radius-pill);
+      background: var(--plate);
+    }
+    .prog span {
+      display: block;
+      height: 100%;
+      background: var(--data-cyan);
+      transform-origin: left;
+      transition: transform var(--dur-base);
+    }
+    @media (max-width: 480px) {
+      .row2 {
+        grid-template-columns: 1fr;
+      }
+    }
   `,
 })
 export class AddExpenseForm implements OnInit {
   readonly project = input.required<ExpenseProject>();
   /** Set to edit an existing expense. */
   readonly expense = input<Expense | null>(null);
-  readonly isAdmin = input(false);
   readonly inSheet = input(false);
   readonly saved = output<Expense>();
   readonly cancelled = output<void>();
@@ -108,8 +221,6 @@ export class AddExpenseForm implements OnInit {
   protected spentOn = this.today;
   protected vendor = '';
   protected description = '';
-  protected overrideReason = '';
-  protected readonly override = signal(false);
 
   protected readonly file = signal<File | null>(null);
   protected readonly preview = signal<string | null>(null);
@@ -117,14 +228,8 @@ export class AddExpenseForm implements OnInit {
   protected readonly error = signal('');
   protected readonly saving = signal(false);
   protected readonly progress = signal<number | null>(null);
-  /** Set when the server says this expense would go over budget. */
-  protected readonly overRemaining = signal<string | null>(null);
   protected readonly editing = computed(() => this.expense() !== null);
   protected readonly receiptOptional = computed(() => this.category() === 'LABOUR');
-  protected readonly overMessage = computed(() => {
-    const left = this.overRemaining();
-    return left === null ? '' : `This exceeds the remaining budget of ${formatInr(left)}.`;
-  });
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.clearPreview());
@@ -191,9 +296,6 @@ export class AddExpenseForm implements OnInit {
     this.saving.set(true);
     this.progress.set(0);
     this.error.set('');
-    if (!this.override()) {
-      this.overRemaining.set(null); // the server says again if it is still over
-    }
     const input: ExpenseInput = {
       amount: this.amount,
       category: this.category(),
@@ -201,10 +303,11 @@ export class AddExpenseForm implements OnInit {
       vendor: this.vendor.trim(),
       description: this.description.trim(),
       receipt: this.file(),
-      ...(this.override() ? { admin_override: true, override_reason: this.overrideReason.trim() } : {}),
     };
     const editing = this.expense();
-    const request = editing ? this.api.updateExpense(editing.id, input) : this.api.addExpense(this.project().id, input);
+    const request = editing
+      ? this.api.updateExpense(editing.id, input)
+      : this.api.addExpense(this.project().id, input);
     request.subscribe({
       next: (event) => {
         if (event.kind === 'progress') {
@@ -238,17 +341,10 @@ export class AddExpenseForm implements OnInit {
     if (!this.file() && !kept && !this.receiptOptional()) {
       errors.receipt = 'Attach a receipt for this expense.';
     }
-    if (this.override() && !this.overrideReason.trim()) {
-      errors.override_reason = 'Give a reason for going over budget.';
-    }
     return errors;
   }
 
   private fail(err: ApiError): void {
-    if (err.code === 'over_budget') {
-      this.overRemaining.set(String(err.details['remaining'] ?? '0.00'));
-      return;
-    }
     const mapped: Partial<Record<FieldKey, string>> = {};
     for (const key of ORDER) {
       const message = fieldError(err, key);

@@ -205,8 +205,7 @@ docs/OPEN_DECISIONS.md #26 - `Lead` has no `lost_at`).
 bad `period`. Scoped to this Exec's own leads (`selectors.leads_for(user)`); shares its KPI/period math
 with the Sales Manager dashboard through `apps/leads/dashboard_common.py` (`base_kpis`, `pipeline_counts`,
 `queue`) - neither restates the other's aggregates. Sees `proposed_amount` only, same privacy shield as
-everywhere else in Leads. `SHOW_COMMISSION_TO_EXEC` (default `False`, see docs/OPEN_DECISIONS.md #27)
-adds `kpis.estimated_commission` when on.
+everywhere else in Leads. There is no commission anywhere in the product.
 
 ```json
 {
@@ -266,7 +265,7 @@ outstanding, collection rate and aging. Routes have no trailing slash.
 | ✅ | `GET /ledgers` | Paginated (20). Row: `id, lead, client, phone, exec_name, state, state_label, finalized, is_overdue, total, received, outstanding, collected_pct, days_since, last_payment_on, created_at` |
 | ✅ | `GET /ledgers/summary` | `total_value, received, outstanding, overdue_amount, clients_with_balance, overdue_clients, collection_rate_pct, awaiting_finalization, counts{state}, aging[{bucket,count,amount}], top_overdue[3]`. Accepts `q`, `created_from`, `created_to` |
 | ✅ | `GET /ledgers/options?q=` | Up to 10 finalized ledgers with a balance (the record-payment select) |
-| ✅ | `GET /ledgers/{id}` | Row + `lead_block`, `project` (id, name, status, sanctioned_budget, spent, planned_margin, live_margin, or null), `finalized_at/by/note`, `proposed_amount`, `allowed_actions` |
+| ✅ | `GET /ledgers/{id}` | Row + `lead_block`, `project` (id, name, status, spent, remaining, live_margin, or null), `finalized_at/by/note`, `proposed_amount`, `allowed_actions` |
 | ✅ | `POST /ledgers/{id}/finalize` | `{amount, note?}`. Sets the total, notifies the exec (`deal_finalized`, no amounts). Twice: 409 `already_finalized` |
 | ✅ | `POST /ledgers/{id}/revise-total` | `{amount, reason}`, finalized only. Not below received (`total_below_received`) or the linked project's sanctioned budget (`total_below_budget`) |
 | ✅ | `POST /ledgers/{id}/reminder` | Returns `{text, url}` (a `wa.me` link) and logs `REMINDER_SENT`. Unusable phone: 400 `invalid_phone` |
@@ -328,49 +327,50 @@ so they match Accounts exactly; `Payment.objects.filter(is_void=False)` is "mone
 
 ## Projects and expenses (Dev B)
 
-A PM sees only the projects assigned to them (anything else is **404**) and only the sanctioned budget. The Sales
+A PM sees only the projects assigned to them (anything else is **404**) and **no budget at all**: they log expenses and
+see `spent`. A project's budget is the finalized deal total (`accounts.Ledger.total_amount`), Admin only. The Sales
 roles get **403** on every endpoint here; anonymous requests get **401**. PM responses come from separate
 serializers (allowlist) and never contain `total_amount`, `proposed_amount`, ledger, payment, `received`,
-`outstanding`, margin or any lead field, not even as `null`. Money is a decimal string ("1234.50"), never a number.
+`outstanding`, margin, `total_budget`, `remaining`, `usage_pct`, `state` or any lead field, not even as `null`. Money is a decimal string ("1234.50"), never a number.
 Routes have no trailing slash, like the rest of the API.
 
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
 | ✅ | `GET /projects` | A, PM | Paginated (20). Filters and orderings below. PM: own projects, PM shape |
-| ✅ | `GET /projects/summary` | A, PM | `{running, completed, ok, warn, over, no_pm (admin only), sanctioned_total, spent_total}`. Accepts the list filters except `state`; `status` picks which status the state counts are for (default running) |
-| ✅ | `GET /projects/convertible` | A | Won deals that can become projects: `{count, results: [{lead, name, exec_name, won_at, proposed_amount, total_amount, suggested_budget, ineligible_reason, project_id}]}`. `?lead=<id>` looks one up and says why it cannot be converted: `not_won`, `project_exists` (with `project_id`) or `not_finalized` |
+| ✅ | `GET /projects/summary` | A, PM | `{running, completed, spent_total}`; the Admin also gets `ok, warn, over, no_pm, budget_total`. Accepts the list filters except `state`; `status` picks which status the state counts are for (default running) |
+| ✅ | `GET /projects/convertible` | A | Won deals that can become projects: `{count, results: [{lead, name, exec_name, won_at, proposed_amount, total_amount, ineligible_reason, project_id}]}`. `?lead=<id>` looks one up and says why it cannot be converted: `not_won`, `project_exists` (with `project_id`) or `not_finalized` |
 | ✅ | `GET /projects/managers` | A | Active project managers with `running_projects`, for the assign selects |
-| ✅ | `POST /projects` | A | Convert a won lead. Body: `lead`, `name`, `sanctioned_budget`, `pm?` (null = assign later), `start_date?`, `expected_end_date?`, `scope?`. Returns the admin detail (201) |
-| ✅ | `GET /projects/{id}` | A, PM | PM shape or admin shape (adds `pm`, `lead_id`, `finance`), plus `allowed_actions` computed by the server |
+| ✅ | `POST /projects` | A | Convert a won lead. Body: `lead`, `name`, `pm?` (null = assign later), `start_date?`, `expected_end_date?`, `scope?`. Returns the admin detail (201) |
+| ✅ | `GET /projects/{id}` | A, PM | PM shape or admin shape (adds `pm`, `lead_id`, `finance`), plus `allowed_actions` computed by the server. Admin shape also has `total_budget`, `remaining`, `usage_pct`, `state` |
 | ✅ | `PATCH /projects/{id}` | A | `name`, `start_date`, `expected_end_date`, `scope` |
-| ✅ | `POST /projects/{id}/budget` | A | `{sanctioned_budget, reason}`. Never below what is spent, never above the deal total. Writes an event and notifies the PM |
 | ✅ | `POST /projects/{id}/assign-pm` | A | `{pm}` (null unassigns). Notifies the old and the new PM |
 | ✅ | `POST /projects/{id}/complete` | A, PM (own) | Locks expenses |
 | ✅ | `POST /projects/{id}/reopen` | A | `{reason}`. Notifies the PM |
 | ✅ | `GET /projects/{id}/events` | A, PM (own) | Append-only timeline, newest first, paginated |
-| ✅ | `GET/POST /projects/{id}/expenses` | A, PM (own) | POST is `multipart/form-data`: `amount`, `category`, `spent_on`, `vendor?`, `description?`, `receipt?`, and for admins `admin_override`, `override_reason` |
+| ✅ | `GET/POST /projects/{id}/expenses` | A, PM (own) | POST is `multipart/form-data`: `amount`, `category`, `spent_on`, `vendor?`, `description?`, `receipt?`. Never blocked by the budget |
 | ✅ | `GET /expenses` | A, PM | Paginated. Filters below. PM: expenses on own projects only |
 | ✅ | `GET /expenses/summary` | A, PM | `{total, count, void_count, by_category[]}` for the current filters; voided expenses are never counted |
-| ✅ | `GET /expenses/alerts` | A | Running projects at or over 80%, worst first, with `pm_name`, `remaining`, `over_by` |
-| ✅ | `GET /expenses/export` | A | CSV, at most 5000 rows, current filters. Cells starting with `= + - @` (or a tab) get an apostrophe prefix |
+| ✅ | `GET /expenses/export` | A | CSV (or Excel with `?file=xlsx`, used by the project page's Export to Excel), at most 5000 rows, current filters. Cells starting with `= + - @` (or a tab) get an apostrophe prefix |
 | ✅ | `GET /expenses/{id}` | A, PM (own) | `can_edit` says whether the caller may edit or void it now |
-| ✅ | `PATCH /expenses/{id}` | A, PM (own, 30 min) | Same fields as POST (all optional). Re-checks the budget |
+| ✅ | `PATCH /expenses/{id}` | A, PM (own, 30 min) | Same fields as POST (all optional) |
 | ✅ | `POST /expenses/{id}/void` | A, PM (own, 30 min) | `{reason}`. The row stays visible with `is_void` and is excluded from every sum |
 | ✅ | `GET /expenses/{id}/receipt` | A, PM (own) | The file, inline, `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`. Receipts have no public URL: fetch with the JWT and show from a blob |
 
 **`GET /projects` filters** (names are a contract with the dashboard links): `status` (`running`, `completed`, comma
 separated), `pm` (id or `none`), `q` (name or client), `state` (`ok`, `warn`, `over`), `over_budget=true` (warn and
-over), `near_limit=true` (warn only), `no_pm=true`, `created_from`, `created_to` (YYYY-MM-DD, business days),
+over), `near_limit=true` (warn only) (budget filters are Admin only), `no_pm=true`, `created_from`, `created_to` (YYYY-MM-DD, business days),
 `ordering` (`name`, `-usage_pct`, `-spent`, `-created_at`, `expected_end_date`; default `-created_at`), `page`,
 `page_size`. Dashboard links: `/projects/running?over_budget=true` and `/projects/running?no_pm=true`.
 
 **`GET /expenses` filters**: `project`, `category` (comma separated), `logged_by`, `q` (vendor, description, project),
-`date_from`, `date_to`, `has_receipt` (`true`/`false`), `state` (`active`, `void`, `override`), `ordering`
+`date_from`, `date_to`, `has_receipt` (`true`/`false`), `state` (`active`, `void`), `ordering`
 (`-spent_on` default, `spent_on`, `-amount`, `amount`, `-created_at`).
 
-**Budget state** (`selectors.budget_state(spent, sanctioned)`): `ok` below 80%, `warn` from 80% to 100% inclusive,
-`over` above 100%. Every project carries `sanctioned_budget`, `spent`, `remaining` (negative when over),
-`usage_pct` (a string such as `"82.50"`, cut, never rounded up) and `state`.
+**Budget state** (Admin only, `selectors.budget_state(spent, total)`): `ok` below 80%, `warn` from 80% to 100%
+inclusive, `over` above 100%, against the finalized deal total. Admin rows carry `total_budget`, `spent`, `remaining`
+(negative when over), `usage_pct` (a string such as `"82.50"`, cut, never rounded up) and `state`; before the deal is
+finalized `total_budget` and `remaining` are null and `state` is `ok`. Nothing blocks an expense and there are no
+budget alerts, requests or releases.
 
 **Error codes** (standard `{error: {code, message, details}}`):
 
@@ -379,10 +379,7 @@ over), `near_limit=true` (warn only), `no_pm=true`, `created_from`, `created_to`
 | `not_won` | 400 | Converting a lead that is not Won |
 | `project_exists` | 409 | The lead already has a project (`details.project_id`) |
 | `not_finalized` | 409 | Accounts says the deal is not finalized (only once the accounts marker exists) |
-| `budget_exceeds_total` | 400 | Sanctioned budget above the deal total (`details.max_budget`, admin only) |
-| `budget_below_spent` | 400 | New budget below what is already spent (`details.spent`) |
-| `over_budget` | 409 | The expense would pass the budget (`details.remaining`); an admin may retry with `admin_override` and a reason |
-| `project_completed` | 409 | Any change to a completed project's expenses or budget |
+| `project_completed` | 409 | Any change to a completed project's expenses |
 | `not_completed` | 409 | Reopening a running project |
 | `expense_void` | 409 | Changing an expense that is already void |
 | `edit_window_closed` | 403 | A PM changing their own expense after 30 minutes |
@@ -401,22 +398,21 @@ Projects reads the deal's money through one adapter, `apps/projects/integrations
 
 * `accounts.services.get_project_finance(lead) -> {total_amount, received, outstanding, finalized} | None`
   (Decimals; `None` when the lead has no ledger). **Implemented by the accounts module** (see "Adapter functions"). Before it existed:
-  * conversion was allowed without finalization, and the budget ceiling was the lead's `proposed_amount`;
+  * conversion was allowed without finalization;
   * the admin detail returned `finance: null`.
 * The existence of that function is the "finalization marker": once it exists, `POST /projects` returns
   `409 not_finalized` unless `finalized` is true, and `/projects/convertible` lists only finalized deals.
 
 ### What Dev C can import from projects
 
-* `apps.projects.selectors.budget_state(spent, sanctioned)` returns `"ok" | "warn" | "over"`, and
-  `usage_pct(spent, sanctioned)` returns the string. Use them so every screen agrees on "near limit".
+* `apps.projects.selectors.budget_state(spent, total)` returns `"ok" | "warn" | "over"`, and
+  `usage_pct(spent, total)` returns the string (total = the finalized deal total). Use them so every screen agrees on "near limit".
 * `apps.projects.selectors.budget_usage_qs(qs=None)` annotates `Project` rows with `spent` (non-void expenses)
-  and `usage`. Filter with `selectors.state_q("warn")` (also `"ok"`, `"over"`), for example the dashboard's "projects
+  `total_budget` (finalized ledger total) and `usage`. Filter with `selectors.state_q("warn")` (also `"ok"`, `"over"`), for example the dashboard's "projects
   over budget" count: `budget_usage_qs().filter(status="RUNNING").exclude(state_q("ok"))`.
-* `selectors.project_margins(finance, spent, sanctioned)` is the one definition of planned and live margin.
-* Notification types sent through `core.services.notify`: `budget_warn`, `budget_over` (every active admin, once per
-  upward change), `project_assigned`, `project_unassigned`, `budget_changed`, `project_completed`, `project_reopened`.
-  Payloads carry `project_id` and `project_name` (alerts add `usage_pct`, `spent`, `sanctioned_budget`).
+* `selectors.project_margins(finance, spent)` is the one definition of live margin (received minus expenses).
+* Notification types sent through `core.services.notify`: `project_assigned`, `project_unassigned`,
+  `project_completed`, `project_reopened`, `expense_added`. Payloads carry `project_id` and `project_name`.
 
 ### PM dashboard (Dev B)
 
@@ -424,7 +420,7 @@ Projects reads the deal's money through one adapter, `apps/projects/integrations
 | --- | --- | --- | --- |
 | ✅ | `GET /dashboard/pm?period=month\|quarter\|year\|all` | PM | PM home (`apps/projects/dashboard_pm_views.py`). 401 anonymous, 403 every other role, 400 bad period |
 
-Scoped to the caller's own projects. Budget figures come from the same `selectors` as the project detail page, so `state`, `usage_pct`, `spent` and `remaining` always match it. Never contains the deal total, payments, margins or lead data. `period` changes only `expenses_logged_period` / `expenses_amount_period` (non-void expenses dated in the period); the budget snapshot never depends on it. `projects` lists running first, then completed. `alerts` = running projects whose `state` is `warn` or `over`, over first, worst `usage_pct` first. `recent_expenses` = newest 8 on the PM's projects (voided ones included, flagged `is_void`). `recent_activity` = last 8 of project_assigned, budget_changed, expense_added, project_completed, project_reopened. Under 12 queries.
+Scoped to the caller's own projects. Never contains any budget, the deal total, payments, margins or lead data: only `spent` (the same figure as the project page). `period` changes only `expenses_logged_period` / `expenses_amount_period` (non-void expenses dated in the period); `projects` lists running first, then completed. `recent_expenses` = newest 8 on the PM's projects (voided ones included, flagged `is_void`). `recent_activity` = last 8 of project_assigned, expense_added, project_completed, project_reopened. Under 12 queries.
 
 ```json
 {
@@ -433,16 +429,12 @@ Scoped to the caller's own projects. Budget figures come from the same `selector
   "period": {"key": "month", "from": "2026-09-01", "to": "2026-09-25"},
   "kpis": {
     "projects_running": 2, "projects_completed": 1,
-    "total_sanctioned": "900000.00", "total_spent": "627500.00", "total_remaining": "272500.00",
+    "total_spent": "627500.00",
     "expenses_logged_period": 4, "expenses_amount_period": "63500.00"
   },
   "projects": [
     {"id": 1, "name": "Riverside Court Renovation", "client_name": "Riverside Sports Club", "status": "RUNNING",
-     "sanctioned_budget": "600000.00", "spent": "492000.00", "remaining": "108000.00",
-     "usage_pct": "82.00", "state": "warn", "expected_end_date": "2026-10-25"}
-  ],
-  "alerts": [
-    {"project_id": 1, "project_name": "Riverside Court Renovation", "state": "warn", "usage_pct": "82.00", "remaining": "108000.00"}
+     "spent": "492000.00", "expected_end_date": "2026-10-25"}
   ],
   "recent_expenses": [
     {"id": 11, "project_id": 1, "project_name": "Riverside Court Renovation", "category": "MATERIALS",
@@ -455,7 +447,7 @@ Scoped to the caller's own projects. Budget figures come from the same `selector
 }
 ```
 
-`usage_pct` has two decimals (the same string the project endpoints return, truncated never rounded up). `complete` notifies every admin plus the project's PM, except the person who completed it.
+`complete` notifies every admin plus the project's PM, except the person who completed it.
 
 ## Reports (Dev C)
 
@@ -463,17 +455,17 @@ All four take `?period=month|quarter|year|all|custom` (default `month`; `custom`
 
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| ✅ | `GET /reports/sales` | A, SM | Per sales executive. Won and lost are decided in the period; commission = won value x the executive's rate. |
+| ✅ | `GET /reports/sales` | A, SM | Per sales executive. Won and lost are decided in the period; `running_projects` = running projects from the executive's won deals. No commission. |
 | ✅ | `GET /reports/financial` | A | Received vs expenses per month (6 months, 12 for year/all), aging, top 5 clients by outstanding, collection rate; all from accounts and expenses. |
-| ✅ | `GET /reports/project-margin` | A | One row per project: budget, spent, usage, and (finalized ledgers only) total, received, planned and live margin. |
+| ✅ | `GET /reports/project-margin` | A | One row per project: spent, and (finalized ledgers only) total, remaining, usage, received and live margin. |
 | ✅ | `GET /reports/lead-funnel` | A | Stages of leads created in the period, `reached` (this stage or later), conversion from the previous stage, lost, split by source. |
 
 ```json
 // GET /reports/sales?period=all
 {"period": "all", "range": {"start": null, "end": "2026-09-25"}, "data_sources": {"leads": true},
  "rows": [{"user_id": 2, "name": "Eva", "leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7",
-           "won_value": "1500.50", "commission_rate": "10.00", "commission": "150.05"}],
- "totals": {"leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7", "won_value": "1500.50", "commission": "150.05"}}
+           "won_value": "1500.50", "running_projects": 1}],
+ "totals": {"leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7", "won_value": "1500.50", "running_projects": 1}}
 
 // GET /reports/financial?period=year
 {"period": "year", "range": {"start": "2026-04-01", "end": "2026-09-25"}, "data_sources": {"accounts": false, "expenses": false},
@@ -485,8 +477,8 @@ All four take `?period=month|quarter|year|all|custom` (default `month`; `custom`
 // GET /reports/project-margin
 {"period": "month", "range": {"start": "2026-09-01", "end": "2026-09-25"}, "data_sources": {"projects": false, "accounts": false},
  "note": "Financial figures pending accounts integration.",
- "rows": [{"id": 1, "name": "Villa", "pm": "Pat", "sanctioned": "100000.00", "spent": "40000.00", "usage_pct": "40.0",
-           "total": "150000.00", "received": "90000.00", "planned_margin": "50000.00", "live_margin": "50000.00"}]}
+ "rows": [{"id": 1, "name": "Villa", "pm": "Pat", "total": "150000.00", "spent": "40000.00", "remaining": "110000.00",
+           "usage_pct": "26.66", "received": "90000.00", "live_margin": "50000.00"}]}
 
 // GET /reports/lead-funnel?period=all
 {"period": "all", "range": {"start": null, "end": "2026-09-25"}, "data_sources": {"leads": true},
@@ -513,10 +505,9 @@ All four take `?period=month|quarter|year|all|custom` (default `month`; `custom`
 | ✅ | `GET /users`, `GET/PATCH /users/{id}` | A | `?q=&role=&is_active=`, paginated. Role changes and deactivation refuse your own account and the last active admin (400). |
 | ✅ | `POST /users/{id}/deactivate`, `/reactivate` | A | Deactivating signs the user out at once. |
 | ✅ | `POST /users/{id}/reset-password` | A | `{temporary_password, must_change_password}`, shown once, never stored in readable form. |
-| ✅ | `PATCH /users/{id}/commission-rate` | A | `{commission_rate}` 0 to 100, 2 decimals; sales executives only. |
 | ✅ | `GET /users/roles` | A | The four fixed roles and what each can do. |
 | ✅ | `GET /users/assignments-overview` | A, SM | `{data_sources, execs: [{id, name, open_leads, overdue}], pms: [{id, name, running_projects, over_budget}]}` |
-| ✅ | `GET /me`, `PATCH /me` | any | `{id, name, first_name, last_name, email, phone, role, must_change_password, commission_rate}`; commission only for executives. PATCH accepts `first_name`, `last_name`, `phone` only. |
+| ✅ | `GET /me`, `PATCH /me` | any | `{id, name, first_name, last_name, email, phone, role, must_change_password}`. PATCH accepts `first_name`, `last_name`, `phone` only. |
 | ✅ | `GET /core/master-data` | A | `{lists: [{key, label, source, owner_app, available, values: [{value, label}]}]}`, read from the code's choices. |
 | ✅ | `GET /core/audit-log` | A | `?model_label=&actor=&action=CREATE|UPDATE|DELETE&from=&to=&q=`, paginated (20). Item: `{id, actor: {id, name}|null, action, model_label, object_id, object_repr, changes: {field: {old, new}}, created_at}`. Passwords are never recorded. |
 | ✅ | `GET /core/audit-log/models` | A | Model labels that have entries. |
@@ -553,7 +544,7 @@ Response (money = string with 2 decimals; counts = integers; `received_delta_pct
   "collections_aging": [{"bucket": "0-30", "count": 0, "amount": "0.00"}, {"bucket": "31-60", …},
                         {"bucket": "61-90", …}, {"bucket": "90+", …}],
   "top_overdue_clients": [{"ledger_id": 12, "client": "…", "outstanding": "420000.00", "days": 97}],
-  "projects_burn": [{"id": 5, "name": "…", "sanctioned": "800000.00", "spent": "840000.00",
+  "projects_burn": [{"id": 5, "name": "…", "total_budget": "800000.00", "spent": "840000.00",
                      "pct": "105.0", "state": "over"}],
   "recent": {
     "payments": [{"date": "2026-09-23", "client": "…", "reference": "…", "amount": "250000.00"}],
@@ -579,7 +570,7 @@ Definitions (each is one named function/constant in `apps/reports/services.py`):
 - `collection_rate_pct` = all money received / total finalized project value (snapshot).
 - `collections_aging`: unpaid ledgers by days since the last payment (or ledger creation), buckets
   0-30 / 31-60 / 61-90 / 90+ (always all four); `top_overdue_clients`: the 3 oldest.
-- `projects_burn`: up to 5 running projects by spent / **sanctioned budget** (never the total amount);
+- `projects_burn`: up to 5 running projects by spent / the finalized deal total (Admin dashboard only);
   `state` = `ok` below 80%, `warn` from 80%, `over` from 100%.
 - `sales_by_exec[].share_pct` = won value / the top exec's won value; `lead_sources` = top 5 + "Other".
 - Note: these live at the top level (`cashflow`, `funnel`, …), not under a `charts` key.

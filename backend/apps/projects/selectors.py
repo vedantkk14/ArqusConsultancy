@@ -1,5 +1,7 @@
 """Read side of projects: budget definitions, role scoping and aggregates.
 
+A project's budget is its deal total (the finalized accounts ledger total). Only the Admin sees it,
+with expenses so far and what remains; a Project Manager only ever sees the expenses themselves.
 Dev C's dashboard should import `budget_state` and `budget_usage_qs` from here so every screen
 agrees on what "near limit" and "over budget" mean.
 """
@@ -8,6 +10,7 @@ from datetime import date, datetime, timedelta
 from decimal import ROUND_DOWN, Decimal
 from zoneinfo import ZoneInfo
 
+from django.apps import apps
 from django.conf import settings
 from django.db.models import (
     Count,
@@ -21,13 +24,13 @@ from django.db.models import (
     Sum,
     Value,
 )
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, NullIf
 from django.utils import timezone
 
 from apps.core.permissions import ADMIN, PROJECT_MANAGER
 
 from . import rules
-from .models import AlertState, Expense, Project, ProjectStatus
+from .models import Expense, Project, ProjectStatus
 
 MONEY = DecimalField(max_digits=14, decimal_places=2)
 _WARN = Decimal(rules.WARN_PCT) / 100
@@ -48,54 +51,55 @@ def money_str(value) -> str:
 # ---- Budget definitions ----------
 
 
-def budget_state(spent, sanctioned) -> str:
-    """'ok' below WARN_PCT, 'warn' from WARN_PCT to OVER_PCT inclusive, 'over' above OVER_PCT."""
-    spent, sanctioned = Decimal(spent or 0), Decimal(sanctioned or 0)
-    if sanctioned <= 0:
-        return "over" if spent > 0 else "ok"
-    if spent * 100 > rules.OVER_PCT * sanctioned:
+def budget_state(spent, total) -> str:
+    """'ok' below WARN_PCT of the deal total, 'warn' up to 100% inclusive, 'over' above it.
+
+    With no deal total yet (not finalized) there is nothing to measure against: always 'ok'.
+    """
+    spent = Decimal(spent or 0)
+    if total is None or Decimal(total) <= 0:
+        return "ok"
+    total = Decimal(total)
+    if spent * 100 > rules.OVER_PCT * total:
         return "over"
-    if spent * 100 >= rules.WARN_PCT * sanctioned:
+    if spent * 100 >= rules.WARN_PCT * total:
         return "warn"
     return "ok"
 
 
-def usage_pct(spent, sanctioned) -> str:
-    spent, sanctioned = Decimal(spent or 0), Decimal(sanctioned or 0)
-    if sanctioned <= 0:
+def usage_pct(spent, total) -> str:
+    spent = Decimal(spent or 0)
+    if total is None or Decimal(total) <= 0:
         return "0.00"
-    return f"{(spent * 100 / sanctioned).quantize(Decimal('0.01'), rounding=ROUND_DOWN):.2f}"
+    return f"{(spent * 100 / Decimal(total)).quantize(Decimal('0.01'), rounding=ROUND_DOWN):.2f}"
 
 
-def remaining(spent, sanctioned) -> Decimal:
-    return Decimal(sanctioned or 0) - Decimal(spent or 0)
-
-
-def suggested_budget(total) -> str | None:
+def remaining(spent, total) -> Decimal | None:
+    """Deal total minus expenses so far (negative when overspent); None without a deal total."""
     if total is None:
         return None
-    return f"{(Decimal(total) * rules.SUGGESTED_BUDGET_PCT / 100).quantize(Decimal('0.01')):.2f}"
+    return Decimal(total) - Decimal(spent or 0)
 
 
-def project_margins(finance: dict | None, spent, sanctioned) -> dict:
-    """Admin only. live = received - expenses; planned = deal total - sanctioned budget."""
-    if not finance or finance.get("total_amount") is None:
-        return {"planned_margin": None, "live_margin": None}
-    received = finance.get("received")
+def project_margins(finance: dict | None, spent) -> dict:
+    """Admin only. live margin = money received - expenses so far."""
+    received = (finance or {}).get("received")
     return {
-        "planned_margin": money_str(Decimal(finance["total_amount"]) - Decimal(sanctioned)),
         "live_margin": None if received is None else money_str(Decimal(received) - Decimal(spent)),
     }
 
 
 def state_q(state: str) -> Q:
-    """Q for querysets annotated with `spent`; `state` is ok, warn or over."""
-    sanctioned = F("sanctioned_budget")
+    """Q for querysets from budget_usage_qs (annotated `spent`, `total_budget`): ok, warn or over.
+
+    A project without a deal total is always "ok".
+    """
+    total = F("total_budget")
     if state == "over":
-        return Q(spent__gt=sanctioned)
+        return Q(total_budget__gt=0, spent__gt=total)
     if state == "warn":
-        return Q(spent__gte=sanctioned * _WARN, spent__lte=sanctioned)
-    return Q(spent__lt=sanctioned * _WARN)
+        return Q(total_budget__gt=0, spent__gte=total * _WARN, spent__lte=total)
+    return Q(total_budget__isnull=True) | Q(total_budget__lte=0) | Q(spent__lt=total * _WARN)
 
 
 # ---- Querysets ----------
@@ -105,8 +109,18 @@ def active_expenses() -> QuerySet:
     return Expense.objects.filter(is_void=False)
 
 
+def _ledger_model():
+    """accounts.Ledger if the accounts app defines it (read via the registry, never imported)."""
+    try:
+        return apps.get_model("accounts", "Ledger")
+    except LookupError:
+        return None
+
+
 def budget_usage_qs(qs: QuerySet | None = None) -> QuerySet:
-    """Annotate projects with `spent` (non-void expenses) and `usage` (spent / sanctioned x 100)."""
+    """Annotate projects with `spent` (non-void expenses), `total_budget` (the finalized deal total,
+    or NULL) and `usage` (spent / total x 100, NULL without a total).
+    """
     total = (
         active_expenses()
         .filter(project=OuterRef("pk"))
@@ -116,13 +130,24 @@ def budget_usage_qs(qs: QuerySet | None = None) -> QuerySet:
         .values("total")
     )
     qs = Project.objects.all() if qs is None else qs
+    ledger = _ledger_model()
+    if ledger is not None:
+        deal_total = Subquery(
+            ledger.objects.filter(lead=OuterRef("lead"), finalized_at__isnull=False).values(
+                "total_amount"
+            )[:1],
+            output_field=MONEY,
+        )
+    else:
+        deal_total = Value(None, output_field=MONEY)
     return qs.annotate(
         spent=Coalesce(
             Subquery(total, output_field=MONEY), Value(Decimal("0.00")), output_field=MONEY
-        )
+        ),
+        total_budget=deal_total,
     ).annotate(
         usage=ExpressionWrapper(
-            F("spent") * 100 / F("sanctioned_budget"),
+            F("spent") * 100 / NullIf(F("total_budget"), Value(Decimal("0"))),
             output_field=DecimalField(max_digits=18, decimal_places=4),
         )
     )
@@ -183,21 +208,9 @@ def allowed_actions(user, project) -> list[str]:
     if running and (is_admin or is_pm):
         actions += ["add_expense", "complete"]
     if running and is_admin:
-        actions += ["adjust_budget", "reassign", "edit"]
+        actions += ["reassign", "edit"]
     if not running and is_admin:
         actions.append("reopen")
-        if Decimal(getattr(project, "spent", 0) or 0) < project.sanctioned_budget:
-            actions.append("release_budget")
-    pending = getattr(project, "pending_requests", None)
-    has_pending = (
-        bool(pending)
-        if pending is not None
-        else project.budget_requests.filter(status="PENDING").exists()
-    )
-    if running and is_pm and not has_pending:
-        actions.append("request_budget")
-    if running and is_admin and has_pending:
-        actions.append("decide_budget_request")
     return actions
 
 
@@ -205,29 +218,28 @@ def allowed_actions(user, project) -> list[str]:
 
 
 def project_summary(qs: QuerySet, status: str) -> dict:
-    """`qs` is role-scoped, filtered (except status and state) and annotated by budget_usage_qs."""
+    """`qs` is role-scoped, filtered (except status and state) and annotated by budget_usage_qs.
+
+    Budget keys (ok/warn/over, no_pm, budget_total) are Admin-only; the view drops them for a PM.
+    """
     counts = qs.order_by().aggregate(
         running=Count("id", filter=Q(status=ProjectStatus.RUNNING)),
         completed=Count("id", filter=Q(status=ProjectStatus.COMPLETED)),
     )
     states = {"ok": 0, "warn": 0, "over": 0}
     no_pm = 0
-    sanctioned_total = spent_total = Decimal("0")
-    for spent, sanctioned, pm_id in qs.filter(status=status).values_list(
-        "spent", "sanctioned_budget", "pm_id"
+    budget_total = spent_total = Decimal("0")
+    for spent, total, pm_id in qs.filter(status=status).values_list(
+        "spent", "total_budget", "pm_id"
     ):
-        states[budget_state(spent, sanctioned)] += 1
+        states[budget_state(spent, total)] += 1
         no_pm += pm_id is None
-        sanctioned_total += sanctioned
+        budget_total += total or 0
         spent_total += spent
     return {
         **counts,
         **states,
         "no_pm": no_pm,
-        "sanctioned_total": money_str(sanctioned_total),
+        "budget_total": money_str(budget_total),
         "spent_total": money_str(spent_total),
     }
-
-
-def alert_state_rank(state: str) -> int:
-    return [AlertState.OK, AlertState.WARN, AlertState.OVER].index(state)

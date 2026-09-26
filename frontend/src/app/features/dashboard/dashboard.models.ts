@@ -100,7 +100,8 @@ export interface OverdueClient {
 export interface ProjectBurn {
   id: number;
   name: string;
-  sanctioned: string;
+  /** The finalized deal total, or null before the deal is finalized. */
+  total_budget: string | null;
   spent: string;
   pct: string;
   state: 'ok' | 'warn' | 'over';

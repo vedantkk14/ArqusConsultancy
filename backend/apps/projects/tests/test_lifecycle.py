@@ -20,7 +20,7 @@ def kinds(notes):
 
 
 @pytest.mark.parametrize(
-    "spent, sanctioned, state",
+    "spent, total, state",
     [
         ("0", "100", "ok"),
         ("79.99", "100", "ok"),
@@ -30,98 +30,25 @@ def kinds(notes):
         ("100.01", "100", "over"),
         ("500", "100", "over"),
         ("0", "0", "ok"),
-        ("1", "0", "over"),
+        ("1", "0", "ok"),  # no deal total: nothing to measure against
         ("79999.99", "99999.99", "ok"),
     ],
 )
-def test_budget_state_thresholds(spent, sanctioned, state):
-    assert selectors.budget_state(Decimal(spent), Decimal(sanctioned)) == state
+def test_budget_state_thresholds(spent, total, state):
+    assert selectors.budget_state(Decimal(spent), Decimal(total)) == state
+
+
+def test_without_a_deal_total_there_is_no_budget_state_or_remaining():
+    assert selectors.budget_state(Decimal("500"), None) == "ok"
+    assert selectors.usage_pct(Decimal("500"), None) == "0.00"
+    assert selectors.remaining(Decimal("500"), None) is None
+    assert selectors.remaining(Decimal("500"), Decimal("400")) == Decimal("-100")
 
 
 def test_usage_pct_is_a_string_that_never_rounds_into_the_next_state():
     assert selectors.usage_pct(Decimal("79.999"), Decimal("100")) == "79.99"
     assert selectors.usage_pct(Decimal("82.5"), Decimal("100")) == "82.50"
     assert selectors.usage_pct(Decimal("0"), Decimal("0")) == "0.00"
-
-
-# ---- Budget change -----------------------------------------------------------------------------
-
-
-def test_budget_change_needs_admin_a_reason_and_records_an_event(
-    client_for, admin, pm1, project, notes
-):
-    url = f"{BASE}/{project.pk}/budget"
-    assert (
-        client_for(pm1)
-        .post(url, {"sanctioned_budget": "700000", "reason": "x"}, format="json")
-        .status_code
-        == 403
-    )
-    assert (
-        client_for(admin).post(url, {"sanctioned_budget": "700000"}, format="json").status_code
-        == 400
-    )
-    res = client_for(admin).post(
-        url, {"sanctioned_budget": "700000", "reason": "Scope grew"}, format="json"
-    )
-    assert res.status_code == 200 and res.json()["sanctioned_budget"] == "700000.00"
-    event = ProjectEvent.objects.filter(project=project, type="BUDGET_CHANGED").get()
-    assert event.data == {"old": "600000.00", "new": "700000.00", "reason": "Scope grew"}
-    assert event.actor_id == admin.pk
-    assert (pm1.pk, "budget_changed") in kinds(notes)
-
-
-def test_budget_cannot_go_below_what_is_spent(client_for, admin, pm1, project, make_expense):
-    make_expense(pm1, "5000.00")
-    url = f"{BASE}/{project.pk}/budget"
-    res = client_for(admin).post(
-        url, {"sanctioned_budget": "4999.99", "reason": "cut"}, format="json"
-    )
-    assert res.status_code == 400 and code(res) == "budget_below_spent"
-    assert res.json()["error"]["details"]["spent"] == "5000.00"
-    assert (
-        client_for(admin)
-        .post(url, {"sanctioned_budget": "5000.00", "reason": "cut"}, format="json")
-        .status_code
-        == 200
-    )
-
-
-def test_budget_cannot_exceed_the_deal_total(client_for, admin, project):
-    res = client_for(admin).post(
-        f"{BASE}/{project.pk}/budget",
-        {"sanctioned_budget": "1000000.01", "reason": "up"},
-        format="json",
-    )
-    assert res.status_code == 400 and code(res) == "budget_exceeds_total"
-
-
-def test_voided_expenses_do_not_count_against_a_budget_cut(
-    client_for, admin, pm1, project, make_expense
-):
-    expense = make_expense(pm1, "5000.00")
-    services.void_expense(expense.pk, admin, "typo")
-    res = client_for(admin).post(
-        f"{BASE}/{project.pk}/budget", {"sanctioned_budget": "1", "reason": "r"}, format="json"
-    )
-    assert res.status_code == 200
-
-
-def test_budget_change_on_a_completed_project_is_refused(client_for, admin, pm1, project):
-    services.complete(project.pk, pm1)
-    res = client_for(admin).post(
-        f"{BASE}/{project.pk}/budget", {"sanctioned_budget": "1000", "reason": "r"}, format="json"
-    )
-    assert res.status_code == 409 and code(res) == "project_completed"
-
-
-def test_lowering_the_budget_can_raise_the_alert(admin, pm1, make_project, make_expense, notes):
-    project = make_project(pm=pm1, budget="1000.00")
-    make_expense(pm1, "500.00", proj=project)
-    notes.clear()
-    services.change_budget(project.pk, Decimal("600.00"), "tighter", admin)  # 83% used
-    assert (admin.pk, "budget_warn") in kinds(notes)
-    assert Project.objects.get(pk=project.pk).alert_state == "WARN"
 
 
 # ---- Complete and reopen -----------------------------------------------------------------------
@@ -208,69 +135,8 @@ def test_the_old_pm_loses_access_and_the_new_one_gains_it(client_for, admin, pm1
     assert client_for(pm2).get(f"{BASE}/{project.pk}").status_code == 200
 
 
-# ---- Alerts ------------------------------------------------------------------------------------
-
-
 def alert_kinds(notes):
     return [kind for _, kind, _ in notes if kind.startswith("budget_")]
-
-
-def test_alerts_fire_once_per_upward_crossing_to_every_active_admin(
-    admin, make_user, pm1, make_project, make_expense, notes
-):
-    other_admin = make_user("ADMIN")
-    inactive = make_user("ADMIN", is_active=False)
-    project = make_project(pm=pm1, budget="100.00")
-    make_expense(pm1, "79.99", proj=project)
-    assert alert_kinds(notes) == []
-    make_expense(pm1, "0.01", proj=project)  # 80.00: warn
-    assert sorted(uid for uid, kind, _ in notes if kind == "budget_warn") == sorted(
-        [admin.pk, other_admin.pk]
-    )
-    assert inactive.pk not in [uid for uid, _, _ in notes]
-    make_expense(pm1, "10.00", proj=project)  # still warn: silent
-    assert alert_kinds(notes).count("budget_warn") == 2  # two admins, one crossing
-    notes.clear()
-    make_expense(pm1, "10.00", proj=project)  # 100.00 exactly: warn, silent
-    assert alert_kinds(notes) == []
-    services.add_expense(
-        project.pk, admin,
-        {"amount": Decimal("0.01"), "category": "LABOUR", "spent_on": selectors.business_today(),
-         "admin_override": True, "override_reason": "ok"},
-    )  # fmt: skip
-    assert alert_kinds(notes) == ["budget_over", "budget_over"]
-    assert Project.objects.get(pk=project.pk).alert_state == "OVER"
-
-
-def test_jumping_straight_to_over_sends_only_the_over_alert(admin, pm1, make_project, notes):
-    project = make_project(pm=pm1, budget="100.00")
-    services.add_expense(
-        project.pk, admin,
-        {"amount": Decimal("150.00"), "category": "LABOUR", "spent_on": selectors.business_today(),
-         "admin_override": True, "override_reason": "big"},
-    )  # fmt: skip
-    assert alert_kinds(notes) == ["budget_over"]
-
-
-def test_dropping_back_down_is_silent_and_a_new_crossing_alerts_again(
-    admin, pm1, make_project, make_expense, notes
-):
-    project = make_project(pm=pm1, budget="100.00")
-    big = make_expense(pm1, "90.00", proj=project)
-    assert alert_kinds(notes) == ["budget_warn"]
-    services.void_expense(big.pk, pm1, "typo")
-    assert Project.objects.get(pk=project.pk).alert_state == "OK"
-    assert alert_kinds(notes) == ["budget_warn"]  # nothing new
-    make_expense(pm1, "85.00", proj=project)
-    assert alert_kinds(notes) == ["budget_warn", "budget_warn"]
-
-
-def test_state_and_alert_state_agree_on_the_api(client_for, pm1, make_project, make_expense):
-    project = make_project(pm=pm1, budget="100.00")
-    make_expense(pm1, "85.00", proj=project)
-    body = client_for(pm1).get(f"{BASE}/{project.pk}").json()
-    assert body["state"] == "warn" and body["usage_pct"] == "85.00"
-    assert Project.objects.get(pk=project.pk).alert_state == "WARN"
 
 
 # ---- Details and events ------------------------------------------------------------------------
@@ -305,18 +171,14 @@ def test_events_are_a_newest_first_timeline(client_for, admin, pm1, project, mak
 
 def test_allowed_actions_come_from_the_server(client_for, admin, pm1, project):
     assert client_for(admin).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == [
-        "add_expense", "complete", "adjust_budget", "reassign", "edit",
+        "add_expense", "complete", "reassign", "edit",
     ]  # fmt: skip
     assert client_for(pm1).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == [
         "add_expense",
         "complete",
-        "request_budget",
     ]
     services.complete(project.pk, pm1)
-    assert client_for(admin).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == [
-        "reopen",
-        "release_budget",  # nothing was spent, so the whole budget is unused
-    ]
+    assert client_for(admin).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == ["reopen"]
     assert client_for(pm1).get(f"{BASE}/{project.pk}").json()["allowed_actions"] == []
 
 

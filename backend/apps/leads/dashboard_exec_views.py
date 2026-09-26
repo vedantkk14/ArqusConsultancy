@@ -8,7 +8,6 @@ total/final amount, not even as null (see docs/API_CONTRACT.md privacy shield).
 
 from collections import defaultdict
 from datetime import timedelta
-from decimal import ROUND_HALF_UP, Decimal
 
 from django.db.models import Count
 from rest_framework.exceptions import ValidationError
@@ -34,11 +33,6 @@ MAX_RECENT_ACTIVITY = 8
 UPCOMING_DAYS = 7
 UPCOMING_ITEMS_PER_DAY = 5
 LAST_NOTE_MAX = 80
-
-#: Undecided (docs/OPEN_DECISIONS.md) - default off. Reads `user.commission_rate` when on, which
-#: exists on `users.User` (Dev C); `getattr` with a fallback so this never crashes if that field
-#: isn't there in some environment.
-SHOW_COMMISSION_TO_EXEC = False
 
 
 def _leads_qs(user):
@@ -86,9 +80,11 @@ def _upcoming(leads_qs, now) -> list[dict]:
     _, today_end = selectors.business_day_bounds(now)
     window_end = today_end + timedelta(days=UPCOMING_DAYS)
 
-    rows = with_last_interaction_at(with_last_note(leads_qs)).filter(
-        selectors.upcoming_q(now), next_followup_at__lt=window_end
-    ).order_by("next_followup_at")
+    rows = (
+        with_last_interaction_at(with_last_note(leads_qs))
+        .filter(selectors.upcoming_q(now), next_followup_at__lt=window_end)
+        .order_by("next_followup_at")
+    )
 
     by_date = defaultdict(list)
     for lead in rows:
@@ -110,12 +106,6 @@ def _upcoming(leads_qs, now) -> list[dict]:
     return days
 
 
-def _estimated_commission(won_value: str, user) -> str:
-    rate = Decimal(str(getattr(user, "commission_rate", 0) or 0))
-    amount = (Decimal(won_value) * rate / 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    return money(amount)
-
-
 def build_sales_exec_dashboard(user, period: str = DEFAULT_PERIOD, today=None) -> dict:
     leads_qs = _leads_qs(user)
     kpis, rng, now = base_kpis(leads_qs, period, today)
@@ -133,9 +123,6 @@ def build_sales_exec_dashboard(user, period: str = DEFAULT_PERIOD, today=None) -
         "new_leads": _exec_queue(new_leads_qs, "created_at", kpis["new_untouched"]),
         "no_followup": _exec_queue(no_followup_qs, "created_at", extra["no_followup"]),
     }
-
-    if SHOW_COMMISSION_TO_EXEC:
-        kpis = {**kpis, "estimated_commission": _estimated_commission(kpis["won_value"], user)}
 
     recent_rows = (
         Interaction.objects.filter(created_by=user)

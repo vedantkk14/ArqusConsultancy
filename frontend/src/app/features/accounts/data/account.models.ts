@@ -54,16 +54,24 @@ export interface ProjectBlock {
   id: number;
   name: string;
   status: 'RUNNING' | 'COMPLETED';
-  sanctioned_budget: string;
   spent: string;
-  planned_margin: string | null;
+  /** Deal total minus expenses. */
+  remaining: string | null;
   live_margin: string | null;
 }
 
-export type LedgerAction = 'finalize' | 'record_payment' | 'reminder' | 'revise_total' | 'statement';
+export type LedgerAction =
+  'finalize' | 'record_payment' | 'reminder' | 'revise_total' | 'statement';
 
 export interface LedgerDetail extends LedgerRow {
-  lead_block: { id: number; name: string; phone: string; email: string; exec_name: string | null; status: string };
+  lead_block: {
+    id: number;
+    name: string;
+    phone: string;
+    email: string;
+    exec_name: string | null;
+    status: string;
+  };
   project: ProjectBlock | null;
   finalized_at: string | null;
   finalized_by: { id: number; name: string } | null;
@@ -188,12 +196,7 @@ export interface PaymentSummary {
 }
 
 export type LedgerEventType =
-  | 'CREATED'
-  | 'FINALIZED'
-  | 'TOTAL_REVISED'
-  | 'PAYMENT_ADDED'
-  | 'PAYMENT_VOIDED'
-  | 'REMINDER_SENT';
+  'CREATED' | 'FINALIZED' | 'TOTAL_REVISED' | 'PAYMENT_ADDED' | 'PAYMENT_VOIDED' | 'REMINDER_SENT';
 
 export interface LedgerEvent {
   id: number;
@@ -210,7 +213,13 @@ export interface Statement {
   period: { from: string | null; to: string | null };
   total_amount: string;
   opening_balance: string;
-  rows: { date: string; receipt_no: string; particulars: string; credit: string; balance: string }[];
+  rows: {
+    date: string;
+    receipt_no: string;
+    particulars: string;
+    credit: string;
+    balance: string;
+  }[];
   credit_total: string;
   closing_balance: string;
   generated_on: string;

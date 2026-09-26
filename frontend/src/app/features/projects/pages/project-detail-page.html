@@ -9,8 +9,12 @@
       <div class="id-t">
         <p class="nm" aria-hidden="true">{{ p.name }}</p>
         <span class="chips-row">
-          <span [class]="'status ' + (p.status === 'RUNNING' ? 'run' : 'done')"><i aria-hidden="true"></i>{{ p.status === 'RUNNING' ? 'Running' : 'Completed' }}</span>
-          <app-budget-state [state]="p.state" />
+          <span [class]="'status ' + (p.status === 'RUNNING' ? 'run' : 'done')"
+            ><i aria-hidden="true"></i>{{ p.status === 'RUNNING' ? 'Running' : 'Completed' }}</span
+          >
+          @if (isAdmin() && p.state) {
+            <app-budget-state [state]="p.state" />
+          }
         </span>
       </div>
     </div>
@@ -29,7 +33,12 @@
             <span class="muted">Not assigned</span>
           }
           @if (can('reassign')) {
-            <button type="button" class="link" (click)="reassign(p)" [attr.aria-label]="(p.pm_name ? 'Reassign ' : 'Assign a manager to ') + p.name">
+            <button
+              type="button"
+              class="link"
+              (click)="reassign(p)"
+              [attr.aria-label]="(p.pm_name ? 'Reassign ' : 'Assign a manager to ') + p.name"
+            >
               {{ p.pm_name ? 'Reassign' : 'Assign' }}
             </button>
           }
@@ -42,59 +51,67 @@
       <div>
         <dt>{{ p.status === 'COMPLETED' ? 'Completed' : 'Expected end' }}</dt>
         <dd [attr.title]="p.completed_at ? full(p.completed_at) : null">
-          {{ p.status === 'COMPLETED' && p.completed_at ? rel(p.completed_at) : day(p.expected_end_date) || '—' }}
+          {{
+            p.status === 'COMPLETED' && p.completed_at
+              ? rel(p.completed_at)
+              : day(p.expected_end_date) || '—'
+          }}
         </dd>
       </div>
     </dl>
 
     <div class="acts">
       @if (can('add_expense')) {
-        <button matButton="filled" type="button" [attr.aria-label]="'Add expense to ' + p.name" (click)="addExpense()"><mat-icon>add</mat-icon>Add expense</button>
+        <button
+          matButton="filled"
+          type="button"
+          [attr.aria-label]="'Add expense to ' + p.name"
+          (click)="addExpense()"
+        >
+          <mat-icon>add</mat-icon>Add expense
+        </button>
       }
       @if (can('complete')) {
-        <button matButton="outlined" type="button" [attr.aria-label]="'Complete ' + p.name" (click)="complete(p)"><mat-icon>check_circle</mat-icon>Complete</button>
-      }
-      @if (can('adjust_budget')) {
-        <button matButton="outlined" type="button" [attr.aria-label]="'Adjust the budget of ' + p.name" (click)="adjustBudget(p)"><mat-icon>tune</mat-icon>Adjust budget</button>
-      }
-      @if (can('request_budget')) {
-        <button [matButton]="p.state === 'over' ? 'filled' : 'outlined'" type="button" (click)="requestBudget(p)"><mat-icon>request_quote</mat-icon>Request budget</button>
-      }
-      @if (can('release_budget')) {
-        <button matButton="filled" type="button" (click)="releaseBudget(p)"><mat-icon>savings</mat-icon>Use unused budget</button>
+        <button
+          matButton="outlined"
+          type="button"
+          [attr.aria-label]="'Complete ' + p.name"
+          (click)="complete(p)"
+        >
+          <mat-icon>check_circle</mat-icon>Complete
+        </button>
       }
       @if (can('reopen')) {
-        <button matButton="outlined" type="button" [attr.aria-label]="'Reopen ' + p.name" (click)="reopen(p)"><mat-icon>restart_alt</mat-icon>Reopen</button>
+        <button
+          matButton="outlined"
+          type="button"
+          [attr.aria-label]="'Reopen ' + p.name"
+          (click)="reopen(p)"
+        >
+          <mat-icon>restart_alt</mat-icon>Reopen
+        </button>
       }
     </div>
   </section>
 
-  @if (p.pending_budget_request; as r) {
-    <section class="card breq rise-in" aria-label="Budget request">
-      <span class="breq-ico" aria-hidden="true"><mat-icon>request_quote</mat-icon></span>
-      <div class="breq-t">
-        <strong>{{ r.requested_by || 'The project manager' }} asked for {{ r.amount | inr }} more</strong>
-        <span>{{ r.reason }} · {{ rel(r.created_at) }}</span>
-      </div>
-      @if (can('decide_budget_request')) {
-        <span class="breq-a">
-          <button matButton type="button" [disabled]="deciding()" (click)="decide(p, false)">Reject</button>
-          <button matButton="filled" type="button" [disabled]="deciding()" (click)="decide(p, true)">Approve</button>
-        </span>
-      } @else {
-        <span class="pill-wait">Waiting for the admin</span>
-      }
-    </section>
-  }
-
   <div class="grid">
     <div class="main">
-      <!-- Budget (both roles) -->
-      <app-budget-panel [project]="p" />
+      <!-- Budget: the deal total, admin only (never rendered for a project manager) -->
+      @if (isAdmin()) {
+        <app-budget-panel [project]="p" [exporting]="exporting()" (exportExcel)="exportExcel(p)" />
+      }
 
       <!-- Expenses -->
       <section class="card panel rise-in" style="--i: 2" aria-labelledby="exp-title">
-        <app-panel-head title="Expenses" [subtitle]="expensesLoaded() ? expenseCount() + (expenseCount() === 1 ? ' expense' : ' expenses') : 'Loading…'" headingId="exp-title">
+        <app-panel-head
+          title="Expenses"
+          [subtitle]="
+            expensesLoaded()
+              ? expenseCount() + (expenseCount() === 1 ? ' expense' : ' expenses')
+              : 'Loading…'
+          "
+          headingId="exp-title"
+        >
           <label class="cat-filter">
             <span class="sr-only">Filter expenses by category</span>
             <select class="ctl" (change)="setCategory($any($event.target).value)">
@@ -105,7 +122,14 @@
             </select>
           </label>
           @if (can('add_expense') && layout.isDesktop()) {
-            <button matButton="filled" type="button" [attr.aria-label]="'Add expense to ' + p.name" (click)="addExpense()"><mat-icon>add</mat-icon>Add expense</button>
+            <button
+              matButton="filled"
+              type="button"
+              [attr.aria-label]="'Add expense to ' + p.name"
+              (click)="addExpense()"
+            >
+              <mat-icon>add</mat-icon>Add expense
+            </button>
           }
         </app-panel-head>
 
@@ -116,10 +140,19 @@
             icon="receipt_long"
             [bordered]="false"
             [title]="category() ? 'No expenses in this category' : 'No expenses yet'"
-            [message]="category() ? 'Try another category.' : can('add_expense') ? 'Add the first expense as soon as money is spent.' : ''"
+            [message]="
+              category()
+                ? 'Try another category.'
+                : can('add_expense')
+                  ? 'Add the first expense as soon as money is spent.'
+                  : ''
+            "
           />
         } @else {
-          <div [class.busy]="expensesLoading() && expensesLoaded()" [attr.aria-busy]="expensesLoading()">
+          <div
+            [class.busy]="expensesLoading() && expensesLoaded()"
+            [attr.aria-busy]="expensesLoading()"
+          >
             <app-expense-rows
               [rows]="expenses()"
               [layout]="wide() ? 'table' : 'cards'"
@@ -129,7 +162,12 @@
           </div>
           @if (expenses().length < expenseCount()) {
             <div class="more">
-              <button matButton="outlined" type="button" [disabled]="expensesLoading()" (click)="loadMoreExpenses()">
+              <button
+                matButton="outlined"
+                type="button"
+                [disabled]="expensesLoading()"
+                (click)="loadMoreExpenses()"
+              >
                 {{ expensesLoading() ? 'Loading…' : 'Load more' }}
               </button>
             </div>
@@ -142,7 +180,11 @@
       <!-- Finance (admin only: not rendered at all for a project manager) -->
       @if (isAdmin()) {
         <section class="card panel rise-in" style="--i: 2" aria-labelledby="fin-title">
-          <app-panel-head title="Finance" subtitle="From the accounts ledger" headingId="fin-title" />
+          <app-panel-head
+            title="Finance"
+            subtitle="From the accounts ledger"
+            headingId="fin-title"
+          />
           @if (p.finance; as f) {
             <dl class="kv">
               <dt>Deal total</dt>
@@ -151,8 +193,6 @@
               <dd class="num">{{ f.received | inr }}</dd>
               <dt>Outstanding</dt>
               <dd class="num">{{ f.outstanding | inr }}</dd>
-              <dt>Planned margin</dt>
-              <dd class="num" [class.neg]="isNegative(f.planned_margin)">{{ f.planned_margin | inr }}</dd>
               <dt>Live margin</dt>
               <dd class="num" [class.neg]="isNegative(f.live_margin)">{{ f.live_margin | inr }}</dd>
             </dl>
@@ -178,37 +218,49 @@
   </div>
 
   <!-- Phones: sticky Add expense | Complete | More -->
-  @if (!layout.isDesktop() && (can('add_expense') || can('complete') || can('adjust_budget') || can('reopen') || can('request_budget') || can('release_budget'))) {
+  @if (
+    !layout.isDesktop() &&
+    (can('add_expense') || can('complete') || can('reopen') || can('reassign'))
+  ) {
     <nav class="mbar" aria-label="Project actions">
       @if (can('add_expense')) {
-        <button type="button" class="pri" [attr.aria-label]="'Add expense to ' + p.name" (click)="addExpense()"><mat-icon aria-hidden="true">add</mat-icon>Add expense</button>
+        <button
+          type="button"
+          class="pri"
+          [attr.aria-label]="'Add expense to ' + p.name"
+          (click)="addExpense()"
+        >
+          <mat-icon aria-hidden="true">add</mat-icon>Add expense
+        </button>
       }
       @if (can('complete')) {
-        <button type="button" [attr.aria-label]="'Complete ' + p.name" (click)="complete(p)"><mat-icon aria-hidden="true">check_circle</mat-icon>Complete</button>
+        <button type="button" [attr.aria-label]="'Complete ' + p.name" (click)="complete(p)">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>Complete
+        </button>
       }
       @if (can('reopen')) {
-        <button type="button" class="pri" [attr.aria-label]="'Reopen ' + p.name" (click)="reopen(p)"><mat-icon aria-hidden="true">restart_alt</mat-icon>Reopen</button>
+        <button
+          type="button"
+          class="pri"
+          [attr.aria-label]="'Reopen ' + p.name"
+          (click)="reopen(p)"
+        >
+          <mat-icon aria-hidden="true">restart_alt</mat-icon>Reopen
+        </button>
       }
-      @if (can('request_budget') && p.state !== 'ok') {
-        <button type="button" (click)="requestBudget(p)"><mat-icon aria-hidden="true">request_quote</mat-icon>Request budget</button>
-      }
-      @if (can('release_budget')) {
-        <button type="button" class="pri" (click)="releaseBudget(p)"><mat-icon aria-hidden="true">savings</mat-icon>Use unused</button>
-      }
-      @if (can('adjust_budget') || can('reassign') || (can('request_budget') && p.state === 'ok')) {
-        <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + p.name">
+      @if (can('reassign')) {
+        <button
+          type="button"
+          class="ib"
+          [matMenuTriggerFor]="over"
+          [attr.aria-label]="'More actions for ' + p.name"
+        >
           <mat-icon aria-hidden="true">more_vert</mat-icon>
         </button>
         <mat-menu #over="matMenu" xPosition="before">
-          @if (can('request_budget') && p.state === 'ok') {
-            <button mat-menu-item type="button" (click)="requestBudget(p)"><mat-icon>request_quote</mat-icon>Request more budget</button>
-          }
-          @if (can('adjust_budget')) {
-            <button mat-menu-item type="button" (click)="adjustBudget(p)"><mat-icon>tune</mat-icon>Adjust budget</button>
-          }
-          @if (can('reassign')) {
-            <button mat-menu-item type="button" (click)="reassign(p)"><mat-icon>person</mat-icon>Reassign manager</button>
-          }
+          <button mat-menu-item type="button" (click)="reassign(p)">
+            <mat-icon>person</mat-icon>Reassign manager
+          </button>
         </mat-menu>
       }
     </nav>
@@ -223,9 +275,8 @@
         (closed)="closeExpense()"
       />
       <app-add-expense-form
-        [project]="{ id: p.id, name: p.name, remaining: p.remaining }"
+        [project]="{ id: p.id, name: p.name }"
         [expense]="editing()"
-        [isAdmin]="isAdmin()"
         [inSheet]="true"
         (saved)="onExpenseSaved()"
         (cancelled)="closeExpense()"
@@ -233,7 +284,11 @@
     </div>
   </ng-template>
 } @else {
-  <app-empty-state icon="assignment" title="Project not found" message="It may not exist, or it isn't assigned to you.">
+  <app-empty-state
+    icon="assignment"
+    title="Project not found"
+    message="It may not exist, or it isn't assigned to you."
+  >
     <a matButton="filled" routerLink="/projects/running">Back to projects</a>
   </app-empty-state>
 }

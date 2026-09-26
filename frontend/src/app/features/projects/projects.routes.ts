@@ -9,11 +9,15 @@ import { ProjectDetail, ProjectMode } from './data/project.models';
 import { ProjectsApi } from './data/projects-api.service';
 
 /** A PM only ever sees their own projects, so their running list is "My projects". */
-const runningTitle: ResolveFn<string> = () => (inject(AuthService).role() === Role.ProjectManager ? 'My projects' : 'Running projects');
+const runningTitle: ResolveFn<string> = () =>
+  inject(AuthService).role() === Role.ProjectManager ? 'My projects' : 'Running projects';
 const completedTitle: ResolveFn<string> = () =>
-  inject(AuthService).role() === Role.ProjectManager ? 'My completed projects' : 'Completed projects';
+  inject(AuthService).role() === Role.ProjectManager
+    ? 'My completed projects'
+    : 'Completed projects';
 
-const projectResolver: ResolveFn<ProjectDetail | null> = (route) => inject(ProjectsApi).getShared(Number(route.paramMap.get('id')));
+const projectResolver: ResolveFn<ProjectDetail | null> = (route) =>
+  inject(ProjectsApi).getShared(Number(route.paramMap.get('id')));
 
 /** The top bar's h1 is the project's name. */
 const projectTitle: ResolveFn<string> = (route) =>
@@ -31,7 +35,7 @@ function listRoute(path: string, mode: ProjectMode, title: ResolveFn<string>): R
   };
 }
 
-// /projects redirects to the running list and keeps the query string (dashboard links such as
+// /projects redirects to the running list and keeps the query string (admin dashboard links such as
 // /projects?over_budget=true land on the filtered list).
 export const PROJECTS_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'running' },

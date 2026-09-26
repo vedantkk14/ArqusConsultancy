@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
@@ -6,24 +14,25 @@ import { ApiError } from '../../../core/models';
 import { InrPipe } from '../../../shared/money/inr.pipe';
 import { ConvertibleLead, Manager, ProjectDetail } from '../data/project.models';
 import { ProjectsApi } from '../data/projects-api.service';
-import { MoneyInput, isPositiveMoney } from '../ui/money-input';
 import { fieldError } from '../ui/open';
 
-type FieldKey = 'name' | 'sanctioned_budget' | 'pm' | 'start_date' | 'expected_end_date' | 'scope';
+type FieldKey = 'name' | 'pm' | 'start_date' | 'expected_end_date' | 'scope';
 const FIELD_IDS: Record<FieldKey, string> = {
   name: 'cv-name',
-  sanctioned_budget: 'cv-budget',
   pm: 'cv-pm',
   start_date: 'cv-start',
   expected_end_date: 'cv-end',
   scope: 'cv-scope',
 };
-const ORDER: FieldKey[] = ['name', 'sanctioned_budget', 'pm', 'start_date', 'expected_end_date', 'scope'];
+const ORDER: FieldKey[] = ['name', 'pm', 'start_date', 'expected_end_date', 'scope'];
 
-/** The convert panel's form: name, budget (suggested 60%), manager, dates and scope. */
+/**
+ * The convert panel's form: name, project manager, dates and scope. There is no budget to enter:
+ * the finalized deal total is the project's budget, and only the Admin ever sees it.
+ */
 @Component({
   selector: 'app-convert-form',
-  imports: [FormsModule, InrPipe, MatButtonModule, MoneyInput, RouterLink],
+  imports: [FormsModule, InrPipe, MatButtonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.in-sheet]': 'inSheet()' },
   styleUrl: '../ui/dialog.scss',
@@ -31,33 +40,27 @@ const ORDER: FieldKey[] = ['name', 'sanctioned_budget', 'pm', 'start_date', 'exp
     <form (ngSubmit)="submit()" novalidate>
       <div class="field">
         <label for="cv-name">Project name</label>
-        <input id="cv-name" name="name" type="text" maxlength="200" autocomplete="off" [(ngModel)]="name" [attr.aria-invalid]="errors().name ? true : null" [attr.aria-describedby]="errors().name ? 'cv-name-err' : null" />
+        <input
+          id="cv-name"
+          name="name"
+          type="text"
+          maxlength="200"
+          autocomplete="off"
+          [(ngModel)]="name"
+          [attr.aria-invalid]="errors().name ? true : null"
+          [attr.aria-describedby]="errors().name ? 'cv-name-err' : null"
+        />
         @if (errors().name) {
           <p class="error" id="cv-name-err">{{ errors().name }}</p>
         }
       </div>
 
-      <div class="field">
-        <label for="cv-budget">Sanctioned budget</label>
-        <app-money-input
-          inputId="cv-budget"
-          name="budget"
-          [(ngModel)]="budget"
-          [invalid]="!!errors().sanctioned_budget"
-          [describedBy]="'cv-budget-hint' + (errors().sanctioned_budget ? ' cv-budget-err' : '')"
-        />
-        <p class="hint" id="cv-budget-hint">
-          @if (lead().total_amount) {
-            Cannot exceed {{ lead().total_amount | inr }}.
-          }
-          @if (lead().suggested_budget) {
-            Suggested: {{ lead().suggested_budget | inr }} (60% of the deal).
-          }
+      @if (lead().total_amount) {
+        <p class="note">
+          Total budget: <b>{{ lead().total_amount | inr }}</b> (the finalized deal total). Only
+          admins see it; the project manager only logs expenses.
         </p>
-        @if (errors().sanctioned_budget) {
-          <p class="error" id="cv-budget-err">{{ errors().sanctioned_budget }}</p>
-        }
-      </div>
+      }
 
       <div class="field">
         <label for="cv-pm">Project manager</label>
@@ -82,7 +85,13 @@ const ORDER: FieldKey[] = ['name', 'sanctioned_budget', 'pm', 'start_date', 'exp
         </div>
         <div class="field">
           <label for="cv-end">Expected end date</label>
-          <input id="cv-end" name="end" type="date" [(ngModel)]="end" [attr.aria-invalid]="errors().expected_end_date ? true : null" />
+          <input
+            id="cv-end"
+            name="end"
+            type="date"
+            [(ngModel)]="end"
+            [attr.aria-invalid]="errors().expected_end_date ? true : null"
+          />
           @if (errors().expected_end_date) {
             <p class="error">{{ errors().expected_end_date }}</p>
           }
@@ -104,14 +113,27 @@ const ORDER: FieldKey[] = ['name', 'sanctioned_budget', 'pm', 'start_date', 'exp
       }
       <div class="actions">
         <button matButton type="button" (click)="cancelled.emit()">Cancel</button>
-        <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Creating…' : 'Create project' }}</button>
+        <button matButton="filled" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Creating…' : 'Create project' }}
+        </button>
       </div>
     </form>
   `,
   styles: `
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-    @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
-    a { color: var(--brand-deep); font-weight: 500; }
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+    }
+    @media (max-width: 480px) {
+      .row2 {
+        grid-template-columns: 1fr;
+      }
+    }
+    a {
+      color: var(--brand-deep);
+      font-weight: 500;
+    }
   `,
 })
 export class ConvertForm implements OnInit {
@@ -124,7 +146,6 @@ export class ConvertForm implements OnInit {
   private readonly api = inject(ProjectsApi);
 
   protected name = '';
-  protected budget = '';
   protected pm = '';
   protected start = '';
   protected end = '';
@@ -140,7 +161,6 @@ export class ConvertForm implements OnInit {
     if (!this.seeded) {
       const lead = this.lead();
       this.name = lead.name;
-      this.budget = lead.suggested_budget ?? '';
       this.seeded = true;
     }
   }
@@ -152,9 +172,6 @@ export class ConvertForm implements OnInit {
     const errors: Partial<Record<FieldKey, string>> = {};
     if (!this.name.trim()) {
       errors.name = 'Enter a project name.';
-    }
-    if (!isPositiveMoney(this.budget)) {
-      errors.sanctioned_budget = 'Enter the sanctioned budget.';
     }
     if (this.start && this.end && this.end < this.start) {
       errors.expected_end_date = 'The end date cannot be before the start date.';
@@ -170,7 +187,6 @@ export class ConvertForm implements OnInit {
       .convert({
         lead: this.lead().lead,
         name: this.name.trim(),
-        sanctioned_budget: this.budget,
         pm: this.pm ? Number(this.pm) : null,
         start_date: this.start || null,
         expected_end_date: this.end || null,
@@ -196,9 +212,6 @@ export class ConvertForm implements OnInit {
       if (message) {
         mapped[key] = message;
       }
-    }
-    if (err.code === 'budget_exceeds_total') {
-      mapped.sanctioned_budget = err.message;
     }
     if (Object.keys(mapped).length) {
       this.errors.set(mapped);

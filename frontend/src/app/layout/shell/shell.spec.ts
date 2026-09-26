@@ -26,10 +26,18 @@ function render(width = 1440) {
   TestBed.inject(AuthService).login('a', 'pw').subscribe();
   TestBed.inject(HttpTestingController)
     .expectOne('/api/v1/auth/login')
-    .flush({ access: 'A', refresh: 'R', user: { id: 1, name: 'Alice Admin', email: 'a@x.com', role: Role.Admin } });
+    .flush({
+      access: 'A',
+      refresh: 'R',
+      user: { id: 1, name: 'Alice Admin', email: 'a@x.com', role: Role.Admin },
+    });
   const fixture = TestBed.createComponent(Shell);
   fixture.detectChanges();
-  return { fixture, el: fixture.nativeElement as HTMLElement, layout: TestBed.inject(LayoutService) };
+  return {
+    fixture,
+    el: fixture.nativeElement as HTMLElement,
+    layout: TestBed.inject(LayoutService),
+  };
 }
 
 /** Keydown with the legacy keyCode set (CDK menus read keyCode). */
@@ -43,7 +51,9 @@ const press = (key: string, mods: KeyboardEventInit = { ctrlKey: true }) =>
   document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...mods }));
 
 describe('Shell and sidebar', () => {
-  afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => (n.innerHTML = '')));
+  afterEach(() =>
+    document.querySelectorAll('.cdk-overlay-container').forEach((n) => (n.innerHTML = '')),
+  );
 
   it('Ctrl+B and Cmd+B toggle the sidebar; the toggle button reflects the state', () => {
     const { fixture, el, layout } = render();
@@ -119,7 +129,9 @@ describe('Shell and sidebar', () => {
   it('expanded groups are accordions with only one open at a time', () => {
     const { fixture, el } = render();
     const group = (label: string) =>
-      [...el.querySelectorAll<HTMLButtonElement>('button.item')].find((b) => b.textContent?.includes(label))!;
+      [...el.querySelectorAll<HTMLButtonElement>('button.item')].find((b) =>
+        b.textContent?.includes(label),
+      )!;
     group('Leads').click();
     fixture.detectChanges();
     expect(group('Leads').getAttribute('aria-expanded')).toBe('true');
@@ -140,14 +152,16 @@ describe('Shell and sidebar', () => {
   it('the command palette filters role-visible pages', () => {
     const pm = pagesForRole(Role.ProjectManager);
     expect(pm.some((p) => p.route.startsWith('/accounts'))).toBe(false);
-    expect(filterPages(pm, 'budget')).toEqual([]); // Budget Alerts is admin-only
-    expect(filterPages(pagesForRole(Role.Admin), 'budget').map((p) => p.label)).toEqual(['Budget Alerts']);
+    expect(filterPages(pm, 'budget')).toEqual([]);
+    expect(filterPages(pagesForRole(Role.Admin), 'budget')).toEqual([]); // no budget alerts page any more
     expect(filterPages(pagesForRole(Role.Admin), 'reports').length).toBe(4); // matches the group name
   });
 });
 
 describe('Personal header', () => {
-  afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => (n.innerHTML = '')));
+  afterEach(() =>
+    document.querySelectorAll('.cdk-overlay-container').forEach((n) => (n.innerHTML = '')),
+  );
 
   it('shows who is signed in: avatar in the top bar, name and role in the sidebar', () => {
     const { el } = render();
@@ -158,8 +172,12 @@ describe('Personal header', () => {
   it('welcomes the user once per sign-in', () => {
     sessionStorage.clear();
     render();
-    const toast = () => document.querySelector('.mat-mdc-snack-bar-container')?.textContent?.replace(/\s+/g, ' ') ?? '';
-    expect(toast()).toMatch(/Good (morning|afternoon|evening), Alice\. You're signed in as Admin\./);
+    const toast = () =>
+      document.querySelector('.mat-mdc-snack-bar-container')?.textContent?.replace(/\s+/g, ' ') ??
+      '';
+    expect(toast()).toMatch(
+      /Good (morning|afternoon|evening), Alice\. You're signed in as Admin\./,
+    );
     expect(sessionStorage.getItem('crm.welcomed.1')).toBe('1');
   });
 

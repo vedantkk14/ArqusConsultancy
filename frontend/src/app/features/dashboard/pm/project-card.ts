@@ -1,14 +1,14 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { InrPipe } from '../../../shared/money/inr.pipe';
-import { BudgetBar } from '../../projects/ui/bits';
 import { PmProject } from './pm-dashboard.models';
 
-/** One of the PM's projects: name, status, the same usage bar as the detail page, and the budget triple as text. */
+/** One of the PM's projects: name, status, due date and expenses so far. A PM never sees any budget. */
 @Component({
   selector: 'app-pm-project-card',
-  imports: [BudgetBar, InrPipe, MatIconModule, RouterLink],
+  imports: [DatePipe, InrPipe, MatIconModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let p = project();
@@ -23,19 +23,14 @@ import { PmProject } from './pm-dashboard.models';
             ><i aria-hidden="true"></i>{{ p.status === 'RUNNING' ? 'Running' : 'Completed' }}</span
           >
         </span>
-        <app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" [wide]="true" />
         <dl class="triple">
           <div>
-            <dt>Sanctioned</dt>
-            <dd class="num">{{ p.sanctioned_budget | inr }}</dd>
-          </div>
-          <div>
-            <dt>Spent</dt>
+            <dt>Expenses so far</dt>
             <dd class="num">{{ p.spent | inr }}</dd>
           </div>
           <div>
-            <dt>Remaining</dt>
-            <dd class="num" [class.neg]="p.state === 'over'">{{ p.remaining | inr }}</dd>
+            <dt>Expected end</dt>
+            <dd>{{ p.expected_end_date ? (p.expected_end_date | date: 'd MMM y') : '—' }}</dd>
           </div>
         </dl>
       </a>
@@ -48,11 +43,6 @@ import { PmProject } from './pm-dashboard.models';
         >
           <mat-icon aria-hidden="true">add</mat-icon>Add expense
         </button>
-        @if (project().state !== 'ok') {
-          <a class="add ask" [routerLink]="['/projects', project().id]" [queryParams]="{ request_budget: 1 }">
-            <mat-icon aria-hidden="true">request_quote</mat-icon>Request more budget
-          </a>
-        }
       }
     </div>
   `,
@@ -89,7 +79,6 @@ import { PmProject } from './pm-dashboard.models';
       font-weight: 600;
       cursor: pointer;
     }
-    .ask { margin-top: 8px; border-color: color-mix(in srgb, var(--tint-amber-ink) 35%, transparent); background: var(--tint-amber); color: var(--tint-amber-ink); text-decoration: none; }
     .add:hover {
       background: var(--subtle);
     }
@@ -163,7 +152,7 @@ import { PmProject } from './pm-dashboard.models';
     }
     .triple {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--space-2);
       margin: 0;
     }
@@ -177,9 +166,6 @@ import { PmProject } from './pm-dashboard.models';
       font-size: var(--text-sm);
       font-weight: 600;
       overflow-wrap: anywhere;
-    }
-    .triple dd.neg {
-      color: var(--tint-rose-ink);
     }
   `,
 })

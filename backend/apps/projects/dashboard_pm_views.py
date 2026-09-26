@@ -1,10 +1,9 @@
 """GET /api/v1/dashboard/pm: the PROJECT_MANAGER home. PM-scoped, no finance, no lead data.
 
-Budget figures come from the same selectors as the project detail page, so they always agree.
+A PM never sees any budget: the dashboard shows their projects and the expenses logged on them.
 """
 
 from datetime import UTC
-from decimal import Decimal
 
 from django.db.models import Count, Sum
 from django.utils import timezone
@@ -23,12 +22,10 @@ RECENT_EXPENSE_COUNT = 8
 RECENT_ACTIVITY_COUNT = 8
 _ACTIVITY_TYPES = {
     EventType.PM_ASSIGNED: ("project_assigned", "Project assigned to you"),
-    EventType.BUDGET_CHANGED: ("budget_changed", "Sanctioned budget changed"),
     EventType.EXPENSE_ADDED: ("expense_added", "Expense added"),
     EventType.COMPLETED: ("project_completed", "Project marked Completed"),
     EventType.REOPENED: ("project_reopened", "Project reopened"),
 }
-_STATE_RANK = {"over": 0, "warn": 1}
 
 
 class _Query(serializers.Serializer):
@@ -55,36 +52,20 @@ def build_pm_dashboard(user, period: str) -> dict:
         selectors.budget_usage_qs(selectors.projects_for(user)).order_by("status", "-created_at")
     )
     rows.sort(key=lambda p: p.status != ProjectStatus.RUNNING)  # running first, stable otherwise
-    projects, alerts = [], []
-    sanctioned_total = spent_total = Decimal("0")
+    projects = []
+    spent_total = 0
     for p in rows:
-        state = selectors.budget_state(p.spent, p.sanctioned_budget)
-        item = {
-            "id": p.pk,
-            "name": p.name,
-            "client_name": p.client_name,
-            "status": p.status,
-            "sanctioned_budget": selectors.money_str(p.sanctioned_budget),
-            "spent": selectors.money_str(p.spent),
-            "remaining": selectors.money_str(selectors.remaining(p.spent, p.sanctioned_budget)),
-            "usage_pct": selectors.usage_pct(p.spent, p.sanctioned_budget),
-            "state": state,
-            "expected_end_date": p.expected_end_date,
-        }
-        projects.append(item)
-        sanctioned_total += p.sanctioned_budget
+        projects.append(
+            {
+                "id": p.pk,
+                "name": p.name,
+                "client_name": p.client_name,
+                "status": p.status,
+                "spent": selectors.money_str(p.spent),
+                "expected_end_date": p.expected_end_date,
+            }
+        )
         spent_total += p.spent
-        if state != "ok" and p.status == ProjectStatus.RUNNING:
-            alerts.append(
-                {
-                    "project_id": p.pk,
-                    "project_name": p.name,
-                    "state": state,
-                    "usage_pct": item["usage_pct"],
-                    "remaining": item["remaining"],
-                }
-            )
-    alerts.sort(key=lambda a: (_STATE_RANK[a["state"]], -Decimal(a["usage_pct"])))
 
     mine = selectors.expenses_for(user)
     in_period = selectors.active_expenses().filter(project__pm=user, spent_on__lte=rng.end)
@@ -132,14 +113,11 @@ def build_pm_dashboard(user, period: str) -> dict:
         "kpis": {
             "projects_running": running,
             "projects_completed": len(projects) - running,
-            "total_sanctioned": selectors.money_str(sanctioned_total),
             "total_spent": selectors.money_str(spent_total),
-            "total_remaining": selectors.money_str(sanctioned_total - spent_total),
             "expenses_logged_period": logged["n"],
             "expenses_amount_period": selectors.money_str(logged["total"]),
         },
         "projects": projects,
-        "alerts": alerts,
         "recent_expenses": recent,
         "recent_activity": activity,
     }

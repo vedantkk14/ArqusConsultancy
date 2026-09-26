@@ -5,7 +5,14 @@
     <span class="who sm">
       <span class="nopm">No PM</span>
       @if (canAssign() && p.status === 'RUNNING') {
-        <button type="button" class="assign" [attr.aria-label]="'Assign a project manager to ' + p.name" (click)="assign.emit(p)">Assign</button>
+        <button
+          type="button"
+          class="assign"
+          [attr.aria-label]="'Assign a project manager to ' + p.name"
+          (click)="assign.emit(p)"
+        >
+          Assign
+        </button>
       }
     </span>
   }
@@ -18,10 +25,14 @@
         <tr>
           <th>Project</th>
           <th>Project manager</th>
-          <th class="c-bar">Budget used</th>
-          <th class="r">Sanctioned</th>
-          <th class="r">Spent</th>
-          <th class="r">Remaining</th>
+          @if (showBudget()) {
+            <th class="c-bar">Budget used</th>
+            <th class="r">Total budget</th>
+          }
+          <th class="r">{{ showBudget() ? 'Spent' : 'Expenses so far' }}</th>
+          @if (showBudget()) {
+            <th class="r">Remaining</th>
+          }
           <th class="c-due">Due date</th>
         </tr>
       </thead>
@@ -29,7 +40,7 @@
         @if (skeleton()) {
           @for (i of placeholders; track i) {
             <tr class="sk" aria-hidden="true">
-              <td colspan="7">
+              <td [attr.colspan]="showBudget() ? 7 : 4">
                 <span class="sk-row">
                   <app-skeleton width="30%" height="14px" />
                   <app-skeleton width="14%" height="14px" />
@@ -46,16 +57,25 @@
                 <span class="who-t">
                   <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
                   <span class="ph">{{ p.client_name }}</span>
-                  @if (p.pending_budget_request; as r) {
-                    <span class="breq-pill"><mat-icon aria-hidden="true">request_quote</mat-icon>Asks for {{ r.amount | inrCompact }} more</span>
-                  }
                 </span>
               </td>
               <td><ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" /></td>
-              <td class="c-bar"><app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" /></td>
-              <td class="r num">{{ p.sanctioned_budget | inrCompact }}</td>
+              @if (showBudget()) {
+                <td class="c-bar">
+                  @if (p.total_budget) {
+                    <app-budget-bar [usagePct]="p.usage_pct ?? '0'" [state]="p.state ?? 'ok'" />
+                  } @else {
+                    <span class="ph">Not finalized</span>
+                  }
+                </td>
+                <td class="r num">{{ p.total_budget ? (p.total_budget | inrCompact) : '—' }}</td>
+              }
               <td class="r num">{{ p.spent | inrCompact }}</td>
-              <td class="r num" [class.neg]="p.state === 'over'">{{ p.remaining | inrCompact }}</td>
+              @if (showBudget()) {
+                <td class="r num" [class.neg]="p.state === 'over'">
+                  {{ p.remaining ? (p.remaining | inrCompact) : '—' }}
+                </td>
+              }
               <td class="c-due">
                 {{ day(p.expected_end_date) || '—' }}
                 @if (due(p); as label) {
@@ -87,15 +107,36 @@
               <span class="ph">{{ p.client_name }}</span>
             </span>
           </span>
-          @if (p.pending_budget_request; as r) {
-            <span class="breq-pill"><mat-icon aria-hidden="true">request_quote</mat-icon>Asks for {{ r.amount | inrCompact }} more</span>
+          @if (showBudget()) {
+            @if (p.total_budget) {
+              <app-budget-bar [usagePct]="p.usage_pct ?? '0'" [state]="p.state ?? 'ok'" />
+            }
+            <span class="lc-fig">
+              <span
+                ><span class="lbl">Total budget</span
+                ><strong class="num">{{
+                  p.total_budget ? (p.total_budget | inrCompact) : '—'
+                }}</strong></span
+              >
+              <span
+                ><span class="lbl">Spent</span
+                ><strong class="num">{{ p.spent | inrCompact }}</strong></span
+              >
+              <span
+                ><span class="lbl">Remaining</span
+                ><strong class="num" [class.neg]="p.state === 'over'">{{
+                  p.remaining ? (p.remaining | inrCompact) : '—'
+                }}</strong></span
+              >
+            </span>
+          } @else {
+            <span class="lc-fig">
+              <span
+                ><span class="lbl">Expenses so far</span
+                ><strong class="num">{{ p.spent | inrCompact }}</strong></span
+              >
+            </span>
           }
-          <app-budget-bar [usagePct]="p.usage_pct" [state]="p.state" />
-          <span class="lc-fig">
-            <span><span class="lbl">Sanctioned</span><strong class="num">{{ p.sanctioned_budget | inrCompact }}</strong></span>
-            <span><span class="lbl">Spent</span><strong class="num">{{ p.spent | inrCompact }}</strong></span>
-            <span><span class="lbl">Remaining</span><strong class="num" [class.neg]="p.state === 'over'">{{ p.remaining | inrCompact }}</strong></span>
-          </span>
           <span class="lc-meta">
             <ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" />
             @if (p.expected_end_date) {

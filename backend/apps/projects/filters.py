@@ -41,7 +41,11 @@ def _day_start(value: str):
 
 
 def apply_project_filters(qs: QuerySet, params, skip: tuple[str, ...] = ()) -> QuerySet:
-    """`qs` must be annotated with budget_usage_qs. Malformed values are ignored."""
+    """`qs` must be annotated with budget_usage_qs. Malformed values are ignored.
+
+    Budget-state filters (state, over_budget, near_limit) compare expenses with the deal total, so
+    the views only honour them for the Admin: a Project Manager never learns anything about budget.
+    """
     get = params.get
     if "status" not in skip and get("status"):
         wanted = [s for s in get("status").upper().split(",") if s in ProjectStatus.values]
@@ -101,8 +105,6 @@ def apply_expense_filters(qs: QuerySet, params) -> QuerySet:
         qs = qs.filter(is_void=False)
     elif state == "void":
         qs = qs.filter(is_void=True)
-    elif state == "override":
-        qs = qs.filter(is_override=True, is_void=False)
     return qs
 
 

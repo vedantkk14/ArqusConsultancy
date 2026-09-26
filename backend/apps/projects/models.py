@@ -1,4 +1,8 @@
-"""Projects and expenses (Dev B). Never store spent or remaining: they are always aggregated."""
+"""Projects and expenses (Dev B). Never store spent or remaining: they are always aggregated.
+
+A project has no budget of its own: the Admin measures expenses against the deal total from the
+accounts ledger. A Project Manager never sees any budget figure, only the expenses they log.
+"""
 
 import uuid
 from pathlib import Path
@@ -15,12 +19,6 @@ class ProjectStatus(models.TextChoices):
     COMPLETED = "COMPLETED", "Completed"
 
 
-class AlertState(models.TextChoices):
-    OK = "OK", "On track"
-    WARN = "WARN", "Near limit"
-    OVER = "OVER", "Over budget"
-
-
 class ExpenseCategory(models.TextChoices):
     MATERIALS = "MATERIALS", "Materials"
     LABOUR = "LABOUR", "Labour"
@@ -34,15 +32,11 @@ class ExpenseCategory(models.TextChoices):
 class EventType(models.TextChoices):
     CREATED = "CREATED", "Project created"
     PM_ASSIGNED = "PM_ASSIGNED", "Project manager assigned"
-    BUDGET_CHANGED = "BUDGET_CHANGED", "Budget changed"
     EXPENSE_ADDED = "EXPENSE_ADDED", "Expense added"
     EXPENSE_EDITED = "EXPENSE_EDITED", "Expense edited"
     EXPENSE_VOIDED = "EXPENSE_VOIDED", "Expense voided"
     COMPLETED = "COMPLETED", "Project completed"
     REOPENED = "REOPENED", "Project reopened"
-    BUDGET_REQUESTED = "BUDGET_REQUESTED", "Extra budget requested"
-    BUDGET_REQUEST_DECIDED = "BUDGET_DECIDED", "Budget request decided"
-    BUDGET_RELEASED = "BUDGET_RELEASED", "Unused budget released"
 
 
 class ReceiptStorage(FileSystemStorage):
@@ -72,11 +66,9 @@ class Project(TimeStampedModel):
     status = models.CharField(
         max_length=12, choices=ProjectStatus.choices, default=ProjectStatus.RUNNING
     )
-    sanctioned_budget = models.DecimalField(max_digits=12, decimal_places=2)
     start_date = models.DateField(null=True, blank=True)
     expected_end_date = models.DateField(null=True, blank=True)
     scope = models.TextField(blank=True)
-    alert_state = models.CharField(max_length=5, choices=AlertState.choices, default=AlertState.OK)
     completed_at = models.DateTimeField(null=True, blank=True)
     completed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -108,8 +100,6 @@ class Expense(TimeStampedModel):
     logged_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
-    is_override = models.BooleanField(default=False)
-    override_reason = models.CharField(max_length=300, blank=True)
     is_void = models.BooleanField(default=False)
     void_reason = models.CharField(max_length=300, blank=True)
     voided_at = models.DateTimeField(null=True, blank=True)
@@ -145,33 +135,3 @@ class ProjectEvent(models.Model):
 
     def __str__(self) -> str:
         return f"{self.type} on project {self.project_id}"
-
-
-class BudgetRequest(models.Model):
-    """A PM asks the Admin for more budget on a running project. One pending request at a time."""
-
-    class Status(models.TextChoices):
-        PENDING = "PENDING", "Pending"
-        APPROVED = "APPROVED", "Approved"
-        REJECTED = "REJECTED", "Rejected"
-
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="budget_requests")
-    amount = models.DecimalField(max_digits=12, decimal_places=2)  # extra budget asked for
-    reason = models.CharField(max_length=500)
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
-    requested_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
-    )
-    decided_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
-    )
-    decided_at = models.DateTimeField(null=True, blank=True)
-    decision_note = models.CharField(max_length=300, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-created_at", "-id"]
-        indexes = [models.Index(fields=["status", "project"], name="budget_req_status")]
-
-    def __str__(self) -> str:
-        return f"{self.amount} for project {self.project_id} ({self.status})"

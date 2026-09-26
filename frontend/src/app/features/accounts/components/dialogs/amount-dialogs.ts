@@ -11,7 +11,9 @@ import { MoneyInput, isPositiveMoney } from '../../ui/money-input';
 import { fieldError } from '../../ui/open';
 
 export interface AmountDialogData {
-  ledger: Pick<LedgerDetail, 'id' | 'client' | 'total' | 'received'> & { proposed_amount?: string | null };
+  ledger: Pick<LedgerDetail, 'id' | 'client' | 'total' | 'received'> & {
+    proposed_amount?: string | null;
+  };
 }
 
 /** Admin: confirm the final Total Amount of a won deal. Finalizing twice shows a clear message, no crash. */
@@ -24,13 +26,23 @@ export interface AmountDialogData {
     <app-dialog-head
       headingId="dlg-title"
       title="Finalize amount"
-      [subtitle]="data.ledger.client + ' · proposed ' + ((data.ledger.proposed_amount ?? data.ledger.total) | inr)"
+      [subtitle]="
+        data.ledger.client +
+        ' · proposed ' +
+        (data.ledger.proposed_amount ?? data.ledger.total | inr)
+      "
       (closed)="ref.close()"
     />
     <form (ngSubmit)="submit()" novalidate>
       <div class="field">
         <label for="fz-amount">Final amount</label>
-        <app-money-input inputId="fz-amount" name="amount" [(ngModel)]="amount" [invalid]="!!amountError()" [describedBy]="amountError() ? 'fz-amount-err' : null" />
+        <app-money-input
+          inputId="fz-amount"
+          name="amount"
+          [(ngModel)]="amount"
+          [invalid]="!!amountError()"
+          [describedBy]="amountError() ? 'fz-amount-err' : null"
+        />
         <p class="hint">Payments can be recorded once the amount is final.</p>
         @if (amountError()) {
           <p class="error" id="fz-amount-err">{{ amountError() }}</p>
@@ -41,13 +53,19 @@ export interface AmountDialogData {
         <textarea id="fz-note" name="note" maxlength="300" [(ngModel)]="note"></textarea>
       </div>
       @if (already()) {
-        <p class="note warn" role="alert">This deal is already finalized. Refresh the page to see the final amount.</p>
+        <p class="note warn" role="alert">
+          This deal is already finalized. Refresh the page to see the final amount.
+        </p>
       } @else if (error()) {
         <p class="error" role="alert">{{ error() }}</p>
       }
       <div class="actions">
-        <button matButton type="button" (click)="ref.close(already())">{{ already() ? 'Close' : 'Cancel' }}</button>
-        <button matButton="filled" type="submit" [disabled]="saving() || already()">{{ saving() ? 'Finalizing…' : 'Confirm' }}</button>
+        <button matButton type="button" (click)="ref.close(already())">
+          {{ already() ? 'Close' : 'Cancel' }}
+        </button>
+        <button matButton="filled" type="submit" [disabled]="saving() || already()">
+          {{ saving() ? 'Finalizing…' : 'Confirm' }}
+        </button>
       </div>
     </form>
   `,
@@ -106,15 +124,29 @@ export class FinalizeDialog {
     <form (ngSubmit)="submit()" novalidate>
       <div class="field">
         <label for="rv-amount">New total</label>
-        <app-money-input inputId="rv-amount" name="amount" [(ngModel)]="amount" [invalid]="!!amountError()" [describedBy]="'rv-hint' + (amountError() ? ' rv-amount-err' : '')" />
-        <p class="hint" id="rv-hint">Already received {{ data.ledger.received | inr }}. The total cannot go below that, or below the project's sanctioned budget.</p>
+        <app-money-input
+          inputId="rv-amount"
+          name="amount"
+          [(ngModel)]="amount"
+          [invalid]="!!amountError()"
+          [describedBy]="'rv-hint' + (amountError() ? ' rv-amount-err' : '')"
+        />
+        <p class="hint" id="rv-hint">
+          Already received {{ data.ledger.received | inr }}. The total cannot go below that.
+        </p>
         @if (amountError()) {
           <p class="error" id="rv-amount-err">{{ amountError() }}</p>
         }
       </div>
       <div class="field">
         <label for="rv-reason">Reason</label>
-        <textarea id="rv-reason" name="reason" maxlength="300" [(ngModel)]="reason" [attr.aria-invalid]="reasonError() ? true : null"></textarea>
+        <textarea
+          id="rv-reason"
+          name="reason"
+          maxlength="300"
+          [(ngModel)]="reason"
+          [attr.aria-invalid]="reasonError() ? true : null"
+        ></textarea>
         @if (reasonError()) {
           <p class="error">{{ reasonError() }}</p>
         }
@@ -124,7 +156,9 @@ export class FinalizeDialog {
       }
       <div class="actions">
         <button matButton type="button" (click)="ref.close()">Cancel</button>
-        <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save total' }}</button>
+        <button matButton="filled" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save total' }}
+        </button>
       </div>
     </form>
   `,

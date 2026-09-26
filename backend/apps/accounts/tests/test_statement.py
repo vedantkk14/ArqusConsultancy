@@ -1,5 +1,5 @@
 # ruff: noqa: E501
-"""Statements and receipts: correct figures, and never any sanctioned budget, expenses or margin."""
+"""Statements and receipts: correct figures, and never any budget, expenses or margin."""
 
 import csv
 import io
@@ -11,7 +11,7 @@ import pytest
 from apps.accounts import selectors, services
 from apps.projects.models import Expense, Project
 
-from .conftest import BUDGET, LEAD_PHONE, LEDGERS, PAYMENTS
+from .conftest import LEAD_PHONE, LEDGERS, PAYMENTS
 
 FORBIDDEN_KEYS = (
     "sanction",
@@ -41,11 +41,9 @@ def keys(payload, path="$"):
 
 @pytest.fixture
 def deal(admin, make_ledger, make_payment):
-    """A ledger with a linked project (budget 60,000, an expense) and three payments plus one void."""
+    """A ledger with a linked project (with an expense) and three payments plus one void."""
     ledger = make_ledger()
-    project = Project.objects.create(
-        name="Turf", client_name="C", lead=ledger.lead, sanctioned_budget=Decimal(BUDGET)
-    )
+    project = Project.objects.create(name="Turf", client_name="C", lead=ledger.lead)
     Expense.objects.create(
         project=project,
         amount=Decimal("12345.67"),
@@ -119,7 +117,6 @@ def test_statement_never_leaks_budget_expenses_margin_or_exec_data(client_for, a
     for res in (json_res, csv_res):
         raw = res.content.decode("utf-8-sig").lower()
         for needle in (
-            "61234",
             "12345.67",
             "12,345",
             "margin",

@@ -24,11 +24,19 @@ import { PRINT_CSS, enablePrintMode } from '../ui/print';
 
 /**
  * Customer statement: deal total, every active payment as a credit and the running balance. It reads only the
- * statement endpoint, so it can never show the sanctioned budget, expenses or margin. `?ledger=<id>` preselects.
+ * statement endpoint, so it can never show expenses or margin. `?ledger=<id>` preselects.
  */
 @Component({
   selector: 'app-statement-page',
-  imports: [EmptyState, ErrorState, InrPipe, MatAutocompleteModule, MatButtonModule, MatIconModule, Skeleton],
+  imports: [
+    EmptyState,
+    ErrorState,
+    InrPipe,
+    MatAutocompleteModule,
+    MatButtonModule,
+    MatIconModule,
+    Skeleton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   templateUrl: './statement-page.html',
@@ -41,7 +49,9 @@ export class StatementPage {
   private readonly api = inject(AccountsApi);
   private readonly snack = inject(MatSnackBar);
 
-  private readonly queryMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
+  private readonly queryMap = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
   protected readonly ledgerId = computed(() => Number(this.queryMap().get('ledger')) || null);
   protected readonly from = computed(() => this.queryMap().get('from') ?? '');
   protected readonly to = computed(() => this.queryMap().get('to') ?? '');
@@ -66,10 +76,12 @@ export class StatementPage {
 
   protected searchClients(q: string): void {
     this.search.set(q);
-    this.api.ledgers({ q: q.trim(), finalized: 'true', page_size: 20, ordering: 'client' }).subscribe({
-      next: (res) => this.options.set(res.results),
-      error: () => this.options.set([]),
-    });
+    this.api
+      .ledgers({ q: q.trim(), finalized: 'true', page_size: 20, ordering: 'client' })
+      .subscribe({
+        next: (res) => this.options.set(res.results),
+        error: () => this.options.set([]),
+      });
   }
 
   protected pick(row: LedgerRow): void {
@@ -87,8 +99,12 @@ export class StatementPage {
   }
 
   private navigate(patch: Record<string, string>): void {
-    const queryParams = Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, v === '' ? null : v]));
-    void this.router.navigate([], { relativeTo: this.route, queryParams, queryParamsHandling: 'merge' }).then(() => this.load());
+    const queryParams = Object.fromEntries(
+      Object.entries(patch).map(([k, v]) => [k, v === '' ? null : v]),
+    );
+    void this.router
+      .navigate([], { relativeTo: this.route, queryParams, queryParamsHandling: 'merge' })
+      .then(() => this.load());
   }
 
   protected load(): void {
@@ -133,7 +149,8 @@ export class StatementPage {
         a.click();
         URL.revokeObjectURL(url);
       },
-      error: () => this.snack.open("Couldn't export the statement. Try again.", 'Dismiss', { duration: 5000 }),
+      error: () =>
+        this.snack.open("Couldn't export the statement. Try again.", 'Dismiss', { duration: 5000 }),
     });
   }
 }

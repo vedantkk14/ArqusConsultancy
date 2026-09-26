@@ -30,7 +30,6 @@ from .exceptions import (
     CannotSelfDeactivate,
     InvalidCredentials,
     LastAdmin,
-    NotASalesExec,
     ResetLinkInvalid,
 )
 
@@ -192,7 +191,6 @@ def create_user(data: dict):
         phone=data.get("phone", ""),
         role=data["role"],
         must_change_password=data.get("must_change_password", True),
-        **({"commission_rate": data["commission_rate"]} if "commission_rate" in data else {}),
     )
     if user.role == User.Role.ADMIN:
         user.is_staff = True  # lets an admin use /admin/, like the seeded admin
@@ -354,14 +352,6 @@ def admin_reset_password(user) -> str:
     return password
 
 
-def set_commission_rate(user, rate):
-    if user.role != User.Role.SALES_EXEC:
-        raise NotASalesExec()
-    user.commission_rate = rate
-    user.save(update_fields=["commission_rate"])
-    return user
-
-
 def _model(app_label: str, name: str):
     from django.apps import apps
 
@@ -372,13 +362,13 @@ def _model(app_label: str, name: str):
 
 
 def assignments_overview(include_pms: bool = True) -> dict:
-    """Open and overdue leads per exec, running and over-budget projects per PM.
+    """Open and overdue leads per exec, running projects per PM.
 
     Other apps' models are read through apps.get_model, so this works whatever is merged: a missing
     model gives zeros and `data_sources[...] = False`.
     """
     from django.core.exceptions import FieldError
-    from django.db.models import Count, F, Q
+    from django.db.models import Count, Q
     from django.utils import timezone
 
     execs = list(
@@ -420,16 +410,11 @@ def assignments_overview(include_pms: bool = True) -> dict:
     project_model = _model("projects", "Project")
     if project_model is not None and include_pms:
         try:
-            from apps.projects import selectors as project_selectors
-
             rows = (
-                project_selectors.budget_usage_qs(project_model.objects.exclude(status="COMPLETED"))
+                project_model.objects.exclude(status="COMPLETED")
                 .order_by()
                 .values("pm")
-                .annotate(
-                    running=Count("id"),
-                    over=Count("id", filter=Q(spent__gt=F("sanctioned_budget"))),
-                )
+                .annotate(running=Count("id"))
             )
             project_counts = {r["pm"]: r for r in rows}
             projects_ok = True
@@ -452,7 +437,6 @@ def assignments_overview(include_pms: bool = True) -> dict:
                 "id": u.pk,
                 "name": u.display_name,
                 "running_projects": project_counts.get(u.pk, {}).get("running", 0),
-                "over_budget": project_counts.get(u.pk, {}).get("over", 0),
             }
             for u in pms
         ],

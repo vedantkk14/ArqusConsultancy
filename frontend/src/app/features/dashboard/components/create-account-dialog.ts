@@ -6,7 +6,6 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { ApiService } from '../../../core/api/api.service';
 import { ApiError, ROLE_LABELS, Role } from '../../../core/models';
-import { isValidRate } from '../../team/team.models';
 import { ROLE_HINTS, suggestUsername } from './account-utils';
 
 export interface CreatedAccount {
@@ -17,7 +16,15 @@ export interface CreatedAccount {
   must_change_password: boolean;
 }
 
-const FIELDS = ['first_name', 'last_name', 'email', 'phone', 'username', 'role', 'commission_rate', 'password'] as const;
+const FIELDS = [
+  'first_name',
+  'last_name',
+  'email',
+  'phone',
+  'username',
+  'role',
+  'password',
+] as const;
 
 /** Admin creates a login for any role. Ends on a "created" view with the sign-in details to hand over. */
 @Component({
@@ -31,7 +38,10 @@ export class CreateAccountDialog {
   private readonly api = inject(ApiService);
   private readonly ref = inject(MatDialogRef<CreateAccountDialog, CreatedAccount>);
 
-  protected readonly roles = Object.values(Role).map((value) => ({ value, label: ROLE_LABELS[value] }));
+  protected readonly roles = Object.values(Role).map((value) => ({
+    value,
+    label: ROLE_LABELS[value],
+  }));
   protected readonly hints = ROLE_HINTS;
   protected readonly labels = ROLE_LABELS;
   protected readonly showPassword = signal(false);
@@ -48,16 +58,18 @@ export class CreateAccountDialog {
     last_name: ['', [Validators.required, Validators.maxLength(150)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', Validators.maxLength(20)],
-    username: ['', [Validators.required, Validators.pattern(/^[\w.@+-]+$/), Validators.maxLength(150)]],
+    username: [
+      '',
+      [Validators.required, Validators.pattern(/^[\w.@+-]+$/), Validators.maxLength(150)],
+    ],
     role: ['' as Role | '', Validators.required],
     password: ['', Validators.required],
-    commission_rate: ['0.00'],
     must_change_password: [true],
   });
 
-  private readonly values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
-  /** The commission rate only exists for sales executives. */
-  protected readonly isExec = computed(() => this.values().role === Role.SalesExec);
+  private readonly values = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
   protected readonly roleHint = computed(() => {
     const role = this.values().role as Role | '';
     return role ? this.hints[role] : 'Choose what this person can do.';
@@ -74,7 +86,6 @@ export class CreateAccountDialog {
     if (e['required']) return key === 'role' ? 'Choose a role.' : 'This is required.';
     if (e['email']) return 'Enter a valid email address.';
     if (e['pattern']) return 'Use letters, numbers and . _ - @ + only.';
-    if (e['rate']) return 'Enter 0 to 100, up to two decimals.';
     return 'Check this field.';
   }
 
@@ -98,15 +109,9 @@ export class CreateAccountDialog {
       return;
     }
     const v = this.form.getRawValue();
-    if (this.isExec() && !isValidRate(v.commission_rate)) {
-      this.form.controls.commission_rate.setErrors({ rate: true });
-      this.focusFirstInvalid();
-      return;
-    }
     this.lastPassword = v.password;
     this.saving.set(true);
-    const { commission_rate, ...rest } = v;
-    const body = { ...rest, first_name: v.first_name.trim(), last_name: v.last_name.trim(), ...(this.isExec() ? { commission_rate } : {}) };
+    const body = { ...v, first_name: v.first_name.trim(), last_name: v.last_name.trim() };
     this.api.post<CreatedAccount>('/users', body).subscribe({
       next: (user) => {
         this.saving.set(false);
@@ -122,7 +127,9 @@ export class CreateAccountDialog {
   protected signInDetails(): string {
     const user = this.created();
     const username = this.form.controls.username.value;
-    return user ? `ARQUS sign-in\nName: ${user.name}\nUsername: ${username}\nEmail: ${user.email}\nPassword: ${this.lastPassword}` : '';
+    return user
+      ? `ARQUS sign-in\nName: ${user.name}\nUsername: ${username}\nEmail: ${user.email}\nPassword: ${this.lastPassword}`
+      : '';
   }
 
   protected async copy(): Promise<void> {
@@ -140,7 +147,7 @@ export class CreateAccountDialog {
     this.submitted.set(false);
     this.usernameEdited = false;
     this.showPassword.set(false);
-    this.form.reset({ must_change_password: true, commission_rate: '0.00' });
+    this.form.reset({ must_change_password: true });
   }
 
   protected done(): void {

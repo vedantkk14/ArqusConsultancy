@@ -9,7 +9,11 @@ import { RecordPaymentForm, proofProblem } from './record-payment-form';
 async function setup(opts: { ledger?: typeof OPTION | null; locked?: boolean } = {}) {
   const api = new FakeAccountsApi();
   TestBed.configureTestingModule({
-    providers: [provideHttpClient(), provideHttpClientTesting(), { provide: AccountsApi, useValue: api }],
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      { provide: AccountsApi, useValue: api },
+    ],
   });
   const fixture: ComponentFixture<RecordPaymentForm> = TestBed.createComponent(RecordPaymentForm);
   fixture.componentRef.setInput('ledger', opts.ledger === undefined ? OPTION : opts.ledger);
@@ -57,7 +61,7 @@ describe('RecordPaymentForm', () => {
     const { api, fixture, el } = await setup();
     await submit(fixture);
     expect(text(el)).toContain('Enter the amount.');
-    expect(text(el)).toContain('Enter the bank reference (utr).');
+    expect(text(el)).toContain('Enter the bank reference (utr)/ transaction id.');
     expect(document.activeElement?.id).toBe('rp-amount');
     expect(api.actions.length).toBe(0);
     // cash needs no reference
@@ -72,7 +76,11 @@ describe('RecordPaymentForm', () => {
 
   it('the reference label follows the mode', async () => {
     const { fixture, el } = await setup();
-    for (const [mode, label] of [['UPI', 'UPI transaction ID'], ['CHEQUE', 'Cheque number'], ['CARD', 'Card approval code']]) {
+    for (const [mode, label] of [
+      ['UPI', 'UPI transaction ID'],
+      ['CHEQUE', 'Cheque number'],
+      ['CARD', 'Card approval code'],
+    ]) {
       ($(el, `#rp-mode-${mode}`) as HTMLInputElement).click();
       await flush(fixture);
       expect(text(el.querySelector('label[for=rp-reference]'))).toBe(label);
@@ -80,8 +88,12 @@ describe('RecordPaymentForm', () => {
   });
 
   it('rejects a wrong file type and an oversize file, accepts a valid one with a preview', async () => {
-    expect(proofProblem({ name: 'a.txt', type: 'text/plain', size: 10 })).toBe('Upload a JPG, PNG, WebP or PDF proof.');
-    expect(proofProblem({ name: 'a.png', type: 'image/png', size: 5 * 1024 * 1024 + 1 })).toBe('The proof is larger than 5 MB.');
+    expect(proofProblem({ name: 'a.txt', type: 'text/plain', size: 10 })).toBe(
+      'Upload a JPG, PNG, WebP or PDF proof.',
+    );
+    expect(proofProblem({ name: 'a.png', type: 'image/png', size: 5 * 1024 * 1024 + 1 })).toBe(
+      'The proof is larger than 5 MB.',
+    );
     expect(proofProblem({ name: 'a.pdf', type: 'application/pdf', size: 1000 })).toBe('');
     const { fixture, el } = await setup();
     const chooser = el.querySelectorAll<HTMLInputElement>('input[type=file]')[1];
@@ -101,7 +113,12 @@ describe('RecordPaymentForm', () => {
 
   it('overpayment shows the outstanding balance inline', async () => {
     const { api, fixture, el } = await setup();
-    api.uploadResult = throwError(() => ({ status: 409, code: 'overpayment', message: 'x', details: { outstanding: '60000.00' } }));
+    api.uploadResult = throwError(() => ({
+      status: 409,
+      code: 'overpayment',
+      message: 'x',
+      details: { outstanding: '60000.00' },
+    }));
     await type(fixture, '#rp-amount', '70000');
     await type(fixture, '#rp-reference', 'UTR9');
     await submit(fixture);
@@ -110,7 +127,12 @@ describe('RecordPaymentForm', () => {
 
   it('not_finalized shows a clear message', async () => {
     const { api, fixture, el } = await setup();
-    api.uploadResult = throwError(() => ({ status: 409, code: 'not_finalized', message: 'x', details: {} }));
+    api.uploadResult = throwError(() => ({
+      status: 409,
+      code: 'not_finalized',
+      message: 'x',
+      details: {},
+    }));
     await type(fixture, '#rp-amount', '10');
     await type(fixture, '#rp-reference', 'UTR9');
     await submit(fixture);
@@ -119,7 +141,12 @@ describe('RecordPaymentForm', () => {
 
   it('duplicate_payment asks for confirmation and "Record anyway" resends with confirm_duplicate', async () => {
     const { api, fixture, el, saved } = await setup();
-    api.uploadResult = throwError(() => ({ status: 409, code: 'duplicate_payment', message: 'x', details: {} }));
+    api.uploadResult = throwError(() => ({
+      status: 409,
+      code: 'duplicate_payment',
+      message: 'x',
+      details: {},
+    }));
     await type(fixture, '#rp-amount', '10');
     await type(fixture, '#rp-reference', 'UTR9');
     await submit(fixture);
@@ -154,7 +181,12 @@ describe('RecordPaymentForm', () => {
 
   it('maps server field errors onto the fields and focuses the first invalid one', async () => {
     const { api, fixture, el } = await setup();
-    api.uploadResult = throwError(() => ({ status: 400, code: 'validation_error', message: 'x', details: { received_on: ['The date cannot be in the future.'] } }));
+    api.uploadResult = throwError(() => ({
+      status: 400,
+      code: 'validation_error',
+      message: 'x',
+      details: { received_on: ['The date cannot be in the future.'] },
+    }));
     await type(fixture, '#rp-amount', '10');
     await type(fixture, '#rp-reference', 'UTR9');
     await submit(fixture);

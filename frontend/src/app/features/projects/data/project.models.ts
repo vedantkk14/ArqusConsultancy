@@ -18,27 +18,12 @@ export interface Person {
   name: string;
 }
 
-export type ProjectAction =
-  | 'add_expense'
-  | 'complete'
-  | 'adjust_budget'
-  | 'reassign'
-  | 'edit'
-  | 'reopen'
-  | 'request_budget'
-  | 'decide_budget_request'
-  | 'release_budget';
+export type ProjectAction = 'add_expense' | 'complete' | 'reassign' | 'edit' | 'reopen';
 
-/** A PM's request for more budget, waiting for the Admin. */
-export interface PendingBudgetRequest {
-  id: number;
-  amount: string;
-  reason: string;
-  requested_by: string | null;
-  created_at: string;
-}
-
-/** What a project manager may see. Never gains a finance or lead field. */
+/**
+ * What a project manager may see: the project and the expenses logged so far. Never gains a
+ * budget, finance or lead field. The budget fields are Admin only (the deal total).
+ */
 export interface ProjectListItem {
   id: number;
   name: string;
@@ -51,12 +36,16 @@ export interface ProjectListItem {
   pm_name: string | null;
   /** Admin only. */
   pm?: Person | null;
-  sanctioned_budget: string;
+  /** Expenses so far (non-void). */
   spent: string;
-  remaining: string;
-  usage_pct: string;
-  state: BudgetState;
-  pending_budget_request?: PendingBudgetRequest | null;
+  /** Admin only: the finalized deal total. Null until the deal is finalized. */
+  total_budget?: string | null;
+  /** Admin only: total budget minus expenses so far (negative when overspent). */
+  remaining?: string | null;
+  /** Admin only. */
+  usage_pct?: string;
+  /** Admin only. */
+  state?: BudgetState;
 }
 
 /** Admin only: ledger figures from accounts. Null until accounts can answer. */
@@ -65,7 +54,6 @@ export interface Finance {
   received: string | null;
   outstanding: string | null;
   finalized: boolean;
-  planned_margin: string | null;
   live_margin: string | null;
 }
 
@@ -80,13 +68,13 @@ export interface ProjectDetail extends ProjectListItem {
 export interface ProjectSummary {
   running: number;
   completed: number;
-  ok: number;
-  warn: number;
-  over: number;
-  /** Admin only. */
-  no_pm?: number;
-  sanctioned_total: string;
   spent_total: string;
+  /** Admin only: budget states against the deal total. */
+  ok?: number;
+  warn?: number;
+  over?: number;
+  no_pm?: number;
+  budget_total?: string;
 }
 
 export interface ConvertibleLead {
@@ -96,7 +84,6 @@ export interface ConvertibleLead {
   won_at: string | null;
   proposed_amount: string | null;
   total_amount: string | null;
-  suggested_budget: string | null;
   ineligible_reason: 'not_won' | 'project_exists' | 'not_finalized' | null;
   project_id: number | null;
 }
@@ -104,7 +91,6 @@ export interface ConvertibleLead {
 export interface ConvertInput {
   lead: number;
   name: string;
-  sanctioned_budget: string;
   pm: number | null;
   start_date: string | null;
   expected_end_date: string | null;
@@ -119,9 +105,9 @@ export interface Manager extends Person {
 
 export interface ProjectFilters {
   q: string;
-  /** '', 'ok', 'warn', 'over' */
+  /** Admin only: '', 'ok', 'warn', 'over' (expenses against the deal total). */
   state: string;
-  /** Dashboard links: 'true' means warn + over / warn only / no manager. */
+  /** Admin dashboard links: 'true' means warn + over / warn only / no manager. */
   over_budget: string;
   near_limit: string;
   no_pm: string;
@@ -145,11 +131,16 @@ export const EMPTY_FILTERS: ProjectFilters = {
 };
 
 export const ORDERINGS = [
-  { value: '-usage_pct', label: 'Most budget used' },
   { value: '-spent', label: 'Highest spend' },
   { value: 'expected_end_date', label: 'Due soonest' },
   { value: '-created_at', label: 'Newest' },
   { value: 'name', label: 'Name A to Z' },
+] as const;
+
+/** Admin only: ordering by budget used against the deal total. */
+export const ADMIN_ORDERINGS = [
+  { value: '-usage_pct', label: 'Most budget used' },
+  ...ORDERINGS,
 ] as const;
 
 // ---- Expenses --------------------------------------------------------------------------------------
@@ -180,9 +171,6 @@ export interface Expense {
   receipt_type: string;
   is_void: boolean;
   void_reason: string;
-  is_override: boolean;
-  /** Admin only. */
-  override_reason?: string;
   logged_by: Person | null;
   created_at: string;
   can_edit: boolean;
@@ -225,15 +213,12 @@ export interface ExpenseInput {
   spent_on: string;
   vendor: string;
   description: string;
-  admin_override?: boolean;
-  override_reason?: string;
   receipt?: File | null;
 }
 
 export type EventType =
   | 'CREATED'
   | 'PM_ASSIGNED'
-  | 'BUDGET_CHANGED'
   | 'EXPENSE_ADDED'
   | 'EXPENSE_EDITED'
   | 'EXPENSE_VOIDED'
@@ -246,10 +231,6 @@ export interface ProjectEvent {
   actor_name: string | null;
   data: Record<string, unknown>;
   created_at: string;
-}
-
-export interface AlertProject extends ProjectListItem {
-  over_by: string;
 }
 
 /** Money helpers: string-only, never floats. */

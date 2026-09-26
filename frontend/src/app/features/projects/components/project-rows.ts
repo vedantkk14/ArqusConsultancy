@@ -8,10 +8,21 @@ import { ProjectListItem } from '../data/project.models';
 import { BudgetBar, PersonAvatar } from '../ui/bits';
 import { dueLabel, formatDay } from '../ui/business-time';
 
-/** Projects as a table (>= 768px) or stacked cards (phones). The name is the link; buttons stay clickable. */
+/**
+ * Projects as a table (>= 768px) or stacked cards (phones). The name is the link; buttons stay clickable.
+ * The budget columns (the deal total) are Admin only; a PM sees the expenses so far.
+ */
 @Component({
   selector: 'app-project-rows',
-  imports: [MatIconModule, BudgetBar, InrCompactPipe, NgTemplateOutlet, PersonAvatar, RouterLink, Skeleton],
+  imports: [
+    MatIconModule,
+    BudgetBar,
+    InrCompactPipe,
+    NgTemplateOutlet,
+    PersonAvatar,
+    RouterLink,
+    Skeleton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-rows.html',
   styleUrl: './project-rows.scss',
@@ -21,6 +32,8 @@ export class ProjectRows {
   readonly layout = input<'table' | 'cards'>('table');
   /** Admin: shows "Assign" next to a missing project manager. */
   readonly canAssign = input(false);
+  /** Admin: total budget, remaining and a usage bar. */
+  readonly showBudget = input(false);
   readonly skeleton = input(false);
   readonly now = input<Date>(new Date());
   readonly assign = output<ProjectListItem>();

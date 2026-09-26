@@ -2,27 +2,40 @@
   @if (e.is_void) {
     <span class="tag void" [attr.title]="e.void_reason">Void</span>
   }
-  @if (e.is_override) {
-    <span class="tag over" [attr.title]="e.override_reason || null">Override</span>
-  }
 </ng-template>
 
 <ng-template #acts let-e>
   <span class="acts">
     @if (e.has_receipt) {
-      <button type="button" class="ib" [attr.aria-label]="'View receipt: ' + label(e)" (click)="emit('receipt', e)">
-        <mat-icon aria-hidden="true">{{ e.receipt_kind === 'pdf' ? 'picture_as_pdf' : 'image' }}</mat-icon>
+      <button
+        type="button"
+        class="ib"
+        [attr.aria-label]="'View receipt: ' + label(e)"
+        (click)="emit('receipt', e)"
+      >
+        <mat-icon aria-hidden="true">{{
+          e.receipt_kind === 'pdf' ? 'picture_as_pdf' : 'image'
+        }}</mat-icon>
       </button>
     }
     @if (e.can_edit) {
-      <button type="button" class="ib" [matMenuTriggerFor]="more" [attr.aria-label]="'More actions: ' + label(e)">
+      <button
+        type="button"
+        class="ib"
+        [matMenuTriggerFor]="more"
+        [attr.aria-label]="'More actions: ' + label(e)"
+      >
         <mat-icon aria-hidden="true">more_vert</mat-icon>
       </button>
       <mat-menu #more="matMenu" xPosition="before">
         @if (allowEdit()) {
-          <button mat-menu-item type="button" (click)="emit('edit', e)"><mat-icon>edit</mat-icon>Edit</button>
+          <button mat-menu-item type="button" (click)="emit('edit', e)">
+            <mat-icon>edit</mat-icon>Edit
+          </button>
         }
-        <button mat-menu-item type="button" (click)="emit('void', e)"><mat-icon>block</mat-icon>Void…</button>
+        <button mat-menu-item type="button" (click)="emit('void', e)">
+          <mat-icon>block</mat-icon>Void…
+        </button>
       </mat-menu>
     }
   </span>
@@ -62,9 +75,14 @@
           @for (e of rows(); track e.id) {
             <tr [class.is-void]="e.is_void">
               <td class="nw" [attr.title]="full(e.created_at)">{{ day(e.spent_on) }}</td>
-              <td><span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span></td>
+              <td>
+                <span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span>
+              </td>
               <td class="det">
-                <span class="det-t">{{ e.vendor || e.description || '—' }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }" /></span>
+                <span class="det-t"
+                  >{{ e.vendor || e.description || '—'
+                  }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }"
+                /></span>
                 @if (e.vendor && e.description) {
                   <span class="ph">{{ e.description }}</span>
                 }
@@ -73,15 +91,23 @@
                 }
               </td>
               @if (showProject()) {
-                <td><a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a></td>
+                <td>
+                  <a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a>
+                </td>
                 <td class="c-by">
                   @if (e.logged_by) {
-                    <span class="who"><app-person-avatar [name]="e.logged_by.name" [size]="24" />{{ e.logged_by.name }}</span>
+                    <span class="who"
+                      ><app-person-avatar [name]="e.logged_by.name" [size]="24" />{{
+                        e.logged_by.name
+                      }}</span
+                    >
                   }
                 </td>
               }
               <td class="r num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</td>
-              <td class="r"><ng-container *ngTemplateOutlet="acts; context: { $implicit: e }" /></td>
+              <td class="r">
+                <ng-container *ngTemplateOutlet="acts; context: { $implicit: e }" />
+              </td>
             </tr>
           }
         }
@@ -104,7 +130,10 @@
             <span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span>
             <strong class="num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</strong>
           </span>
-          <span class="det-t">{{ e.vendor || e.description || '—' }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }" /></span>
+          <span class="det-t"
+            >{{ e.vendor || e.description || '—'
+            }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }"
+          /></span>
           @if (e.vendor && e.description) {
             <span class="ph">{{ e.description }}</span>
           }
@@ -121,7 +150,9 @@
             }
           </span>
           @if (e.has_receipt || e.can_edit) {
-            <span class="lc-acts"><ng-container *ngTemplateOutlet="acts; context: { $implicit: e }" /></span>
+            <span class="lc-acts"
+              ><ng-container *ngTemplateOutlet="acts; context: { $implicit: e }"
+            /></span>
           }
         </li>
       }

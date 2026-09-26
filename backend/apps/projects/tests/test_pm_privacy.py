@@ -1,7 +1,7 @@
 """Privacy-shield leak tests (owner: Dev B).
 
-Rule: a PROJECT_MANAGER never sees the Total Project Amount, lead data or payments.
-They see only the Sanctioned Budget on their own projects. See docs/ARCHITECTURE.md.
+Rule: a PROJECT_MANAGER never sees any budget, the Total Project Amount, lead data or payments.
+They see their own projects and the expenses logged on them. See docs/ARCHITECTURE.md.
 """
 
 import pytest
@@ -13,7 +13,7 @@ from .conftest import BASE, EXPENSES, LEAD_PHONE, TOTAL, assert_no_leak, expense
 
 @pytest.fixture
 def full_project(project, pm1, make_expense, admin):
-    """A project with a normal, a voided and an overridden expense, so every payload has content."""
+    """A project with a normal and a voided expense, so every payload has content."""
     make_expense(pm1, "1000.00")
     void = make_expense(pm1, "500.00")
     services.void_expense(void.pk, admin, "typo")
@@ -48,8 +48,7 @@ def test_pm_response_has_exactly_the_allowed_keys(client_for, pm1, full_project)
     body = client_for(pm1).get(f"{BASE}/{full_project.pk}").json()
     assert set(body) == {
         "id", "name", "client_name", "status", "start_date", "expected_end_date", "completed_at",
-        "created_at", "pm_name", "sanctioned_budget", "spent", "remaining", "usage_pct", "state",
-        "scope", "allowed_actions", "pending_budget_request",
+        "created_at", "pm_name", "spent", "scope", "allowed_actions",
     }  # fmt: skip
 
 
@@ -95,12 +94,11 @@ def test_pm_write_responses_do_not_leak(client_for, pm1, full_project):
 
 def test_pm_error_bodies_do_not_leak_the_total(client_for, pm1, full_project):
     client = client_for(pm1)
-    over = client.post(
+    big = client.post(
         f"{BASE}/{full_project.pk}/expenses", expense_form(amount="9999999.00"), format="multipart"
     )
-    assert over.status_code == 409 and over.json()["error"]["code"] == "over_budget"
-    assert_no_leak(over)
-    assert set(over.json()["error"]["details"]) == {"remaining"}
+    assert big.status_code == 201  # never blocked: a PM gets no hint of any budget
+    assert_no_leak(big)
     bad = client.post(
         f"{BASE}/{full_project.pk}/expenses", expense_form(amount="-5"), format="multipart"
     )
@@ -112,7 +110,6 @@ def test_pm_error_bodies_do_not_leak_the_total(client_for, pm1, full_project):
     assert locked.status_code == 409 and locked.json()["error"]["code"] == "project_completed"
     assert_no_leak(locked)
     for url, body in (
-        (f"{BASE}/{full_project.pk}/budget", {"sanctioned_budget": "1.00", "reason": "x"}),
         (f"{BASE}/{full_project.pk}/reopen", {"reason": "x"}),
         (f"{BASE}/{full_project.pk}/assign-pm", {"pm": None}),
         (BASE, {"lead": 1}),
@@ -124,7 +121,6 @@ def test_pm_cannot_reach_admin_only_endpoints(client_for, pm1, full_project):
     client = client_for(pm1)
     assert client.get(f"{BASE}/convertible").status_code == 403
     assert client.get(f"{BASE}/managers").status_code == 403
-    assert client.get(f"{EXPENSES}/alerts").status_code == 403
     assert client.get(f"{EXPENSES}/export").status_code == 403
 
 

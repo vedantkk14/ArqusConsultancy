@@ -47,7 +47,11 @@ const ZEROS: AdminDashboard = {
     net_margin_pct: '0.0',
     collection_rate_pct: '0.0',
   },
-  trends: { months: DASHBOARD_MOCK.trends.months, leads_new: [0, 0, 0, 0, 0, 0], received: Array(6).fill('0.00') },
+  trends: {
+    months: DASHBOARD_MOCK.trends.months,
+    leads_new: [0, 0, 0, 0, 0, 0],
+    received: Array(6).fill('0.00'),
+  },
   cashflow: {
     months: DASHBOARD_MOCK.cashflow.months,
     collected: Array(6).fill('0.00'),
@@ -58,7 +62,11 @@ const ZEROS: AdminDashboard = {
   funnel: [],
   sales_by_exec: [],
   lead_sources: [],
-  collections_aging: DASHBOARD_MOCK.collections_aging.map((b) => ({ ...b, count: 0, amount: '0.00' })),
+  collections_aging: DASHBOARD_MOCK.collections_aging.map((b) => ({
+    ...b,
+    count: 0,
+    amount: '0.00',
+  })),
   top_overdue_clients: [],
   projects_burn: [],
   recent: { payments: [], expenses: [], activity: [] },
@@ -77,7 +85,11 @@ async function setup(role = Role.Admin, url = '/dashboard') {
   TestBed.inject(AuthService).login('u', 'pw').subscribe();
   TestBed.inject(HttpTestingController)
     .expectOne('/api/v1/auth/login')
-    .flush({ access: 'A', refresh: 'R', user: { id: 1, name: 'Alice Admin', email: 'a@x.com', role } });
+    .flush({
+      access: 'A',
+      refresh: 'R',
+      user: { id: 1, name: 'Alice Admin', email: 'a@x.com', role },
+    });
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url, DashboardPage);
   const el = harness.routeNativeElement as HTMLElement;
@@ -115,7 +127,9 @@ describe('DashboardPage', () => {
     expect(text(el.querySelector('app-cash-hero .delta'))).toBe('+12.4%');
     expect(text(el.querySelector('.pill.overdue'))).toContain('overdue');
     expect([...el.querySelectorAll('.wl > span')].map(text)).toEqual(['18 Won', '6 Lost']);
-    expect(el.querySelector('app-radial-gauge')!.getAttribute('aria-label')).toBe('62.4% collection rate');
+    expect(el.querySelector('app-radial-gauge')!.getAttribute('aria-label')).toBe(
+      '62.4% collection rate',
+    );
     expect(text(el.querySelector('.create'))).toContain('Create account');
     expect(el.querySelectorAll('app-projects-card li a').length).toBe(5);
     expect(text(el.querySelector('app-projects-card'))).toContain('Over budget');
@@ -127,7 +141,9 @@ describe('DashboardPage', () => {
     resolve(DASHBOARD_MOCK);
     const line = () => el.querySelector('app-cash-hero path.line')!.getAttribute('d');
     const tab = (label: string) =>
-      [...el.querySelectorAll<HTMLButtonElement>('app-cash-hero [role=tab]')].find((b) => text(b) === label)!;
+      [...el.querySelectorAll<HTMLButtonElement>('app-cash-hero [role=tab]')].find(
+        (b) => text(b) === label,
+      )!;
     const receivedLine = line();
 
     tab('Spent').click();
@@ -185,7 +201,6 @@ describe('DashboardPage', () => {
     expect(TestBed.inject(LayoutService).navBadges()).toEqual({
       '/leads': { count: 11, tone: 'rose' },
       '/accounts': { count: 4, tone: 'rose' },
-      '/projects': { count: 2, tone: 'amber' },
     });
   });
 
@@ -209,7 +224,9 @@ describe('DashboardPage', () => {
     const pressed = () => text(el.querySelector('app-period-switcher [aria-pressed="true"]'));
     expect(pressed()).toBe('Year');
 
-    [...el.querySelectorAll<HTMLButtonElement>('app-period-switcher button')].find((b) => text(b) === 'Quarter')!.click();
+    [...el.querySelectorAll<HTMLButtonElement>('app-period-switcher button')]
+      .find((b) => text(b) === 'Quarter')!
+      .click();
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe('/dashboard?period=quarter');

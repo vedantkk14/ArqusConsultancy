@@ -54,23 +54,6 @@
       />
     } @else {
       <div class="grid" [class.busy]="refreshing()">
-        @if (alerts().length) {
-          <section class="card panel alerts" aria-labelledby="pm-alerts-title">
-            <app-panel-head
-              title="Budget alerts"
-              [subtitle]="
-                alerts().length === 1
-                  ? '1 project needs attention'
-                  : alerts().length + ' projects need attention'
-              "
-              headingId="pm-alerts-title"
-            />
-            @for (a of alerts(); track a.project_id) {
-              <app-pm-alert-row [alert]="a" />
-            }
-          </section>
-        }
-
         <section class="main" aria-labelledby="pm-projects-title">
           <app-panel-head
             title="My projects"
@@ -157,7 +140,7 @@
             [attr.aria-label]="'Add expense to ' + p.name"
           >
             <span class="pn">{{ p.name }}</span>
-            <span class="pr num">{{ p.remaining | inr }} left</span>
+            <span class="pr num">{{ p.spent | inr }} spent</span>
           </button>
         </li>
       }
@@ -177,7 +160,6 @@
       <app-add-expense-form
         [project]="t"
         [expense]="null"
-        [isAdmin]="false"
         [inSheet]="true"
         (saved)="onSaved()"
         (cancelled)="closeOverlay()"

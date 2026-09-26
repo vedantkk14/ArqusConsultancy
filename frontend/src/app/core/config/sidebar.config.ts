@@ -28,11 +28,36 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     route: '/leads',
     roles: [Admin, SalesManager, SalesExec],
     children: [
-      { label: 'All Leads', icon: 'list', route: '/leads/all', roles: [Admin, SalesManager, SalesExec] },
-      { label: 'Add New Lead', icon: 'person_add', route: '/leads/new', roles: [Admin, SalesManager] },
-      { label: 'Overdue Follow-ups', icon: 'event_busy', route: '/leads/overdue', roles: [Admin, SalesManager, SalesExec] },
-      { label: 'Won Leads', icon: 'emoji_events', route: '/leads/won', roles: [Admin, SalesManager, SalesExec] },
-      { label: 'Lost Leads', icon: 'thumb_down', route: '/leads/lost', roles: [Admin, SalesManager, SalesExec] },
+      {
+        label: 'All Leads',
+        icon: 'list',
+        route: '/leads/all',
+        roles: [Admin, SalesManager, SalesExec],
+      },
+      {
+        label: 'Add New Lead',
+        icon: 'person_add',
+        route: '/leads/new',
+        roles: [Admin, SalesManager],
+      },
+      {
+        label: 'Overdue Follow-ups',
+        icon: 'event_busy',
+        route: '/leads/overdue',
+        roles: [Admin, SalesManager, SalesExec],
+      },
+      {
+        label: 'Won Leads',
+        icon: 'emoji_events',
+        route: '/leads/won',
+        roles: [Admin, SalesManager, SalesExec],
+      },
+      {
+        label: 'Lost Leads',
+        icon: 'thumb_down',
+        route: '/leads/lost',
+        roles: [Admin, SalesManager, SalesExec],
+      },
     ],
   },
   {
@@ -42,8 +67,18 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     roles: [Admin, ProjectManager],
     children: [
       { label: 'Convert Won Lead', icon: 'transform', route: '/projects/convert', roles: [Admin] },
-      { label: 'Running', icon: 'play_circle', route: '/projects/running', roles: [Admin, ProjectManager] },
-      { label: 'Completed', icon: 'check_circle', route: '/projects/completed', roles: [Admin, ProjectManager] },
+      {
+        label: 'Running',
+        icon: 'play_circle',
+        route: '/projects/running',
+        roles: [Admin, ProjectManager],
+      },
+      {
+        label: 'Completed',
+        icon: 'check_circle',
+        route: '/projects/completed',
+        roles: [Admin, ProjectManager],
+      },
     ],
   },
   {
@@ -54,8 +89,18 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     children: [
       { label: 'Customer Ledgers', icon: 'menu_book', route: '/accounts/ledgers', roles: [Admin] },
       { label: 'Payment Entries', icon: 'payments', route: '/accounts/payments', roles: [Admin] },
-      { label: 'Customer Statement', icon: 'receipt_long', route: '/accounts/statement', roles: [Admin] },
-      { label: 'Pending Collections', icon: 'pending_actions', route: '/accounts/pending', roles: [Admin] },
+      {
+        label: 'Customer Statement',
+        icon: 'receipt_long',
+        route: '/accounts/statement',
+        roles: [Admin],
+      },
+      {
+        label: 'Pending Collections',
+        icon: 'pending_actions',
+        route: '/accounts/pending',
+        roles: [Admin],
+      },
     ],
   },
   {
@@ -64,8 +109,12 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     route: '/expenses',
     roles: [Admin, ProjectManager],
     children: [
-      { label: 'All Expenses', icon: 'receipt', route: '/expenses/all', roles: [Admin, ProjectManager] },
-      { label: 'Budget Alerts', icon: 'warning', route: '/expenses/alerts', roles: [Admin] },
+      {
+        label: 'All Expenses',
+        icon: 'receipt',
+        route: '/expenses/all',
+        roles: [Admin, ProjectManager],
+      },
     ],
   },
   {
@@ -74,9 +123,24 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     route: '/reports',
     roles: [Admin, SalesManager],
     children: [
-      { label: 'Sales', icon: 'trending_up', route: '/reports/sales', roles: [Admin, SalesManager] },
-      { label: 'Financial Health', icon: 'monitor_heart', route: '/reports/financial-health', roles: [Admin] },
-      { label: 'Project Margin', icon: 'percent', route: '/reports/project-margin', roles: [Admin] },
+      {
+        label: 'Sales',
+        icon: 'trending_up',
+        route: '/reports/sales',
+        roles: [Admin, SalesManager],
+      },
+      {
+        label: 'Financial Health',
+        icon: 'monitor_heart',
+        route: '/reports/financial-health',
+        roles: [Admin],
+      },
+      {
+        label: 'Project Margin',
+        icon: 'percent',
+        route: '/reports/project-margin',
+        roles: [Admin],
+      },
       { label: 'Lead Funnel', icon: 'filter_alt', route: '/reports/lead-funnel', roles: [Admin] },
     ],
   },
@@ -87,8 +151,12 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     roles: [Admin, SalesManager],
     children: [
       { label: 'Users', icon: 'person', route: '/team/users', roles: [Admin] },
-      { label: 'Commission Rates', icon: 'sell', route: '/team/commission-rates', roles: [Admin] },
-      { label: 'Assignments', icon: 'assignment_ind', route: '/team/assignments', roles: [Admin, SalesManager] },
+      {
+        label: 'Assignments',
+        icon: 'assignment_ind',
+        route: '/team/assignments',
+        roles: [Admin, SalesManager],
+      },
     ],
   },
   {
@@ -97,9 +165,24 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     route: '/communication',
     roles: ALL,
     children: [
-      { label: 'WhatsApp Templates', icon: 'chat', route: '/communication/whatsapp-templates', roles: [Admin, SalesManager, SalesExec] },
-      { label: 'Message Log', icon: 'history', route: '/communication/message-log', roles: [Admin, SalesManager, SalesExec] },
-      { label: 'Notifications', icon: 'notifications', route: '/communication/notifications', roles: ALL },
+      {
+        label: 'WhatsApp Templates',
+        icon: 'chat',
+        route: '/communication/whatsapp-templates',
+        roles: [Admin, SalesManager, SalesExec],
+      },
+      {
+        label: 'Message Log',
+        icon: 'history',
+        route: '/communication/message-log',
+        roles: [Admin, SalesManager, SalesExec],
+      },
+      {
+        label: 'Notifications',
+        icon: 'notifications',
+        route: '/communication/notifications',
+        roles: ALL,
+      },
     ],
   },
   {
@@ -121,7 +204,8 @@ export function filterNavByRole(items: NavItem[], role: Role | null | undefined)
   }
   return items
     .filter((item) => item.roles.includes(role))
-    .map((item) => (item.children ? { ...item, children: filterNavByRole(item.children, role) } : item))
+    .map((item) =>
+      item.children ? { ...item, children: filterNavByRole(item.children, role) } : item,
+    )
     .filter((item) => !item.children || item.children.length > 0);
 }
-

@@ -13,7 +13,9 @@
 
   @if (compact()) {
     <button type="button" class="ctl more" (click)="openSheet()">
-      <mat-icon aria-hidden="true">tune</mat-icon>Filters{{ dropdownCount() ? ' (' + dropdownCount() + ')' : '' }}
+      <mat-icon aria-hidden="true">tune</mat-icon>Filters{{
+        dropdownCount() ? ' (' + dropdownCount() + ')' : ''
+      }}
     </button>
   } @else {
     <ng-container *ngTemplateOutlet="dropdowns" />
@@ -23,7 +25,7 @@
     <span class="sr-only">Sort by</span>
     <select class="ctl" (change)="set('ordering', $any($event.target).value)">
       <option value="" [selected]="!filters().ordering">Default order</option>
-      @for (o of orderings; track o.value) {
+      @for (o of orderings(); track o.value) {
         <option [value]="o.value" [selected]="filters().ordering === o.value">{{ o.label }}</option>
       }
     </select>
@@ -34,46 +36,65 @@
   }
 </div>
 
-<div class="chips" role="group" aria-label="Filter by budget state">
-  <button type="button" class="chip" [attr.aria-pressed]="chip() === ''" (click)="pick('')">
-    All
-    @if (countFor('') !== null) {
-      <span class="n">{{ countFor('') }}</span>
-    }
-  </button>
-  <button type="button" class="chip" [attr.aria-pressed]="chip() === 'ok'" (click)="pick('ok')">
-    On track
-    @if (countFor('ok') !== null) {
-      <span class="n">{{ countFor('ok') }}</span>
-    }
-  </button>
-  <button type="button" class="chip" [attr.aria-pressed]="chip() === 'warn'" (click)="pick('warn')">
-    Near limit
-    @if (countFor('warn') !== null) {
-      <span class="n">{{ countFor('warn') }}</span>
-    }
-  </button>
-  <button type="button" class="chip" [attr.aria-pressed]="chip() === 'over'" (click)="pick('over')">
-    Over budget
-    @if (countFor('over') !== null) {
-      <span class="n">{{ countFor('over') }}</span>
-    }
-  </button>
-  @if (chip() === 'at_risk') {
-    <button type="button" class="chip" aria-pressed="true" (click)="pick('at_risk')">
-      Near limit or over
-      <span class="n">{{ countFor('at_risk') }}</span>
-    </button>
-  }
-  @if (showPm()) {
-    <button type="button" class="chip" [attr.aria-pressed]="chip() === 'no_pm'" (click)="pick('no_pm')">
-      No project manager
-      @if (countFor('no_pm') !== null) {
-        <span class="n">{{ countFor('no_pm') }}</span>
+@if (showBudget() || showPm()) {
+  <div class="chips" role="group" aria-label="Filter by budget state">
+    <button type="button" class="chip" [attr.aria-pressed]="chip() === ''" (click)="pick('')">
+      All
+      @if (countFor('') !== null) {
+        <span class="n">{{ countFor('') }}</span>
       }
     </button>
-  }
-</div>
+    @if (showBudget()) {
+      <button type="button" class="chip" [attr.aria-pressed]="chip() === 'ok'" (click)="pick('ok')">
+        On track
+        @if (countFor('ok') !== null) {
+          <span class="n">{{ countFor('ok') }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="chip"
+        [attr.aria-pressed]="chip() === 'warn'"
+        (click)="pick('warn')"
+      >
+        Near limit
+        @if (countFor('warn') !== null) {
+          <span class="n">{{ countFor('warn') }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="chip"
+        [attr.aria-pressed]="chip() === 'over'"
+        (click)="pick('over')"
+      >
+        Over budget
+        @if (countFor('over') !== null) {
+          <span class="n">{{ countFor('over') }}</span>
+        }
+      </button>
+      @if (chip() === 'at_risk') {
+        <button type="button" class="chip" aria-pressed="true" (click)="pick('at_risk')">
+          Near limit or over
+          <span class="n">{{ countFor('at_risk') }}</span>
+        </button>
+      }
+    }
+    @if (showPm()) {
+      <button
+        type="button"
+        class="chip"
+        [attr.aria-pressed]="chip() === 'no_pm'"
+        (click)="pick('no_pm')"
+      >
+        No project manager
+        @if (countFor('no_pm') !== null) {
+          <span class="n">{{ countFor('no_pm') }}</span>
+        }
+      </button>
+    }
+  </div>
+}
 
 <ng-template #dropdowns>
   @if (showPm()) {
@@ -90,11 +111,21 @@
   }
   <label class="dd">
     <span class="lbl">Created from</span>
-    <input class="ctl" type="date" [value]="filters().created_from" (change)="set('created_from', $any($event.target).value)" />
+    <input
+      class="ctl"
+      type="date"
+      [value]="filters().created_from"
+      (change)="set('created_from', $any($event.target).value)"
+    />
   </label>
   <label class="dd">
     <span class="lbl">Created to</span>
-    <input class="ctl" type="date" [value]="filters().created_to" (change)="set('created_to', $any($event.target).value)" />
+    <input
+      class="ctl"
+      type="date"
+      [value]="filters().created_to"
+      (change)="set('created_to', $any($event.target).value)"
+    />
   </label>
 </ng-template>
 

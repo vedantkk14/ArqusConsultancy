@@ -28,7 +28,6 @@ import { AddExpenseForm, ExpenseProject } from '../../projects/components/add-ex
 import { DialogHead } from '../../projects/ui/dialog-head';
 import { PanelHead } from '../../projects/ui/panel-head';
 import { PmActivityList } from './activity-list';
-import { PmAlertRow } from './alert-row';
 import { PmExpenseRow } from './expense-row';
 import { PmDashboard, PmProject } from './pm-dashboard.models';
 import { PmDashboardService } from './pm-dashboard.service';
@@ -46,7 +45,7 @@ type LoadState =
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-/** The project manager's home: budget alerts, their projects, quick expense entry, recent expenses and activity. */
+/** The project manager's home: their projects, quick expense entry, recent expenses and activity. No budget. */
 @Component({
   selector: 'app-pm-dashboard',
   imports: [
@@ -60,7 +59,6 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
     MatIconModule,
     PanelHead,
     PmActivityList,
-    PmAlertRow,
     PmExpenseRow,
     PmProjectCard,
     Skeleton,
@@ -106,7 +104,6 @@ export class PmDashboardPage {
   protected readonly running = computed(() =>
     this.projects().filter((p) => p.status === 'RUNNING'),
   );
-  protected readonly alerts = computed(() => this.data()?.alerts ?? []);
   protected readonly canAdd = computed(() => this.running().length > 0);
 
   /** Composed from what is already loaded; zero parts are skipped. */
@@ -115,20 +112,15 @@ export class PmDashboardPage {
     if (!d) {
       return '';
     }
-    const over = d.alerts.filter((a) => a.state === 'over').length;
-    const warn = d.alerts.length - over;
+    const running = d.kpis.projects_running;
     const today = d.recent_expenses.filter(
       (e) => e.spent_on === d.business_date && !e.is_void,
     ).length;
     const parts = [
-      over ? `${plural(over, 'project', 'projects')} over budget` : '',
-      warn ? `${plural(warn, 'project', 'projects')} near its limit` : '',
-      today ? `${plural(today, 'expense', 'expenses')} logged today` : '',
+      running ? `${plural(running, 'project', 'projects')} running` : '',
+      today ? `${plural(today, 'expense', 'expenses')} logged today` : 'No expenses logged today',
     ].filter(Boolean);
-    if (!parts.length) {
-      return d.projects.length ? 'All projects are within budget' : '';
-    }
-    return parts.join(' · ');
+    return d.projects.length ? parts.join(' · ') : '';
   });
 
   // ---- Quick add ----------------------------------------------------------------------------------
@@ -183,7 +175,7 @@ export class PmDashboardPage {
 
   protected openExpense(project: PmProject): void {
     this.closeOverlay();
-    this.target.set({ id: project.id, name: project.name, remaining: project.remaining });
+    this.target.set({ id: project.id, name: project.name });
     this.open(this.expenseTpl(), 'Add expense', '#ae-amount');
   }
 

@@ -2,7 +2,13 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, Subject, catchError, map, of, switchMap } from 'rxjs';
 import { QueryParams } from '../../../core/api/api.service';
 import { ApiError } from '../../../core/models';
-import { EMPTY_FILTERS, ProjectFilters, ProjectListItem, ProjectMode, ProjectSummary } from './project.models';
+import {
+  EMPTY_FILTERS,
+  ProjectFilters,
+  ProjectListItem,
+  ProjectMode,
+  ProjectSummary,
+} from './project.models';
 import { ProjectsApi } from './projects-api.service';
 
 export const PAGE_SIZE = 20;
@@ -51,7 +57,7 @@ export function activeChip(f: ProjectFilters): '' | 'ok' | 'warn' | 'over' | 'no
 }
 
 /** Compose the header insight from summary counts, skipping zero parts. */
-export function listInsight(s: { over: number; warn: number; no_pm?: number } | null): string {
+export function listInsight(s: { over?: number; warn?: number; no_pm?: number } | null): string {
   if (!s) {
     return '';
   }

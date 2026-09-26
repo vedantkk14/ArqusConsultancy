@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from django.utils import timezone
 
-from apps.projects import selectors, services
+from apps.projects import selectors
 from apps.projects.models import Expense
 
 from .conftest import BASE, EXPENSES, days_ago, expense_form, receipt_file
@@ -123,83 +123,28 @@ def test_receipt_is_required_except_for_labour(client_for, pm1, project):
     assert add(client, project, category="LABOUR", receipt=None, amount="10").status_code == 201
 
 
-# ---- Budget rule -------------------------------------------------------------------------------
+# ---- Budget: the deal total, Admin only; expenses are never blocked ---------------------------
 
 
-def test_an_expense_of_exactly_the_remaining_budget_is_allowed(
-    client_for, pm1, make_project, notes
+def test_expenses_are_never_blocked_and_remaining_goes_negative_for_the_admin(
+    client_for, admin, pm1, make_project
 ):
-    project = make_project(pm=pm1, budget="1000.00")
+    project = make_project(pm=pm1, budget="1000.00")  # deal total = the Admin's total budget
     client = client_for(pm1)
-    assert add(client, project, amount="400.00").status_code == 201
-    res = add(client, project, amount="600.00")  # exactly what is left
-    assert res.status_code == 201
-    body = client.get(f"{BASE}/{project.pk}").json()
-    assert body["state"] == "warn" and body["remaining"] == "0.00" and body["usage_pct"] == "100.00"
+    assert add(client, project, amount="900.00").status_code == 201
+    assert add(client, project, amount="300.00").status_code == 201  # past the deal total
+    body = client_for(admin).get(f"{BASE}/{project.pk}").json()
+    assert body["total_budget"] == "1000.00" and body["spent"] == "1200.00"
+    assert body["remaining"] == "-200.00" and body["state"] == "over"
 
 
-def test_over_budget_is_refused_with_the_remaining_amount(client_for, pm1, make_project):
+def test_the_pm_sees_expenses_so_far_but_never_the_budget(client_for, pm1, make_project):
     project = make_project(pm=pm1, budget="1000.00")
-    client = client_for(pm1)
-    add(client, project, amount="900.00")
-    res = add(client, project, amount="100.01")
-    assert res.status_code == 409 and code(res) == "over_budget"
-    assert res.json()["error"]["details"] == {"remaining": "100.00"}
-    assert Expense.objects.count() == 1
-
-
-def test_two_sequential_expenses_that_together_exceed_the_budget_block_the_second(
-    client_for, pm1, make_project
-):
-    project = make_project(pm=pm1, budget="1000.00")
-    client = client_for(pm1)
-    assert add(client, project, amount="600.00").status_code == 201
-    assert code(add(client, project, amount="600.00")) == "over_budget"
-
-
-def test_pm_cannot_override_the_budget(client_for, pm1, make_project):
-    project = make_project(pm=pm1, budget="100.00")
-    res = add(
-        client_for(pm1), project, amount="500.00", admin_override="true", override_reason="please"
-    )
-    assert res.status_code == 409 and code(res) == "over_budget"
-    assert not Expense.objects.exists()
-
-
-def test_admin_override_needs_a_reason_and_is_flagged(client_for, admin, make_project):
-    project = make_project(budget="100.00")
-    client = client_for(admin)
-    assert code(add(client, project, amount="500.00")) == "over_budget"  # no override asked
-    no_reason = add(client, project, amount="500.00", admin_override="true")
-    assert (
-        no_reason.status_code == 400 and "override_reason" in no_reason.json()["error"]["details"]
-    )
-    res = add(
-        client,
-        project,
-        amount="500.00",
-        admin_override="true",
-        override_reason="Client asked for more",
-    )
-    assert res.status_code == 201
-    assert (
-        res.json()["is_override"] is True
-        and res.json()["override_reason"] == "Client asked for more"
-    )
-    body = client.get(f"{BASE}/{project.pk}").json()
-    assert body["state"] == "over" and body["remaining"] == "-400.00"
-
-
-def test_the_override_flag_is_only_set_when_it_was_needed(client_for, admin, make_project):
-    project = make_project(budget="1000.00")
-    res = add(
-        client_for(admin),
-        project,
-        amount="10.00",
-        admin_override="true",
-        override_reason="not needed",
-    )
-    assert res.status_code == 201 and res.json()["is_override"] is False
+    add(client_for(pm1), project, amount="250.00")
+    body = client_for(pm1).get(f"{BASE}/{project.pk}").json()
+    assert body["spent"] == "250.00"
+    for key in ("total_budget", "remaining", "usage_pct", "state", "sanctioned_budget"):
+        assert key not in body
 
 
 def test_only_running_projects_accept_expenses(client_for, pm1, project):
@@ -313,7 +258,7 @@ def test_void_needs_a_reason_and_leaves_the_row_visible(
         == 200
     )
     body = client.get(f"{BASE}/{project.pk}").json()
-    assert body["spent"] == "0.00" and body["remaining"] == "600000.00"
+    assert body["spent"] == "0.00" and body["remaining"] == "1000000.00"
     listed = client.get(f"{BASE}/{project.pk}/expenses").json()["results"]
     assert (
         len(listed) == 1
@@ -327,35 +272,6 @@ def test_void_needs_a_reason_and_leaves_the_row_visible(
         == 409
     )
     assert Expense.objects.count() == 1  # never hard deleted
-
-
-def test_void_frees_up_budget(client_for, pm1, make_project, make_expense):
-    project = make_project(pm=pm1, budget="1000.00")
-    first = make_expense(pm1, "1000.00", proj=project)
-    assert code(add(client_for(pm1), project, amount="1.00")) == "over_budget"
-    services.void_expense(first.pk, pm1, "typo")
-    assert add(client_for(pm1), project, amount="1000.00").status_code == 201
-
-
-def test_editing_an_amount_upwards_re_checks_the_budget(
-    client_for, pm1, make_project, make_expense
-):
-    project = make_project(pm=pm1, budget="1000.00")
-    make_expense(pm1, "500.00", proj=project)
-    expense = make_expense(pm1, "400.00", proj=project)
-    res = client_for(pm1).patch(
-        f"{EXPENSES}/{expense.pk}", {"amount": "600.00"}, format="multipart"
-    )
-    assert res.status_code == 409 and code(res) == "over_budget"
-    assert res.json()["error"]["details"] == {
-        "remaining": "500.00"
-    }  # this expense is not counted against itself
-    assert (
-        client_for(pm1)
-        .patch(f"{EXPENSES}/{expense.pk}", {"amount": "500.00"}, format="multipart")
-        .status_code
-        == 200
-    )
 
 
 def test_completed_projects_lock_edit_and_void(client_for, pm1, admin, make_expense, project):

@@ -1,6 +1,10 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { ChangeDetectionStrategy, Component, Injectable, inject } from '@angular/core';
-import { MAT_BOTTOM_SHEET_DATA, MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import {
+  MAT_BOTTOM_SHEET_DATA,
+  MatBottomSheet,
+  MatBottomSheetRef,
+} from '@angular/material/bottom-sheet';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -37,13 +41,27 @@ export interface RecordPaymentData {
     />
   `,
   styles: `
-    :host { display: block; box-sizing: border-box; width: min(520px, calc(100vw - 32px)); max-height: 92vh; padding: var(--space-6); overflow-y: auto; }
-    :host(.in-sheet) { width: auto; max-height: none; padding: var(--space-2) var(--space-1) 0; }
+    /* The dialog surface is the only scroller; scrolling here too gave two scrollbars. */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      width: min(520px, calc(100vw - 32px));
+      padding: var(--space-6);
+    }
+    :host(.in-sheet) {
+      width: auto;
+      padding: var(--space-2) var(--space-1) 0;
+    }
   `,
 })
 export class RecordPaymentHost {
-  private readonly dialogRef = inject<MatDialogRef<RecordPaymentHost, Payment>>(MatDialogRef, { optional: true });
-  private readonly sheetRef = inject<MatBottomSheetRef<RecordPaymentHost, Payment>>(MatBottomSheetRef, { optional: true });
+  private readonly dialogRef = inject<MatDialogRef<RecordPaymentHost, Payment>>(MatDialogRef, {
+    optional: true,
+  });
+  private readonly sheetRef = inject<MatBottomSheetRef<RecordPaymentHost, Payment>>(
+    MatBottomSheetRef,
+    { optional: true },
+  );
   protected readonly data: RecordPaymentData = (inject(MAT_DIALOG_DATA, { optional: true }) ??
     inject(MAT_BOTTOM_SHEET_DATA, { optional: true })) as RecordPaymentData;
   protected readonly sheet = !this.dialogRef;
@@ -68,17 +86,23 @@ export class PaymentLauncher {
 
   open(ledger: LedgerOption | null = null, locked = false): Observable<Payment | undefined> {
     const data: RecordPaymentData = { ledger, locked };
-    const closed: Observable<Payment | undefined> = this.breakpoints.isMatched('(min-width: 1024px)')
+    const closed: Observable<Payment | undefined> = this.breakpoints.isMatched(
+      '(min-width: 1024px)',
+    )
       ? this.dialog
           .open<RecordPaymentHost, RecordPaymentData, Payment>(RecordPaymentHost, {
             data,
             ariaLabelledBy: DIALOG_TITLE_ID,
             autoFocus: ledger ? '#rp-amount' : '#rp-ledger-q',
             maxWidth: 'calc(100vw - 32px)',
+            maxHeight: '92vh',
           })
           .afterClosed()
       : this.sheet
-          .open<RecordPaymentHost, RecordPaymentData, Payment>(RecordPaymentHost, { data, ariaLabel: 'Record payment' })
+          .open<RecordPaymentHost, RecordPaymentData, Payment>(RecordPaymentHost, {
+            data,
+            ariaLabel: 'Record payment',
+          })
           .afterDismissed();
     return closed.pipe(
       map((payment) => {
@@ -86,7 +110,9 @@ export class PaymentLauncher {
           this.snack
             .open('Payment recorded.', 'Print receipt', { duration: 8000 })
             .onAction()
-            .subscribe(() => void this.router.navigate(['/accounts/payments', payment.id, 'receipt']));
+            .subscribe(
+              () => void this.router.navigate(['/accounts/payments', payment.id, 'receipt']),
+            );
         }
         return payment;
       }),

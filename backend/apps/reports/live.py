@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal
 
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
@@ -192,14 +192,13 @@ def project_figures(rng, months: list[str]) -> dict:
         {
             "id": p.id,
             "name": p.name,
-            "sanctioned": money(p.sanctioned_budget),
+            "total_budget": None if p.total_budget is None else money(p.total_budget),
             "spent": money(p.spent),
-            "pct": selectors.usage_pct(p.spent, p.sanctioned_budget),
-            "state": selectors.budget_state(p.spent, p.sanctioned_budget),
+            "pct": selectors.usage_pct(p.spent, p.total_budget),
+            "state": selectors.budget_state(p.spent, p.total_budget),
         }
-        for p in annotated.order_by("-usage")[:TOP_PROJECTS]
+        for p in annotated.order_by(F("usage").desc(nulls_last=True), "-id")[:TOP_PROJECTS]
     ]
-    alerts = annotated.exclude(selectors.state_q("ok")).count()  # warn or over, as the PM sees it
     expenses = selectors.active_expenses()
     monthly = {
         _month_key(r["m"]): Decimal(r["t"] or 0)
@@ -236,7 +235,6 @@ def project_figures(rng, months: list[str]) -> dict:
         "running": counts.get(ProjectStatus.RUNNING, 0),
         "completed": counts.get(ProjectStatus.COMPLETED, 0),
         "burn": burn,
-        "over": alerts,
         "events": events,
         "spent": _sum(expenses.filter(_in("spent_on", rng.start, rng.end))),
         "spent_by_month": monthly,

@@ -56,12 +56,8 @@ def world():
         ledger=ledger, amount="5000.00", mode="CASH", received_on=today - timedelta(days=35)
     )
 
-    project = Project.objects.create(
-        name="Turf", client_name="Won A", sanctioned_budget="50000.00", pm=pm, lead=won_a
-    )
-    Project.objects.create(
-        name="Done", client_name="X", sanctioned_budget="1000.00", status="COMPLETED"
-    )
+    project = Project.objects.create(name="Turf", client_name="Won A", pm=pm, lead=won_a)
+    Project.objects.create(name="Done", client_name="X", status="COMPLETED")
     Expense.objects.create(project=project, amount="52000.00", category="MATERIALS", spent_on=today)
     Expense.objects.create(
         project=project, amount="9999.00", category="OTHER", spent_on=today, is_void=True
@@ -94,14 +90,15 @@ def test_lists_and_attention_come_from_real_rows(world):
     assert body["sales_by_exec"][0]["name"] == "Eva" and body["sales_by_exec"][0]["won_count"] == 2
     assert {s["source"] for s in body["lead_sources"]} == {"Website", "Referral"}
     burn = body["projects_burn"][0]
-    assert burn["name"] == "Turf" and burn["state"] == "over" and burn["pct"] == "104.00"
+    # Measured against the deal total (100,000): 52,000 spent is 52%.
+    assert burn["name"] == "Turf" and burn["state"] == "ok" and burn["pct"] == "52.00"
+    assert burn["total_budget"] == "100000.00" and "sanctioned" not in burn
     aging = {b["bucket"]: b for b in body["collections_aging"]}
     assert aging["31-60"]["count"] == 1 and aging["31-60"]["amount"] == "55000.00"
     assert body["top_overdue_clients"][0]["client"] == "Won A"
     attention = {a["key"]: a["count"] for a in body["attention"]}
     assert attention == {
-        "overdue_followups": 1, "won_awaiting_finalization": 1,
-        "overdue_payments": 1, "budget_alerts": 1,
+        "overdue_followups": 1, "won_awaiting_finalization": 1, "overdue_payments": 1,
     }  # fmt: skip
     assert len(body["recent"]["payments"]) == 2 and len(body["recent"]["expenses"]) == 1
     types = {a["type"] for a in body["recent"]["activity"]}
@@ -137,6 +134,7 @@ def test_finance_report_and_margin_use_real_data(world):
     row = next(r for r in margin["rows"] if r["name"] == "Turf")
     assert row["name"] == "Turf" and row["pm"] == "Pat" and row["spent"] == "52000.00"
     assert row["total"] == "100000.00" and row["received"] == "45000.00"
-    assert row["planned_margin"] == "50000.00" and row["live_margin"] == "-7000.00"
+    assert row["remaining"] == "48000.00" and row["live_margin"] == "-7000.00"
+    assert "planned_margin" not in row and "sanctioned" not in row
     assert margin["note"] is None
-    assert Decimal(row["usage_pct"]) > 100
+    assert row["usage_pct"] == "52.00"

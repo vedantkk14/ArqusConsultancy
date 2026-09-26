@@ -7,7 +7,7 @@ ROLE_REFERENCE = [
         "description": "Runs the whole system: people, money, settings and every record.",
         "can": [
             "See every lead, project, ledger, payment and report",
-            "Create, edit and deactivate accounts; set commission rates",
+            "Create, edit and deactivate accounts",
             "Finalize won deals and read the audit log",
         ],
     },
@@ -34,11 +34,11 @@ ROLE_REFERENCE = [
     {
         "role": "PROJECT_MANAGER",
         "label": "Project Manager",
-        "description": "Delivers projects within their sanctioned budget.",
+        "description": "Delivers projects and logs their expenses.",
         "can": [
-            "See and update only their own projects and expenses",
-            "See the sanctioned budget and budget alerts",
-            "Never sees leads, payments or total project amounts",
+            "See and update only their own projects",
+            "Add expenses to their projects",
+            "Never sees any budget, leads, payments or total project amounts",
         ],
     },
 ]

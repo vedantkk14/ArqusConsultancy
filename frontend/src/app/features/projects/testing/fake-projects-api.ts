@@ -2,7 +2,6 @@ import { Observable, Subject, of } from 'rxjs';
 import { QueryParams } from '../../../core/api/api.service';
 import { PaginatedResponse } from '../../../core/models';
 import {
-  AlertProject,
   ConvertibleLead,
   Expense,
   ExpenseSummary,
@@ -30,19 +29,23 @@ export function makeProject(id: number, patch: Partial<ProjectListItem> = {}): P
     created_at: '2026-08-01T06:30:00Z',
     pm_name: 'Paul Project',
     pm: { id: 4, name: 'Paul Project' },
-    sanctioned_budget: '600000.00',
     spent: '120000.00',
-    remaining: '480000.00',
-    usage_pct: '20.00',
+    total_budget: '1000000.00',
+    remaining: '880000.00',
+    usage_pct: '12.00',
     state: 'ok',
     ...patch,
   };
 }
 
-/** A project as a project manager sees it: no `pm` object, no lead, no finance. */
+/** A project as a project manager sees it: no `pm` object, no budget, no lead, no finance. */
 export function makePmProject(id: number, patch: Partial<ProjectListItem> = {}): ProjectListItem {
   const project = makeProject(id, patch);
   delete project.pm;
+  delete project.total_budget;
+  delete project.remaining;
+  delete project.usage_pct;
+  delete project.state;
   return project;
 }
 
@@ -50,14 +53,13 @@ export function makeDetail(id: number, patch: Partial<ProjectDetail> = {}): Proj
   return {
     ...makeProject(id),
     scope: 'Full turf install',
-    allowed_actions: ['add_expense', 'complete', 'adjust_budget', 'reassign', 'edit'],
+    allowed_actions: ['add_expense', 'complete', 'reassign', 'edit'],
     lead_id: 9,
     finance: {
       total_amount: '1000000.00',
       received: '400000.00',
       outstanding: '600000.00',
       finalized: true,
-      planned_margin: '400000.00',
       live_margin: '280000.00',
     },
     ...patch,
@@ -69,6 +71,10 @@ export function makePmDetail(id: number, patch: Partial<ProjectDetail> = {}): Pr
   delete detail.pm;
   delete detail.lead_id;
   delete detail.finance;
+  delete detail.total_budget;
+  delete detail.remaining;
+  delete detail.usage_pct;
+  delete detail.state;
   return detail;
 }
 
@@ -88,7 +94,6 @@ export function makeExpense(id: number, patch: Partial<Expense> = {}): Expense {
     receipt_type: 'image/png',
     is_void: false,
     void_reason: '',
-    is_override: false,
     logged_by: { id: 4, name: 'Paul Project' },
     created_at: '2026-09-20T06:30:00Z',
     can_edit: true,
@@ -103,7 +108,7 @@ export const SUMMARY: ProjectSummary = {
   warn: 1,
   over: 2,
   no_pm: 1,
-  sanctioned_total: '3000000.00',
+  budget_total: '3000000.00',
   spent_total: '1900000.00',
 };
 
@@ -114,7 +119,6 @@ export const CONVERTIBLE: ConvertibleLead = {
   won_at: '2026-09-01T06:30:00Z',
   proposed_amount: '300000.00',
   total_amount: '300000.00',
-  suggested_budget: '180000.00',
   ineligible_reason: null,
   project_id: null,
 };
@@ -125,7 +129,10 @@ export class FakeProjectsApi {
   expenseCalls: QueryParams[] = [];
   summaryCalls: QueryParams[] = [];
   pending = new Subject<PaginatedResponse<ProjectListItem>>();
-  convertible$: Observable<{ count: number; results: ConvertibleLead[] }> = of({ count: 1, results: [CONVERTIBLE] });
+  convertible$: Observable<{ count: number; results: ConvertibleLead[] }> = of({
+    count: 1,
+    results: [CONVERTIBLE],
+  });
   convertibleCalls: (number | undefined)[] = [];
   convertResult: Observable<ProjectDetail> = of(makeDetail(1));
   converts: unknown[] = [];
@@ -136,10 +143,14 @@ export class FakeProjectsApi {
   detail: ProjectDetail = makeDetail(1);
   expenseRows: Expense[] = [makeExpense(1)];
   eventRows: ProjectEvent[] = [];
-  alertRows: AlertProject[] = [];
   actions: { name: string; args: unknown[] }[] = [];
   uploadResult: Observable<UploadEvent> = of({ kind: 'done', expense: makeExpense(2) });
-  expenseSummary$: Observable<ExpenseSummary> = of({ total: '1500.00', count: 1, void_count: 0, by_category: [] });
+  expenseSummary$: Observable<ExpenseSummary> = of({
+    total: '1500.00',
+    count: 1,
+    void_count: 0,
+    by_category: [],
+  });
 
   list(params: QueryParams) {
     this.listCalls.push(params);
@@ -200,10 +211,6 @@ export class FakeProjectsApi {
     this.actions.push({ name: 'reopen', args });
     return of(makeDetail(1));
   }
-  changeBudget(...args: unknown[]) {
-    this.actions.push({ name: 'changeBudget', args });
-    return of(makeDetail(1));
-  }
   assignPm(...args: unknown[]) {
     this.actions.push({ name: 'assignPm', args });
     return of(makeDetail(1));
@@ -211,10 +218,8 @@ export class FakeProjectsApi {
   receipt() {
     return of(new Blob(['x'], { type: 'image/png' }));
   }
-  exportCsv() {
+  exportCsv(...args: unknown[]) {
+    this.actions.push({ name: 'exportCsv', args });
     return of(new Blob());
-  }
-  alerts() {
-    return of(page(this.alertRows));
   }
 }

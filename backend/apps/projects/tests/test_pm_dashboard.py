@@ -1,4 +1,4 @@
-"""PM dashboard: access, scoping, privacy, ordering, period and budget consistency."""
+"""PM dashboard: access, scoping, privacy (no budget at all), ordering and period."""
 
 from decimal import Decimal
 
@@ -12,7 +12,8 @@ from .conftest import BASE, days_ago, leak_keys
 URL = "/api/v1/dashboard/pm"
 BANNED_KEYS = (
     "total_amount", "proposed_amount", "ledger", "payment", "received", "outstanding", "margin",
-    "lead", "phone", "email", "exec", "commission", "final",
+    "lead", "phone", "email", "exec", "commission", "final", "budget", "sanctioned", "remaining",
+    "usage", "alert",
 )  # fmt: skip
 
 
@@ -34,12 +35,12 @@ def test_access(client_for, pm1, admin, sales_manager, sales_exec):
 
 def test_empty_pm_gets_zeros_and_empty_lists(client_for, pm1):
     body = get(client_for, pm1).json()
-    assert body["projects"] == body["alerts"] == body["recent_expenses"] == []
+    assert body["projects"] == body["recent_expenses"] == []
+    assert "alerts" not in body
     assert body["recent_activity"] == []
     assert body["kpis"] == {
-        "projects_running": 0, "projects_completed": 0, "total_sanctioned": "0.00",
-        "total_spent": "0.00", "total_remaining": "0.00", "expenses_logged_period": 0,
-        "expenses_amount_period": "0.00",
+        "projects_running": 0, "projects_completed": 0, "total_spent": "0.00",
+        "expenses_logged_period": 0, "expenses_amount_period": "0.00",
     }  # fmt: skip
     assert body["period"]["key"] == "month"
 
@@ -59,7 +60,6 @@ def test_pm_never_sees_another_pms_data(client_for, pm1, pm2, make_project, make
     assert "Theirs" not in text
     body = res.json()
     assert [p["id"] for p in body["projects"]] == [mine.pk]
-    assert body["alerts"] == []
     assert {e["project_id"] for e in body["recent_expenses"]} == {mine.pk}
     assert {a["project_id"] for a in body["recent_activity"]} == {mine.pk}
 
@@ -78,42 +78,13 @@ def test_no_finance_or_lead_data_anywhere(client_for, pm1, admin, make_project, 
             assert needle not in raw
 
 
-def test_alerts_are_worst_first_over_before_warn(
-    client_for, pm1, admin, make_project, make_expense
-):
-    ok = make_project(pm=pm1, name="Ok")
-    warn_low = make_project(pm=pm1, name="WarnLow")
-    warn_high = make_project(pm=pm1, name="WarnHigh")
-    over = make_project(pm=pm1, name="Over")
-    spend(make_expense, pm1, ok, 10)
-    spend(make_expense, pm1, warn_low, 81)
-    spend(make_expense, pm1, warn_high, 99)
-    services.add_expense(
-        over.pk,
-        admin,
-        {
-            "amount": Decimal("650000.00"),
-            "category": "LABOUR",
-            "spent_on": days_ago(0),
-            "admin_override": True,
-            "override_reason": "client asked",
-        },
-    )
-    body = get(client_for, pm1).json()
-    assert [a["project_name"] for a in body["alerts"]] == ["Over", "WarnHigh", "WarnLow"]
-    assert [a["state"] for a in body["alerts"]] == ["over", "warn", "warn"]
-
-
-def test_completed_projects_come_after_running_and_raise_no_alert(
-    client_for, pm1, make_project, make_expense
-):
+def test_completed_projects_come_after_running(client_for, pm1, make_project, make_expense):
     done = make_project(pm=pm1, name="Done")
     spend(make_expense, pm1, done, 90)
     services.complete(done.pk, pm1)
     make_project(pm=pm1, name="Live")
     body = get(client_for, pm1).json()
     assert [p["name"] for p in body["projects"]] == ["Live", "Done"]
-    assert body["alerts"] == []
     assert body["kpis"]["projects_completed"] == 1 and body["kpis"]["projects_running"] == 1
 
 
@@ -125,10 +96,8 @@ def test_period_only_changes_expense_kpis(client_for, pm1, project, make_expense
     assert alltime["kpis"]["expenses_logged_period"] == 2
     assert alltime["kpis"]["expenses_amount_period"] == "3000.00"
     assert alltime["period"]["from"] is None
-    for key in ("total_sanctioned", "total_spent", "total_remaining"):
-        assert month["kpis"][key] == alltime["kpis"][key]
+    assert month["kpis"]["total_spent"] == alltime["kpis"]["total_spent"]
     assert month["projects"] == alltime["projects"]
-    assert month["alerts"] == alltime["alerts"]
 
 
 def test_recent_expenses_are_capped_newest_first_and_flag_void_and_receipt(
@@ -154,8 +123,9 @@ def test_money_is_strings_everywhere(client_for, pm1, project, make_expense):
         if isinstance(value, str):
             assert value.count(".") == 1
     for p in body["projects"]:
-        for key in ("sanctioned_budget", "spent", "remaining", "usage_pct"):
-            assert isinstance(p[key], str)
+        assert isinstance(p["spent"], str)
+        for key in ("sanctioned_budget", "remaining", "usage_pct", "state"):
+            assert key not in p
 
 
 def test_query_budget(client_for, pm1, make_project, make_expense, django_assert_max_num_queries):
@@ -167,9 +137,8 @@ def test_query_budget(client_for, pm1, make_project, make_expense, django_assert
     assert len(ctx) < 12, [q["sql"][:80] for q in ctx]
 
 
-def test_budget_numbers_match_the_project_detail_exactly(client_for, pm1, project, make_expense):
+def test_expenses_so_far_match_the_project_detail_exactly(client_for, pm1, project, make_expense):
     make_expense(pm1, "487333.33")
     row = get(client_for, pm1).json()["projects"][0]
     detail = client_for(pm1).get(f"{BASE}/{project.pk}").json()
-    for key in ("sanctioned_budget", "spent", "remaining", "usage_pct", "state"):
-        assert row[key] == detail[key], key
+    assert row["spent"] == detail["spent"] == "487333.33"

@@ -5,7 +5,6 @@ import { PmActivity, PmActivityType } from './pm-dashboard.models';
 
 const ICONS: Record<PmActivityType, string> = {
   project_assigned: 'assignment_ind',
-  budget_changed: 'tune',
   expense_added: 'receipt_long',
   project_completed: 'check_circle',
   project_reopened: 'replay',

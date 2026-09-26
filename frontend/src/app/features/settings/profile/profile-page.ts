@@ -14,10 +14,20 @@ import { UserAvatar } from '../../../shared/user-avatar/user-avatar';
 import { SettingsApi } from '../settings.api';
 import { Profile } from '../settings.models';
 
-/** Any signed-in user: edit your own name and phone. Email, role and commission are shown, not editable. */
+/** Any signed-in user: edit your own name and phone. Email and role are shown, not editable. */
 @Component({
   selector: 'app-profile-page',
-  imports: [DatePipe, ErrorState, MatButtonModule, MatIconModule, ReactiveFormsModule, RoleBadge, RouterLink, Skeleton, UserAvatar],
+  imports: [
+    DatePipe,
+    ErrorState,
+    MatButtonModule,
+    MatIconModule,
+    ReactiveFormsModule,
+    RoleBadge,
+    RouterLink,
+    Skeleton,
+    UserAvatar,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
@@ -48,7 +58,9 @@ export class ProfilePage {
 
   protected load(): void {
     this.error.set(null);
-    this.api.profile().subscribe({ next: (p) => this.fill(p), error: (e: ApiError) => this.error.set(e) });
+    this.api
+      .profile()
+      .subscribe({ next: (p) => this.fill(p), error: (e: ApiError) => this.error.set(e) });
   }
 
   protected save(): void {
@@ -59,18 +71,24 @@ export class ProfilePage {
     }
     const v = this.form.getRawValue();
     this.saving.set(true);
-    this.api.saveProfile({ first_name: v.first_name.trim(), last_name: v.last_name.trim(), phone: v.phone.trim() }).subscribe({
-      next: (p) => {
-        this.saving.set(false);
-        this.fill(p);
-        this.auth.updateUser({ name: p.name });
-        this.snack.open('Profile updated.', undefined, { duration: 3000 });
-      },
-      error: (err: ApiError) => {
-        this.saving.set(false);
-        this.formError.set(err.message);
-      },
-    });
+    this.api
+      .saveProfile({
+        first_name: v.first_name.trim(),
+        last_name: v.last_name.trim(),
+        phone: v.phone.trim(),
+      })
+      .subscribe({
+        next: (p) => {
+          this.saving.set(false);
+          this.fill(p);
+          this.auth.updateUser({ name: p.name });
+          this.snack.open('Profile updated.', undefined, { duration: 3000 });
+        },
+        error: (err: ApiError) => {
+          this.saving.set(false);
+          this.formError.set(err.message);
+        },
+      });
   }
 
   protected invalid(key: 'first_name' | 'last_name' | 'phone'): boolean {

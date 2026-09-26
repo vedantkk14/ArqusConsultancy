@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models';
 import { fakeViewport } from '../testing/fake-viewport';
@@ -26,7 +26,11 @@ async function setup(url = '/projects/convert', width = 1440) {
   TestBed.inject(AuthService).login('u', 'pw').subscribe();
   TestBed.inject(HttpTestingController)
     .expectOne('/api/v1/auth/login')
-    .flush({ access: 'A', refresh: 'R', user: { id: 1, name: 'Alice Admin', email: 'a@x.com', role: Role.Admin } });
+    .flush({
+      access: 'A',
+      refresh: 'R',
+      user: { id: 1, name: 'Alice Admin', email: 'a@x.com', role: Role.Admin },
+    });
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url, ConvertPage);
   harness.detectChanges();
@@ -48,13 +52,17 @@ async function settle(harness: RouterTestingHarness) {
 describe('ConvertPage', () => {
   afterEach(() => TestBed.inject(MatDialog).closeAll());
 
-  it('lists eligible won deals and opens the panel with the suggested budget', async () => {
+  it('lists eligible won deals and opens the panel with the deal total as the budget', async () => {
     const { el, harness } = await setup();
     expect(text(el.querySelector('.count'))).toBe('1 won deal waiting');
-    (el.querySelector('button[aria-label^="Convert Kolhapur"]') as HTMLButtonElement).click();
+    (
+      el.querySelector(
+        'button[aria-label^="Assign a project manager for Kolhapur"]',
+      ) as HTMLButtonElement
+    ).click();
     await settle(harness);
-    expect(text(overlay())).toContain('Cannot exceed ₹3,00,000');
-    expect(field<HTMLInputElement>('cv-budget').value).toBe('1,80,000.00');
+    expect(text(overlay())).toContain('Total budget: ₹3,00,000');
+    expect(field('cv-budget')).toBeNull();
     expect(field<HTMLInputElement>('cv-name').value).toBe('Kolhapur Kabaddi League');
     expect(text(field('cv-pm'))).toContain('Assign later');
     expect(text(field('cv-pm'))).toContain('Paul Project · 3 running');
@@ -70,7 +78,10 @@ describe('ConvertPage', () => {
 
   it('?lead=<id> for a lead that is not ready shows why, with a link', async () => {
     const api = new FakeProjectsApi();
-    api.convertible$ = of({ count: 1, results: [{ ...CONVERTIBLE, lead: 5, ineligible_reason: 'project_exists', project_id: 77 }] });
+    api.convertible$ = of({
+      count: 1,
+      results: [{ ...CONVERTIBLE, lead: 5, ineligible_reason: 'project_exists', project_id: 77 }],
+    });
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'projects/convert', component: ConvertPage }]),
@@ -83,7 +94,11 @@ describe('ConvertPage', () => {
     TestBed.inject(AuthService).login('u', 'pw').subscribe();
     TestBed.inject(HttpTestingController)
       .expectOne('/api/v1/auth/login')
-      .flush({ access: 'A', refresh: 'R', user: { id: 1, name: 'A', email: 'a@x.com', role: Role.Admin } });
+      .flush({
+        access: 'A',
+        refresh: 'R',
+        user: { id: 1, name: 'A', email: 'a@x.com', role: Role.Admin },
+      });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/projects/convert?lead=5', ConvertPage);
     await settle(harness);
@@ -94,7 +109,11 @@ describe('ConvertPage', () => {
 
   it('validates the form and focuses the first invalid field', async () => {
     const { el, harness, api } = await setup();
-    (el.querySelector('button[aria-label^="Convert Kolhapur"]') as HTMLButtonElement).click();
+    (
+      el.querySelector(
+        'button[aria-label^="Assign a project manager for Kolhapur"]',
+      ) as HTMLButtonElement
+    ).click();
     await settle(harness);
     const name = field<HTMLInputElement>('cv-name');
     name.value = '';
@@ -106,38 +125,33 @@ describe('ConvertPage', () => {
     expect(api.converts.length).toBe(0);
   });
 
-  it('shows the API budget error under the amount', async () => {
-    const { el, harness, api } = await setup();
-    api.convertResult = throwError(() => ({
-      status: 400,
-      code: 'budget_exceeds_total',
-      message: 'The budget cannot exceed the deal total of ₹3,00,000.00.',
-      details: {},
-    }));
-    (el.querySelector('button[aria-label^="Convert Kolhapur"]') as HTMLButtonElement).click();
-    await settle(harness);
-    (overlay().querySelector('button[type=submit]') as HTMLButtonElement).click();
-    await settle(harness);
-    expect(text(overlay())).toContain('cannot exceed the deal total');
-    expect(document.activeElement?.id).toBe('cv-budget');
-  });
-
   it('a successful conversion removes the row and says "Project created"', async () => {
     const { el, harness, api } = await setup();
     api.convertResult = of(makeDetail(5));
-    (el.querySelector('button[aria-label^="Convert Kolhapur"]') as HTMLButtonElement).click();
+    (
+      el.querySelector(
+        'button[aria-label^="Assign a project manager for Kolhapur"]',
+      ) as HTMLButtonElement
+    ).click();
     await settle(harness);
     (overlay().querySelector('button[type=submit]') as HTMLButtonElement).click();
     await settle(harness);
-    expect(api.converts[0]).toMatchObject({ lead: 9, sanctioned_budget: '180000.00', pm: null });
-    expect(el.querySelector('button[aria-label^="Convert Kolhapur"]')).toBeNull();
+    expect(api.converts[0]).not.toHaveProperty('sanctioned_budget');
+    expect(api.converts[0]).toMatchObject({ lead: 9, pm: null });
+    expect(
+      el.querySelector('button[aria-label^="Assign a project manager for Kolhapur"]'),
+    ).toBeNull();
     expect(text(overlay())).toContain('Project created');
     expect(text(el)).toContain('No won deals to convert');
   });
 
   it('phones get a bottom sheet instead of a side panel', async () => {
     const { el, harness } = await setup('/projects/convert', 390);
-    (el.querySelector('button[aria-label^="Convert Kolhapur"]') as HTMLButtonElement).click();
+    (
+      el.querySelector(
+        'button[aria-label^="Assign a project manager for Kolhapur"]',
+      ) as HTMLButtonElement
+    ).click();
     await settle(harness);
     expect(overlay().querySelector('mat-bottom-sheet-container')).toBeTruthy();
   });

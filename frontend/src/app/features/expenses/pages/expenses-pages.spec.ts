@@ -9,23 +9,23 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { findNavItem } from '../../../core/config/route-helpers';
 import { Role } from '../../../core/models';
 import { fakeViewport } from '../../projects/testing/fake-viewport';
-import { AlertProject } from '../../projects/data/project.models';
 import { ProjectsApi } from '../../projects/data/projects-api.service';
-import { FakeProjectsApi, makeExpense, makeProject } from '../../projects/testing/fake-projects-api';
+import { FakeProjectsApi, makeExpense } from '../../projects/testing/fake-projects-api';
 import { EXPENSES_ROUTES } from '../expenses.routes';
 import { filtersFromQuery, toQuery } from '../expenses-list.store';
-import { AlertsPage } from './alerts-page';
 import { ExpensesListPage } from './expenses-list-page';
 
-async function setup(role: Role, url: string, prepare: (api: FakeProjectsApi) => void = () => undefined, width = 1440) {
+async function setup(
+  role: Role,
+  url: string,
+  prepare: (api: FakeProjectsApi) => void = () => undefined,
+  width = 1440,
+) {
   const api = new FakeProjectsApi();
   prepare(api);
   TestBed.configureTestingModule({
     providers: [
-      provideRouter([
-        { path: 'expenses/all', component: ExpensesListPage },
-        { path: 'expenses/alerts', component: AlertsPage },
-      ]),
+      provideRouter([{ path: 'expenses/all', component: ExpensesListPage }]),
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: ProjectsApi, useValue: api },
@@ -50,8 +50,10 @@ async function settle(harness: RouterTestingHarness) {
 
 const text = (el: Element | null) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 const overlay = () => document.querySelector('.cdk-overlay-container') as HTMLElement;
-const buttonByText = (root: ParentNode, label: string) => [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).includes(label));
-const byLabel = (root: ParentNode, label: string) => root.querySelector<HTMLButtonElement>(`button[aria-label^="${label}"]`);
+const buttonByText = (root: ParentNode, label: string) =>
+  [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).includes(label));
+const byLabel = (root: ParentNode, label: string) =>
+  root.querySelector<HTMLButtonElement>(`button[aria-label^="${label}"]`);
 
 const SUMMARY = {
   total: '11430.00',
@@ -67,7 +69,10 @@ describe('ExpensesListPage', () => {
   afterEach(() => TestBed.inject(MatDialog).closeAll());
 
   it('reads the filters from the URL and sends them with the API names', async () => {
-    const { api } = await setup(Role.Admin, '/expenses/all?category=LABOUR&project=3&has_receipt=false&state=void&q=sand&date_from=2026-09-01');
+    const { api } = await setup(
+      Role.Admin,
+      '/expenses/all?category=LABOUR&project=3&has_receipt=false&state=void&q=sand&date_from=2026-09-01',
+    );
     expect(api.expenseCalls[0]).toMatchObject({
       category: 'LABOUR',
       project: '3',
@@ -78,7 +83,10 @@ describe('ExpensesListPage', () => {
       ordering: '-spent_on',
       page: 1,
     });
-    expect(toQuery(filtersFromQuery((k) => (k === 'category' ? 'FOOD' : null)))).toEqual({ category: 'FOOD', ordering: '-spent_on' });
+    expect(toQuery(filtersFromQuery((k) => (k === 'category' ? 'FOOD' : null)))).toEqual({
+      category: 'FOOD',
+      ordering: '-spent_on',
+    });
   });
 
   it('shows the server totals for the current filters and a category breakdown', async () => {
@@ -118,7 +126,8 @@ describe('ExpensesListPage', () => {
 
   it('shows an error with retry when loading fails', async () => {
     const { api, el, harness } = await setup(Role.Admin, '/expenses/all', (a) => {
-      a.expenses = () => throwError(() => ({ status: 500, code: 'server_error', message: 'x', details: {} }));
+      a.expenses = () =>
+        throwError(() => ({ status: 500, code: 'server_error', message: 'x', details: {} }));
     });
     expect(el.querySelector('app-error-state')).toBeTruthy();
     const spy = vi.spyOn(api, 'expenses');
@@ -156,52 +165,12 @@ describe('ExpensesListPage', () => {
   });
 });
 
-const ALERTS: AlertProject[] = [
-  { ...makeProject(3, { name: 'Over Project', state: 'over', spent: '189000.00', sanctioned_budget: '180000.00', remaining: '-9000.00', usage_pct: '105.00' }), over_by: '9000.00' },
-  { ...makeProject(4, { name: 'Near Project', state: 'warn', spent: '153000.00', sanctioned_budget: '180000.00', remaining: '27000.00', usage_pct: '85.00' }), over_by: '0.00' },
-];
-
-describe('AlertsPage', () => {
-  afterEach(() => TestBed.inject(MatDialog).closeAll());
-
-  it('says everything is fine when nothing is near the limit', async () => {
-    const { el } = await setup(Role.Admin, '/expenses/alerts');
-    expect(text(el)).toContain('All projects are within budget');
-  });
-
-  it('lists projects worst first with what is left or over, and the actions', async () => {
-    const { el } = await setup(Role.Admin, '/expenses/alerts', (api) => (api.alertRows = ALERTS));
-    expect(text(el.querySelector('.insight'))).toBe('1 over budget · 1 near the limit');
-    const rows = el.querySelectorAll('li.al');
-    expect(text(rows[0])).toContain('Over Project');
-    expect(text(rows[0])).toContain('₹9,000 over');
-    expect(text(rows[1])).toContain('₹27,000 left');
-    expect(rows[1].querySelector('a[href="/projects/4"]')).toBeTruthy();
-    expect(byLabel(rows[0], 'Adjust the budget of Over Project')).toBeTruthy();
-  });
-
-  it('Adjust budget opens the budget dialog for that project', async () => {
-    const { el, harness } = await setup(Role.Admin, '/expenses/alerts', (api) => (api.alertRows = ALERTS));
-    byLabel(el, 'Adjust the budget of Over Project')!.click();
-    await settle(harness);
-    expect(text(overlay())).toContain('Adjust budget');
-    expect(text(overlay())).toContain('Already spent ₹1,89,000.');
-  });
-
-  it('shows an error with retry when loading fails', async () => {
-    const { el } = await setup(Role.Admin, '/expenses/alerts', (api) => {
-      api.alerts = () => throwError(() => ({ status: 500, code: 'x', message: 'x', details: {} }));
-    });
-    expect(el.querySelector('app-error-state')).toBeTruthy();
-  });
-});
-
 describe('expenses routes', () => {
-  it('the list is for admin and PM, the alerts page for admin only', () => {
+  it('the list is for admin and PM', () => {
     const roles = (path: string) => EXPENSES_ROUTES.find((r) => r.path === path)?.data?.['roles'];
     expect(roles('all')).toEqual(findNavItem('/expenses/all')?.roles);
     expect(roles('all')).toContain(Role.ProjectManager);
-    expect(roles('alerts')).toEqual([Role.Admin]);
+    expect(roles('alerts')).toBeUndefined();
     expect(roles('all')).not.toContain(Role.SalesManager);
     expect(roles('all')).not.toContain(Role.SalesExec);
   });

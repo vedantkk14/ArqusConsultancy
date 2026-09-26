@@ -11,7 +11,6 @@ from apps.reports.services import (
     PERIODS,
     aging_bucket,
     attention_items,
-    burn_state,
     collection_rate_pct,
     delta_pct,
     money,
@@ -198,10 +197,12 @@ def test_unknown_period_is_a_validation_error(client):
 
 
 def test_attention_only_lists_counts_above_zero_most_severe_first():
-    rows = attention_items({"budget_alerts": 2, "overdue_followups": 0, "overdue_payments": 3})
+    rows = attention_items(
+        {"won_awaiting_finalization": 2, "overdue_followups": 0, "overdue_payments": 3}
+    )
     assert [(r["key"], r["count"], r["severity"]) for r in rows] == [
         ("overdue_payments", 3, "high"),
-        ("budget_alerts", 2, "medium"),
+        ("won_awaiting_finalization", 2, "medium"),
     ]
     assert rows[0]["route"] == "/accounts/pending"
 
@@ -237,22 +238,6 @@ def test_collection_rate_and_pct():
 )
 def test_aging_buckets(days, bucket):
     assert aging_bucket(days) == bucket
-
-
-@pytest.mark.parametrize(
-    "spent,sanctioned,state",
-    [
-        ("0", "100", "ok"),
-        ("79.99", "100", "ok"),
-        ("80", "100", "warn"),
-        ("99.9", "100", "warn"),
-        ("100", "100", "over"),
-        ("150", "100", "over"),
-        ("10", "0", "ok"),
-    ],
-)
-def test_burn_state_uses_the_sanctioned_budget(spent, sanctioned, state):
-    assert burn_state(Decimal(spent), Decimal(sanctioned)) == state
 
 
 @pytest.mark.django_db

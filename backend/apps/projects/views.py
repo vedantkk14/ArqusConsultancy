@@ -1,15 +1,15 @@
 """Projects and expenses API. Every query starts from selectors.projects_for / expenses_for."""
 
 import csv
-from decimal import Decimal
+import io
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Prefetch, Q, Sum
-from django.http import FileResponse, StreamingHttpResponse
+from django.db.models import Count, Q, Sum
+from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status as http
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -24,11 +24,9 @@ from .filters import (
     apply_project_filters,
     apply_project_ordering,
 )
-from .models import AlertState, BudgetRequest, Expense, ProjectEvent, ProjectStatus
+from .models import Expense, ProjectEvent, ProjectStatus
 from .serializers import (
-    AlertSerializer,
     AssignPMSerializer,
-    BudgetSerializer,
     ConvertSerializer,
     EventSerializer,
     ExpenseWriteSerializer,
@@ -40,18 +38,6 @@ from .serializers import (
 
 ROLES = (ADMIN, PROJECT_MANAGER)
 INELIGIBLE_MAX = 200
-
-
-def _money_field(value) -> Decimal:
-    from decimal import InvalidOperation
-
-    try:
-        amount = Decimal(str(value).strip())
-    except (InvalidOperation, ValueError):
-        raise ValidationError({"amount": ["Enter an amount, e.g. 25000."]}) from None
-    if amount != amount.quantize(Decimal("0.01")) or amount.as_tuple().exponent < -2:
-        raise ValidationError({"amount": ["Use at most two decimals."]})
-    return amount
 
 
 class _Echo:
@@ -78,15 +64,16 @@ class ProjectViewSet(GenericViewSet):
     lookup_value_regex = r"\d+"
 
     def get_queryset(self):
-        pending = Prefetch(
-            "budget_requests",
-            queryset=BudgetRequest.objects.filter(status="PENDING").select_related("requested_by"),
-            to_attr="pending_requests",
-        )
-        qs = selectors.budget_usage_qs(selectors.projects_for(self.request.user))
-        if (self.request.query_params.get("budget_request") or "") == "pending":
-            qs = qs.filter(budget_requests__status="PENDING").distinct()
-        return qs.prefetch_related(pending)
+        return selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+
+    def _is_admin(self) -> bool:
+        return self.request.user.role == ADMIN
+
+    def _filtered(self, request, skip: tuple[str, ...] = ()):
+        # Budget-state filters compare expenses with the deal total: Admin only.
+        if not self._is_admin():
+            skip = (*skip, "state")
+        return apply_project_filters(self.get_queryset(), request.query_params, skip=skip)
 
     def _require_admin(self):
         if self.request.user.role != ADMIN:
@@ -103,8 +90,10 @@ class ProjectViewSet(GenericViewSet):
     # ---- Collections ----------
 
     def list(self, request):
-        qs = apply_project_filters(self.get_queryset(), request.query_params)
-        qs = apply_project_ordering(qs, request.query_params.get("ordering"))
+        ordering = request.query_params.get("ordering")
+        if not self._is_admin() and ordering == "-usage_pct":
+            ordering = None  # budget usage is Admin-only
+        qs = apply_project_ordering(self._filtered(request), ordering)
         page = self.paginate_queryset(qs)
         cls = project_serializer(request.user)
         return self.get_paginated_response(cls(page, many=True, context={"request": request}).data)
@@ -117,7 +106,6 @@ class ProjectViewSet(GenericViewSet):
         project = services.convert(
             data["lead"],
             name=data["name"],
-            sanctioned_budget=data["sanctioned_budget"],
             pm_id=data.get("pm"),
             start_date=data.get("start_date"),
             expected_end_date=data.get("expected_end_date"),
@@ -139,15 +127,14 @@ class ProjectViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"])
     def summary(self, request):
-        qs = apply_project_filters(
-            self.get_queryset(), request.query_params, skip=PROJECT_SUMMARY_SKIP
-        )
+        qs = self._filtered(request, skip=PROJECT_SUMMARY_SKIP)
         wanted = (request.query_params.get("status") or "").upper()
         data = selectors.project_summary(
             qs, wanted if wanted in ProjectStatus.values else ProjectStatus.RUNNING
         )
-        if request.user.role != ADMIN:
-            data.pop("no_pm")
+        if not self._is_admin():
+            for key in ("no_pm", "ok", "warn", "over", "budget_total"):
+                data.pop(key)
         return Response(data)
 
     @action(detail=False, methods=["get"])
@@ -192,7 +179,6 @@ class ProjectViewSet(GenericViewSet):
                     if lead.proposed_amount is not None
                     else None,
                     "total_amount": None if total is None else selectors.money_str(total),
-                    "suggested_budget": selectors.suggested_budget(total),
                     "ineligible_reason": reason,
                     "project_id": existing.get(lead.pk),
                 }
@@ -217,20 +203,6 @@ class ProjectViewSet(GenericViewSet):
 
     # ---- One project ----------
 
-    @action(detail=True, methods=["post"])
-    def budget(self, request, pk=None):
-        self._require_admin()
-        project = self._project(pk)
-        serializer = BudgetSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        services.change_budget(
-            project.pk,
-            serializer.validated_data["sanctioned_budget"],
-            serializer.validated_data["reason"],
-            request.user,
-        )
-        return Response(self._detail(project.pk))
-
     @action(detail=True, methods=["post"], url_path="assign-pm")
     def assign_pm(self, request, pk=None):
         self._require_admin()
@@ -245,37 +217,6 @@ class ProjectViewSet(GenericViewSet):
         project = self._project(pk)
         services.complete(project.pk, request.user)
         return Response(self._detail(project.pk))
-
-    @action(detail=True, methods=["post"], url_path="budget-request")
-    def budget_request(self, request, pk=None):
-        """PM: ask for more budget. Body: amount (extra, not the new total), reason."""
-        project = self._project(pk)
-        amount = _money_field(request.data.get("amount"))
-        services.request_budget(
-            project.pk, request.user, amount, str(request.data.get("reason", ""))
-        )
-        return Response(self._detail(project.pk), status=http.HTTP_201_CREATED)
-
-    @action(detail=True, methods=["post"], url_path="budget-request/decide")
-    def decide_budget_request(self, request, pk=None):
-        """Admin: approve or reject the pending request. Body: approve (bool), note."""
-        self._require_admin()
-        project = self._project(pk)
-        approve = str(request.data.get("approve", "")).lower() in ("1", "true")
-        services.decide_budget_request(
-            project.pk, request.user, approve, str(request.data.get("note", ""))
-        )
-        return Response(self._detail(project.pk))
-
-    @action(detail=True, methods=["post"], url_path="release-budget")
-    def release_budget(self, request, pk=None):
-        """Admin, completed project under budget: keep the unused part as margin, or move it."""
-        self._require_admin()
-        project = self._project(pk)
-        result = services.release_budget(
-            project.pk, request.user, request.data.get("target_project") or None
-        )
-        return Response({**result, "project": self._detail(project.pk)})
 
     @action(detail=True, methods=["post"])
     def reopen(self, request, pk=None):
@@ -402,53 +343,83 @@ class ExpenseViewSet(GenericViewSet):
         )
 
     @action(detail=False, methods=["get"])
-    def alerts(self, request):
-        self._require_admin()
-        qs = selectors.budget_usage_qs(selectors.projects_for(request.user)).filter(
-            status=ProjectStatus.RUNNING
-        )
-        qs = qs.exclude(selectors.state_q("ok")).order_by("-usage", "-id")
-        page = self.paginate_queryset(qs)
-        return self.get_paginated_response(AlertSerializer(page, many=True).data)
-
-    @action(detail=False, methods=["get"])
     def export(self, request):
+        """Admin: the filtered expenses as CSV, or as an Excel workbook with `?file=xlsx`.
+
+        `?project=<id>` gives one project's expenses (the Excel button on a project's budget card).
+        """
         self._require_admin()
         qs = apply_expense_ordering(self._filtered(request), request.query_params.get("ordering"))
         rows = qs[: rules.EXPORT_MAX_ROWS]
         header = ["Date", "Project", "Category", "Vendor", "Description", "Amount", "Logged by"]
         header += ["Receipt", "Status", "Note"]
 
-        def status_of(expense):
-            if expense.is_void:
-                return "Void"
-            return "Override" if expense.is_override else "Active"
+        def cells(e):
+            return (
+                e.spent_on.isoformat(),
+                e.project.name,
+                e.get_category_display(),
+                e.vendor,
+                e.description,
+                selectors.money_str(e.amount),
+                e.logged_by.display_name if e.logged_by else "",
+                "Yes" if e.receipt else "No",
+                "Void" if e.is_void else "Active",
+                e.void_reason,
+            )
+
+        if (request.query_params.get("file") or "").lower() == "xlsx":
+            return _xlsx_response(header, rows, cells)
 
         def stream():
             writer = csv.writer(_Echo())
             yield "﻿" + writer.writerow(header)
             for e in rows.iterator(chunk_size=500):
-                yield writer.writerow(
-                    [
-                        csv_safe(v)
-                        for v in (
-                            e.spent_on.isoformat(),
-                            e.project.name,
-                            e.get_category_display(),
-                            e.vendor,
-                            e.description,
-                            selectors.money_str(e.amount),
-                            e.logged_by.display_name if e.logged_by else "",
-                            "Yes" if e.receipt else "No",
-                            status_of(e),
-                            e.void_reason or e.override_reason,
-                        )
-                    ]
-                )
+                yield writer.writerow([csv_safe(v) for v in cells(e)])
 
         response = StreamingHttpResponse(stream(), content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = 'attachment; filename="expenses.csv"'
         return response
 
 
-__all__ = ["AlertState", "ExpenseViewSet", "ProjectViewSet"]
+XLSX_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+def _xlsx_response(header, rows, cells) -> HttpResponse:
+    """One sheet: a bold header, amounts as real numbers, and a total of the active expenses."""
+    from decimal import Decimal
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+
+    wb = Workbook()
+    sheet = wb.active
+    sheet.title = "Expenses"
+    sheet.append(header)
+    for cell in sheet[1]:
+        cell.font = Font(bold=True)
+    total = Decimal("0")
+    amount_col = header.index("Amount")
+    for e in rows.iterator(chunk_size=500):
+        values = [csv_safe(v) for v in cells(e)]
+        values[amount_col] = e.amount  # a number Excel can sum, not text
+        sheet.append(values)
+        if not e.is_void:
+            total += e.amount
+    sheet.append([])
+    sheet.append(["Total (active expenses)"] + [""] * (amount_col - 1) + [total])
+    sheet.cell(row=sheet.max_row, column=1).font = Font(bold=True)
+    for row in sheet.iter_rows(min_row=2, min_col=amount_col + 1, max_col=amount_col + 1):
+        for cell in row:
+            cell.number_format = "#,##0.00"
+    widths = (12, 28, 14, 20, 36, 14, 18, 9, 9, 30)
+    for column, width in zip("ABCDEFGHIJ", widths, strict=True):
+        sheet.column_dimensions[column].width = width
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(buffer.getvalue(), content_type=XLSX_TYPE)
+    response["Content-Disposition"] = 'attachment; filename="expenses.xlsx"'
+    return response
+
+
+__all__ = ["ExpenseViewSet", "ProjectViewSet"]

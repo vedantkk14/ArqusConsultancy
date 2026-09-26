@@ -31,7 +31,6 @@ from .exceptions import (
     NotFinalized,
     Overpayment,
     PaymentVoid,
-    TotalBelowBudget,
     TotalBelowReceived,
 )
 from .models import Ledger, LedgerEvent, LedgerEventType, Payment, PaymentMode
@@ -176,12 +175,6 @@ def revise_total(ledger_id, amount, reason: str, by) -> Ledger:
         raise TotalBelowReceived(
             f"The total cannot be lower than the {format_inr(received)} already received.",
             received=selectors.money_str(received),
-        )
-    project = project_for(ledger.lead)
-    if project is not None and amount < project.sanctioned_budget:
-        raise TotalBelowBudget(
-            f"The total cannot be lower than the project's sanctioned budget of {format_inr(project.sanctioned_budget)}.",
-            min_total=selectors.money_str(project.sanctioned_budget),
         )
     old = ledger.total_amount
     ledger.total_amount = amount

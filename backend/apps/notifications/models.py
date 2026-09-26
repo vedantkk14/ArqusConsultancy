@@ -8,7 +8,7 @@ class Notification(models.Model):
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
     )
-    type = models.CharField(max_length=50)  # e.g. "lead_won", "budget_over", "payment_received"
+    type = models.CharField(max_length=50)  # e.g. "lead_won", "expense_added", "payment_received"
     title = models.CharField(max_length=200)
     body = models.TextField(blank=True)
     data = models.JSONField(default=dict, blank=True)  # small: ids and names the UI links with

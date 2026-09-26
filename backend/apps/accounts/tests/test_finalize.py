@@ -131,18 +131,10 @@ def test_revise_total_cannot_go_below_received(client_for, admin, ledger, make_p
     assert client.get(f"{LEDGERS}/{ledger.pk}").json()["state"] == "PAID"
 
 
-def test_revise_total_cannot_go_below_the_project_budget(client_for, admin, ledger):
-    Project.objects.create(
-        name="P", client_name="C", lead=ledger.lead, sanctioned_budget=Decimal("60000.00")
-    )
-    client = client_for(admin)
-    res = revise(client, ledger, "59999.99")
-    assert res.status_code == 400 and code(res) == "total_below_budget"
-    assert res.json()["error"]["details"]["min_total"] == "60000.00"
-    assert revise(client, ledger, "60000.00").status_code == 200
-    assert not LedgerEvent.objects.filter(
-        ledger=ledger, type="TOTAL_REVISED", data__new="59999.99"
-    ).exists()
+def test_revise_total_is_not_limited_by_the_project(client_for, admin, ledger):
+    """There is no project budget any more: only what was received limits a revision."""
+    Project.objects.create(name="P", client_name="C", lead=ledger.lead)
+    assert revise(client_for(admin), ledger, "1000.00").status_code == 200
 
 
 def test_revising_a_voided_payments_total_uses_only_active_payments(

@@ -89,7 +89,7 @@ def test_the_whole_deal_flow(
         client_for(admin)
         .post(
             f"{BASE}/projects",
-            {"lead": lead_id, "name": "P", "sanctioned_budget": "1"},
+            {"lead": lead_id, "name": "P"},
             format="json",
         )
         .json()["error"]["code"]
@@ -109,28 +109,15 @@ def test_the_whole_deal_flow(
     ]
     no_ledger_data(lead_id)
 
-    # 4. Converted to a project: the budget is capped by the finalized total (not the proposal).
-    too_much = admin_api.post(
-        f"{BASE}/projects",
-        {"lead": lead_id, "name": "Turf", "sanctioned_budget": "84000.01", "pm": pm.pk},
-        format="json",
-    )
-    assert (
-        too_much.status_code == 400 and too_much.json()["error"]["code"] == "budget_exceeds_total"
-    )
+    # 4. Converted to a project: the finalized total (not the proposal) is the admin's budget.
     ok = admin_api.post(
-        f"{BASE}/projects",
-        {"lead": lead_id, "name": "Turf", "sanctioned_budget": "60000", "pm": pm.pk},
-        format="json",
+        f"{BASE}/projects", {"lead": lead_id, "name": "Turf", "pm": pm.pk}, format="json"
     )
     assert ok.status_code == 201, ok.content
     project_id = ok.json()["id"]
     assert ok.json()["finance"]["total_amount"] == "84000.00"
+    assert ok.json()["total_budget"] == "84000.00"
     no_ledger_data(lead_id, project_id)
-    below = admin_api.post(
-        f"{LEDGERS}/{ledger.pk}/revise-total", {"amount": "59999", "reason": "cut"}, format="json"
-    )
-    assert below.status_code == 400 and below.json()["error"]["code"] == "total_below_budget"
 
     # 5. A 30% advance, then a partial payment.
     advance = admin_api.post(
@@ -153,7 +140,7 @@ def test_the_whole_deal_flow(
     )
     assert (
         detail["project"]["live_margin"] == "55200.00"
-        and detail["project"]["planned_margin"] == "24000.00"
+        and detail["project"]["remaining"] == "84000.00"  # deal total - expenses (none yet)
     )
     no_ledger_data(lead_id, project_id)
 

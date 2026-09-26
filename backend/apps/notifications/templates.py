@@ -31,8 +31,6 @@ TEMPLATES: dict[str, tuple[str, str]] = {
     "lead_reassigned_away": ("Lead reassigned", "{lead_name} was reassigned to a colleague."),
     "lead_won": ("Deal won", "{lead_name} was won for {proposed_amount} by {won_by}."),
     "lead_won_reversed": ("Won deal reversed", "{lead_name} was marked lost by {reversed_by}."),
-    "budget_warn": ("Budget warning", "{project_name} has used {usage_pct}% of its budget."),
-    "budget_over": ("Budget exceeded", "{project_name} is over its sanctioned budget."),
     "payment_received": ("Payment received", "{client_name} paid {amount}."),
     "account_created": ("Welcome to ARQUS", "Your account is ready. Sign in to get started."),
     "expense_added": (
@@ -49,21 +47,8 @@ TEMPLATES: dict[str, tuple[str, str]] = {
     "project_unassigned": ("Project reassigned", "{project_name} moved to another manager."),
     "project_completed": ("Project completed", "{project_name} was marked complete."),
     "project_reopened": ("Project reopened", "{project_name} was reopened: {reason}"),
-    "budget_requested": (
-        "Budget request",
-        "{requested_by} asked for {amount} more on {project_name}.",
-    ),
-    "budget_request_approved": (
-        "Budget approved",
-        "Your request for {amount} more on {project_name} was approved.",
-    ),
-    "budget_request_rejected": (
-        "Budget request declined",
-        "Your request for {amount} more on {project_name} was declined.",
-    ),
-    "budget_changed": ("Budget changed", "{project_name} budget changed from {old} to {new}."),
 }
-MONEY_KEYS = {"proposed_amount", "amount", "total_amount", "old", "new"}
+MONEY_KEYS = {"proposed_amount", "amount", "total_amount"}
 
 
 def render(type_: str, payload: dict | None) -> tuple[str, str]:

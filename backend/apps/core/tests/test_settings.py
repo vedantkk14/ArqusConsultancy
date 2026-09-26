@@ -144,10 +144,10 @@ def test_filters_and_pagination(admin):
 
 
 def test_profile_get_and_patch():
-    exec_ = make("eva", "SALES_EXEC", first_name="Eva", commission_rate="2.50")
+    exec_ = make("eva", "SALES_EXEC", first_name="Eva")
     c = client(exec_)
     me = c.get("/api/v1/me").json()
-    assert me["commission_rate"] == "2.50" and me["phone"] == ""
+    assert "commission_rate" not in me and me["phone"] == ""
     res = c.patch(
         "/api/v1/me",
         {
@@ -155,15 +155,14 @@ def test_profile_get_and_patch():
             "phone": "+91 99",
             "email": "x@y.co",
             "role": "ADMIN",
-            "commission_rate": "9",
         },
         format="json",
     ).json()
     exec_.refresh_from_db()
     assert exec_.first_name == "Evie" and exec_.phone == "+91 99"
     assert exec_.email == "eva@crm.local" and exec_.role == "SALES_EXEC"
-    assert str(exec_.commission_rate) == "2.50" and res["name"]
+    assert res["name"]
 
 
-def test_profile_hides_commission_for_non_exec(admin):
-    assert client(admin).get("/api/v1/me").json()["commission_rate"] is None
+def test_profile_has_no_commission(admin):
+    assert "commission_rate" not in client(admin).get("/api/v1/me").json()

@@ -28,7 +28,15 @@ export interface ExpenseAction {
 /** Expenses as a table (>= 768px) or stacked cards (phones). Void rows stay visible with a "Void" tag. */
 @Component({
   selector: 'app-expense-rows',
-  imports: [InrPipe, MatIconModule, MatMenuModule, NgTemplateOutlet, PersonAvatar, RouterLink, Skeleton],
+  imports: [
+    InrPipe,
+    MatIconModule,
+    MatMenuModule,
+    NgTemplateOutlet,
+    PersonAvatar,
+    RouterLink,
+    Skeleton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './expense-rows.html',
   styleUrl: './expense-rows.scss',
@@ -39,7 +47,7 @@ export class ExpenseRows {
   /** The all-expenses page shows the project (as a link) and who logged it. */
   readonly showProject = input(false);
   readonly skeleton = input(false);
-  /** The all-expenses page can void but not edit (edit needs the project's budget context). */
+  /** The all-expenses page can void but not edit (editing happens on the project page). */
   readonly allowEdit = input(true);
   readonly action = output<ExpenseAction>();
 

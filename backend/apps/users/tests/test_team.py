@@ -1,4 +1,4 @@
-"""Team > Users: permission matrix, self-protection, commission rates, temp passwords, overview."""
+"""Team > Users: permission matrix, self-protection, temp passwords, overview."""
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -30,7 +30,7 @@ def admin():
 
 @pytest.fixture
 def exec_():
-    return make("eva", "SALES_EXEC", first_name="Eva", commission_rate="2.50")
+    return make("eva", "SALES_EXEC", first_name="Eva")
 
 
 # ---- Permissions -----------------------------------------------------------------------
@@ -51,7 +51,6 @@ def test_non_admins_are_refused_everywhere_in_team(role, exec_):
         ("post", f"{URL}/{exec_.id}/deactivate"),
         ("post", f"{URL}/{exec_.id}/reactivate"),
         ("post", f"{URL}/{exec_.id}/reset-password"),
-        ("patch", f"{URL}/{exec_.id}/commission-rate"),
         ("get", f"{URL}/roles"),
     ]
     for method, url in calls:
@@ -74,9 +73,8 @@ def test_list_filters_search_and_paginates(admin, exec_):
     c = client(admin)
     body = c.get(URL).json()
     assert body["count"] == 3
-    assert {"id", "username", "name", "email", "role", "is_active", "commission_rate"} <= set(
-        body["results"][0]
-    )
+    assert {"id", "username", "name", "email", "role", "is_active"} <= set(body["results"][0])
+    assert "commission_rate" not in body["results"][0]
     assert [u["username"] for u in c.get(f"{URL}?role=SALES_EXEC").json()["results"]] == ["eva"]
     assert [u["username"] for u in c.get(f"{URL}?is_active=false").json()["results"]] == ["pat"]
     assert [u["username"] for u in c.get(f"{URL}?q=EVA").json()["results"]] == ["eva"]
@@ -84,10 +82,9 @@ def test_list_filters_search_and_paginates(admin, exec_):
     assert c.get(URL + "/").status_code == 200  # trailing slash works too
 
 
-def test_commission_rate_is_only_shown_for_execs(admin, exec_):
-    rows = {u["username"]: u for u in client(admin).get(URL).json()["results"]}
-    assert rows["eva"]["commission_rate"] == "2.50"
-    assert rows["boss"]["commission_rate"] is None
+def test_there_is_no_commission_rate_endpoint(admin, exec_):
+    r = client(admin).patch(f"{URL}/{exec_.id}/commission-rate", {"commission_rate": "5"})
+    assert r.status_code in (404, 405)
 
 
 def test_patch_updates_profile_fields_and_rejects_a_taken_email(admin, exec_):
@@ -175,37 +172,7 @@ def test_reset_password_returns_a_usable_temporary_password_once(admin, exec_):
 # ---- Commission ------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize(
-    "rate, ok",
-    [
-        ("0", True),
-        ("12.5", True),
-        ("100", True),
-        ("100.01", False),
-        ("-1", False),
-        ("2.555", False),
-        ("abc", False),
-    ],
-)
-def test_commission_rate_validation(admin, exec_, rate, ok):
-    r = client(admin).patch(
-        f"{URL}/{exec_.id}/commission-rate", {"commission_rate": rate}, format="json"
-    )
-    assert (r.status_code == 200) is ok
-    if ok:
-        exec_.refresh_from_db()
-        assert f"{exec_.commission_rate:.2f}" == f"{float(rate):.2f}"
-
-
-def test_only_sales_execs_have_a_commission_rate(admin):
-    pm = make("pm", "PROJECT_MANAGER")
-    r = client(admin).patch(
-        f"{URL}/{pm.id}/commission-rate", {"commission_rate": "5"}, format="json"
-    )
-    assert r.status_code == 400 and r.json()["error"]["code"] == "not_a_sales_exec"
-
-
-def test_create_accepts_a_rate_only_for_execs(admin):
+def test_create_ignores_a_commission_rate(admin):
     body = {
         "username": "n1",
         "email": "n1@crm.local",
@@ -216,9 +183,7 @@ def test_create_accepts_a_rate_only_for_execs(admin):
         "commission_rate": "3.25",
     }
     r = client(admin).post(URL, body, format="json")
-    assert r.status_code == 201 and r.json()["commission_rate"] == "3.25"
-    bad = {**body, "username": "n2", "email": "n2@crm.local", "role": "PROJECT_MANAGER"}
-    assert client(admin).post(URL, bad, format="json").status_code == 400
+    assert r.status_code == 201 and "commission_rate" not in r.json()
 
 
 # ---- Roles reference and assignments overview ------------------------------------------
@@ -253,4 +218,4 @@ def test_assignments_overview_counts_leads_and_projects(admin, exec_):
     assert body["data_sources"]["leads"] is True
     assert body["execs"] == [{"id": exec_.id, "name": "Eva", "open_leads": 2, "overdue": 1}]
     assert body["data_sources"]["projects"] is True  # projects is merged: real (zero) counts
-    assert body["pms"] == [{"id": pm.id, "name": "Paul", "running_projects": 0, "over_budget": 0}]
+    assert body["pms"] == [{"id": pm.id, "name": "Paul", "running_projects": 0}]

@@ -1,14 +1,24 @@
 <ng-template #actions let-u>
-  <button type="button" class="ib" [matMenuTriggerFor]="menu" [attr.aria-label]="'Actions for ' + u.name">
+  <button
+    type="button"
+    class="ib"
+    [matMenuTriggerFor]="menu"
+    [attr.aria-label]="'Actions for ' + u.name"
+  >
     <mat-icon aria-hidden="true">more_vert</mat-icon>
   </button>
   <mat-menu #menu="matMenu" xPosition="before">
-    <a mat-menu-item [routerLink]="['/team/members', u.id]"><mat-icon>insights</mat-icon>View details</a>
+    <a mat-menu-item [routerLink]="['/team/members', u.id]"
+      ><mat-icon>insights</mat-icon>View details</a
+    >
     <button mat-menu-item type="button" (click)="edit(u)"><mat-icon>edit</mat-icon>Edit</button>
-    <button mat-menu-item type="button" (click)="resetPassword(u)"><mat-icon>lock_reset</mat-icon>Reset password</button>
+    <button mat-menu-item type="button" (click)="resetPassword(u)">
+      <mat-icon>lock_reset</mat-icon>Reset password
+    </button>
     @if (u.id !== me()) {
       <button mat-menu-item type="button" (click)="toggleActive(u)">
-        <mat-icon>{{ u.is_active ? 'person_off' : 'how_to_reg' }}</mat-icon>{{ u.is_active ? 'Deactivate' : 'Reactivate' }}
+        <mat-icon>{{ u.is_active ? 'person_off' : 'how_to_reg' }}</mat-icon
+        >{{ u.is_active ? 'Deactivate' : 'Reactivate' }}
       </button>
     }
   </mat-menu>
@@ -17,15 +27,28 @@
 <header class="head">
   <p class="count" aria-live="polite">{{ countText() }}</p>
   <div class="head-a">
-    <button matButton="filled" type="button" (click)="add()"><mat-icon>person_add</mat-icon>Add user</button>
+    <button matButton="filled" type="button" (click)="add()">
+      <mat-icon>person_add</mat-icon>Add user
+    </button>
   </div>
 </header>
 
-<app-filter-shell [compact]="!wide()" [active]="anyFilter()" [activeCount]="dropdownCount()" (cleared)="clear()">
+<app-filter-shell
+  [compact]="!wide()"
+  [active]="anyFilter()"
+  [activeCount]="dropdownCount()"
+  (cleared)="clear()"
+>
   <label search class="search">
     <span class="sr-only">Search users</span>
     <mat-icon aria-hidden="true">search</mat-icon>
-    <input type="search" placeholder="Search name, username or email" autocomplete="off" [value]="filters().q" (input)="onSearch($any($event.target).value)" />
+    <input
+      type="search"
+      placeholder="Search name, username or email"
+      autocomplete="off"
+      [value]="filters().q"
+      (input)="onSearch($any($event.target).value)"
+    />
   </label>
   <div filters class="dds">
     <label class="dd">
@@ -54,24 +77,41 @@
   <app-empty-state
     [icon]="anyFilter() ? 'filter_alt_off' : 'group'"
     [title]="anyFilter() ? 'No users match these filters' : 'No users yet'"
-    [message]="anyFilter() ? 'Try a different search or clear the filters.' : 'Add the first account to get started.'"
+    [message]="
+      anyFilter()
+        ? 'Try a different search or clear the filters.'
+        : 'Add the first account to get started.'
+    "
   >
     @if (anyFilter()) {
       <button matButton="outlined" type="button" (click)="clear()">Clear filters</button>
     }
   </app-empty-state>
 } @else {
-  <section class="card list" [class.busy]="list.loading() && list.loaded()" [attr.aria-busy]="list.loading()" aria-label="Users">
+  <section
+    class="card list"
+    [class.busy]="list.loading() && list.loaded()"
+    [attr.aria-busy]="list.loading()"
+    aria-label="Users"
+  >
     @if (wide()) {
       <div class="table-scroll">
         <table>
           <thead>
-            <tr><th>User</th><th>Role</th><th>Status</th><th class="r">Commission</th><th>Last sign-in</th><th><span class="sr-only">Actions</span></th></tr>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Last sign-in</th>
+              <th><span class="sr-only">Actions</span></th>
+            </tr>
           </thead>
           <tbody>
             @if (!list.loaded()) {
               @for (i of placeholders; track i) {
-                <tr aria-hidden="true"><td colspan="6"><app-skeleton width="60%" /></td></tr>
+                <tr aria-hidden="true">
+                  <td colspan="5"><app-skeleton width="60%" /></td>
+                </tr>
               }
             } @else {
               @for (u of list.rows(); track u.id) {
@@ -79,14 +119,23 @@
                   <td>
                     <span class="who">
                       <app-user-avatar [name]="u.name" [size]="36" />
-                      <span class="who-t"><a class="nm" [routerLink]="['/team/members', u.id]"><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong></a><span>{{ u.email }}</span></span>
+                      <span class="who-t"
+                        ><a class="nm" [routerLink]="['/team/members', u.id]"
+                          ><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong></a
+                        ><span>{{ u.email }}</span></span
+                      >
                     </span>
                   </td>
                   <td><app-role-badge [role]="u.role" /></td>
-                  <td><span class="pill" [class.ok]="u.is_active" [class.off]="!u.is_active">{{ u.is_active ? 'Active' : 'Inactive' }}</span></td>
-                  <td class="r num">{{ u.commission_rate ? u.commission_rate + '%' : '—' }}</td>
+                  <td>
+                    <span class="pill" [class.ok]="u.is_active" [class.off]="!u.is_active">{{
+                      u.is_active ? 'Active' : 'Inactive'
+                    }}</span>
+                  </td>
                   <td class="muted">{{ u.last_login ? ago(u.last_login) : 'Never' }}</td>
-                  <td class="r"><ng-container *ngTemplateOutlet="actions; context: { $implicit: u }" /></td>
+                  <td class="r">
+                    <ng-container *ngTemplateOutlet="actions; context: { $implicit: u }" />
+                  </td>
                 </tr>
               }
             }
@@ -97,7 +146,9 @@
       <ul class="cards">
         @if (!list.loaded()) {
           @for (i of placeholders.slice(0, 3); track i) {
-            <li class="card lc" aria-hidden="true"><app-skeleton width="50%" height="16px" /><app-skeleton width="70%" /></li>
+            <li class="card lc" aria-hidden="true">
+              <app-skeleton width="50%" height="16px" /><app-skeleton width="70%" />
+            </li>
           }
         } @else {
           @for (u of list.rows(); track u.id) {
@@ -105,14 +156,19 @@
               <span class="top">
                 <span class="who">
                   <app-user-avatar [name]="u.name" [size]="40" />
-                  <span class="who-t"><a class="nm" [routerLink]="['/team/members', u.id]"><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong></a><span>{{ u.email }}</span></span>
+                  <span class="who-t"
+                    ><a class="nm" [routerLink]="['/team/members', u.id]"
+                      ><strong>{{ u.name }}{{ u.id === me() ? ' (you)' : '' }}</strong></a
+                    ><span>{{ u.email }}</span></span
+                  >
                 </span>
                 <ng-container *ngTemplateOutlet="actions; context: { $implicit: u }" />
               </span>
               <span class="meta">
                 <app-role-badge [role]="u.role" />
-                <span class="pill" [class.ok]="u.is_active" [class.off]="!u.is_active">{{ u.is_active ? 'Active' : 'Inactive' }}</span>
-                @if (u.commission_rate) { <span class="num">{{ u.commission_rate }}% commission</span> }
+                <span class="pill" [class.ok]="u.is_active" [class.off]="!u.is_active">{{
+                  u.is_active ? 'Active' : 'Inactive'
+                }}</span>
               </span>
             </li>
           }
@@ -121,6 +177,10 @@
     }
   </section>
   @if (list.hasMore()) {
-    <div class="more"><button matButton="outlined" type="button" [disabled]="list.loading()" (click)="list.more()">{{ list.loading() ? 'Loading…' : 'Load more' }}</button></div>
+    <div class="more">
+      <button matButton="outlined" type="button" [disabled]="list.loading()" (click)="list.more()">
+        {{ list.loading() ? 'Loading…' : 'Load more' }}
+      </button>
+    </div>
   }
 }

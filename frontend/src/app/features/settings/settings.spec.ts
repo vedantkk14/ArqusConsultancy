@@ -67,7 +67,9 @@ describe('AuditLogPage', () => {
   }
 
   it('sends URL filters, lists entries and expands a before/after diff', async () => {
-    const { http, harness, el } = await open('/settings/audit-log?model_label=leads.Lead&action=UPDATE');
+    const { http, harness, el } = await open(
+      '/settings/audit-log?model_label=leads.Lead&action=UPDATE',
+    );
     const req = http.expectOne((r) => r.url === '/api/v1/core/audit-log');
     expect(req.request.params.get('model_label')).toBe('leads.Lead');
     expect(req.request.params.get('action')).toBe('UPDATE');
@@ -110,16 +112,15 @@ describe('ProfilePage', () => {
     email: 'eva@x.com',
     phone: '',
     role: 'SALES_EXEC',
-    commission_rate: '2.50',
   };
 
-  it('shows email and commission read-only and saves name and phone', async () => {
+  it('shows email read-only, no commission, and saves name and phone', async () => {
     const { http, harness, el } = await setup('/settings/profile', ProfilePage);
     http.expectOne('/api/v1/me').flush(profile);
     harness.detectChanges();
     const account = text(el.querySelector('.kv'));
     expect(account).toContain('eva@x.com');
-    expect(account).toContain('2.50%');
+    expect(text(el)).not.toContain('ommission');
     expect(el.querySelector('#pf-email')).toBeNull(); // shown, never editable
     expect(el.querySelector('a[href="/account/change-password"]')).not.toBeNull();
 
@@ -133,12 +134,5 @@ describe('ProfilePage', () => {
     expect(req.request.body).toEqual({ first_name: 'Eva', last_name: 'Ray', phone: '+91 99' });
     req.flush({ ...profile, first_name: 'Evie', name: 'Evie Ray', phone: '+91 99' });
     expect(TestBed.inject(AuthService).user()?.name).toBe('Evie Ray');
-  });
-
-  it('hides the commission field for non-execs', async () => {
-    const { http, harness, el } = await setup('/settings/profile', ProfilePage);
-    http.expectOne('/api/v1/me').flush({ ...profile, role: 'ADMIN', commission_rate: null });
-    harness.detectChanges();
-    expect(text(el.querySelector('.kv'))).not.toContain('Commission');
   });
 });

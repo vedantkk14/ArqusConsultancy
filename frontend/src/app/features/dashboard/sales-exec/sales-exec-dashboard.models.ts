@@ -35,8 +35,6 @@ export interface ExecKpis {
   lost_count: number;
   conversion_pct: string;
   won_value: string;
-  /** Only present when the backend's SHOW_COMMISSION_TO_EXEC flag is on. */
-  estimated_commission?: string;
 }
 
 export interface PipelineStage {

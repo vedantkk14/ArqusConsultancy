@@ -11,7 +11,9 @@
     <div>
       <p class="b-t">{{ b.name }} can't be converted yet</p>
       @if (b.ineligible_reason === 'project_exists' && b.project_id) {
-        <p class="b-m">Already a project: <a [routerLink]="['/projects', b.project_id]">open it</a>.</p>
+        <p class="b-m">
+          Already a project: <a [routerLink]="['/projects', b.project_id]">open it</a>.
+        </p>
       } @else {
         <p class="b-m">
           {{ reasonText(b) }}
@@ -25,7 +27,11 @@
 @if (error()) {
   <app-error-state title="Couldn't load won deals" (retry)="load()" />
 } @else if (!loading() && !rows().length) {
-  <app-empty-state icon="transform" title="No won deals to convert" message="Finalized deals appear here." />
+  <app-empty-state
+    icon="transform"
+    title="No won deals to convert"
+    message="Finalized deals appear here."
+  />
 } @else {
   <section class="card list" [attr.aria-busy]="loading()" aria-label="Won deals">
     @if (wide()) {
@@ -56,7 +62,11 @@
                   </td>
                   <td>
                     @if (row.exec_name) {
-                      <span class="who"><app-person-avatar [name]="row.exec_name" [size]="24" />{{ row.exec_name }}</span>
+                      <span class="who"
+                        ><app-person-avatar [name]="row.exec_name" [size]="24" />{{
+                          row.exec_name
+                        }}</span
+                      >
                     } @else {
                       <span class="muted-s">Unassigned</span>
                     }
@@ -65,10 +75,21 @@
                     {{ row.won_at ? day(row.won_at.slice(0, 10)) : '' }}
                     <span class="ph">Waiting {{ waiting(row) }}</span>
                   </td>
-                  <td class="r num">{{ row.proposed_amount ? (row.proposed_amount | inrCompact) : '—' }}</td>
-                  <td class="r num">{{ row.total_amount ? (row.total_amount | inrCompact) : '—' }}</td>
+                  <td class="r num">
+                    {{ row.proposed_amount ? (row.proposed_amount | inrCompact) : '—' }}
+                  </td>
+                  <td class="r num">
+                    {{ row.total_amount ? (row.total_amount | inrCompact) : '—' }}
+                  </td>
                   <td class="r">
-                    <button matButton="filled" type="button" [attr.aria-label]="'Convert ' + row.name + ' to a project'" (click)="open(row)">Convert</button>
+                    <button
+                      matButton="filled"
+                      type="button"
+                      [attr.aria-label]="'Assign a project manager for ' + row.name"
+                      (click)="open(row)"
+                    >
+                      Assign project manager
+                    </button>
                   </td>
                 </tr>
               }
@@ -91,13 +112,33 @@
               <a class="nm" [routerLink]="['/leads', row.lead]">{{ row.name }}</a>
               <span class="lc-meta">
                 <span>{{ row.exec_name ?? 'Unassigned' }}</span>
-                <span>Won {{ row.won_at ? day(row.won_at.slice(0, 10)) : '' }} · waiting {{ waiting(row) }}</span>
+                <span
+                  >Won {{ row.won_at ? day(row.won_at.slice(0, 10)) : '' }} · waiting
+                  {{ waiting(row) }}</span
+                >
               </span>
               <span class="lc-fig">
-                <span><span class="lbl">Proposed</span><strong class="num">{{ row.proposed_amount ? (row.proposed_amount | inrCompact) : '—' }}</strong></span>
-                <span><span class="lbl">Deal total</span><strong class="num">{{ row.total_amount ? (row.total_amount | inrCompact) : '—' }}</strong></span>
+                <span
+                  ><span class="lbl">Proposed</span
+                  ><strong class="num">{{
+                    row.proposed_amount ? (row.proposed_amount | inrCompact) : '—'
+                  }}</strong></span
+                >
+                <span
+                  ><span class="lbl">Deal total</span
+                  ><strong class="num">{{
+                    row.total_amount ? (row.total_amount | inrCompact) : '—'
+                  }}</strong></span
+                >
               </span>
-              <button matButton="filled" type="button" [attr.aria-label]="'Convert ' + row.name + ' to a project'" (click)="open(row)">Convert</button>
+              <button
+                matButton="filled"
+                type="button"
+                [attr.aria-label]="'Assign a project manager for ' + row.name"
+                (click)="open(row)"
+              >
+                Assign project manager
+              </button>
             </li>
           }
         }
@@ -115,7 +156,13 @@
         [subtitle]="lead.name + (lead.total_amount ? ' · deal ' + (lead.total_amount | inr) : '')"
         (closed)="close()"
       />
-      <app-convert-form [lead]="lead" [managers]="managers()" [inSheet]="true" (converted)="onConverted($event)" (cancelled)="close()" />
+      <app-convert-form
+        [lead]="lead"
+        [managers]="managers()"
+        [inSheet]="true"
+        (converted)="onConverted($event)"
+        (cancelled)="close()"
+      />
     </div>
   }
 </ng-template>

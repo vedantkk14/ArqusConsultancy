@@ -7,14 +7,13 @@ from apps.leads.models import LeadStatus
 from apps.projects import integrations, selectors, services
 from apps.projects.models import Project
 
-from .conftest import BASE, TOTAL
+from .conftest import BASE
 
 
 def payload(lead, **over):
     body = {
         "lead": lead.pk,
         "name": "Turf ground",
-        "sanctioned_budget": "600000.00",
         "scope": "Everything",
     }
     body.update(over)
@@ -31,7 +30,9 @@ def test_convert_happy_path(client_for, admin, pm1, make_lead, notes):
     assert body["name"] == "Turf ground"
     assert body["client_name"] == lead.name
     assert body["pm"] == {"id": pm1.pk, "name": pm1.display_name}
-    assert body["sanctioned_budget"] == "600000.00" and body["spent"] == "0.00"
+    assert "sanctioned_budget" not in body
+    assert body["total_budget"] == "1000000.00" and body["spent"] == "0.00"
+    assert body["remaining"] == "1000000.00"
     assert body["state"] == "ok" and body["usage_pct"] == "0.00"
     assert body["lead_id"] == lead.pk
     assert "add_expense" in body["allowed_actions"]
@@ -83,18 +84,11 @@ def test_a_lead_becomes_a_project_only_once(client_for, admin, make_lead):
     assert Project.objects.filter(lead=lead).count() == 1
 
 
-def test_budget_must_be_positive_and_within_the_total(client_for, admin, make_lead):
-    lead = make_lead()
-    client = client_for(admin)
-    for bad in ("0", "-1", "abc", "1.234"):
-        res = client.post(BASE, payload(lead, sanctioned_budget=bad), format="json")
-        assert res.status_code == 400, bad
-        assert "sanctioned_budget" in res.json()["error"]["details"]
-    too_much = client.post(BASE, payload(lead, sanctioned_budget="1000000.01"), format="json")
-    assert too_much.status_code == 400
-    assert too_much.json()["error"]["code"] == "budget_exceeds_total"
-    exact = client.post(BASE, payload(lead, sanctioned_budget="1000000.00"), format="json")
-    assert exact.status_code == 201
+def test_a_budget_sent_with_the_request_is_ignored(client_for, admin, make_lead):
+    res = client_for(admin).post(
+        BASE, payload(make_lead(), sanctioned_budget="5.00"), format="json"
+    )
+    assert res.status_code == 201 and "sanctioned_budget" not in res.json()
 
 
 def test_assignee_must_be_an_active_project_manager(client_for, admin, make_lead, sales_exec, pm1):
@@ -150,14 +144,6 @@ def accounts(monkeypatch):
     return state
 
 
-def test_with_accounts_the_ledger_total_is_the_ceiling(client_for, admin, make_lead, accounts):
-    lead = make_lead()
-    res = client_for(admin).post(BASE, payload(lead, sanctioned_budget="800000.01"), format="json")
-    assert res.status_code == 400 and res.json()["error"]["code"] == "budget_exceeds_total"
-    ok = client_for(admin).post(BASE, payload(lead, sanctioned_budget="800000.00"), format="json")
-    assert ok.status_code == 201
-
-
 def test_with_accounts_the_deal_must_be_finalized(client_for, admin, make_lead, accounts):
     accounts["result"]["finalized"] = False
     res = client_for(admin).post(BASE, payload(make_lead()), format="json")
@@ -170,7 +156,7 @@ def test_with_accounts_the_deal_must_be_finalized(client_for, admin, make_lead, 
 def test_admin_detail_carries_finance_and_margins(client_for, admin, pm1, make_lead, accounts):
     lead = make_lead()
     project = services.convert(
-        lead.pk, name="P", sanctioned_budget=Decimal("500000"), pm_id=pm1.pk,
+        lead.pk, name="P", pm_id=pm1.pk,
         start_date=None, expected_end_date=None, scope="", by=admin,
     )  # fmt: skip
     services.add_expense(
@@ -183,7 +169,6 @@ def test_admin_detail_carries_finance_and_margins(client_for, admin, pm1, make_l
         "received": "300000.00",
         "outstanding": "500000.00",
         "finalized": True,
-        "planned_margin": "300000.00",  # total - sanctioned
         "live_margin": "250000.00",  # received - expenses
     }
 
@@ -191,20 +176,20 @@ def test_admin_detail_carries_finance_and_margins(client_for, admin, pm1, make_l
 def test_admin_detail_carries_the_ledger_finance(client_for, admin, project):
     finance = client_for(admin).get(f"{BASE}/{project.pk}").json()["finance"]
     assert finance["total_amount"] == "1000000.00" and finance["received"] == "0.00"
-    assert finance["planned_margin"] == "400000.00" and finance["live_margin"] == "0.00"
+    assert finance["live_margin"] == "0.00" and "planned_margin" not in finance
 
 
 def test_convertible_lists_only_eligible_deals(client_for, admin, make_lead):
     ready = make_lead(name="Ready", won_at=timezone.now())
     make_lead(name="Open", status=LeadStatus.INTERESTED)
     converted = make_lead(name="Done")
-    services.convert(converted.pk, name="D", sanctioned_budget=Decimal("100"), pm_id=None,
+    services.convert(converted.pk, name="D", pm_id=None,
                      start_date=None, expected_end_date=None, scope="", by=admin)  # fmt: skip
     body = client_for(admin).get(f"{BASE}/convertible").json()
     assert [r["name"] for r in body["results"]] == ["Ready"]
     row = body["results"][0]
     assert row["lead"] == ready.pk and row["ineligible_reason"] is None
-    assert row["total_amount"] == "1000000.00" and row["suggested_budget"] == "600000.00"
+    assert row["total_amount"] == "1000000.00" and "suggested_budget" not in row
 
 
 def test_convertible_lookup_explains_why_a_lead_is_not_ready(client_for, admin, make_lead):
@@ -213,7 +198,6 @@ def test_convertible_lookup_explains_why_a_lead_is_not_ready(client_for, admin, 
     project = services.convert(
         done.pk,
         name="D",
-        sanctioned_budget=Decimal("100"),
         pm_id=None,
         start_date=None,
         expected_end_date=None,
@@ -226,14 +210,6 @@ def test_convertible_lookup_explains_why_a_lead_is_not_ready(client_for, admin, 
     row = client.get(f"{BASE}/convertible?lead={done.pk}").json()["results"][0]
     assert row["ineligible_reason"] == "project_exists" and row["project_id"] == project.pk
     assert client.get(f"{BASE}/convertible?lead=99999").json()["results"] == []
-
-
-def test_suggested_budget_is_sixty_percent_as_a_string(make_lead):
-    from apps.projects.selectors import suggested_budget
-
-    assert suggested_budget(Decimal("999999.99")) == "599999.99"
-    assert suggested_budget(None) is None
-    assert TOTAL * Decimal("0.6") == Decimal("600000.00")
 
 
 def test_managers_lists_active_pms_with_running_counts(client_for, admin, pm1, pm2, make_project):

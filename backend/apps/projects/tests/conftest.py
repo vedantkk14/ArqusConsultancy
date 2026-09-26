@@ -117,12 +117,14 @@ def make_lead(db, sales_exec):
 
 @pytest.fixture
 def make_project(admin, make_lead):
-    def _make(pm=None, budget="600000.00", lead=None, **extra):
-        lead = lead or make_lead()
+    """`budget` sets the deal total (the finalized ledger total), which is the Admin's budget."""
+
+    def _make(pm=None, budget=None, lead=None, **extra):
+        if lead is None:
+            lead = make_lead(proposed_amount=Decimal(budget)) if budget else make_lead()
         return services.convert(
             lead.pk,
             name=extra.pop("name", f"Turf for {lead.name}"),
-            sanctioned_budget=Decimal(budget),
             pm_id=pm.pk if pm else None,
             start_date=None,
             expected_end_date=None,
@@ -213,6 +215,9 @@ FORBIDDEN_KEYS = (
     "email",
     "commission",
     "final",
+    "budget",
+    "remaining",
+    "usage",
 )
 FORBIDDEN_TEXT = ("1000000", LEAD_PHONE, LEAD_PHONE[3:], "client1@example.com")
 

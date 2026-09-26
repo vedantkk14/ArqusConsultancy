@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,7 +41,7 @@ const ORDER: FieldKey[] = ['ledger', 'amount', 'mode', 'reference', 'received_on
 
 const REFERENCE_LABELS: Record<PaymentMode, string> = {
   CASH: 'Reference',
-  BANK_TRANSFER: 'Bank reference (UTR)',
+  BANK_TRANSFER: 'Bank reference (UTR)/ transaction id',
   UPI: 'UPI transaction ID',
   CHEQUE: 'Cheque number',
   CARD: 'Card approval code',
@@ -58,45 +68,222 @@ export function proofProblem(file: { name: string; type: string; size: number })
   styleUrl: '../ui/dialog.scss',
   templateUrl: './record-payment-form.html',
   styles: `
-    .modes { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; border: 0; }
-    .mode { position: relative; }
-    .mode input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+    .modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    .mode {
+      position: relative;
+    }
+    .mode input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      margin: 0;
+      cursor: pointer;
+    }
     .mode span {
-      display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line);
-      border-radius: var(--radius-pill); background: var(--surface); color: var(--ink-2); font-size: var(--text-sm);
-      transition: background-color var(--dur-fast), border-color var(--dur-fast);
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+      transition:
+        background-color var(--dur-fast),
+        border-color var(--dur-fast);
     }
-    .mode:hover span { border-color: var(--line-strong); }
-    .mode input:checked + span { border-color: var(--ink); background: var(--ink); color: var(--on-ink); font-weight: 600; }
-    .mode input:focus-visible + span { outline: 2px solid var(--brand-deep); outline-offset: 2px; box-shadow: var(--ring); }
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-    .out { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: var(--ink-3); font-size: var(--text-sm); }
-    .out strong { color: var(--ink); }
-    .fill { min-height: 32px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-pill); background: var(--surface); color: var(--brand-deep); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer; }
-    .fill:hover { background: var(--subtle); }
-    .picked-client { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--subtle); }
-    .picked-client strong { color: var(--ink); }
-    .opts { display: flex; flex-direction: column; margin: 4px 0 0; padding: 4px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); list-style: none; }
-    .opts button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-    .opts button:hover, .opts button:focus-visible { background: var(--subtle); }
-    .opts .ph { color: var(--ink-3); font-size: var(--text-xs); }
-    .count { align-self: flex-end; color: var(--ink-3); font-size: var(--text-xs); }
-    .pick { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .pick button, .rm {
-      display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line-strong);
-      border-radius: var(--radius-control); background: var(--surface); color: var(--ink); font: inherit; font-size: var(--text-sm); cursor: pointer;
+    .mode:hover span {
+      border-color: var(--line-strong);
     }
-    .pick button:hover, .rm:hover { background: var(--subtle); }
-    .picked { display: flex; align-items: center; gap: var(--space-3); padding: 8px; border: 1px solid var(--line); border-radius: var(--radius-control); }
-    .picked img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; }
-    .picked .pdf { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 8px; background: var(--tint-rose); color: var(--tint-rose-ink); }
-    .picked .nm { flex: 1; min-width: 0; color: var(--ink-2); font-size: var(--text-sm); overflow-wrap: anywhere; }
-    .rm { min-height: 40px; }
-    .dup { margin-bottom: var(--space-4); padding: 12px; border-radius: var(--radius-control); background: var(--tint-amber); color: var(--tint-amber-ink); font-size: var(--text-sm); }
-    .dup p { margin: 0 0 8px; }
-    .prog { height: 6px; overflow: hidden; border-radius: var(--radius-pill); background: var(--plate); }
-    .prog span { display: block; height: 100%; background: var(--data-cyan); transform-origin: left; transition: transform var(--dur-base); }
-    @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+    .mode input:checked + span {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--on-ink);
+      font-weight: 600;
+    }
+    .mode input:focus-visible + span {
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 2px;
+      box-shadow: var(--ring);
+    }
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+    }
+    .out {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      color: var(--ink-3);
+      font-size: var(--text-sm);
+    }
+    .out strong {
+      color: var(--ink);
+    }
+    .fill {
+      min-height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      color: var(--brand-deep);
+      font: inherit;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .fill:hover {
+      background: var(--subtle);
+    }
+    .picked-client {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: var(--subtle);
+    }
+    .picked-client strong {
+      color: var(--ink);
+    }
+    .opts {
+      display: flex;
+      flex-direction: column;
+      margin: 4px 0 0;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: var(--surface);
+      list-style: none;
+    }
+    .opts button {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .opts button:hover,
+    .opts button:focus-visible {
+      background: var(--subtle);
+    }
+    .opts .ph {
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+    }
+    .count {
+      align-self: flex-end;
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+    }
+    .pick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .pick button,
+    .rm {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;
+      padding: 0 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      font-size: var(--text-sm);
+      cursor: pointer;
+    }
+    .pick button:hover,
+    .rm:hover {
+      background: var(--subtle);
+    }
+    .picked {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+    }
+    .picked img {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .picked .pdf {
+      display: grid;
+      width: 56px;
+      height: 56px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--tint-rose);
+      color: var(--tint-rose-ink);
+    }
+    .picked .nm {
+      flex: 1;
+      min-width: 0;
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+      overflow-wrap: anywhere;
+    }
+    .rm {
+      min-height: 40px;
+    }
+    .dup {
+      margin-bottom: var(--space-4);
+      padding: 12px;
+      border-radius: var(--radius-control);
+      background: var(--tint-amber);
+      color: var(--tint-amber-ink);
+      font-size: var(--text-sm);
+    }
+    .dup p {
+      margin: 0 0 8px;
+    }
+    .prog {
+      height: 6px;
+      overflow: hidden;
+      border-radius: var(--radius-pill);
+      background: var(--plate);
+    }
+    .prog span {
+      display: block;
+      height: 100%;
+      background: var(--data-cyan);
+      transform-origin: left;
+      transition: transform var(--dur-base);
+    }
+    @media (max-width: 480px) {
+      .row2 {
+        grid-template-columns: 1fr;
+      }
+    }
   `,
 })
 export class RecordPaymentForm implements OnInit {
@@ -144,7 +331,12 @@ export class RecordPaymentForm implements OnInit {
   constructor() {
     inject(DestroyRef).onDestroy(() => this.clearPreview());
     this.typed
-      .pipe(debounceTime(250), distinctUntilChanged(), switchMap((q) => this.api.options(q)), takeUntilDestroyed(inject(DestroyRef)))
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        switchMap((q) => this.api.options(q)),
+        takeUntilDestroyed(inject(DestroyRef)),
+      )
       .subscribe({ next: (list) => this.options.set(list), error: () => this.options.set([]) });
   }
 
@@ -317,7 +509,9 @@ export class RecordPaymentForm implements OnInit {
       this.focusFirst(mapped);
     } else {
       this.error.set(
-        err.code === 'not_finalized' ? 'Finalize the deal amount before recording payments.' : err.message,
+        err.code === 'not_finalized'
+          ? 'Finalize the deal amount before recording payments.'
+          : err.message,
       );
     }
   }
@@ -328,7 +522,12 @@ export class RecordPaymentForm implements OnInit {
     if (!first) {
       return false;
     }
-    const id = first === 'mode' ? `rp-mode-${this.mode()}` : first === 'ledger' && this.picked() ? 'rp-amount' : FIELD_IDS[first];
+    const id =
+      first === 'mode'
+        ? `rp-mode-${this.mode()}`
+        : first === 'ledger' && this.picked()
+          ? 'rp-amount'
+          : FIELD_IDS[first];
     document.getElementById(id)?.focus();
     return true;
   }

@@ -33,10 +33,6 @@ TREND_MONTHS = 6
 #: Collections aging buckets: days since the last payment (or ledger creation) of an unpaid ledger.
 AGING_BUCKETS = (("0-30", 0, 30), ("31-60", 31, 60), ("61-90", 61, 90), ("90+", 91, None))
 
-#: Budget usage (spent / sanctioned budget, %) at which a running project is "warn" / "over".
-BURN_WARN_PCT = Decimal("80")
-BURN_OVER_PCT = Decimal("100")
-
 TWO_PLACES = Decimal("0.01")
 ONE_PLACE = Decimal("0.1")
 ZERO = Decimal("0")
@@ -135,17 +131,6 @@ def aging_bucket(days: int) -> str:
     return AGING_BUCKETS[0][0]
 
 
-def burn_state(spent, sanctioned) -> str:
-    """ok < 80% <= warn < 100% <= over, measured against the sanctioned budget only."""
-    sanctioned = Decimal(sanctioned or 0)
-    if sanctioned <= 0:
-        return "ok"
-    usage = Decimal(spent or 0) * 100 / sanctioned  # exact, not the rounded display value
-    if usage >= BURN_OVER_PCT:
-        return "over"
-    return "warn" if usage >= BURN_WARN_PCT else "ok"
-
-
 def empty_aging() -> list[dict]:
     return [{"bucket": label, "count": 0, "amount": money(ZERO)} for label, _, _ in AGING_BUCKETS]
 
@@ -200,7 +185,7 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
         sales_by_exec, lead_sources, activity = f["sales_by_exec"], f["sources"], f["activity"]
         overdue_followups, won_awaiting = f["overdue"], f["won_awaiting"]
 
-    projects_running = projects_completed = budget_alerts = 0
+    projects_running = projects_completed = 0
     projects_burn: list[dict] = []
     spent = ZERO
     spent_trend = [ZERO] * len(months)
@@ -209,7 +194,7 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
     if project_model is not None and expense_model is not None:
         p = live.project_figures(rng, months)
         projects_running, projects_completed = p["running"], p["completed"]
-        projects_burn, budget_alerts, spent = p["burn"], p["over"], p["spent"]
+        projects_burn, spent = p["burn"], p["spent"]
         spent_trend = [p["spent_by_month"].get(m, ZERO) for m in months]
         recent_expenses, project_events = p["recent_expenses"], p["events"]
 
@@ -250,7 +235,6 @@ def build_admin_dashboard(period: str = DEFAULT_PERIOD, today: date | None = Non
         "overdue_followups": overdue_followups,
         "won_awaiting_finalization": won_awaiting,
         "overdue_payments": overdue_payments,
-        "budget_alerts": budget_alerts,
     }
 
     return {
@@ -336,11 +320,6 @@ ATTENTION_ITEMS = {
         "label": "Overdue follow-ups",
         "severity": "high",
         "route": "/leads/overdue",
-    },
-    "budget_alerts": {
-        "label": "Projects over budget",
-        "severity": "medium",
-        "route": "/expenses/alerts",
     },
     "won_awaiting_finalization": {
         "label": "Won deals awaiting finalisation",

@@ -21,7 +21,6 @@ from .exceptions import TokenInvalid
 from .models import User
 from .roles import ROLE_REFERENCE
 from .serializers import (
-    CommissionRateSerializer,
     LoginResponseSerializer,
     LoginSerializer,
     LogoutSerializer,
@@ -182,15 +181,6 @@ class UserViewSet(GenericViewSet):
         user = self.get_object()
         password = services.admin_reset_password(user)
         return Response({"temporary_password": password, "must_change_password": True})
-
-    @action(detail=True, methods=["patch"], url_path="commission-rate")
-    def commission_rate(self, request, pk=None):
-        data = CommissionRateSerializer(data=request.data)
-        data.is_valid(raise_exception=True)
-        user = services.set_commission_rate(
-            self.get_object(), data.validated_data["commission_rate"]
-        )
-        return Response(UserAdminSerializer(user).data)
 
     @action(detail=False, methods=["get"], url_path="assignments-overview")
     def assignments_overview(self, request):

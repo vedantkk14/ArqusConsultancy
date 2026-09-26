@@ -5,7 +5,7 @@ import { PeriodSwitcher } from '../../components/period-switcher';
 import { Period } from '../../dashboard.models';
 import { ExecKpis } from '../sales-exec-dashboard.models';
 
-/** Bordered strip with dividers: Won, Won value, Conversion %, Lost (+ commission if the API sends it). */
+/** Bordered strip with dividers: Won, Won value, Conversion %, Lost. */
 @Component({
   selector: 'app-my-results-strip',
   imports: [InrCompactPipe, PanelHead, PeriodSwitcher],
@@ -32,12 +32,6 @@ import { ExecKpis } from '../sales-exec-dashboard.models';
         <span class="lbl">Lost</span>
         <span class="val num">{{ kpis().lost_count }}</span>
       </div>
-      @if (kpis().estimated_commission) {
-        <div class="fig">
-          <span class="lbl">Est. commission</span>
-          <span class="val num">{{ kpis().estimated_commission | inrCompact }}</span>
-        </div>
-      }
     </div>
   `,
   styles: `

@@ -19,7 +19,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { activeChip, activeFilterCount } from '../data/projects-list.store';
-import { Manager, ORDERINGS, ProjectFilters, ProjectSummary } from '../data/project.models';
+import {
+  ADMIN_ORDERINGS,
+  Manager,
+  ORDERINGS,
+  ProjectFilters,
+  ProjectSummary,
+} from '../data/project.models';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
@@ -37,12 +43,14 @@ export class ProjectFiltersBar {
   readonly filters = input.required<ProjectFilters>();
   readonly summary = input<ProjectSummary | null>(null);
   readonly showPm = input(false);
+  /** Admin: budget-state chips and the budget ordering. A PM never sees any budget. */
+  readonly showBudget = input(false);
   readonly managers = input<Manager[]>([]);
   readonly compact = input(false);
   readonly changed = output<Partial<ProjectFilters>>();
   readonly cleared = output<void>();
 
-  protected readonly orderings = ORDERINGS;
+  protected readonly orderings = computed(() => (this.showBudget() ? ADMIN_ORDERINGS : ORDERINGS));
   protected readonly search = signal('');
   protected readonly chip = computed(() => activeChip(this.filters()));
   protected readonly dropdownCount = computed(() => activeFilterCount(this.filters()));
@@ -51,7 +59,7 @@ export class ProjectFiltersBar {
   );
   protected readonly total = computed(() => {
     const s = this.summary();
-    return s ? s.ok + s.warn + s.over : null;
+    return s ? (s.ok ?? 0) + (s.warn ?? 0) + (s.over ?? 0) : null;
   });
 
   private readonly sheet = inject(MatBottomSheet);
@@ -69,7 +77,11 @@ export class ProjectFiltersBar {
       });
     });
     this.typed
-      .pipe(debounceTime(SEARCH_DEBOUNCE_MS), distinctUntilChanged(), takeUntilDestroyed(inject(DestroyRef)))
+      .pipe(
+        debounceTime(SEARCH_DEBOUNCE_MS),
+        distinctUntilChanged(),
+        takeUntilDestroyed(inject(DestroyRef)),
+      )
       .subscribe((q) => this.changed.emit({ q: q.trim() }));
   }
 
@@ -80,15 +92,15 @@ export class ProjectFiltersBar {
     }
     switch (chip) {
       case 'ok':
-        return s.ok;
+        return s.ok ?? 0;
       case 'warn':
-        return s.warn;
+        return s.warn ?? 0;
       case 'over':
-        return s.over;
+        return s.over ?? 0;
       case 'no_pm':
         return s.no_pm ?? 0;
       case 'at_risk':
-        return s.warn + s.over;
+        return (s.warn ?? 0) + (s.over ?? 0);
       default:
         return this.total();
     }

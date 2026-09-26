@@ -5,9 +5,9 @@
 | App | Owner | Responsibility |
 | --- | --- | --- |
 | `core` | shared | `TimeStampedModel`, `SoftDeleteModel`, role permissions, pagination, error handler, `notify()` stub, `seed_demo_data` |
-| `users` | shared | Custom `User` (role, phone, commission_rate), JWT login/refresh, `/me` |
+| `users` | shared | Custom `User` (role, phone), JWT login/refresh, `/me` |
 | `leads` | Dev A | Leads, follow-ups, marking a lead Won |
-| `projects` | Dev B | Projects, sanctioned budget, expenses, PM-facing API |
+| `projects` | Dev B | Projects, expenses, PM-facing API |
 | `accounts` | Dev C | `Ledger` (owns the Total Project Amount), payments, statements |
 | `notifications` | Dev C | In-app notifications, WhatsApp links |
 | `reports` | Dev C | Reports and the admin dashboard |
@@ -25,13 +25,13 @@ from the won lead â†’ `accounts` records payments, `projects` records expenses â
 ## Privacy shield
 
 **Rule:** the Total Project Amount is stored in exactly one place, `accounts.Ledger.total_amount`.
-A `PROJECT_MANAGER` never sees it, nor lead data or payments. They see only the Sanctioned Budget on
-projects assigned to them.
+A `PROJECT_MANAGER` never sees it, nor any budget, lead data or payments. They only log expenses on
+projects assigned to them. The Admin sees the project's budget, which *is* the deal total.
 
 Design:
 
 1. **One home for the number.** `total_amount` exists only on `accounts.Ledger`. It is not copied to
-   `Lead` or `Project`. `Project` holds `sanctioned_budget` (a separate, PM-visible figure).
+   `Lead` or `Project`. `Project` holds no budget of its own.
 2. **Separate serializers per audience.** Projects have a PM serializer (`PMProjectSerializer`) with an
    explicit allow-list of fields. Never use `fields = "__all__"` or `exclude = [...]` on anything a PM can reach.
    The view picks the serializer from `request.user.role`.
@@ -126,7 +126,7 @@ followed when `safeReturnUrl()` accepts it (internal paths only). On startup the
 
 - In models, serializers (`DecimalField`), services and tests. Build test values from strings: `Decimal("10.50")`.
 - Amounts travel over the API as strings (`"10500.00"`), which is DRF's default for decimals.
-- Percentages (e.g. `commission_rate`) use `DecimalField(max_digits=5, decimal_places=2)`.
+- Percentages use `DecimalField(max_digits=5, decimal_places=2)`.
 - Round with `Decimal.quantize(Decimal("0.01"))` at the end of a calculation, not in the middle.
 - Frontend: treat amounts as strings/decimals; never accumulate with floating-point arithmetic.
 

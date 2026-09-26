@@ -162,10 +162,9 @@ def test_a_pdf_is_served_as_a_pdf(client_for, pm1, project):
 
 
 def test_a_failed_expense_leaves_no_orphan_file(client_for, pm1, make_project, settings):
-    project = make_project(pm=pm1, budget="1.00")
-    res = add(
-        client_for(pm1), project, amount="500.00"
-    )  # over budget: refused after the file was processed
+    project = make_project(pm=pm1)
+    client_for(pm1).post(f"{BASE}/{project.pk}/complete")
+    res = add(client_for(pm1), project, amount="500.00")  # refused after the file was processed
     assert res.status_code == 409
     files = (
         [f for _, _, names in os.walk(settings.MEDIA_ROOT) for f in names]

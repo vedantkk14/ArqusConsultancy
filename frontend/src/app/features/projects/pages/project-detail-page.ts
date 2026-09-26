@@ -1,9 +1,19 @@
-import { RequestBudgetDialog, RequestBudgetDialogData } from '../components/dialogs/request-budget-dialog';
-import { ReleaseBudgetDialog, ReleaseBudgetDialogData, ReleaseResult } from '../components/dialogs/release-budget-dialog';
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import {
+  MatBottomSheet,
+  MatBottomSheetModule,
+  MatBottomSheetRef,
+} from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,21 +22,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ApiError, Role } from '../../../core/models';
+import { Role } from '../../../core/models';
 import { LayoutService } from '../../../layout/layout.service';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { InrPipe } from '../../../shared/money/inr.pipe';
 import { AddExpenseForm } from '../components/add-expense-form';
 import { BudgetPanel } from '../components/budget-panel';
-import { BudgetDialog, BudgetDialogData } from '../components/dialogs/budget-dialog';
 import { CompleteDialog, CompleteDialogData } from '../components/dialogs/complete-dialog';
 import { ReasonDialog, ReasonDialogData } from '../components/dialogs/reason-dialog';
 import { ReassignDialog, ReassignDialogData } from '../components/dialogs/reassign-dialog';
 import { ReceiptViewer, ReceiptViewerData } from '../components/dialogs/receipt-viewer';
 import { ExpenseAction, ExpenseRows } from '../components/expense-rows';
 import { ProjectTimeline } from '../components/project-timeline';
-import { EXPENSE_CATEGORIES, Expense, ProjectAction, ProjectDetail, STATE_TINT } from '../data/project.models';
+import {
+  EXPENSE_CATEGORIES,
+  Expense,
+  ProjectAction,
+  ProjectDetail,
+  STATE_TINT,
+} from '../data/project.models';
 import { ProjectsApi } from '../data/projects-api.service';
 import { BudgetStateChip, PersonAvatar } from '../ui/bits';
 import { formatBusinessFull, formatDay, relativeLabel } from '../ui/business-time';
@@ -37,7 +52,10 @@ import { dialogConfig } from '../ui/open';
 const PAGE_SIZE = 20;
 const EXPENSE_TITLE_ID = 'ae-title';
 
-/** One project: budget, (admin) finance, expenses and the timeline. A PM's DOM never contains the finance panel. */
+/**
+ * One project: (admin) budget and finance, expenses and the timeline. A PM's DOM never contains the
+ * budget or finance panels: a project manager only logs expenses.
+ */
 @Component({
   selector: 'app-project-detail-page',
   imports: [
@@ -60,7 +78,7 @@ const EXPENSE_TITLE_ID = 'ae-title';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-detail-page.html',
-  styleUrls: ['./project-detail-page.scss', './project-budget-request.scss'],
+  styleUrl: './project-detail-page.scss',
 })
 export class ProjectDetailPage {
   private readonly route = inject(ActivatedRoute);
@@ -71,9 +89,12 @@ export class ProjectDetailPage {
   private readonly snack = inject(MatSnackBar);
   protected readonly layout = inject(LayoutService);
 
-  private readonly resolved = toSignal(this.route.data.pipe(map((d) => (d['project'] as ProjectDetail | null) ?? null)), {
-    initialValue: (this.route.snapshot.data['project'] as ProjectDetail | null) ?? null,
-  });
+  private readonly resolved = toSignal(
+    this.route.data.pipe(map((d) => (d['project'] as ProjectDetail | null) ?? null)),
+    {
+      initialValue: (this.route.snapshot.data['project'] as ProjectDetail | null) ?? null,
+    },
+  );
   private readonly updated = signal<ProjectDetail | null>(null);
   protected readonly project = computed(() => {
     const fresh = this.updated();
@@ -83,10 +104,18 @@ export class ProjectDetailPage {
   protected readonly timelineTick = signal(0);
 
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
-  protected readonly wide = toSignal(inject(BreakpointObserver).observe('(min-width: 768px)').pipe(map((s) => s.matches)), {
-    initialValue: true,
-  });
-  protected readonly glow = computed(() => STATE_TINT[this.project()?.state ?? 'ok']);
+  protected readonly wide = toSignal(
+    inject(BreakpointObserver)
+      .observe('(min-width: 768px)')
+      .pipe(map((s) => s.matches)),
+    {
+      initialValue: true,
+    },
+  );
+  /** The header glow follows the budget state for the Admin; a PM (no budget) always sees the calm tint. */
+  protected readonly glow = computed(
+    () => STATE_TINT[(this.isAdmin() && this.project()?.state) || 'ok'],
+  );
   protected readonly running = computed(() => this.project()?.status === 'RUNNING');
   protected readonly back = computed(() =>
     this.project()?.status === 'COMPLETED'
@@ -116,11 +145,6 @@ export class ProjectDetailPage {
 
   constructor() {
     this.loadExpenses(1);
-    // Opened from "Request more budget" on the PM dashboard: go straight to the form.
-    const project = this.project();
-    if (project && this.route.snapshot.queryParamMap.get('request_budget') && this.can('request_budget')) {
-      queueMicrotask(() => this.requestBudget(project));
-    }
   }
 
   protected can(action: ProjectAction): boolean {
@@ -136,19 +160,21 @@ export class ProjectDetailPage {
     }
     this.expensesLoading.set(true);
     this.expensesError.set(false);
-    this.api.projectExpenses(project.id, { page, page_size: PAGE_SIZE, category: this.category() }).subscribe({
-      next: (res) => {
-        this.expensePage = page;
-        this.expenseCount.set(res.count);
-        this.expenses.update((rows) => (page === 1 ? res.results : [...rows, ...res.results]));
-        this.expensesLoading.set(false);
-        this.expensesLoaded.set(true);
-      },
-      error: () => {
-        this.expensesError.set(true);
-        this.expensesLoading.set(false);
-      },
-    });
+    this.api
+      .projectExpenses(project.id, { page, page_size: PAGE_SIZE, category: this.category() })
+      .subscribe({
+        next: (res) => {
+          this.expensePage = page;
+          this.expenseCount.set(res.count);
+          this.expenses.update((rows) => (page === 1 ? res.results : [...rows, ...res.results]));
+          this.expensesLoading.set(false);
+          this.expensesLoaded.set(true);
+        },
+        error: () => {
+          this.expensesError.set(true);
+          this.expensesLoading.set(false);
+        },
+      });
   }
 
   protected loadMoreExpenses(): void {
@@ -194,7 +220,9 @@ export class ProjectDetailPage {
       });
       this.expenseDialog.afterClosed().subscribe(() => (this.expenseDialog = null));
     } else {
-      this.expenseSheet = this.sheet.open(this.expenseTpl(), { ariaLabel: expense ? 'Edit expense' : 'Add expense' });
+      this.expenseSheet = this.sheet.open(this.expenseTpl(), {
+        ariaLabel: expense ? 'Edit expense' : 'Add expense',
+      });
       this.expenseSheet.afterDismissed().subscribe(() => (this.expenseSheet = null));
     }
   }
@@ -214,7 +242,10 @@ export class ProjectDetailPage {
   protected onExpenseAction(action: ExpenseAction): void {
     const e = action.expense;
     if (action.kind === 'receipt') {
-      this.dialog.open<ReceiptViewer, ReceiptViewerData>(ReceiptViewer, dialogConfig({ expense: e }, { width: '760px', maxWidth: 'calc(100vw - 32px)' }));
+      this.dialog.open<ReceiptViewer, ReceiptViewerData>(
+        ReceiptViewer,
+        dialogConfig({ expense: e }, { width: '760px', maxWidth: 'calc(100vw - 32px)' }),
+      );
     } else if (action.kind === 'edit') {
       this.addExpense(e);
     } else {
@@ -243,7 +274,10 @@ export class ProjectDetailPage {
 
   protected complete(project: ProjectDetail): void {
     this.dialog
-      .open<CompleteDialog, CompleteDialogData, ProjectDetail>(CompleteDialog, dialogConfig({ project }))
+      .open<CompleteDialog, CompleteDialogData, ProjectDetail>(
+        CompleteDialog,
+        dialogConfig({ project }),
+      )
       .afterClosed()
       .subscribe((done) => {
         if (done) {
@@ -274,21 +308,6 @@ export class ProjectDetailPage {
       });
   }
 
-  protected adjustBudget(project: ProjectDetail): void {
-    this.dialog
-      .open<BudgetDialog, BudgetDialogData, ProjectDetail>(
-        BudgetDialog,
-        dialogConfig({ project, max: project.finance?.total_amount ?? null }),
-      )
-      .afterClosed()
-      .subscribe((done) => {
-        if (done) {
-          this.snack.open('Budget updated.', undefined, { duration: 3000 });
-          this.apply(done);
-        }
-      });
-  }
-
   protected reassign(project: ProjectDetail): void {
     this.dialog
       .open<ReassignDialog, ReassignDialogData, ProjectDetail>(
@@ -298,52 +317,43 @@ export class ProjectDetailPage {
       .afterClosed()
       .subscribe((done) => {
         if (done) {
-          this.snack.open(done.pm ? `${done.pm.name} is now managing ${project.name}.` : 'Project manager removed.', undefined, { duration: 3000 });
+          this.snack.open(
+            done.pm
+              ? `${done.pm.name} is now managing ${project.name}.`
+              : 'Project manager removed.',
+            undefined,
+            { duration: 3000 },
+          );
           this.apply(done);
         }
       });
   }
 
-  protected readonly deciding = signal(false);
+  // ---- Excel export (Admin, from the budget card) ------------------------------------------------
 
-  protected requestBudget(project: ProjectDetail): void {
-    this.dialog
-      .open<RequestBudgetDialog, RequestBudgetDialogData, ProjectDetail>(RequestBudgetDialog, dialogConfig({ project }))
-      .afterClosed()
-      .subscribe((done) => {
-        if (done) {
-          this.snack.open('Request sent to the admin.', undefined, { duration: 3000 });
-          this.apply(done);
-        }
-      });
-  }
+  protected readonly exporting = signal(false);
 
-  protected decide(project: ProjectDetail, approve: boolean): void {
-    this.deciding.set(true);
-    this.api.decideBudgetRequest(project.id, approve).subscribe({
-      next: (fresh) => {
-        this.deciding.set(false);
-        this.snack.open(approve ? 'Budget increased.' : 'Request rejected.', undefined, { duration: 3000 });
-        this.apply(fresh);
+  /** Every expense of this project (voided ones marked) as an Excel file, with a total row. */
+  protected exportExcel(project: ProjectDetail): void {
+    if (this.exporting()) {
+      return;
+    }
+    this.exporting.set(true);
+    this.api.exportCsv({ project: project.id, file: 'xlsx', ordering: 'spent_on' }).subscribe({
+      next: (blob) => {
+        this.exporting.set(false);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${project.name.replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'project'} expenses.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
       },
-      error: (err: ApiError) => {
-        this.deciding.set(false);
-        this.snack.open(err.message, 'Dismiss', { duration: 6000 });
+      error: () => {
+        this.exporting.set(false);
+        this.snack.open("Couldn't export the expenses. Try again.", 'Dismiss', { duration: 5000 });
       },
     });
-  }
-
-  protected releaseBudget(project: ProjectDetail): void {
-    this.dialog
-      .open<ReleaseBudgetDialog, ReleaseBudgetDialogData, ReleaseResult>(ReleaseBudgetDialog, dialogConfig({ project }))
-      .afterClosed()
-      .subscribe((done) => {
-        if (done) {
-          const where = done.to_project ? `moved to ${done.to_project.name}` : 'kept as margin';
-          this.snack.open(`Unused budget ${where}.`, undefined, { duration: 4000 });
-          this.apply(done.project);
-        }
-      });
   }
 
   protected isNegative(value: string | null | undefined): boolean {

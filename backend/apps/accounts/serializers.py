@@ -101,17 +101,14 @@ def project_block(ledger) -> dict | None:
     ).first()
     if project is None:
         return None
-    margins = project_selectors.project_margins(
-        {"total_amount": ledger.total_amount, "received": ledger.received},
-        project.spent,
-        project.sanctioned_budget,
-    )
+    margins = project_selectors.project_margins({"received": ledger.received}, project.spent)
+    remaining = project_selectors.remaining(project.spent, ledger.total_amount)
     return {
         "id": project.pk,
         "name": project.name,
         "status": project.status,
-        "sanctioned_budget": selectors.money_str(project.sanctioned_budget),
         "spent": selectors.money_str(project.spent),
+        "remaining": selectors.money_str(remaining),
         **margins,
     }
 

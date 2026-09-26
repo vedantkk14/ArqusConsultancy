@@ -30,11 +30,6 @@ class TotalBelowReceived(AccountsError):
     default_detail = "The total cannot be lower than what has been received."
 
 
-class TotalBelowBudget(AccountsError):
-    default_code = "total_below_budget"
-    default_detail = "The total cannot be lower than the sanctioned budget of the linked project."
-
-
 class Overpayment(AccountsError):
     status_code = status.HTTP_409_CONFLICT
     default_code = "overpayment"

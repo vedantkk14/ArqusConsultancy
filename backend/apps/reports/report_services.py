@@ -88,8 +88,14 @@ def months_for(period: ReportPeriod, today: date) -> list[str]:
 
 
 def build_sales(period: ReportPeriod) -> dict:
+    """Per executive: leads worked, won, lost, conversion, won value, and running projects.
+
+    `running_projects` counts the projects still running that came from the exec's won deals (a
+    snapshot, not period-bound).
+    """
     User = get_user_model()  # noqa: N806
     Lead = _model("leads", "Lead")  # noqa: N806
+    Project = _model("projects", "Project")  # noqa: N806
     execs = list(User.objects.filter(role="SALES_EXEC").order_by("first_name", "id"))  # 1
     stats: dict[int, dict] = {}
     if Lead is not None:
@@ -104,14 +110,21 @@ def build_sales(period: ReportPeriod) -> dict:
             )
         )
         stats = {r["assigned_to"]: r for r in rows}
+    running: dict[int, int] = {}
+    if Project is not None:
+        running = dict(  # 3: one grouped query for every exec
+            Project.objects.filter(status="RUNNING", lead__assigned_to__isnull=False)
+            .order_by()
+            .values_list("lead__assigned_to")
+            .annotate(n=Count("id"))
+        )
 
-    out, totals = [], {"worked": 0, "won": 0, "lost": 0, "won_value": ZERO, "commission": ZERO}
+    out, totals = [], {"worked": 0, "won": 0, "lost": 0, "won_value": ZERO, "running": 0}
     for user in execs:
         s = stats.get(user.pk, {})
         worked, won, lost = s.get("worked", 0), s.get("won", 0), s.get("lost", 0)
         won_value = Decimal(s.get("won_value") or 0)
-        rate = Decimal(str(user.commission_rate or 0))
-        commission = won_value * rate / 100
+        running_projects = running.get(user.pk, 0)
         out.append(
             {
                 "user_id": user.pk,
@@ -121,17 +134,20 @@ def build_sales(period: ReportPeriod) -> dict:
                 "lost": lost,
                 "conversion_pct": win_rate_pct(won, lost),
                 "won_value": money(won_value),
-                "commission_rate": money(rate),
-                "commission": money(commission),
+                "running_projects": running_projects,
             }
         )
-        for key, value in (("worked", worked), ("won", won), ("lost", lost)):
+        for key, value in (
+            ("worked", worked),
+            ("won", won),
+            ("lost", lost),
+            ("running", running_projects),
+        ):
             totals[key] += value
         totals["won_value"] += won_value
-        totals["commission"] += commission
     return {
         **period.as_dict(),
-        "data_sources": {"leads": Lead is not None},
+        "data_sources": {"leads": Lead is not None, "projects": Project is not None},
         "rows": out,
         "totals": {
             "leads_worked": totals["worked"],
@@ -139,7 +155,7 @@ def build_sales(period: ReportPeriod) -> dict:
             "lost": totals["lost"],
             "conversion_pct": win_rate_pct(totals["won"], totals["lost"]),
             "won_value": money(totals["won_value"]),
-            "commission": money(totals["commission"]),
+            "running_projects": totals["running"],
         },
     }
 
@@ -261,16 +277,18 @@ def build_project_margin(period: ReportPeriod) -> dict:
                 }
         for p in projects:
             fin = finance.get(p.lead_id)
-            margins = prj.project_margins(fin, p.spent, p.sanctioned_budget)
+            total = fin["total_amount"] if fin else None
+            margins = prj.project_margins(fin, p.spent)
+            left = prj.remaining(p.spent, total)
             rows.append(
                 {
                     "id": p.id,
                     "name": p.name,
                     "pm": p.pm.display_name if p.pm else "—",
-                    "sanctioned": money(p.sanctioned_budget),
+                    "total": money(total) if fin else None,
                     "spent": money(p.spent),
-                    "usage_pct": prj.usage_pct(p.spent, p.sanctioned_budget),
-                    "total": money(fin["total_amount"]) if fin else None,
+                    "remaining": None if left is None else money(left),
+                    "usage_pct": prj.usage_pct(p.spent, total),
                     "received": money(fin["received"]) if fin else None,
                     **margins,
                 }
@@ -378,7 +396,15 @@ def to_csv(header: list[str], rows: list[list]) -> str:
 
 
 def sales_csv(data: dict) -> str:
-    head = ["Executive", "Leads worked", "Won", "Lost", "Conversion %", "Won value", "Commission"]
+    head = [
+        "Executive",
+        "Leads worked",
+        "Won",
+        "Lost",
+        "Conversion %",
+        "Won value",
+        "Running projects",
+    ]
     rows = [
         [
             r["name"],
@@ -387,7 +413,7 @@ def sales_csv(data: dict) -> str:
             r["lost"],
             r["conversion_pct"],
             r["won_value"],
-            r["commission"],
+            r["running_projects"],
         ]
         for r in data["rows"]
     ]
@@ -400,7 +426,7 @@ def sales_csv(data: dict) -> str:
             t["lost"],
             t["conversion_pct"],
             t["won_value"],
-            t["commission"],
+            t["running_projects"],
         ]
     )
     return to_csv(head, rows)
@@ -419,23 +445,21 @@ def margin_csv(data: dict) -> str:
     head = [
         "Project",
         "PM",
-        "Sanctioned",
+        "Total budget",
         "Spent",
+        "Remaining",
         "Usage %",
-        "Total",
         "Received",
-        "Planned margin",
         "Live margin",
     ]
     keys = [
         "name",
         "pm",
-        "sanctioned",
-        "spent",
-        "usage_pct",
         "total",
+        "spent",
+        "remaining",
+        "usage_pct",
         "received",
-        "planned_margin",
         "live_margin",
     ]
     return to_csv(head, [[r.get(k) for k in keys] for r in data["rows"]])

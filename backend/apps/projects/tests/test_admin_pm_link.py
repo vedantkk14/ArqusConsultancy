@@ -1,4 +1,7 @@
-"""The admin dashboard and the PM dashboard describe the same projects the same way."""
+"""The admin dashboard and the PM dashboard describe the same projects the same way.
+
+Only the admin side has a budget (the deal total); the PM side only has expenses so far.
+"""
 
 from decimal import Decimal
 
@@ -27,18 +30,18 @@ def test_admin_dashboard_reflects_what_the_pm_logs(client_for, admin, pm1, make_
     assert admin_body["kpis"]["spent"] == pm_body["kpis"]["total_spent"]
     burn = admin_body["projects_burn"][0]
     row = pm_body["projects"][0]
-    assert (burn["spent"], burn["sanctioned"], burn["state"]) == (
-        row["spent"],
-        row["sanctioned_budget"],
-        row["state"],
-    )
-    assert burn["state"] == "warn" and float(burn["pct"]) == float(row["usage_pct"])
-    assert [x["key"] for x in admin_body["attention"]] == ["budget_alerts"]
+    assert burn["spent"] == row["spent"] == "80000.00"
+    assert burn["total_budget"] == "100000.00" and burn["state"] == "warn"
+    assert float(burn["pct"]) == 80.0
+    assert "state" not in row and "total_budget" not in row  # the PM never sees a budget
+    assert admin_body["attention"] == []  # budget alerts no longer exist
     assert admin_body["recent"]["expenses"][0]["project"] == "Sharma Farmhouse Turf"
     assert admin_body["recent"]["activity"][0]["type"] == "expense"
 
 
-def test_exactly_100_percent_is_warn_for_both_roles(client_for, admin, pm1, make_project):
+def test_exactly_100_percent_of_the_deal_total_is_warn_for_the_admin(
+    client_for, admin, pm1, make_project
+):
     project = make_project(pm=pm1, budget="100000.00")
     services.add_expense(
         project.pk,
@@ -50,7 +53,7 @@ def test_exactly_100_percent_is_warn_for_both_roles(client_for, admin, pm1, make
         },
     )
     assert client_for(admin).get(ADMIN_DASH).json()["projects_burn"][0]["state"] == "warn"
-    assert client_for(pm1).get(PM_DASH).json()["projects"][0]["state"] == "warn"
+    assert client_for(admin).get(f"{BASE}/{project.pk}").json()["remaining"] == "0.00"
 
 
 def test_completing_moves_the_project_on_both_dashboards(client_for, admin, pm1, make_project):

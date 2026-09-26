@@ -56,9 +56,3 @@ class CannotChangeOwnRole(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "cannot_change_own_role"
     default_detail = "You can't change your own role."
-
-
-class NotASalesExec(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_code = "not_a_sales_exec"
-    default_detail = "Only sales executives have a commission rate."

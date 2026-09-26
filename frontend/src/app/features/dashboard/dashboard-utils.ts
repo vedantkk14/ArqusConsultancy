@@ -23,10 +23,6 @@ export function composeInsight(d: Pick<AdminDashboard, 'kpis' | 'attention'>): s
   if (won > 0) {
     parts.push(`${won} won ${won === 1 ? 'deal' : 'deals'} waiting for a final amount`);
   }
-  const overBudget = count('budget_alerts');
-  if (overBudget > 0) {
-    parts.push(`${overBudget} ${overBudget === 1 ? 'project' : 'projects'} over budget`);
-  }
   return parts.length ? parts.join(' · ') : "You're all caught up.";
 }
 
@@ -59,7 +55,6 @@ export function relativeTime(when: string | Date, now: Date = new Date()): strin
 export const ATTENTION_SHORT_LABELS: Record<string, string> = {
   overdue_payments: 'Payments overdue',
   overdue_followups: 'Follow-ups overdue',
-  budget_alerts: 'Projects over budget',
   won_awaiting_finalization: 'Won deals to finalise',
 };
 
@@ -67,5 +62,4 @@ export const ATTENTION_SHORT_LABELS: Record<string, string> = {
 export const NAV_BADGE_SOURCES: { route: string; key: string; tone: 'rose' | 'amber' }[] = [
   { route: '/leads', key: 'overdue_followups', tone: 'rose' },
   { route: '/accounts', key: 'overdue_payments', tone: 'rose' },
-  { route: '/projects', key: 'budget_alerts', tone: 'amber' },
 ];

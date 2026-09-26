@@ -4,7 +4,7 @@ import { composeInsight, relativeTime } from './dashboard-utils';
 describe('composeInsight', () => {
   it('joins every non-zero part with a middle dot', () => {
     expect(composeInsight(DASHBOARD_MOCK)).toBe(
-      '₹6,40,000 overdue across 4 clients · 11 follow-ups overdue · 3 won deals waiting for a final amount · 2 projects over budget',
+      '₹6,40,000 overdue across 4 clients · 11 follow-ups overdue · 3 won deals waiting for a final amount',
     );
   });
 
@@ -12,13 +12,14 @@ describe('composeInsight', () => {
     const attention = [
       { key: 'overdue_payments', label: '', count: 0, severity: 'high' as const, route: '' },
       { key: 'overdue_followups', label: '', count: 1, severity: 'high' as const, route: '' },
-      { key: 'budget_alerts', label: '', count: 0, severity: 'medium' as const, route: '' },
     ];
     expect(composeInsight({ kpis: DASHBOARD_MOCK.kpis, attention })).toBe('1 follow-up overdue');
   });
 
   it('says all caught up when nothing is waiting', () => {
-    expect(composeInsight({ kpis: DASHBOARD_MOCK.kpis, attention: [] })).toBe("You're all caught up.");
+    expect(composeInsight({ kpis: DASHBOARD_MOCK.kpis, attention: [] })).toBe(
+      "You're all caught up.",
+    );
   });
 });
 

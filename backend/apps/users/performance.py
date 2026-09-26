@@ -1,8 +1,8 @@
 """Team > member detail: who someone is and how they are doing.
 
 Leads figures come from leads (won, lost, conversion, follow-ups); project figures from projects
-(delivery against the expected end date, budget). Other apps are read through the registry, so a
-missing app leaves its block as None.
+(delivery against the expected end date; expenses against the deal total). Other apps are read
+through the registry, so a missing app leaves its block as None.
 """
 
 from __future__ import annotations
@@ -60,7 +60,6 @@ def lead_figures(user) -> dict | None:
         created=Count("id", filter=Q(created_by=user)),
     )
     created_total = lead.objects.filter(created_by=user).count()
-    rate = Decimal(str(getattr(user, "commission_rate", 0) or 0))
     won_value = Decimal(agg["won_value"] or 0)
     lost_reasons = dict(lead._meta.get_field("lost_reason").choices)
     reasons = [
@@ -95,7 +94,6 @@ def lead_figures(user) -> dict | None:
         "overdue_followups": agg["overdue"],
         "won_this_month": agg["won_this_month"],
         "leads_created": created_total,
-        "commission_earned": _money(won_value * rate / 100) if user.role == "SALES_EXEC" else None,
         "lost_reasons": reasons,
         "recent_closed": recent,
     }
@@ -113,7 +111,7 @@ def project_figures(user) -> dict | None:
     items = []
     for p in rows:
         deadline = p.expected_end_date.isoformat() if p.expected_end_date else None
-        state = selectors.budget_state(p.spent, p.sanctioned_budget)
+        state = selectors.budget_state(p.spent, p.total_budget)
         over_budget += state == "over"
         if p.status == "COMPLETED":
             done = timezone.localtime(p.completed_at, tz).date() if p.completed_at else None
@@ -141,9 +139,9 @@ def project_figures(user) -> dict | None:
                 if p.completed_at
                 else None,
                 "delivery": delivery,
-                "sanctioned": _money(p.sanctioned_budget),
+                "total_budget": None if p.total_budget is None else _money(p.total_budget),
                 "spent": _money(p.spent),
-                "usage_pct": selectors.usage_pct(p.spent, p.sanctioned_budget),
+                "usage_pct": selectors.usage_pct(p.spent, p.total_budget),
                 "budget_state": state,
             }
         )
@@ -159,7 +157,7 @@ def project_figures(user) -> dict | None:
         "on_time_pct": _pct(on_time, judged),
         "running_overdue": running_overdue,
         "over_budget": over_budget,
-        "sanctioned": _money(sum((p.sanctioned_budget for p in rows), Decimal(0))),
+        "total_budget": _money(sum((p.total_budget or 0 for p in rows), Decimal(0))),
         "spent": _money(sum((p.spent for p in rows), Decimal(0))),
         "projects": items,
     }
@@ -178,9 +176,6 @@ def member_performance(user) -> dict:
             "is_active": user.is_active,
             "date_joined": user.date_joined.isoformat(),
             "last_login": user.last_login.isoformat() if user.last_login else None,
-            "commission_rate": f"{Decimal(str(user.commission_rate)):.2f}"
-            if user.role == "SALES_EXEC"
-            else None,
         },
         "leads": lead_figures(user) if sales else None,
         "projects": project_figures(user) if user.role in ("PROJECT_MANAGER", "ADMIN") else None,

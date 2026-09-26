@@ -4,7 +4,6 @@ import { Observable, catchError, filter, map, of, shareReplay, throwError } from
 import { ApiService, QueryParams, toApiError } from '../../../core/api/api.service';
 import { PaginatedResponse } from '../../../core/models';
 import {
-  AlertProject,
   ConvertInput,
   ConvertibleLead,
   Expense,
@@ -21,7 +20,8 @@ const PROJECTS = '/projects';
 const EXPENSES = '/expenses';
 
 /** Progress 0-100 while an upload runs, then the saved expense. */
-export type UploadEvent = { kind: 'progress'; percent: number } | { kind: 'done'; expense: Expense };
+export type UploadEvent =
+  { kind: 'progress'; percent: number } | { kind: 'done'; expense: Expense };
 
 function toForm(input: Partial<ExpenseInput>): FormData {
   const form = new FormData();
@@ -84,27 +84,6 @@ export class ProjectsApi {
     return this.api.patch<ProjectDetail>(`${PROJECTS}/${id}`, body);
   }
 
-  /** PM: ask the Admin for `amount` more (the extra, not the new total). */
-  requestBudget(id: number, amount: string, reason: string): Observable<ProjectDetail> {
-    return this.api.post<ProjectDetail>(`${PROJECTS}/${id}/budget-request`, { amount, reason });
-  }
-
-  decideBudgetRequest(id: number, approve: boolean, note = ''): Observable<ProjectDetail> {
-    return this.api.post<ProjectDetail>(`${PROJECTS}/${id}/budget-request/decide`, { approve, note });
-  }
-
-  /** Admin, completed project: keep the unused budget as margin, or move it to a running project. */
-  releaseBudget(
-    id: number,
-    targetProject: number | null,
-  ): Observable<{ released: string; to_project: { id: number; name: string } | null; project: ProjectDetail }> {
-    return this.api.post(`${PROJECTS}/${id}/release-budget`, targetProject ? { target_project: targetProject } : {});
-  }
-
-  changeBudget(id: number, sanctioned_budget: string, reason: string): Observable<ProjectDetail> {
-    return this.api.post<ProjectDetail>(`${PROJECTS}/${id}/budget`, { sanctioned_budget, reason });
-  }
-
   assignPm(id: number, pm: number | null): Observable<ProjectDetail> {
     return this.api.post<ProjectDetail>(`${PROJECTS}/${id}/assign-pm`, { pm });
   }
@@ -134,10 +113,6 @@ export class ProjectsApi {
     return this.api.get<ExpenseSummary>(`${EXPENSES}/summary`, params);
   }
 
-  alerts(page = 1): Observable<PaginatedResponse<AlertProject>> {
-    return this.api.list<AlertProject>(`${EXPENSES}/alerts`, { page, page_size: 50 });
-  }
-
   /** Multipart upload with progress; errors arrive in the standard {code, message, details} shape. */
   addExpense(projectId: number, input: ExpenseInput): Observable<UploadEvent> {
     return this.upload('post', `${PROJECTS}/${projectId}/expenses`, input);
@@ -158,6 +133,7 @@ export class ProjectsApi {
       .pipe(catchError((err) => throwError(() => toApiError(err))));
   }
 
+  /** Admin: the filtered expenses as CSV, or an Excel workbook with `{ file: 'xlsx' }`. */
   exportCsv(params: QueryParams): Observable<Blob> {
     let httpParams = new HttpParams();
     for (const [key, value] of Object.entries(params)) {
@@ -170,17 +146,28 @@ export class ProjectsApi {
       .pipe(catchError((err) => throwError(() => toApiError(err))));
   }
 
-  private upload(method: 'post' | 'patch', path: string, input: Partial<ExpenseInput>): Observable<UploadEvent> {
+  private upload(
+    method: 'post' | 'patch',
+    path: string,
+    input: Partial<ExpenseInput>,
+  ): Observable<UploadEvent> {
     const url = `${this.api.baseUrl}${path}`;
     const options = { reportProgress: true, observe: 'events' as const };
     const request: Observable<HttpEvent<Expense>> =
-      method === 'post' ? this.http.post<Expense>(url, toForm(input), options) : this.http.patch<Expense>(url, toForm(input), options);
+      method === 'post'
+        ? this.http.post<Expense>(url, toForm(input), options)
+        : this.http.patch<Expense>(url, toForm(input), options);
     return request.pipe(
       map((event): UploadEvent | null => {
         if (event.type === HttpEventType.UploadProgress) {
-          return { kind: 'progress', percent: event.total ? Math.round((100 * event.loaded) / event.total) : 0 };
+          return {
+            kind: 'progress',
+            percent: event.total ? Math.round((100 * event.loaded) / event.total) : 0,
+          };
         }
-        return event.type === HttpEventType.Response ? { kind: 'done', expense: event.body as Expense } : null;
+        return event.type === HttpEventType.Response
+          ? { kind: 'done', expense: event.body as Expense }
+          : null;
       }),
       filter((event): event is UploadEvent => event !== null),
       catchError((err) => throwError(() => toApiError(err))),

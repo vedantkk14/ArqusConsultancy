@@ -19,17 +19,15 @@ def endpoints(w):
         ("get", f"{BASE}/managers", None),
         ("get", f"{BASE}/{p}", None),
         ("patch", f"{BASE}/{p}", {"name": "x"}),
-        ("post", f"{BASE}/{p}/budget", {"sanctioned_budget": "10", "reason": "r"}),
         ("post", f"{BASE}/{p}/assign-pm", {"pm": None}),
         ("post", f"{BASE}/{p}/complete", {}),
         ("post", f"{BASE}/{p}/reopen", {"reason": "r"}),
         ("get", f"{BASE}/{p}/events", None),
         ("get", f"{BASE}/{p}/expenses", None),
         ("post", f"{BASE}/{p}/expenses", "form"),
-        ("post", BASE, {"lead": 1, "name": "x", "sanctioned_budget": "1"}),
+        ("post", BASE, {"lead": 1, "name": "x"}),
         ("get", EXPENSES, None),
         ("get", f"{EXPENSES}/summary", None),
-        ("get", f"{EXPENSES}/alerts", None),
         ("get", f"{EXPENSES}/export", None),
         ("get", f"{EXPENSES}/{e}", None),
         ("patch", f"{EXPENSES}/{e}", {"vendor": "x"}),
@@ -65,7 +63,7 @@ def test_a_pm_gets_403_on_admin_only_actions_and_404_on_projects_that_are_not_th
     client_for, pm2, world
 ):
     admin_only = [
-        ("get", f"{BASE}/convertible"), ("get", f"{BASE}/managers"), ("get", f"{EXPENSES}/alerts"),
+        ("get", f"{BASE}/convertible"), ("get", f"{BASE}/managers"),
         ("get", f"{EXPENSES}/export"), ("post", BASE),
     ]  # fmt: skip
     for method, url in admin_only:
@@ -85,7 +83,6 @@ def test_a_pm_gets_403_on_admin_actions_for_their_own_project(client_for, pm1, w
     p = world["project"].pk
     for method, url, body in [
         ("patch", f"{BASE}/{p}", {"name": "x"}),
-        ("post", f"{BASE}/{p}/budget", {"sanctioned_budget": "10", "reason": "r"}),
         ("post", f"{BASE}/{p}/assign-pm", {"pm": None}),
         ("post", f"{BASE}/{p}/reopen", {"reason": "r"}),
     ]:
@@ -96,6 +93,17 @@ def test_admin_can_use_every_read_endpoint(client_for, admin, world):
     for method, url, body in endpoints(world):
         if method == "get" and not url.endswith("/receipt"):
             assert call(client_for(admin), method, url, body).status_code == 200, url
+
+
+def test_the_removed_budget_endpoints_are_gone(client_for, admin, world):
+    p = world["project"].pk
+    c = client_for(admin)
+    assert (
+        c.post(f"{BASE}/{p}/budget", {"sanctioned_budget": "1"}, format="json").status_code == 404
+    )
+    assert c.post(f"{BASE}/{p}/budget-request", {"amount": "1"}, format="json").status_code == 404
+    assert c.post(f"{BASE}/{p}/release-budget", {}, format="json").status_code == 404
+    assert c.get(f"{EXPENSES}/alerts").status_code == 404
 
 
 def test_unknown_ids_are_404_for_everyone_who_may_ask(client_for, admin, pm1):

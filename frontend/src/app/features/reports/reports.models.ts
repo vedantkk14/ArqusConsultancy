@@ -10,7 +10,9 @@ export const REPORT_PERIOD_LABELS: Record<ReportPeriod, string> = {
 };
 
 export function toReportPeriod(value: string | null | undefined): ReportPeriod {
-  return (REPORT_PERIODS as readonly string[]).includes(value ?? '') ? (value as ReportPeriod) : 'month';
+  return (REPORT_PERIODS as readonly string[]).includes(value ?? '')
+    ? (value as ReportPeriod)
+    : 'month';
 }
 
 interface Base {
@@ -27,13 +29,20 @@ export interface SalesRow {
   lost: number;
   conversion_pct: string;
   won_value: string;
-  commission_rate: string;
-  commission: string;
+  /** Running projects that came from this exec's won deals. */
+  running_projects: number;
 }
 
 export interface SalesReport extends Base {
   rows: SalesRow[];
-  totals: { leads_worked: number; won: number; lost: number; conversion_pct: string; won_value: string; commission: string };
+  totals: {
+    leads_worked: number;
+    won: number;
+    lost: number;
+    conversion_pct: string;
+    won_value: string;
+    running_projects: number;
+  };
 }
 
 export interface AgingBucket {
@@ -47,7 +56,13 @@ export interface FinancialReport extends Base {
   months: string[];
   received: string[];
   spent: string[];
-  totals: { received: string; spent: string; net: string; outstanding: string; collection_rate_pct: string };
+  totals: {
+    received: string;
+    spent: string;
+    net: string;
+    outstanding: string;
+    collection_rate_pct: string;
+  };
   aging: AgingBucket[];
   top_outstanding_clients: { name: string; ledgers: number; outstanding: string }[];
 }
@@ -56,12 +71,12 @@ export interface MarginRow {
   id: number;
   name: string;
   pm: string;
-  sanctioned: string;
-  spent: string;
-  usage_pct: string;
+  /** The finalized deal total (the project's budget), or null before finalization. */
   total: string | null;
+  spent: string;
+  remaining: string | null;
+  usage_pct: string;
   received: string | null;
-  planned_margin: string | null;
   live_margin: string | null;
 }
 
@@ -82,7 +97,14 @@ export interface FunnelReportStage {
 export interface FunnelReport extends Base {
   stages: FunnelReportStage[];
   lost: { count: number; value: string };
-  sources: { source: string; label: string; leads: number; won: number; conversion_pct: string; value: string }[];
+  sources: {
+    source: string;
+    label: string;
+    leads: number;
+    won: number;
+    conversion_pct: string;
+    value: string;
+  }[];
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

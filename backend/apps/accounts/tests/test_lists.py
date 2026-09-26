@@ -181,9 +181,7 @@ def test_ledger_detail_shape_and_actions(client_for, admin, book):
 def test_project_block_uses_the_real_projects_numbers(client_for, admin, ledger, make_payment):
     from apps.projects.models import Expense, Project
 
-    project = Project.objects.create(
-        name="Turf", client_name="C", lead=ledger.lead, sanctioned_budget=Decimal("60000.00")
-    )
+    project = Project.objects.create(name="Turf", client_name="C", lead=ledger.lead)
     Expense.objects.create(
         project=project,
         amount=Decimal("15000.00"),
@@ -193,8 +191,8 @@ def test_project_block_uses_the_real_projects_numbers(client_for, admin, ledger,
     make_payment(ledger, "40000.00")
     block = client_for(admin).get(f"{LEDGERS}/{ledger.pk}").json()["project"]
     assert block == {
-        "id": project.pk, "name": "Turf", "status": "RUNNING", "sanctioned_budget": "60000.00", "spent": "15000.00",
-        "planned_margin": "40000.00", "live_margin": "25000.00",
+        "id": project.pk, "name": "Turf", "status": "RUNNING", "spent": "15000.00",
+        "remaining": "85000.00", "live_margin": "25000.00",
     }  # fmt: skip
 
 

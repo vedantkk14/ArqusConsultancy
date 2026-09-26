@@ -13,7 +13,9 @@ import { FakeAccountsApi, makeLedger, makePayment } from '../testing/fake-accoun
 import { fakeViewport } from '../testing/fake-viewport';
 import { LedgerDetailPage } from './ledger-detail-page';
 
-async function setup(opts: { ledger?: LedgerDetail | null; width?: number; payments?: Payment[] } = {}) {
+async function setup(
+  opts: { ledger?: LedgerDetail | null; width?: number; payments?: Payment[] } = {},
+) {
   const ledger = opts.ledger === undefined ? makeLedger(1) : opts.ledger;
   const api = new FakeAccountsApi();
   if (opts.payments) {
@@ -24,7 +26,13 @@ async function setup(opts: { ledger?: LedgerDetail | null; width?: number; payme
   }
   TestBed.configureTestingModule({
     providers: [
-      provideRouter([{ path: 'accounts/ledgers/:id', component: LedgerDetailPage, resolve: { ledger: () => ledger } }]),
+      provideRouter([
+        {
+          path: 'accounts/ledgers/:id',
+          component: LedgerDetailPage,
+          resolve: { ledger: () => ledger },
+        },
+      ]),
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: AccountsApi, useValue: api },
@@ -34,7 +42,11 @@ async function setup(opts: { ledger?: LedgerDetail | null; width?: number; payme
   TestBed.inject(AuthService).login('u', 'pw').subscribe();
   TestBed.inject(HttpTestingController)
     .expectOne('/api/v1/auth/login')
-    .flush({ access: 'A', refresh: 'R', user: { id: 1, name: 'Alice', email: 'a@x.com', role: Role.Admin } });
+    .flush({
+      access: 'A',
+      refresh: 'R',
+      user: { id: 1, name: 'Alice', email: 'a@x.com', role: Role.Admin },
+    });
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl('/accounts/ledgers/1', LedgerDetailPage);
   await settle(harness);
@@ -49,8 +61,10 @@ async function settle(harness: RouterTestingHarness) {
 
 const text = (el: Element | null) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 const overlay = () => document.querySelector('.cdk-overlay-container') as HTMLElement;
-const byLabel = (root: ParentNode, label: string) => root.querySelector<HTMLButtonElement>(`button[aria-label^="${label}"]`);
-const buttonByText = (root: ParentNode, label: string) => [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).includes(label));
+const byLabel = (root: ParentNode, label: string) =>
+  root.querySelector<HTMLButtonElement>(`button[aria-label^="${label}"]`);
+const buttonByText = (root: ParentNode, label: string) =>
+  [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).includes(label));
 const field = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const wait = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
@@ -61,22 +75,44 @@ describe('LedgerDetailPage', () => {
     const { el } = await setup();
     expect(text(el.querySelector('.hero'))).toContain('₹1,00,000');
     expect(text(el.querySelector('.hero'))).toContain('₹60,000');
-    for (const label of ['Record payment for Client 1', 'Send a reminder to Client 1', 'Revise the total for Client 1']) {
+    for (const label of [
+      'Record payment for Client 1',
+      'Send a reminder to Client 1',
+      'Revise the total for Client 1',
+    ]) {
       expect(byLabel(el, label), label).toBeTruthy();
     }
     expect(text(el.querySelector('[aria-labelledby="pay-title"]'))).toContain('RC-2026-000001');
   });
 
   it('an unfinalized ledger says "Proposed ₹X. Finalize to start collecting." and offers Finalize only', async () => {
-    const { el } = await setup({ ledger: makeLedger(1, { finalized: false, state: 'AWAITING_FINALIZATION', allowed_actions: ['finalize'], proposed_amount: '250000.00' }) });
-    expect(text(el.querySelector('.hero'))).toContain('Proposed ₹2,50,000. Finalize to start collecting.');
+    const { el } = await setup({
+      ledger: makeLedger(1, {
+        finalized: false,
+        state: 'AWAITING_FINALIZATION',
+        allowed_actions: ['finalize'],
+        proposed_amount: '250000.00',
+      }),
+    });
+    expect(text(el.querySelector('.hero'))).toContain(
+      'Proposed ₹2,50,000. Finalize to start collecting.',
+    );
     expect(byLabel(el, 'Finalize Client 1')).toBeTruthy();
     expect(byLabel(el, 'Record payment for')).toBeNull();
   });
 
   it('project panel: linked project with negative margin, or a convert link', async () => {
     const withProject = await setup({
-      ledger: makeLedger(1, { project: { id: 5, name: 'Turf', status: 'RUNNING', sanctioned_budget: '60000.00', spent: '70000.00', planned_margin: '40000.00', live_margin: '-30000.00' } }),
+      ledger: makeLedger(1, {
+        project: {
+          id: 5,
+          name: 'Turf',
+          status: 'RUNNING',
+          spent: '70000.00',
+          remaining: '-30000.00',
+          live_margin: '-30000.00',
+        },
+      }),
     });
     const panel = withProject.el.querySelector('[aria-labelledby="proj-title"]')!;
     expect(panel.querySelector('a[href="/projects/5"]')).toBeTruthy();
@@ -85,9 +121,13 @@ describe('LedgerDetailPage', () => {
     expect(neg!.classList.contains('neg')).toBe(true);
     TestBed.resetTestingModule();
     const without = await setup();
-    const link = without.el.querySelector('[aria-labelledby="proj-title"] a[href^="/projects/convert"]');
+    const link = without.el.querySelector(
+      '[aria-labelledby="proj-title"] a[href^="/projects/convert"]',
+    );
     expect(link?.getAttribute('href')).toContain('lead=101');
-    expect(text(without.el.querySelector('[aria-labelledby="proj-title"]'))).toContain('No project yet.');
+    expect(text(without.el.querySelector('[aria-labelledby="proj-title"]'))).toContain(
+      'No project yet.',
+    );
   });
 
   it('shows a friendly not-found state', async () => {
@@ -96,8 +136,19 @@ describe('LedgerDetailPage', () => {
   });
 
   it('the finalize dialog shows a clear "already finalized" message instead of crashing', async () => {
-    const { api, el, harness } = await setup({ ledger: makeLedger(1, { finalized: false, state: 'AWAITING_FINALIZATION', allowed_actions: ['finalize'] }) });
-    api.finalizeResult = throwError(() => ({ status: 409, code: 'already_finalized', message: 'x', details: {} }));
+    const { api, el, harness } = await setup({
+      ledger: makeLedger(1, {
+        finalized: false,
+        state: 'AWAITING_FINALIZATION',
+        allowed_actions: ['finalize'],
+      }),
+    });
+    api.finalizeResult = throwError(() => ({
+      status: 409,
+      code: 'already_finalized',
+      message: 'x',
+      details: {},
+    }));
     byLabel(el, 'Finalize Client 1')!.click();
     await settle(harness);
     buttonByText(overlay(), 'Confirm')!.click();
@@ -113,7 +164,13 @@ describe('LedgerDetailPage', () => {
     buttonByText(overlay(), 'Save total')!.click();
     await settle(harness);
     expect(text(overlay())).toContain('Give a reason for the change.');
-    api.reviseTotal = () => throwError(() => ({ status: 400, code: 'total_below_received', message: 'The total cannot be lower than the ₹40,000.00 already received.', details: {} }));
+    api.reviseTotal = () =>
+      throwError(() => ({
+        status: 400,
+        code: 'total_below_received',
+        message: 'The total cannot be lower than the ₹40,000.00 already received.',
+        details: {},
+      }));
     const reason = field<HTMLTextAreaElement>('rv-reason');
     reason.value = 'Scope cut';
     reason.dispatchEvent(new Event('input'));
@@ -140,7 +197,9 @@ describe('LedgerDetailPage', () => {
   });
 
   it('a void payment keeps its row with a "Void" tag and no void action', async () => {
-    const { el, harness } = await setup({ payments: [makePayment(1, { is_void: true, void_reason: 'Duplicate' })] });
+    const { el, harness } = await setup({
+      payments: [makePayment(1, { is_void: true, void_reason: 'Duplicate' })],
+    });
     expect(text(el.querySelector('.tag.void'))).toBe('Void');
     byLabel(el, 'More actions: ')!.click();
     await settle(harness);

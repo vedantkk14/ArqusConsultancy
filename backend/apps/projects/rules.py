@@ -2,10 +2,8 @@
 
 from decimal import Decimal
 
-SUGGESTED_BUDGET_PCT = 60  # suggested sanctioned budget = this % of the deal total
-WARN_PCT = 80  # usage from here (inclusive) is "warn"
-OVER_PCT = 100  # usage above this is "over"
-BLOCK_OVER_BUDGET = True  # an expense that would exceed the sanctioned budget is refused
+WARN_PCT = 80  # admin budget bar: expenses from this % of the deal total show as "warn"
+OVER_PCT = 100  # expenses above the deal total show as "over" (never blocked)
 BACKDATE_DAYS = 30  # an expense can be dated at most this many days back
 PM_EDIT_WINDOW_MINUTES = 30  # the logging PM may edit or void their own expense this long
 RECEIPT_REQUIRED = True

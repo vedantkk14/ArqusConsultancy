@@ -19,13 +19,16 @@ export interface Profile {
   email: string;
   phone: string;
   role: string;
-  commission_rate: string | null;
   username?: string;
   date_joined?: string;
   last_login?: string | null;
 }
 
-export const ACTION_LABELS: Record<AuditAction, string> = { CREATE: 'Created', UPDATE: 'Updated', DELETE: 'Deleted' };
+export const ACTION_LABELS: Record<AuditAction, string> = {
+  CREATE: 'Created',
+  UPDATE: 'Updated',
+  DELETE: 'Deleted',
+};
 
 /** "leads.Lead" -> "Lead". */
 export function modelName(label: string): string {

@@ -7,7 +7,12 @@ import { ApiError } from '../../core/models';
 import { ErrorState } from '../../shared/error-state/error-state';
 import { Skeleton } from '../../shared/skeleton/skeleton';
 import { PanelHead } from '../dashboard/components/panel-head';
-import { REPORT_PERIODS, REPORT_PERIOD_LABELS, ReportPeriod, toReportPeriod } from './reports.models';
+import {
+  REPORT_PERIODS,
+  REPORT_PERIOD_LABELS,
+  ReportPeriod,
+  toReportPeriod,
+} from './reports.models';
 
 /** Query params every report shares. `custom` needs both dates before it can be loaded. */
 export function reportParams(qp: { get(k: string): string | null }) {
@@ -15,7 +20,13 @@ export function reportParams(qp: { get(k: string): string | null }) {
   const from = qp.get('from') ?? '';
   const to = qp.get('to') ?? '';
   const ready = period !== 'custom' || (!!from && !!to && from <= to);
-  return { period, from, to, ready, query: period === 'custom' ? { period, from, to } : { period } };
+  return {
+    period,
+    from,
+    to,
+    ready,
+    query: period === 'custom' ? { period, from, to } : { period },
+  };
 }
 
 /**
@@ -30,20 +41,45 @@ export function reportParams(qp: { get(k: string): string | null }) {
   template: `
     <section class="card frame" [attr.aria-label]="title()">
       <app-panel-head [title]="title()" [subtitle]="subtitle()">
-        <button matButton="outlined" type="button" [disabled]="exporting() || !ready() || !hasData()" (click)="exported.emit()">
-          <mat-icon aria-hidden="true">download</mat-icon>{{ exporting() ? 'Exporting…' : 'Export CSV' }}
+        <button
+          matButton="outlined"
+          type="button"
+          [disabled]="exporting() || !ready() || !hasData()"
+          (click)="exported.emit()"
+        >
+          <mat-icon aria-hidden="true">download</mat-icon
+          >{{ exporting() ? 'Exporting…' : 'Export CSV' }}
         </button>
       </app-panel-head>
       <div class="bar">
         <div class="seg" role="group" aria-label="Period">
           @for (p of periods; track p) {
-            <button type="button" [class.on]="period() === p" [attr.aria-pressed]="period() === p" (click)="setPeriod(p)">{{ labels[p] }}</button>
+            <button
+              type="button"
+              [class.on]="period() === p"
+              [attr.aria-pressed]="period() === p"
+              (click)="setPeriod(p)"
+            >
+              {{ labels[p] }}
+            </button>
           }
         </div>
         @if (period() === 'custom') {
-          <label class="d"><span class="sr-only">From</span><input type="date" [value]="params().from" (change)="set('from', $any($event.target).value)" /></label>
+          <label class="d"
+            ><span class="sr-only">From</span
+            ><input
+              type="date"
+              [value]="params().from"
+              (change)="set('from', $any($event.target).value)"
+          /></label>
           <span class="to">to</span>
-          <label class="d"><span class="sr-only">To</span><input type="date" [value]="params().to" (change)="set('to', $any($event.target).value)" /></label>
+          <label class="d"
+            ><span class="sr-only">To</span
+            ><input
+              type="date"
+              [value]="params().to"
+              (change)="set('to', $any($event.target).value)"
+          /></label>
         }
       </div>
     </section>
@@ -53,7 +89,9 @@ export function reportParams(qp: { get(k: string): string | null }) {
     } @else if (error() && !hasData()) {
       <app-error-state [title]="errorTitle()" (retry)="retry.emit()" />
     } @else if (!hasData()) {
-      <div class="card sk" aria-hidden="true"><app-skeleton width="40%" height="20px" /><app-skeleton height="180px" /></div>
+      <div class="card sk" aria-hidden="true">
+        <app-skeleton width="40%" height="20px" /><app-skeleton height="180px" />
+      </div>
     } @else {
       @if (note()) {
         <p class="banner"><mat-icon aria-hidden="true">info</mat-icon>{{ note() }}</p>
@@ -75,7 +113,9 @@ export class ReportFrame {
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly qp = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
+  private readonly qp = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
   protected readonly params = computed(() => reportParams(this.qp()));
   protected readonly period = computed(() => this.params().period);
   protected readonly ready = computed(() => this.params().ready);
@@ -84,7 +124,10 @@ export class ReportFrame {
   protected readonly labels = REPORT_PERIOD_LABELS;
 
   protected setPeriod(p: ReportPeriod): void {
-    this.nav({ period: p === 'month' ? null : p, ...(p === 'custom' ? {} : { from: null, to: null }) });
+    this.nav({
+      period: p === 'month' ? null : p,
+      ...(p === 'custom' ? {} : { from: null, to: null }),
+    });
   }
 
   protected set(key: 'from' | 'to', value: string): void {
@@ -92,6 +135,10 @@ export class ReportFrame {
   }
 
   private nav(queryParams: Record<string, string | null>): void {
-    void this.router.navigate([], { relativeTo: this.route, queryParams, queryParamsHandling: 'merge' });
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+    });
   }
 }

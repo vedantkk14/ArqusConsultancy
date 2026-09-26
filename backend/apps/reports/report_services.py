@@ -17,7 +17,8 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, DecimalField, Q, Sum
+from django.db.models.functions import Coalesce
 
 from .services import (
     TREND_MONTHS,
@@ -86,16 +87,36 @@ def months_for(period: ReportPeriod, today: date) -> list[str]:
 
 # ---- Sales ------------------------------------------------------------------------------------
 
+_MONEY = DecimalField(max_digits=14, decimal_places=2)
+
+
+def won_amount_exprs(with_ledger: bool) -> tuple:
+    """(current deal value, initially agreed value) of a lead, as SQL expressions.
+
+    A won deal is worth its ledger total, which includes every revision; the initial value is the
+    amount first finalized. Without a ledger (or before accounts exists) both are the proposal.
+    """
+    if not with_ledger:
+        return "proposed_amount", "proposed_amount"
+    current = Coalesce("ledger__total_amount", "proposed_amount", output_field=_MONEY)
+    initial = Coalesce(
+        "ledger__initial_amount", "ledger__total_amount", "proposed_amount", output_field=_MONEY
+    )
+    return current, initial
+
 
 def build_sales(period: ReportPeriod) -> dict:
     """Per executive: leads worked, won, lost, conversion, won value, and running projects.
 
+    `won_value` is the deals' current totals (revisions included), split into `initial_value` (the
+    amount first finalized) and `additional_value` (added later with Revise total).
     `running_projects` counts the projects still running that came from the exec's won deals (a
     snapshot, not period-bound).
     """
     User = get_user_model()  # noqa: N806
     Lead = _model("leads", "Lead")  # noqa: N806
     Project = _model("projects", "Project")  # noqa: N806
+    current, initial = won_amount_exprs(_model("accounts", "Ledger") is not None)
     execs = list(User.objects.filter(role="SALES_EXEC").order_by("first_name", "id"))  # 1
     stats: dict[int, dict] = {}
     if Lead is not None:
@@ -106,7 +127,8 @@ def build_sales(period: ReportPeriod) -> dict:
                 worked=Count("id", filter=period.q("created_at")),
                 won=Count("id", filter=Q(status="WON") & period.q("won_at")),
                 lost=Count("id", filter=Q(status="LOST") & period.q("updated_at")),
-                won_value=Sum("proposed_amount", filter=Q(status="WON") & period.q("won_at")),
+                won_value=Sum(current, filter=Q(status="WON") & period.q("won_at")),
+                initial_value=Sum(initial, filter=Q(status="WON") & period.q("won_at")),
             )
         )
         stats = {r["assigned_to"]: r for r in rows}
@@ -119,11 +141,15 @@ def build_sales(period: ReportPeriod) -> dict:
             .annotate(n=Count("id"))
         )
 
-    out, totals = [], {"worked": 0, "won": 0, "lost": 0, "won_value": ZERO, "running": 0}
+    out, totals = (
+        [],
+        {"worked": 0, "won": 0, "lost": 0, "won_value": ZERO, "initial": ZERO, "running": 0},
+    )
     for user in execs:
         s = stats.get(user.pk, {})
         worked, won, lost = s.get("worked", 0), s.get("won", 0), s.get("lost", 0)
         won_value = Decimal(s.get("won_value") or 0)
+        initial_value = Decimal(s.get("initial_value") or 0)
         running_projects = running.get(user.pk, 0)
         out.append(
             {
@@ -133,6 +159,8 @@ def build_sales(period: ReportPeriod) -> dict:
                 "won": won,
                 "lost": lost,
                 "conversion_pct": win_rate_pct(won, lost),
+                "initial_value": money(initial_value),
+                "additional_value": money(won_value - initial_value),
                 "won_value": money(won_value),
                 "running_projects": running_projects,
             }
@@ -145,6 +173,7 @@ def build_sales(period: ReportPeriod) -> dict:
         ):
             totals[key] += value
         totals["won_value"] += won_value
+        totals["initial"] += initial_value
     return {
         **period.as_dict(),
         "data_sources": {"leads": Lead is not None, "projects": Project is not None},
@@ -154,6 +183,8 @@ def build_sales(period: ReportPeriod) -> dict:
             "won": totals["won"],
             "lost": totals["lost"],
             "conversion_pct": win_rate_pct(totals["won"], totals["lost"]),
+            "initial_value": money(totals["initial"]),
+            "additional_value": money(totals["won_value"] - totals["initial"]),
             "won_value": money(totals["won_value"]),
             "running_projects": totals["running"],
         },
@@ -270,21 +301,25 @@ def build_project_margin(period: ReportPeriod) -> dict:
             lead_ids = [p.lead_id for p in projects if p.lead_id]
             for row in acc.with_figures(
                 ledger.objects.filter(lead_id__in=lead_ids, finalized_at__isnull=False)
-            ).values("lead_id", "total_amount", "received"):
+            ).values("lead_id", "total_amount", "initial_amount", "received"):
                 finance[row["lead_id"]] = {
                     "total_amount": row["total_amount"],
+                    "initial_amount": row["initial_amount"] or row["total_amount"],
                     "received": row["received"],
                 }
         for p in projects:
             fin = finance.get(p.lead_id)
             total = fin["total_amount"] if fin else None
             margins = prj.project_margins(fin, p.spent)
+            initial_budget = fin["initial_amount"] if fin else None
             left = prj.remaining(p.spent, total)
             rows.append(
                 {
                     "id": p.id,
                     "name": p.name,
                     "pm": p.pm.display_name if p.pm else "—",
+                    "initial_budget": money(initial_budget) if fin else None,
+                    "additional": money(total - initial_budget) if fin else None,
                     "total": money(total) if fin else None,
                     "spent": money(p.spent),
                     "remaining": None if left is None else money(left),
@@ -402,7 +437,9 @@ def sales_csv(data: dict) -> str:
         "Won",
         "Lost",
         "Conversion %",
-        "Won value",
+        "Initial value",
+        "Additional",
+        "Won value (total)",
         "Running projects",
     ]
     rows = [
@@ -412,6 +449,8 @@ def sales_csv(data: dict) -> str:
             r["won"],
             r["lost"],
             r["conversion_pct"],
+            r["initial_value"],
+            r["additional_value"],
             r["won_value"],
             r["running_projects"],
         ]
@@ -425,6 +464,8 @@ def sales_csv(data: dict) -> str:
             t["won"],
             t["lost"],
             t["conversion_pct"],
+            t["initial_value"],
+            t["additional_value"],
             t["won_value"],
             t["running_projects"],
         ]
@@ -445,6 +486,8 @@ def margin_csv(data: dict) -> str:
     head = [
         "Project",
         "PM",
+        "Initial budget",
+        "Additional",
         "Total budget",
         "Spent",
         "Remaining",
@@ -455,6 +498,8 @@ def margin_csv(data: dict) -> str:
     keys = [
         "name",
         "pm",
+        "initial_budget",
+        "additional",
         "total",
         "spent",
         "remaining",

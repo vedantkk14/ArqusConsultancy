@@ -51,6 +51,8 @@ class Ledger(TimeStampedModel):
     lead = models.OneToOneField("leads.Lead", on_delete=models.PROTECT, related_name="ledger")
     # The Exec's proposal until finalized, then the agreed Total Project Amount.
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    # The amount first finalized; `total_amount - initial_amount` is what was added by revisions.
+    initial_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     finalized_at = models.DateTimeField(null=True, blank=True)
     finalized_on = models.DateField(null=True, blank=True)  # the same moment as a business date
     finalized_by = models.ForeignKey(

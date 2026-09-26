@@ -455,17 +455,17 @@ All four take `?period=month|quarter|year|all|custom` (default `month`; `custom`
 
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| ✅ | `GET /reports/sales` | A, SM | Per sales executive. Won and lost are decided in the period; `running_projects` = running projects from the executive's won deals. No commission. |
+| ✅ | `GET /reports/sales` | A, SM | Per sales executive. Won and lost are decided in the period; `won_value` = the deals' current ledger totals (revisions included; the proposal when there is no ledger), split into `initial_value` (first finalized amount) and `additional_value` (added by Revise total). `running_projects` = running projects from the executive's won deals. No commission. |
 | ✅ | `GET /reports/financial` | A | Received vs expenses per month (6 months, 12 for year/all), aging, top 5 clients by outstanding, collection rate; all from accounts and expenses. |
-| ✅ | `GET /reports/project-margin` | A | One row per project: spent, and (finalized ledgers only) total, remaining, usage, received and live margin. |
+| ✅ | `GET /reports/project-margin` | A | One row per project: spent, and (finalized ledgers only) initial_budget, additional, total, remaining, usage, received and live margin. |
 | ✅ | `GET /reports/lead-funnel` | A | Stages of leads created in the period, `reached` (this stage or later), conversion from the previous stage, lost, split by source. |
 
 ```json
 // GET /reports/sales?period=all
 {"period": "all", "range": {"start": null, "end": "2026-09-25"}, "data_sources": {"leads": true},
  "rows": [{"user_id": 2, "name": "Eva", "leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7",
-           "won_value": "1500.50", "running_projects": 1}],
- "totals": {"leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7", "won_value": "1500.50", "running_projects": 1}}
+           "initial_value": "1000.50", "additional_value": "500.00", "won_value": "1500.50", "running_projects": 1}],
+ "totals": {"leads_worked": 4, "won": 2, "lost": 1, "conversion_pct": "66.7", "initial_value": "1000.50", "additional_value": "500.00", "won_value": "1500.50", "running_projects": 1}}
 
 // GET /reports/financial?period=year
 {"period": "year", "range": {"start": "2026-04-01", "end": "2026-09-25"}, "data_sources": {"accounts": false, "expenses": false},
@@ -477,7 +477,7 @@ All four take `?period=month|quarter|year|all|custom` (default `month`; `custom`
 // GET /reports/project-margin
 {"period": "month", "range": {"start": "2026-09-01", "end": "2026-09-25"}, "data_sources": {"projects": false, "accounts": false},
  "note": "Financial figures pending accounts integration.",
- "rows": [{"id": 1, "name": "Villa", "pm": "Pat", "total": "150000.00", "spent": "40000.00", "remaining": "110000.00",
+ "rows": [{"id": 1, "name": "Villa", "pm": "Pat", "initial_budget": "120000.00", "additional": "30000.00", "total": "150000.00", "spent": "40000.00", "remaining": "110000.00",
            "usage_pct": "26.66", "received": "90000.00", "live_margin": "50000.00"}]}
 
 // GET /reports/lead-funnel?period=all

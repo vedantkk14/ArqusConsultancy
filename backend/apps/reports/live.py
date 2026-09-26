@@ -14,7 +14,8 @@ from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
-from .services import OVERDUE_AFTER_DAYS, ZERO, money, pct, win_rate_pct
+from .report_services import won_amount_exprs
+from .services import OVERDUE_AFTER_DAYS, ZERO, _model, money, pct, win_rate_pct
 
 TOP_SOURCES = 5
 TOP_EXECS = 5
@@ -101,7 +102,9 @@ def lead_figures(rng, months: list[str]) -> dict:
         .values("assigned_to", "assigned_to__first_name", "assigned_to__last_name")
         .annotate(
             won_count=Count("id", filter=won_q),
-            won_value=Sum("proposed_amount", filter=won_q),
+            won_value=Sum(
+                won_amount_exprs(_model("accounts", "Ledger") is not None)[0], filter=won_q
+            ),
             lost_count=Count("id", filter=lost_q),
         )
         .filter(Q(won_count__gt=0) | Q(lost_count__gt=0))

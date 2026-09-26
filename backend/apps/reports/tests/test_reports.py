@@ -95,6 +95,23 @@ def test_sales_aggregates_per_exec_with_running_projects(team):
     assert data["totals"]["running_projects"] == 1 and "commission" not in data["totals"]
 
 
+def test_sales_won_value_follows_revised_total_with_initial_and_additional(team):
+    from apps.accounts import services as acc
+
+    admin, eva, _ = team
+    won = lead(eva, "WON", "10000.00")
+    lead(eva, "WON", "300.00")  # no ledger: the proposal counts, all of it initial
+    ledger = acc.finalize_ledger(won, Decimal("10000.00"), admin)
+    acc.revise_total(ledger.pk, Decimal("19200.00"), "Client added scope", admin)
+    data = client(admin).get(BASE + "sales?period=all").json()
+    eva_row = data["rows"][0]
+    assert eva_row["won_value"] == "19500.00"
+    assert eva_row["initial_value"] == "10300.00" and eva_row["additional_value"] == "9200.00"
+    assert data["totals"]["additional_value"] == "9200.00"
+    csv = client(admin).get(BASE + "sales?period=all&export=csv").content.decode()
+    assert "Initial value,Additional,Won value (total)" in csv
+
+
 def test_sales_period_filters_and_custom(team):
     admin, eva, _ = team
     old = lead(eva, "WON", "100.00")

@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -34,11 +43,26 @@ export function sortByMargin(rows: MarginRow[], desc: boolean): MarginRow[] {
 export class MarginReportPage {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ReportsApi);
-  protected readonly wide = toSignal(inject(BreakpointObserver).observe('(min-width: 768px)').pipe(map((s) => s.matches)), { initialValue: true });
-  private readonly qp = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
-  protected readonly state = new ReportState<MarginReport>('project-margin', (p) => this.api.margin(p), this.api, inject(MatSnackBar), inject(DestroyRef));
+  protected readonly wide = toSignal(
+    inject(BreakpointObserver)
+      .observe('(min-width: 768px)')
+      .pipe(map((s) => s.matches)),
+    { initialValue: true },
+  );
+  private readonly qp = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  protected readonly state = new ReportState<MarginReport>(
+    'project-margin',
+    (p) => this.api.margin(p),
+    this.api,
+    inject(MatSnackBar),
+    inject(DestroyRef),
+  );
   protected readonly desc = signal(true);
-  protected readonly rows = computed(() => sortByMargin(this.state.data()?.rows ?? [], this.desc()));
+  protected readonly rows = computed(() =>
+    sortByMargin(this.state.data()?.rows ?? [], this.desc()),
+  );
 
   constructor() {
     effect(() => {

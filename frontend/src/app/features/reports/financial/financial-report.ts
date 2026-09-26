@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  untracked,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
@@ -18,8 +26,16 @@ import { FinancialReport, monthShort } from '../reports.models';
 export class FinancialReportPage {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ReportsApi);
-  private readonly qp = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
-  protected readonly state = new ReportState<FinancialReport>('financial', (p) => this.api.financial(p), this.api, inject(MatSnackBar), inject(DestroyRef));
+  private readonly qp = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  protected readonly state = new ReportState<FinancialReport>(
+    'financial',
+    (p) => this.api.financial(p),
+    this.api,
+    inject(MatSnackBar),
+    inject(DestroyRef),
+  );
   protected readonly month = monthShort;
   /** Column heights (%) for received and spent, scaled to the largest month (geometry only). */
   protected readonly cols = computed(() => {
@@ -28,8 +44,15 @@ export class FinancialReportPage {
       return [];
     }
     const max = Math.max(0, ...d.received.map(Number), ...d.spent.map(Number));
-    const h = (v: string) => (max ? Math.max(Number(v) > 0 ? 3 : 0, Math.round((Number(v) / max) * 100)) : 0);
-    return d.months.map((m, i) => ({ m, r: d.received[i], s: d.spent[i], rh: h(d.received[i]), sh: h(d.spent[i]) }));
+    const h = (v: string) =>
+      max ? Math.max(Number(v) > 0 ? 3 : 0, Math.round((Number(v) / max) * 100)) : 0;
+    return d.months.map((m, i) => ({
+      m,
+      r: d.received[i],
+      s: d.spent[i],
+      rh: h(d.received[i]),
+      sh: h(d.spent[i]),
+    }));
   });
   protected readonly quiet = computed(() => this.cols().every((c) => c.rh === 0 && c.sh === 0));
 

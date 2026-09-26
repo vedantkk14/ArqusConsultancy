@@ -26,6 +26,8 @@
                 <tr>
                   <th>Project</th>
                   <th>PM</th>
+                  <th class="r">Initial budget</th>
+                  <th class="r">Additional</th>
                   <th class="r">Total budget</th>
                   <th class="r">Spent</th>
                   <th class="r">Remaining</th>
@@ -45,6 +47,10 @@
                       <strong>{{ r.name }}</strong>
                     </td>
                     <td>{{ r.pm }}</td>
+                    <td class="r num">
+                      {{ r.initial_budget ? (r.initial_budget | inr) : '—' }}
+                    </td>
+                    <td class="r num">{{ r.additional ? (r.additional | inr) : '—' }}</td>
                     <td class="r num">{{ r.total ? (r.total | inr) : '—' }}</td>
                     <td class="r num">{{ r.spent | inr }}</td>
                     <td class="r num">{{ r.remaining ? (r.remaining | inr) : '—' }}</td>
@@ -68,6 +74,8 @@
                 <strong>{{ r.name }}</strong
                 ><span class="muted">PM: {{ r.pm }}</span>
                 <span class="meta"
+                  ><span>Initial {{ r.initial_budget ? (r.initial_budget | inr) : '—' }}</span
+                  ><span>Additional {{ r.additional ? (r.additional | inr) : '—' }}</span
                   ><span>Total {{ r.total ? (r.total | inr) : '—' }}</span
                   ><span>Spent {{ r.spent | inr }}</span
                   ><span>Remaining {{ r.remaining ? (r.remaining | inr) : '—' }}</span></span

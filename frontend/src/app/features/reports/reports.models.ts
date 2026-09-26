@@ -28,6 +28,11 @@ export interface SalesRow {
   won: number;
   lost: number;
   conversion_pct: string;
+  /** The amounts first finalized (the proposal when there is no ledger yet). */
+  initial_value: string;
+  /** Added later with Revise total. */
+  additional_value: string;
+  /** Current deal totals: initial + additional. */
   won_value: string;
   /** Running projects that came from this exec's won deals. */
   running_projects: number;
@@ -40,6 +45,8 @@ export interface SalesReport extends Base {
     won: number;
     lost: number;
     conversion_pct: string;
+    initial_value: string;
+    additional_value: string;
     won_value: string;
     running_projects: number;
   };
@@ -72,6 +79,10 @@ export interface MarginRow {
   name: string;
   pm: string;
   /** The finalized deal total (the project's budget), or null before finalization. */
+  /** The amount first finalized, or null before finalization. */
+  initial_budget: string | null;
+  /** Added to the deal later with Revise total. */
+  additional: string | null;
   total: string | null;
   spent: string;
   remaining: string | null;

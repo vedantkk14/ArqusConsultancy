@@ -21,6 +21,10 @@
           <span class="k">Won value</span><span class="v num">{{ d.totals.won_value | inr }}</span>
         </div>
         <div class="tile">
+          <span class="k">Additional amount</span
+          ><span class="v num">{{ d.totals.additional_value | inr }}</span>
+        </div>
+        <div class="tile">
           <span class="k">Running projects</span
           ><span class="v num">{{ d.totals.running_projects }}</span>
         </div>
@@ -41,7 +45,9 @@
                   <th class="r">Won</th>
                   <th class="r">Lost</th>
                   <th class="r">Conversion</th>
-                  <th>Won value</th>
+                  <th class="r">Initial value</th>
+                  <th class="r">Additional</th>
+                  <th>Won value (total)</th>
                   <th class="r">Running projects</th>
                 </tr>
               </thead>
@@ -55,6 +61,8 @@
                     <td class="r num">{{ r.won }}</td>
                     <td class="r num">{{ r.lost }}</td>
                     <td class="r num">{{ r.conversion_pct }}%</td>
+                    <td class="r num">{{ r.initial_value | inr }}</td>
+                    <td class="r num">{{ r.additional_value | inr }}</td>
                     <td>
                       <span class="num">{{ r.won_value | inr }}</span
                       ><span class="track" aria-hidden="true"
@@ -72,6 +80,8 @@
                   <td class="r num">{{ d.totals.won }}</td>
                   <td class="r num">{{ d.totals.lost }}</td>
                   <td class="r num">{{ d.totals.conversion_pct }}%</td>
+                  <td class="r num">{{ d.totals.initial_value | inr }}</td>
+                  <td class="r num">{{ d.totals.additional_value | inr }}</td>
                   <td class="num">{{ d.totals.won_value | inr }}</td>
                   <td class="r num">{{ d.totals.running_projects }}</td>
                 </tr>
@@ -89,6 +99,10 @@
                   ><span>{{ r.conversion_pct }}% conversion</span></span
                 >
                 <span class="num">{{ r.won_value | inr }} won</span>
+                <span class="muted"
+                  >Initial {{ r.initial_value | inr }} · Additional
+                  {{ r.additional_value | inr }}</span
+                >
                 <span class="track" aria-hidden="true"
                   ><span class="bar" [style.width.%]="widths().get(r.user_id)"></span
                 ></span>

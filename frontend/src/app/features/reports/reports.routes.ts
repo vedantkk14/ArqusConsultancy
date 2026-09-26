@@ -13,9 +13,17 @@ function page(path: string, title: string, load: () => Promise<unknown>): Route 
 }
 
 export const REPORTS_ROUTES: Routes = [
-  page('sales', 'Sales report', () => import('./sales/sales-report').then((m) => m.SalesReportPage)),
-  page('financial-health', 'Financial health', () => import('./financial/financial-report').then((m) => m.FinancialReportPage)),
-  page('project-margin', 'Project margin', () => import('./margin/margin-report').then((m) => m.MarginReportPage)),
-  page('lead-funnel', 'Lead funnel report', () => import('./funnel/funnel-report').then((m) => m.FunnelReportPage)),
+  page('sales', 'Sales report', () =>
+    import('./sales/sales-report').then((m) => m.SalesReportPage),
+  ),
+  page('financial-health', 'Financial health', () =>
+    import('./financial/financial-report').then((m) => m.FinancialReportPage),
+  ),
+  page('project-margin', 'Project margin', () =>
+    import('./margin/margin-report').then((m) => m.MarginReportPage),
+  ),
+  page('lead-funnel', 'Lead funnel report', () =>
+    import('./funnel/funnel-report').then((m) => m.FunnelReportPage),
+  ),
   ...placeholderRoutes('/reports').filter((r) => r.path === ''),
 ];

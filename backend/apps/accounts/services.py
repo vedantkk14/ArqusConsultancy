@@ -115,6 +115,7 @@ def finalize_ledger(lead, amount, by, note: str = "") -> Ledger:
     amount = _check_amount(amount)
     moment = selectors.now()
     ledger.total_amount = amount
+    ledger.initial_amount = amount
     ledger.finalized_at = moment
     ledger.finalized_on = selectors.business_date(moment)
     ledger.finalized_by = by

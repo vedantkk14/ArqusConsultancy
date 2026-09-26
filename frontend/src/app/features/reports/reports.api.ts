@@ -30,6 +30,9 @@ export class ReportsApi {
   /** The same report as a CSV file (the server neutralises spreadsheet formulas). */
   csv(slug: ReportSlug, p: QueryParams): Observable<Blob> {
     const params = Object.fromEntries(Object.entries({ ...p, export: 'csv' }).filter(([, v]) => v));
-    return this.http.get(`${this.api.baseUrl}/reports/${slug}`, { params: params as Record<string, string>, responseType: 'blob' });
+    return this.http.get(`${this.api.baseUrl}/reports/${slug}`, {
+      params: params as Record<string, string>,
+      responseType: 'blob',
+    });
   }
 }

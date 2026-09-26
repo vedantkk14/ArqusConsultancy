@@ -31,13 +31,11 @@ async function setup(url: string, component: unknown, width = 1440) {
   });
   const http = TestBed.inject(HttpTestingController);
   TestBed.inject(AuthService).login('a', 'pw').subscribe();
-  http
-    .expectOne('/api/v1/auth/login')
-    .flush({
-      access: 'A',
-      refresh: 'R',
-      user: { id: 1, name: 'Al', email: 'a@x.com', role: Role.Admin },
-    });
+  http.expectOne('/api/v1/auth/login').flush({
+    access: 'A',
+    refresh: 'R',
+    user: { id: 1, name: 'Al', email: 'a@x.com', role: Role.Admin },
+  });
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url, component as never);
   return { http, harness, el: harness.routeNativeElement as HTMLElement };
@@ -47,6 +45,8 @@ const row = (id: number, live: string | null): MarginRow => ({
   id,
   name: `P${id}`,
   pm: 'Pat',
+  initial_budget: null,
+  additional: null,
   total: null,
   spent: '10.00',
   remaining: null,
@@ -79,6 +79,8 @@ describe('SalesReportPage', () => {
         won: 2,
         lost: 1,
         conversion_pct: '66.7',
+        initial_value: '1000.50',
+        additional_value: '500.00',
         won_value: '1500.50',
         running_projects: 1,
       },
@@ -88,6 +90,8 @@ describe('SalesReportPage', () => {
       won: 2,
       lost: 1,
       conversion_pct: '66.7',
+      initial_value: '1000.50',
+      additional_value: '500.00',
       won_value: '1500.50',
       running_projects: 1,
     },

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Interaction, Lead, MessageLog, WhatsAppTemplate
+from .models import CallScript, EmailTemplate, Interaction, Lead, MessageLog, WhatsAppTemplate
 
 
 @admin.register(Lead)
@@ -23,4 +23,6 @@ class InteractionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(WhatsAppTemplate)
+admin.site.register(EmailTemplate)
+admin.site.register(CallScript)
 admin.site.register(MessageLog)

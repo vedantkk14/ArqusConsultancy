@@ -5,13 +5,16 @@ import { ApiService, QueryParams, toApiError } from '../../../core/api/api.servi
 import { PaginatedResponse } from '../../../core/models';
 import {
   Assignee,
+  CallScript,
   DuplicateInfo,
+  EmailTemplate,
   ImportReport,
   Interaction,
   LeadDetail,
   LeadInput,
   LeadListItem,
   LeadSummary,
+  MessageLogEntry,
   NewInteraction,
   StatusChange,
   WhatsAppTemplate,
@@ -103,6 +106,32 @@ export class LeadsApi {
 
   whatsapp(id: number, templateId: number): Observable<{ text: string; url: string }> {
     return this.api.post(`${BASE}/${id}/whatsapp`, { template_id: templateId });
+  }
+
+  emailTemplates(): Observable<EmailTemplate[]> {
+    return this.api.get<EmailTemplate[]>(`${BASE}/email-templates`);
+  }
+
+  /** Rendered subject/body only; nothing is logged. */
+  emailPreview(id: number, templateId: number): Observable<{ subject: string; text: string; url: string }> {
+    return this.api.get(`${BASE}/${id}/email`, { template_id: templateId });
+  }
+
+  email(id: number, templateId: number): Observable<{ subject: string; text: string; url: string }> {
+    return this.api.post(`${BASE}/${id}/email`, { template_id: templateId });
+  }
+
+  callScripts(): Observable<CallScript[]> {
+    return this.api.get<CallScript[]>(`${BASE}/call-scripts`);
+  }
+
+  logCall(id: number, body: { script_id?: number | null; notes?: string }): Observable<Interaction> {
+    return this.api.post<Interaction>(`${BASE}/${id}/call`, body);
+  }
+
+  /** Cross-lead chat history (WhatsApp + Email), newest first. */
+  messages(page = 1): Observable<PaginatedResponse<MessageLogEntry>> {
+    return this.api.list<MessageLogEntry>(`${BASE}/messages`, { page });
   }
 
   finalize(id: number, amount: string, note = ''): Observable<LeadDetail> {

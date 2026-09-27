@@ -11,12 +11,15 @@ from rest_framework import serializers
 
 from . import services
 from .models import (
+    CallScript,
+    EmailTemplate,
     Interaction,
     InteractionType,
     Lead,
     LeadSource,
     LeadStatus,
     LostReason,
+    MessageLog,
     WhatsAppTemplate,
 )
 from .selectors import CLOSED_STATUSES, business_tz
@@ -239,6 +242,53 @@ class WhatsAppTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhatsAppTemplate
         fields = ["id", "name", "body"]
+
+
+class EmailSerializer(serializers.Serializer):
+    template_id = serializers.IntegerField()
+
+
+class EmailTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailTemplate
+        fields = ["id", "name", "subject", "body"]
+
+
+class CallScriptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CallScript
+        fields = ["id", "name", "body"]
+
+
+class CallLogSerializer(serializers.Serializer):
+    script_id = serializers.IntegerField(required=False, allow_null=True)
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=4000)
+
+
+class MessageLogLeadSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    phone = serializers.CharField()
+
+
+class MessageLogSerializer(serializers.ModelSerializer):
+    lead = MessageLogLeadSerializer(read_only=True)
+    created_by = PersonSerializer(allow_null=True, read_only=True)
+    template_name = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = MessageLog
+        fields = [
+            "id",
+            "lead",
+            "channel",
+            "template_name",
+            "subject",
+            "rendered_text",
+            "status",
+            "created_by",
+            "created_at",
+        ]
 
 
 class AssigneeSerializer(serializers.Serializer):

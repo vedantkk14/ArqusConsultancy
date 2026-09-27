@@ -60,14 +60,18 @@
     </dl>
 
     <div class="acts">
-      @if (tel(); as href) {
-        <a matButton="outlined" [href]="href" [attr.aria-label]="'Call ' + lead.name"><mat-icon>call</mat-icon>Call</a>
+      @if (tel()) {
+        <button matButton="outlined" type="button" (click)="openCall(lead)" [attr.aria-label]="'Call ' + lead.name">
+          <mat-icon>call</mat-icon>Call
+        </button>
       }
       <button matButton="outlined" type="button" (click)="openWhatsApp(lead)" [attr.aria-label]="'WhatsApp ' + lead.name">
         <mat-icon>chat</mat-icon>WhatsApp
       </button>
       @if (lead.email) {
-        <a matButton="outlined" [href]="'mailto:' + lead.email" [attr.aria-label]="'Email ' + lead.name"><mat-icon>mail</mat-icon>Email</a>
+        <button matButton="outlined" type="button" (click)="openEmail(lead)" [attr.aria-label]="'Email ' + lead.name">
+          <mat-icon>mail</mat-icon>Email
+        </button>
       }
       <button matButton="filled" type="button" (click)="logActivity()"><mat-icon>edit_note</mat-icon>Log activity</button>
       <button matButton="outlined" type="button" (click)="edit(lead)" [attr.aria-label]="'Edit ' + lead.name"><mat-icon>edit</mat-icon>Edit</button>
@@ -187,8 +191,8 @@
   <!-- Phones: sticky Call | WhatsApp | Log -->
   @if (!layout.isDesktop()) {
     <nav class="mbar" aria-label="Quick actions">
-      @if (tel(); as href) {
-        <a [href]="href" [attr.aria-label]="'Call ' + lead.name"><mat-icon aria-hidden="true">call</mat-icon>Call</a>
+      @if (tel()) {
+        <button type="button" (click)="openCall(lead)" [attr.aria-label]="'Call ' + lead.name"><mat-icon aria-hidden="true">call</mat-icon>Call</button>
       }
       <button type="button" (click)="openWhatsApp(lead)" [attr.aria-label]="'WhatsApp ' + lead.name">
         <mat-icon aria-hidden="true">chat</mat-icon>WhatsApp

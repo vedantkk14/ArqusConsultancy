@@ -125,27 +125,66 @@ class WhatsAppTemplate(TimeStampedModel):
         return self.name
 
 
+class EmailTemplate(TimeStampedModel):
+    """Body/subject placeholders: {{lead_name}}, {{exec_name}}, {{company}}."""
+
+    name = models.CharField(max_length=100, unique=True)
+    subject = models.CharField(max_length=200)
+    body = models.TextField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class CallScript(TimeStampedModel):
+    """Talking points to reference on a call. Body placeholders same as templates above."""
+
+    name = models.CharField(max_length=100, unique=True)
+    body = models.TextField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class MessageLog(models.Model):
     class Channel(models.TextChoices):
         WHATSAPP = "WHATSAPP", "WhatsApp"
+        EMAIL = "EMAIL", "Email"
 
     class Status(models.TextChoices):
-        OPENED = "OPENED", "Opened"  # wa.me link handed to the user; we cannot confirm delivery
+        OPENED = "OPENED", "Opened"  # wa.me/mailto link handed to the user; we cannot confirm delivery
         SENT = "SENT", "Sent"
         FAILED = "FAILED", "Failed"
 
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name="messages")
     template = models.ForeignKey(WhatsAppTemplate, null=True, blank=True, on_delete=models.SET_NULL)
+    email_template = models.ForeignKey(
+        EmailTemplate, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    subject = models.CharField(max_length=200, blank=True)
     rendered_text = models.TextField()
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     channel = models.CharField(max_length=20, choices=Channel.choices, default=Channel.WHATSAPP)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.OPENED)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
         return f"{self.channel} to lead {self.lead_id} ({self.status})"
+
+    @property
+    def template_name(self) -> str:
+        tpl = self.template or self.email_template
+        return tpl.name if tpl else ""

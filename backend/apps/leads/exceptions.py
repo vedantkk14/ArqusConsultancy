@@ -59,3 +59,8 @@ class NotWon(LeadError):
 class PhoneUnusable(LeadError):
     default_code = "phone_unusable"
     default_detail = "This lead's phone number cannot be used for WhatsApp."
+
+
+class EmailUnusable(LeadError):
+    default_code = "email_unusable"
+    default_detail = "This lead has no email address on file."

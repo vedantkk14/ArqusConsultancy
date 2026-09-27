@@ -13,6 +13,7 @@ from apps.core.permissions import ADMIN, SALES_EXEC, SALES_MANAGER
 from . import integrations
 from .exceptions import (
     DuplicateLead,
+    EmailUnusable,
     FollowupInPast,
     FollowupOnClosed,
     HasLedger,
@@ -22,6 +23,8 @@ from .exceptions import (
     PhoneUnusable,
 )
 from .models import (
+    CallScript,
+    EmailTemplate,
     Interaction,
     InteractionType,
     Lead,
@@ -281,13 +284,14 @@ def log_interaction(
     next_followup_at: datetime | None = None,
     new_status: str | None = None,
     status_fields: dict | None = None,
+    meta: dict | None = None,
 ) -> Interaction:
     if type_ not in USER_INTERACTION_TYPES:
         raise ValidationError({"type": ["This activity type is written by the system."]})
     lead = Lead.objects.select_for_update().get(pk=lead.pk)
     _require_own_or_manager(lead, by)
 
-    interaction = _log(lead, type_, by, notes=notes)
+    interaction = _log(lead, type_, by, notes=notes, meta=meta or {})
     target = new_status
     if not target and lead.status == LeadStatus.NEW and type_ in OUTBOUND_TYPES:
         target = LeadStatus.CONTACTED
@@ -351,13 +355,17 @@ def bulk_assign(leads_qs, ids: list[int], assignee_id: int, by) -> int:
 # ---- WhatsApp ----------
 
 
-def render_template(template: WhatsAppTemplate, lead: Lead, by) -> str:
+def render_text(body: str, lead: Lead, by) -> str:
     exec_name = _name(lead.assigned_to) or _name(by) or ""
     return (
-        template.body.replace("{{lead_name}}", lead.name)
+        body.replace("{{lead_name}}", lead.name)
         .replace("{{exec_name}}", exec_name)
         .replace("{{company}}", COMPANY_NAME)
     )
+
+
+def render_template(template: WhatsAppTemplate | EmailTemplate | CallScript, lead: Lead, by) -> str:
+    return render_text(template.body, lead, by)
 
 
 def whatsapp_preview(lead: Lead, template: WhatsAppTemplate, by) -> dict:
@@ -377,6 +385,48 @@ def whatsapp(lead: Lead, template: WhatsAppTemplate, by) -> dict:
     MessageLog.objects.create(lead=lead, template=template, rendered_text=text, created_by=by)
     log_interaction(lead, by, type_=InteractionType.WHATSAPP, notes=f"Sent “{template.name}”")
     return result
+
+
+# ---- Email ----------
+
+
+def email_preview(lead: Lead, template: EmailTemplate, by) -> dict:
+    """Render only; nothing is logged."""
+    _require_own_or_manager(lead, by)
+    if not lead.email:
+        raise EmailUnusable()
+    subject = render_text(template.subject, lead, by)
+    text = render_text(template.body, lead, by)
+    return {
+        "subject": subject,
+        "text": text,
+        "url": integrations.email_provider.open_url(lead.email, subject, text),
+    }
+
+
+@transaction.atomic
+def email(lead: Lead, template: EmailTemplate, by) -> dict:
+    result = email_preview(lead, template, by)
+    MessageLog.objects.create(
+        lead=lead,
+        email_template=template,
+        channel=MessageLog.Channel.EMAIL,
+        subject=result["subject"],
+        rendered_text=result["text"],
+        created_by=by,
+    )
+    log_interaction(lead, by, type_=InteractionType.EMAIL, notes=f"Sent “{template.name}”")
+    return result
+
+
+# ---- Call ----------
+
+
+@transaction.atomic
+def log_call(lead: Lead, by, *, script: CallScript | None, notes: str = "") -> Interaction:
+    meta = {"script_id": script.id, "script_name": script.name} if script else {}
+    final_notes = notes or (f"Used script “{script.name}”" if script else "")
+    return log_interaction(lead, by, type_=InteractionType.CALL, notes=final_notes, meta=meta)
 
 
 # ---- Admin ----------

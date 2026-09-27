@@ -103,14 +103,25 @@ All under `/api/v1/leads`. Roles: A = Admin, SM = Sales Manager, SE = Sales Exec
 404). PM gets 403 everywhere. Money is a decimal string. Exec responses never contain `finance`, ledger,
 payment, project or total keys.
 
+**Lead = the client; Opportunity = one deal with it** ("Deal #2", `sequence_no`). A lead keeps name, phone,
+email, source, requirements, assigned_to, created_by; every deal field (`status`, `next_followup_at`,
+`proposed_amount`, `won_at`, `lost_reason`, `lost_note`) lives on its opportunities, as do interactions and
+WhatsApp messages. A lead row and the lead-level actions below use its **current** deal (the latest; only it can
+be open). **At most one open deal per lead** (open = not WON/LOST): starting another returns 409
+`opportunity_open` `{opportunity_id}`. A new lead gets Deal #1. The ledger and the project belong to a deal.
+
 | Status | Method & path | Who | Notes |
 | --- | --- | --- | --- |
-| ✅ | `GET /leads` | A, SM, SE | Paginated (20, max 100). Filters below |
+| ✅ | `GET /leads` | A, SM, SE | Paginated (20, max 100). One row per lead with its current deal's `status`, `next_followup_at`, `proposed_amount`, plus `current_opportunity_id`, `deals_count`, `last_activity_at`. Every status by default. Filters below |
 | ✅ | `GET /leads/summary` | A, SM, SE | `by_status[{status,count,value}]`, `overdue`, `today`, `untouched`, `no_followup`, `won_awaiting`; honours `q`, `assigned_to`, `source`, `created_*` |
 | ✅ | `POST /leads` | A, SM | 409 `duplicate_lead` `{existing:{id,name,status,assigned_to_name}}` unless `force=true` |
 | ✅ | `GET /leads/check-duplicate?phone=&exclude=` | A, SM | `{existing: {...} | null}` |
-| ✅ | `GET /leads/{id}` | A, SM, SE | Adds `allowed_transitions`, `interactions_count`; `finance {finalized,total_amount,finalized_at}` for A, SM |
-| ✅ | `PATCH /leads/{id}` | A, SM (contact fields), SE (email, requirements, next_followup_at, proposed_amount) | Other keys -> 400. Amount change logs AMOUNT_CHANGE |
+| ✅ | `GET /leads/{id}` | A, SM, SE | Adds `allowed_transitions`, `interactions_count` (all deals), `current_opportunity_id`, `opportunities` (newest first, see below); `finance {finalized,total_amount,finalized_at}` of the current deal for A, SM |
+| ✅ | `GET /leads/{id}/opportunities` | A, SM, SE | Paginated deals, newest first: `{id, lead, sequence_no, status, assigned_to, next_followup_at, days_overdue, proposed_amount, won_at, lost_reason, lost_note, requirements, created_by, created_at, updated_at, allowed_transitions, is_current, is_open}`; A, SM also get `project_id, project_name, ledger_id, finance` (SE: absent, not null) |
+| ✅ | `POST /leads/{id}/opportunities` | A, SM | New deal `{assigned_to?, requirements?}` (assignee defaults to the lead's; the lead follows its current deal's owner). 201 with the deal. 409 `opportunity_open` `{opportunity_id}` while one is open |
+| ✅ | `GET/PATCH /leads/{id}/opportunities/{opp_id}` | A, SM, SE | One deal; PATCH `{next_followup_at?, proposed_amount?}` |
+| ✅ | `POST .../opportunities/{opp_id}/status`, `GET/POST .../interactions`, `POST .../assign` (A, SM), `GET/POST .../whatsapp`, `POST .../finalize` (A, SM) | as the lead-level ones | Same bodies and rules, on that deal (each deal has its own timeline). A deal of another lead is 404 |
+| ✅ | `PATCH /leads/{id}` | A, SM (contact fields), SE (email, requirements, next_followup_at, proposed_amount) | Other keys -> 400. `next_followup_at`/`proposed_amount` go to the current deal; an amount change logs AMOUNT_CHANGE |
 | ✅ | `DELETE /leads/{id}` | A | Soft delete; 409 `has_ledger` |
 | ✅ | `POST /leads/{id}/status` | A, SM, SE | `{status, note?, lost_reason?, lost_note?, proposed_amount?, next_followup_at?}` |
 | ✅ | `GET/POST /leads/{id}/interactions` | A, SM, SE | Append-only. POST `{type, notes, next_followup_at?, new_status?, lost_reason?, proposed_amount?}` |
@@ -119,16 +130,17 @@ payment, project or total keys.
 | ✅ | `GET /leads/whatsapp-templates` | A, SM, SE | Active templates |
 | ✅ | `GET /leads/{id}/whatsapp?template_id=` | A, SM, SE | Preview `{text, url}`; logs nothing |
 | ✅ | `POST /leads/{id}/whatsapp` | A, SM, SE | `{template_id}` -> `{text, url}` (wa.me); writes MessageLog (OPENED) + WHATSAPP interaction |
-| ✅ | `POST /leads/{id}/finalize` | A | `{amount, note?}`; 409 `accounts_not_ready` `{missing:[...]}` until Dev C ships the contract below |
-| ✅ | `GET /leads/export` | A, SM | CSV of the filtered list, max 5000 rows, formula cells prefixed with `'` |
+| ✅ | `POST /leads/{id}/finalize` | A, SM | `{amount, note?}` on the current deal; 400 `not_won` |
+| ✅ | `GET /leads/export?format=xlsx&scope=all\|month&month=YYYY-MM` | A, SM | Excel (`.xlsx`, default) or `format=csv`, of the filtered list; `scope=month` keeps leads created in that month (IST; default this month; bad month 400). Max 5000 rows; text cells starting `= + - @` get a `'` prefix; amounts are numbers. File `leads-all.xlsx` / `leads-2026-09.xlsx` |
 | ✅ | `GET /dashboard/sales-manager?period=month\|quarter\|year\|all` | SM only | Team dashboard - see below |
 | ✅ | `GET /dashboard/sales-exec?period=month\|quarter\|year\|all` | SE only | Own-leads dashboard - see below |
 
 **List filters (contract with the dashboards' "View all" links):** `status` (comma list), `assigned_to`
 (id or `none`), `source` (comma list), `q` (name, email, phone digits), `followup=overdue|today|upcoming|none`,
 `open=true`, `untouched=true` (NEW with no interactions), `won_awaiting=true`, `created_from`, `created_to`
-(YYYY-MM-DD, IST), `ordering` = `created_at`, `-created_at` (default), `name`, `next_followup_at`, `-days_overdue`,
-`-proposed_amount`, `-last_activity_at`, `won_at`, `-won_at`. Nulls sort last. Definitions (IST, `BUSINESS_TIME_ZONE`):
+(YYYY-MM-DD, IST), `ordering` = `-last_activity_at` (default, "Most recent": the latest of the lead's creation,
+its current deal's last change and any interaction), `created_at`, `-created_at`, `name`, `next_followup_at`,
+`-days_overdue`, `-proposed_amount`, `won_at`, `-won_at`. Nulls sort last. Deal filters apply to the current deal. Definitions (IST, `BUSINESS_TIME_ZONE`):
 open = not WON/LOST; overdue = open and follow-up < now; today = open and follow-up between now and the end
 of the business day (never overlaps overdue). Dashboards should import these from `apps/leads/selectors.py`.
 
@@ -144,17 +156,18 @@ OTHER). The first CALL / WHATSAPP / EMAIL / MEETING on a NEW lead moves it to CO
 (400, 5-minute tolerance), `followup_on_closed` (400), `accounts_not_ready` (409), `has_ledger` (409),
 `not_won` (400), `phone_unusable` (400), `has_payments` (409).
 
-**UI lists:** All leads = `open=true` (Won and Lost are not shown there); Won leads = `status=WON` (optionally
+**UI lists:** All leads = every status, Most recent first (no hidden `open=true`; a dashboard link may still pass
+it); Won leads = `status=WON` (optionally
 `won_awaiting=true`); Lost leads = `status=LOST`; Overdue = `followup=overdue`. List rows carry `finalized`
 (true/false) for Admin and Sales Manager only; it is absent for Sales Execs.
 
-**Leads -> Accounts contract (Dev C must add):**
-1. `accounts.Ledger` with `lead` (one-to-one to `leads.Lead`), `total_amount` Decimal(12,2) and a
+**Leads -> Accounts contract (built):**
+1. `accounts.Ledger` with `opportunity` (one-to-one to `leads.Opportunity`), `total_amount` Decimal(12,2) and a
    `finalized_at` DateTimeField (the finalization marker, null until finalized).
-2. `accounts.services.create_ledger(lead)`: exists as a stub; make it create the Ledger idempotently.
-3. `accounts.services.finalize_ledger(lead, amount, by)`: sets `total_amount`, `finalized_at`, audit log.
-4. `accounts.services.cancel_ledger(lead)`: called when a won lead is marked lost (no-op until it exists), and an
-   `accounts.Payment` with `ledger.lead`, so leads can refuse "lost" once a payment exists (`has_payments`).
+2. `accounts.services.create_ledger(opportunity)`: creates the Ledger idempotently.
+3. `accounts.services.finalize_ledger(opportunity, amount, by, note)`: sets `total_amount`, `finalized_at`, audit log.
+4. `accounts.services.cancel_ledger(opportunity)`: called when a won deal is marked lost, and an
+   `accounts.Payment` with `ledger.opportunity`, so leads can refuse "lost" once a payment exists (`has_payments`).
 Once these exist, finalize, `won_awaiting`, `finance` and the `has_ledger` delete guard work with no leads change.
 Notifications use `core.services.notify(user, type, payload)` with types `lead_assigned`,
 `lead_reassigned_away`, `lead_won`.
@@ -256,17 +269,19 @@ Never accessible to PM.
 
 ## Accounts (Dev B)
 
-**Admin only, everywhere.** Anonymous requests get 401 and every other role 403, with an error body that never
-carries an amount. Money is a decimal string ("1234.50"), never a number. Only **finalized** ledgers count in
+**Admin only, everywhere** - except `POST /ledgers/{id}/finalize`, which the Sales Manager may also call
+(`FINALIZE_ROLES`; they get only `{id, opportunity, finalized, total, finalized_at}` back). Revise-total, payments,
+void and every other endpoint stay Admin-only. Anonymous requests get 401 and every other role 403, with an error
+body that never carries an amount. A ledger belongs to one deal (`opportunity`); the client is `opportunity.lead`. Money is a decimal string ("1234.50"), never a number. Only **finalized** ledgers count in
 outstanding, collection rate and aging. Routes have no trailing slash.
 
 | Status | Method & path | Notes |
 | --- | --- | --- |
-| ✅ | `GET /ledgers` | Paginated (20). Row: `id, lead, client, phone, exec_name, state, state_label, finalized, is_overdue, total, received, outstanding, collected_pct, days_since, last_payment_on, created_at` |
+| ✅ | `GET /ledgers` | Paginated (20). Row: `id, lead, opportunity, sequence_no, client, phone, exec_name, state, state_label, finalized, is_overdue, total, received, outstanding, collected_pct, days_since, last_payment_on, created_at` |
 | ✅ | `GET /ledgers/summary` | `total_value, received, outstanding, overdue_amount, clients_with_balance, overdue_clients, collection_rate_pct, awaiting_finalization, counts{state}, aging[{bucket,count,amount}], top_overdue[3]`. Accepts `q`, `created_from`, `created_to` |
 | ✅ | `GET /ledgers/options?q=` | Up to 10 finalized ledgers with a balance (the record-payment select) |
 | ✅ | `GET /ledgers/{id}` | Row + `lead_block`, `project` (id, name, status, spent, remaining, live_margin, or null), `finalized_at/by/note`, `proposed_amount`, `allowed_actions` |
-| ✅ | `POST /ledgers/{id}/finalize` | `{amount, note?}`. Sets the total, notifies the exec (`deal_finalized`, no amounts). Twice: 409 `already_finalized` |
+| ✅ | `POST /ledgers/{id}/finalize` | A, SM. `{amount, note?}`. Sets the total, notifies the exec (`deal_finalized`, no amounts). Twice: 409 `already_finalized` |
 | ✅ | `POST /ledgers/{id}/revise-total` | `{amount, reason}`, finalized only. Not below received (`total_below_received`) or the linked project's sanctioned budget (`total_below_budget`) |
 | ✅ | `POST /ledgers/{id}/reminder` | Returns `{text, url}` (a `wa.me` link) and logs `REMINDER_SENT`. Unusable phone: 400 `invalid_phone` |
 | ✅ | `GET/POST /ledgers/{id}/payments` | POST is `multipart/form-data`: `amount, mode, reference, received_on, note?, proof?, confirm_duplicate?` |
@@ -302,7 +317,7 @@ date), counted in business-timezone dates.
 `invalid_proof` 400, `validation_error` 400 (`details.<field>`).
 
 **Notifications** (through `core.services.notify`): `payment_received`, `payment_voided` (the other active admins),
-`deal_finalized` (the lead's exec; payload is only `{lead_id, lead_name}`), `payment_overdue` (every admin, from
+`deal_finalized` (the deal's exec; payload is only `{lead_id, lead_name, opportunity_id}`), `payment_overdue` (every admin, from
 `python manage.py notify_overdue_payments`, once per ledger until a new payment resets `overdue_notified_at`).
 
 ### Adapter functions (called by Leads and Projects)
@@ -311,11 +326,11 @@ Implemented in `apps/accounts/services.py` with exactly the signatures the calle
 
 | Function | Caller | Behaviour |
 | --- | --- | --- |
-| `create_ledger(lead)` | `leads.integrations.create_ledger`, inside the Won transaction | `get_or_create`; total = the lead's proposed amount (0 if none); unfinalized |
-| `finalize_ledger(lead, amount, by)` | `leads.integrations.finalize` | Admin only; validates the amount; 409 `already_finalized` the second time. The leads note is not passed through (the caller sends three arguments) |
-| `get_project_finance(lead)` | `projects.integrations` | `{total_amount, received, outstanding, finalized}` (Decimals), or `None` without a ledger. Its existence is the finalization marker Projects checks |
+| `create_ledger(opportunity)` | `leads.integrations.create_ledger`, inside the Won transaction | `get_or_create`; total = the deal's proposed amount (0 if none); unfinalized |
+| `finalize_ledger(opportunity, amount, by, note)` | `leads.integrations.finalize` | Admin or Sales Manager; validates the amount; 409 `already_finalized` the second time |
+| `get_project_finance(opportunity)` | `projects.integrations` | `{total_amount, received, outstanding, finalized}` (Decimals), or `None` without a ledger. Its existence is the finalization marker Projects checks |
 | `cancel_ledger(lead)` | `leads.integrations.cancel_ledger` on Won to Lost | Deletes the ledger when it has no payments (Leads already refuses when payments exist) |
-| `Ledger.lead` (1:1), `total_amount`, `finalized_at` | `leads.integrations._ledger_model()` | The marker fields Leads looks for |
+| `Ledger.opportunity` (1:1), `total_amount`, `finalized_at` | `leads.integrations._ledger_model()` | The marker fields Leads looks for |
 
 ### What Dev C can import from accounts (Reports)
 
@@ -328,8 +343,15 @@ so they match Accounts exactly; `Payment.objects.filter(is_void=False)` is "mone
 ## Projects and expenses (Dev B)
 
 A PM sees only the projects assigned to them (anything else is **404**) and **no budget at all**: they log expenses and
-see `spent`. A project's budget is the finalized deal total (`accounts.Ledger.total_amount`), Admin only. The Sales
-roles get **403** on every endpoint here; anonymous requests get **401**. PM responses come from separate
+see `spent`. A project's budget is the finalized deal total (`accounts.Ledger.total_amount`), Admin only. A project
+comes from one won deal (`opportunity`); `client_name` is copied from `opportunity.lead.name` at conversion.
+The Sales Exec gets **403** on every endpoint here; anonymous requests get **401**. The **Sales Manager reads**
+`GET /projects`, `/projects/summary` (`{running, completed}` only), `/projects/{id}`, `/{id}/events` (payloads
+without `amount`/`spent`), `/{id}/expenses`, `GET /expenses`, `/expenses/{id}` - through
+`SalesManagerProjectSerializer` / `ExpenseSalesManagerSerializer`: name, client (`lead_id` links the lead profile),
+status, PM, dates, `allowed_actions: []`, and in detail `expenses` (date, category, vendor, `has_receipt`). Never
+`sanctioned_budget`, `total_budget`, `spent`, `remaining`, `usage_pct`, `live_margin`, `planned_margin`, `finance` or
+any `amount`, not even as null. Every write, the receipt file, `/expenses/summary` and exports are 403 for them. PM responses come from separate
 serializers (allowlist) and never contain `total_amount`, `proposed_amount`, ledger, payment, `received`,
 `outstanding`, margin, `total_budget`, `remaining`, `usage_pct`, `state` or any lead field, not even as `null`. Money is a decimal string ("1234.50"), never a number.
 Routes have no trailing slash, like the rest of the API.
@@ -338,10 +360,10 @@ Routes have no trailing slash, like the rest of the API.
 | --- | --- | --- | --- |
 | ✅ | `GET /projects` | A, PM | Paginated (20). Filters and orderings below. PM: own projects, PM shape |
 | ✅ | `GET /projects/summary` | A, PM | `{running, completed, spent_total}`; the Admin also gets `ok, warn, over, no_pm, budget_total`. Accepts the list filters except `state`; `status` picks which status the state counts are for (default running) |
-| ✅ | `GET /projects/convertible` | A | Won deals that can become projects: `{count, results: [{lead, name, exec_name, won_at, proposed_amount, total_amount, ineligible_reason, project_id}]}`. `?lead=<id>` looks one up and says why it cannot be converted: `not_won`, `project_exists` (with `project_id`) or `not_finalized` |
+| ✅ | `GET /projects/convertible` | A | Won deals (opportunities) that can become projects: `{count, results: [{opportunity, sequence_no, lead, name (the client), exec_name, won_at, proposed_amount, total_amount, ineligible_reason, project_id}]}`. `?opportunity=<id>` (or `?lead=<id>` for the lead's current deal) looks one up and says why it cannot be converted: `not_won`, `project_exists` (with `project_id`) or `not_finalized` |
 | ✅ | `GET /projects/managers` | A | Active project managers with `running_projects`, for the assign selects |
-| ✅ | `POST /projects` | A | Convert a won lead. Body: `lead`, `name`, `pm?` (null = assign later), `start_date?`, `expected_end_date?`, `scope?`. Returns the admin detail (201) |
-| ✅ | `GET /projects/{id}` | A, PM | PM shape or admin shape (adds `pm`, `lead_id`, `finance`), plus `allowed_actions` computed by the server. Admin shape also has `total_budget`, `remaining`, `usage_pct`, `state` |
+| ✅ | `POST /projects` | A | Convert a won deal. Body: `opportunity`, `name`, `pm?` (null = assign later), `start_date?`, `expected_end_date?`, `scope?`. Returns the admin detail (201) |
+| ✅ | `GET /projects/{id}` | A, PM, SM | PM shape, Sales Manager shape (above) or admin shape (adds `pm`, `lead_id`, `opportunity_id`, `finance`), plus `allowed_actions` computed by the server. Admin shape also has `total_budget`, `remaining`, `usage_pct`, `state` |
 | ✅ | `PATCH /projects/{id}` | A | `name`, `start_date`, `expected_end_date`, `scope` |
 | ✅ | `POST /projects/{id}/assign-pm` | A | `{pm}` (null unassigns). Notifies the old and the new PM |
 | ✅ | `POST /projects/{id}/complete` | A, PM (own) | Locks expenses |
@@ -396,7 +418,7 @@ required except for `LABOUR`. Images are re-encoded (EXIF removed, at most 1600 
 
 Projects reads the deal's money through one adapter, `apps/projects/integrations.py`. It needs:
 
-* `accounts.services.get_project_finance(lead) -> {total_amount, received, outstanding, finalized} | None`
+* `accounts.services.get_project_finance(opportunity) -> {total_amount, received, outstanding, finalized} | None`
   (Decimals; `None` when the lead has no ledger). **Implemented by the accounts module** (see "Adapter functions"). Before it existed:
   * conversion was allowed without finalization;
   * the admin detail returned `finance: null`.

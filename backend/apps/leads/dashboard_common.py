@@ -1,8 +1,9 @@
 """Shared building blocks for the leads-owned dashboards (Sales Exec's own, Sales Manager's team).
 
-Both dashboards scope everything through a `leads_qs` of deals (leads.Opportunity, with the lead
-joined for contact fields); only the queryset differs (one Exec's own deals vs. the whole team's). Business-day/open/overdue/due-today/untouched definitions live in
-`selectors`; period math and money formatting come from `apps.reports.services` (read-only import).
+Both dashboards scope everything through a `leads_qs` of deals (leads.Opportunity, with the
+lead joined for contact fields); only the queryset differs (one Exec's own deals vs. the team's).
+Business-day/open/overdue/due-today/untouched definitions live in `selectors`; period math and
+money formatting come from `apps.reports.services` (read-only import).
 This is the one place their shared aggregates and queue-building live, so neither dashboard
 restates the other's logic - each layers its own role-specific pieces (by-executive, unassigned,
 upcoming, ...) on top of what's here.

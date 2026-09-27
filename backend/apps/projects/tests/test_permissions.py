@@ -4,10 +4,6 @@ The Sales Manager reads projects (no money: see test_sales_manager.py) and gets 
 and on the money-only endpoints.
 """
 
-#: Read-only project screens a Sales Manager may open.
-SM_READS = {"get:list", "get:summary", "get:detail", "get:events", "get:expenses", "get:x-list"}
-SM_READS |= {"get:x-detail"}  # never the receipt file: it shows the amount
-
 import pytest
 
 from .conftest import BASE, EXPENSES, expense_form

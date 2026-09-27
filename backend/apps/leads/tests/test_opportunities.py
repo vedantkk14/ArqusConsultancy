@@ -33,7 +33,7 @@ def _migrate(targets):
     return executor.loader.project_state(targets).apps
 
 
-@pytest.mark.django_db(transaction=True, serialized_rollback=True)
+@pytest.mark.django_db(transaction=True)
 def test_migration_turns_each_lead_into_opportunity_one(django_user_model):
     old = _migrate(BEFORE)
     user = django_user_model.objects.create(username="ex", role="SALES_EXEC")

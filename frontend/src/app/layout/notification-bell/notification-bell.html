@@ -1,0 +1,28 @@
+<button type="button" class="bell" [matMenuTriggerFor]="panel" (menuOpened)="opened()" [attr.aria-label]="label()">
+  <mat-icon aria-hidden="true">notifications</mat-icon>
+  @if (service.unread()) {
+    <span class="dot" aria-hidden="true"></span>
+  }
+</button>
+
+<mat-menu #panel="matMenu" xPosition="before" class="np-menu">
+  <div class="np-head" (click)="$event.stopPropagation()">
+    <strong>Notifications</strong>
+    @if (service.unread()) {
+      <button type="button" class="np-all-read" (click)="service.markAllRead(); $event.stopPropagation()">Mark all read</button>
+    }
+  </div>
+  @for (n of service.recent(); track n.id) {
+    <a mat-menu-item class="np-item" [class.unread]="!n.is_read" [routerLink]="link(n)" (click)="service.markRead(n)">
+      <span [class]="'np-ic t-' + meta(n.type).tone" aria-hidden="true"><mat-icon>{{ meta(n.type).icon }}</mat-icon></span>
+      <span class="np-txt">
+        <span class="np-ttl">{{ n.title }}@if (!n.is_read) { <span class="sr-only"> (unread)</span> }</span>
+        @if (n.body) { <span class="np-body">{{ n.body }}</span> }
+        <span class="np-when">{{ ago(n.created_at) }}</span>
+      </span>
+    </a>
+  } @empty {
+    <p class="np-empty">{{ loaded() ? "You're all caught up." : 'Loading…' }}</p>
+  }
+  <a mat-menu-item class="np-foot" routerLink="/notifications">View all</a>
+</mat-menu>

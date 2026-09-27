@@ -1,0 +1,30 @@
+import { Route, Routes } from '@angular/router';
+import { roleGuard } from '../../core/auth/role.guard';
+import { findNavItem, placeholderRoutes } from '../../core/config/route-helpers';
+
+function page(path: string, title: string, load: () => Promise<unknown>): Route {
+  return {
+    path,
+    title,
+    canActivate: [roleGuard],
+    data: { roles: findNavItem(`/team/${path}`)?.roles },
+    loadComponent: load as Route['loadComponent'],
+  };
+}
+
+// The group's own "/team" redirect (first page the role may open) comes from the placeholder helper.
+export const TEAM_ROUTES: Routes = [
+  page('users', 'Users', () => import('./users/users-page').then((m) => m.UsersPage)),
+  page('assignments', 'Assignments', () =>
+    import('./assignments/assignments-page').then((m) => m.AssignmentsPage),
+  ),
+  {
+    // Not in the sidebar: opened from Users and Assignments. A Sales Manager may open executives only.
+    path: 'members/:id',
+    title: 'Team member',
+    canActivate: [roleGuard],
+    data: { roles: findNavItem('/team/assignments')?.roles },
+    loadComponent: () => import('./member/member-page').then((m) => m.MemberPage),
+  },
+  ...placeholderRoutes('/team').filter((r) => r.path === ''),
+];

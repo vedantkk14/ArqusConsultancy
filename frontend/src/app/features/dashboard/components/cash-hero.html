@@ -1,0 +1,122 @@
+<div class="top">
+  <div class="heading">
+    <p class="kicker">Cash flow · {{ periodNoun() }}</p>
+    <div class="tabs" role="tablist" aria-label="Cash flow series">
+      @for (t of tabs; track t.key; let i = $index) {
+        <button
+          type="button"
+          role="tab"
+          [class.on]="tab() === t.key"
+          [attr.aria-selected]="tab() === t.key"
+          [attr.tabindex]="tab() === t.key ? 0 : -1"
+          aria-controls="cash-panel"
+          (click)="select(t.key)"
+          (keydown)="onTabKey($event, i)"
+        >
+          {{ t.label }}
+        </button>
+      }
+    </div>
+  </div>
+  <div class="figure">
+    <span class="big num" [appCountUp]="value()" countFormat="inr"></span>
+    <span class="context">
+      @if (delta(); as dl) {
+        <span class="delta">{{ dl.text }}</span>{{ comparison() }}
+      } @else {
+        {{ tab() === 'net' ? 'Received minus spent' : 'Total' }} {{ periodNoun() }}
+      }
+    </span>
+  </div>
+</div>
+
+<div id="cash-panel" role="tabpanel" class="chart" [attr.aria-label]="tabs[tab() === 'received' ? 0 : tab() === 'spent' ? 1 : 2].label + ' chart'">
+  @if (isEmpty()) {
+    <p class="empty">No data for this period</p>
+  }
+  <div
+    #plot
+    class="plot"
+    [class.hidden]="isEmpty()"
+    tabindex="0"
+    role="group"
+    [attr.aria-label]="summary()"
+    (keydown)="onChartKey($event)"
+    (blur)="active.set(null)"
+  >
+    <svg [attr.viewBox]="'0 0 ' + W() + ' ' + H()" [attr.width]="W()" [attr.height]="H()" role="img" [attr.aria-label]="summary()">
+      <defs>
+        <linearGradient id="hero-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" class="s0" />
+          <stop offset="100%" class="s1" />
+        </linearGradient>
+      </defs>
+      @for (g of gridlines(); track $index) {
+        <line class="grid" [attr.x1]="0" [attr.x2]="W()" [attr.y1]="g" [attr.y2]="g" />
+      }
+      <path class="area" [attr.d]="area()" fill="url(#hero-area)" />
+      <path class="line" [attr.d]="line()" pathLength="1" />
+      @for (p of points(); track $index; let i = $index) {
+        <text class="month" [attr.x]="p[0]" [attr.y]="H() - 8" text-anchor="middle">{{ monthLabel(months()[i] ?? '') }}</text>
+      }
+      @if (tooltip(); as t) {
+        <line class="cross" [attr.x1]="t.x" [attr.x2]="t.x" [attr.y1]="12" [attr.y2]="H() - 26" />
+        <circle class="dot" [attr.cx]="t.x" [attr.cy]="t.y" r="5" />
+      }
+      <rect
+        class="hit"
+        x="0"
+        y="0"
+        [attr.width]="W()"
+        [attr.height]="H()"
+        (pointermove)="onPointer($event)"
+        (pointerdown)="onPointer($event)"
+        (pointerleave)="active.set(null)"
+      />
+    </svg>
+    @if (tooltip(); as t) {
+      <div class="tip" [class.right]="t.alignRight" [class.left]="t.alignLeft" [style.left.px]="t.x" aria-hidden="true">
+        <strong>{{ t.month }}</strong>
+        <span><i class="k r"></i>Received {{ t.received }}</span>
+        <span><i class="k s"></i>Spent {{ t.spent }}</span>
+        <span><i class="k n"></i>Net {{ t.net }}</span>
+      </div>
+    }
+  </div>
+  <p class="sr-only" aria-live="polite">
+    @if (tooltip(); as t) {
+      {{ t.month }}: received {{ t.received }}, spent {{ t.spent }}, net {{ t.net }}
+    }
+  </p>
+  <table class="sr-only">
+    <caption>Cash flow by month</caption>
+    <thead>
+      <tr><th scope="col">Month</th><th scope="col">Received</th><th scope="col">Spent</th><th scope="col">Net</th></tr>
+    </thead>
+    <tbody>
+      @for (m of months(); track m; let i = $index) {
+        <tr>
+          <th scope="row">{{ m }}</th>
+          <td>{{ data().cashflow.collected[i] | inr }}</td>
+          <td>{{ data().cashflow.spent[i] | inr }}</td>
+          <td>{{ data().cashflow.net[i] | inr }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<dl class="stats">
+  <div>
+    <dt>Received</dt>
+    <dd class="num">{{ data().kpis.received | inr }}</dd>
+  </div>
+  <div>
+    <dt>Spent</dt>
+    <dd class="num">{{ data().kpis.spent | inr }}</dd>
+  </div>
+  <div>
+    <dt>Net margin</dt>
+    <dd class="num">{{ data().kpis.net | inr }} <small>{{ data().kpis.net_margin_pct }}%</small></dd>
+  </div>
+</dl>

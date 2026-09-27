@@ -1,0 +1,17 @@
+<nav class="tabbar" aria-label="Main">
+  @for (tab of tabs(); track tab.base) {
+    <a
+      class="tab"
+      [class.active]="isActive(tab.base)"
+      [routerLink]="tab.route"
+      [attr.aria-current]="isActive(tab.base) ? 'page' : null"
+    >
+      <mat-icon aria-hidden="true">{{ tab.icon }}</mat-icon>
+      <span>{{ tab.label }}</span>
+    </a>
+  }
+  <button type="button" class="tab" [class.active]="moreActive()" aria-haspopup="dialog" (click)="openMore()">
+    <mat-icon aria-hidden="true">menu</mat-icon>
+    <span>More</span>
+  </button>
+</nav>

@@ -1,0 +1,202 @@
+<form [formGroup]="form" (ngSubmit)="submit(false)" novalidate>
+  <!-- Contact -->
+  <section class="sec" aria-labelledby="lf-h-contact">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>person</mat-icon></span>
+      <div>
+        <h3 id="lf-h-contact">Contact</h3>
+        <p>Who should we talk to?</p>
+      </div>
+    </div>
+    <div class="body grid">
+      <div class="field">
+        <label for="lf-name">Name</label>
+        <input
+          id="lf-name"
+          formControlName="name"
+          autocomplete="name"
+          placeholder="e.g. Rahul Sharma"
+          [attr.aria-invalid]="showError('name') || null"
+          [attr.aria-describedby]="showError('name') ? 'lf-name-err' : null"
+        />
+        @if (showError('name')) {
+          <p class="err" id="lf-name-err">{{ errorText('name') }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="lf-phone">Mobile number</label>
+        <span class="prefixed" [class.invalid]="showError('phone')">
+          <span class="pre" aria-hidden="true">+91</span>
+          <input
+            id="lf-phone"
+            formControlName="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel-national"
+            placeholder="98765 43210"
+            [attr.aria-invalid]="showError('phone') || null"
+            [attr.aria-describedby]="(showError('phone') ? 'lf-phone-err ' : '') + (duplicate() ? 'lf-dup' : '') || null"
+            (paste)="onPhonePaste($event)"
+            (blur)="checkDuplicate()"
+          />
+        </span>
+        @if (showError('phone')) {
+          <p class="err" id="lf-phone-err">{{ errorText('phone') }}</p>
+        }
+        @if (duplicate(); as d) {
+          <p class="dup" id="lf-dup" role="status">
+            <mat-icon aria-hidden="true">warning</mat-icon>
+            <span>
+              This number is already lead <strong>{{ d.name }}</strong>
+              ({{ statusLabels[d.status] }}{{ d.assigned_to_name ? ', ' + d.assigned_to_name : '' }}).
+              <a [routerLink]="['/leads', d.id]" target="_blank">Open lead</a>
+            </span>
+          </p>
+        }
+      </div>
+
+      <div class="field wide">
+        <label for="lf-email">Email <span class="opt">(optional)</span></label>
+        <input
+          id="lf-email"
+          formControlName="email"
+          type="email"
+          autocomplete="email"
+          placeholder="name@company.com"
+          [attr.aria-invalid]="showError('email') || null"
+          [attr.aria-describedby]="showError('email') ? 'lf-email-err' : null"
+        />
+        @if (showError('email')) {
+          <p class="err" id="lf-email-err">{{ errorText('email') }}</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Source -->
+  <section class="sec" aria-labelledby="lf-h-source">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>travel_explore</mat-icon></span>
+      <div>
+        <h3 id="lf-h-source">Source</h3>
+        <p>Where did this lead come from?</p>
+      </div>
+    </div>
+    <div class="body">
+      <div class="chipset" role="radiogroup" aria-labelledby="lf-h-source">
+        @for (s of sources; track s[0]) {
+          <label class="opt-chip">
+            <input type="radio" formControlName="source" [value]="s[0]" />
+            <span>{{ s[1] }}</span>
+          </label>
+        }
+      </div>
+      @if (isOther()) {
+        <div class="field">
+          <label for="lf-source-other">Describe the source</label>
+          <input id="lf-source-other" formControlName="source_other" placeholder="e.g. Newspaper ad" />
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Requirements -->
+  <section class="sec" aria-labelledby="lf-h-req">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>description</mat-icon></span>
+      <div>
+        <h3 id="lf-h-req">Requirements</h3>
+        <p>A line or two is enough.</p>
+      </div>
+    </div>
+    <div class="body">
+      <div class="field">
+        <label for="lf-req" class="sr-only">What does the client need?</label>
+        <textarea
+          id="lf-req"
+          formControlName="requirements"
+          rows="4"
+          placeholder="What does the client need? (optional)"
+          aria-describedby="lf-req-count"
+        ></textarea>
+        <p class="hint" id="lf-req-count" [class.over]="reqLength() > maxReq">{{ reqLength() }} / {{ maxReq }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Assignment -->
+  @if (canAssign() && !isEdit()) {
+    <section class="sec" aria-labelledby="lf-h-assign">
+      <div class="lab">
+        <span class="ic" aria-hidden="true"><mat-icon>group</mat-icon></span>
+        <div>
+          <h3 id="lf-h-assign">Assignment</h3>
+          <p>Who will work this lead?</p>
+        </div>
+      </div>
+      <div class="body">
+        <div class="people" role="radiogroup" aria-labelledby="lf-h-assign">
+          <label class="person">
+            <input type="radio" formControlName="assigned_to" value="" />
+            <span class="pc">
+              <span class="later" aria-hidden="true"><mat-icon>schedule</mat-icon></span>
+              <span class="nm">Assign later<small>Decide when it's ready</small></span>
+            </span>
+          </label>
+          @for (a of assignees(); track a.id) {
+            <label class="person">
+              <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+              <span class="pc">
+                <app-lead-avatar [name]="a.name" [size]="36" />
+                <span class="nm">
+                  {{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}
+                  <small>{{ a.role === 'ADMIN' ? 'Admin · ' : '' }}{{ a.open_count }} open</small>
+                </span>
+              </span>
+            </label>
+          }
+        </div>
+        <div class="tools">
+          @if (amAssignee()) {
+            <button type="button" class="link" (click)="assignToMe()">Assign to me</button>
+          }
+          <button type="button" class="link" [disabled]="!assignees().length" (click)="autoPick()">Auto-pick least loaded</button>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- Follow-up -->
+  @if (!limited()) {
+    <section class="sec" aria-labelledby="lf-h-fu">
+      <div class="lab">
+        <span class="ic" aria-hidden="true"><mat-icon>event</mat-icon></span>
+        <div>
+          <h3 id="lf-h-fu">Follow-up</h3>
+          <p>When to reach out next (optional).</p>
+        </div>
+      </div>
+      <div class="body">
+        <app-followup-picker inputId="lf-fu" formControlName="next_followup_at" [invalid]="showError('next_followup_at')" />
+        @if (showError('next_followup_at')) {
+          <p class="err" id="lf-fu-err">{{ errorText('next_followup_at') }}</p>
+        }
+      </div>
+    </section>
+  }
+
+  @if (formError()) {
+    <p class="form-err" role="alert">{{ formError() }}</p>
+  }
+
+  <div class="bar">
+    @if (isEdit()) {
+      <button matButton type="button" (click)="cancelled.emit()">Cancel</button>
+      <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save changes' }}</button>
+    } @else {
+      <button matButton="outlined" type="button" [disabled]="saving()" (click)="submit(true)">Save &amp; add another</button>
+      <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save lead' }}</button>
+    }
+  </div>
+</form>

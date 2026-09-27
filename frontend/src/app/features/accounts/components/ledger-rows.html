@@ -1,0 +1,132 @@
+<ng-template #acts let-r>
+  <span class="acts">
+    @if (!r.finalized) {
+      <button type="button" class="pri" [attr.aria-label]="'Finalize ' + r.client" (click)="emit('finalize', r)">Finalize</button>
+    } @else if (hasBalance(r)) {
+      <button type="button" class="pri" [attr.aria-label]="'Record payment for ' + r.client" (click)="emit('pay', r)">Record payment</button>
+      <button type="button" class="ib" [attr.aria-label]="'Send a reminder to ' + r.client" (click)="emit('remind', r)">
+        <mat-icon aria-hidden="true">chat</mat-icon>
+      </button>
+    }
+    <button type="button" class="ib" [matMenuTriggerFor]="more" [attr.aria-label]="'More actions for ' + r.client">
+      <mat-icon aria-hidden="true">more_vert</mat-icon>
+    </button>
+    <mat-menu #more="matMenu" xPosition="before">
+      <a mat-menu-item [routerLink]="['/accounts/ledgers', r.id]"><mat-icon>open_in_new</mat-icon>Open ledger</a>
+      @if (r.finalized) {
+        <a mat-menu-item routerLink="/accounts/statement" [queryParams]="{ ledger: r.id }"><mat-icon>receipt_long</mat-icon>Statement</a>
+      }
+    </mat-menu>
+  </span>
+</ng-template>
+
+@if (layout() === 'table') {
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th class="c-exec">Executive</th>
+          <th>State</th>
+          <th class="r">Total</th>
+          <th class="r c-rec">Received</th>
+          <th class="r">Outstanding</th>
+          <th class="c-bar">Collected</th>
+          <th class="c-last">Last payment</th>
+          <th class="r"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (skeleton()) {
+          @for (i of placeholders; track i) {
+            <tr class="sk" aria-hidden="true">
+              <td colspan="9">
+                <span class="sk-row">
+                  <app-skeleton width="28%" height="14px" />
+                  <app-skeleton width="12%" height="14px" />
+                  <app-skeleton width="12%" height="22px" radius="999px" />
+                  <app-skeleton width="14%" height="10px" radius="999px" />
+                </span>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (r of rows(); track r.id) {
+            <tr>
+              <td>
+                <span class="who-t">
+                  <a class="stretch" [routerLink]="['/accounts/ledgers', r.id]">{{ r.client }}</a>
+                  <span class="ph num">{{ r.phone }}</span>
+                </span>
+              </td>
+              <td class="c-exec">
+                @if (r.exec_name) {
+                  <span class="who sm"><app-person-avatar [name]="r.exec_name" [size]="24" />{{ r.exec_name }}</span>
+                } @else {
+                  <span class="ph">Unassigned</span>
+                }
+              </td>
+              <td>
+                <span class="st"><app-ledger-state [state]="r.state" />@if (r.is_overdue) { <app-overdue-pill [days]="r.days_since" /> }</span>
+              </td>
+              <td class="r num">{{ r.total | inrCompact }}</td>
+              <td class="r num c-rec">{{ r.finalized ? (r.received | inrCompact) : '—' }}</td>
+              <td class="r num" [class.neg]="r.is_overdue">{{ r.finalized ? (r.outstanding | inrCompact) : '—' }}</td>
+              <td class="c-bar">
+                @if (r.finalized) {
+                  <app-collect-bar [pct]="r.collected_pct" />
+                } @else {
+                  <span class="ph">Finalize to start collecting</span>
+                }
+              </td>
+              <td class="c-last">
+                {{ r.last_payment_on ? day(r.last_payment_on) : '—' }}
+                @if (r.finalized && r.days_since !== null && hasBalance(r)) {
+                  <span class="ph">{{ r.days_since }} days waiting</span>
+                }
+              </td>
+              <td class="r"><ng-container *ngTemplateOutlet="acts; context: { $implicit: r }" /></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <ul class="cards">
+    @if (skeleton()) {
+      @for (i of placeholders.slice(0, 4); track i) {
+        <li class="card lc" aria-hidden="true">
+          <app-skeleton width="55%" height="16px" />
+          <app-skeleton width="35%" height="13px" />
+          <app-skeleton height="10px" radius="999px" />
+        </li>
+      }
+    } @else {
+      @for (r of rows(); track r.id; let i = $index) {
+        <li class="card lc rise-in" [style.--i]="i % 10">
+          <span class="lc-top">
+            <span class="who-t">
+              <a class="stretch" [routerLink]="['/accounts/ledgers', r.id]">{{ r.client }}</a>
+              <span class="ph num">{{ r.phone }}</span>
+            </span>
+            <span class="st"><app-ledger-state [state]="r.state" />@if (r.is_overdue) { <app-overdue-pill [days]="r.days_since" /> }</span>
+          </span>
+          @if (r.finalized) {
+            <app-collect-bar [pct]="r.collected_pct" />
+          }
+          <span class="lc-fig">
+            <span><span class="lbl">Total</span><strong class="num">{{ r.total | inrCompact }}</strong></span>
+            <span><span class="lbl">Received</span><strong class="num">{{ r.finalized ? (r.received | inrCompact) : '—' }}</strong></span>
+            <span><span class="lbl">Outstanding</span><strong class="num" [class.neg]="r.is_overdue">{{ r.finalized ? (r.outstanding | inrCompact) : '—' }}</strong></span>
+          </span>
+          <span class="lc-meta">
+            <span>{{ r.exec_name ?? 'Unassigned' }}</span>
+            <span>{{ r.last_payment_on ? 'Paid ' + day(r.last_payment_on) : r.finalized ? 'No payment yet' : 'Not finalized' }}</span>
+          </span>
+          <span class="lc-acts"><ng-container *ngTemplateOutlet="acts; context: { $implicit: r }" /></span>
+        </li>
+      }
+    }
+  </ul>
+}

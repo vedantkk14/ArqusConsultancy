@@ -1,0 +1,16 @@
+# ruff: noqa: E501
+"""Business rules for accounts. Change a number here, nowhere else."""
+
+ACCOUNTS_ROLES = {"ADMIN"}
+PAYMENT_REQUIRES_FINALIZED = True
+BLOCK_OVERPAYMENT = True
+PAYMENT_BACKDATE_DAYS = 90
+DUPLICATE_WINDOW_SECONDS = 60
+PAYMENT_OVERDUE_DAYS = 30
+AGING_BUCKETS = ("0-30", "31-60", "61-90", "90+")
+MAX_PROOF_BYTES = 5 * 1024 * 1024
+PROOF_MAX_SIDE = 1600
+MAX_AMOUNT_DIGITS = 10  # before the decimal point (Decimal(12, 2))
+NOTE_MAX = 300
+EXPORT_MAX_ROWS = 5000
+COMPANY_NAME = "ARQUS Sports Consultancy"

@@ -1,0 +1,107 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.insight {
+  margin: 0 0 2px;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+}
+
+.count {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.head-a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+// ---- Totals strip -------------------------------------------------------------------------------------
+.totals {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.tot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .lbl { color: var(--ink-3); font-size: var(--text-sm); }
+  .big { color: var(--ink); font-size: var(--text-kpi); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+  .small { color: var(--ink-3); font-size: var(--text-sm); }
+}
+
+.cats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .c-name { color: var(--ink-2); }
+  .c-val { color: var(--ink); font-weight: 600; text-align: right; }
+
+  .c-bar {
+    display: block;
+    height: 6px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--plate);
+
+    span { display: block; height: 100%; border-radius: inherit; background: var(--data-cyan); }
+  }
+}
+
+.list {
+  padding: var(--space-2);
+  transition: opacity var(--dur-fast);
+
+  &.busy { opacity: 0.55; }
+}
+
+.more { display: flex; justify-content: center; }
+
+@media (min-width: 900px) {
+  .totals { grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr); align-items: center; }
+}
+
+@media (max-width: 767px) {
+  .list {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .head-a {
+    width: 100%;
+
+    > * { flex: 1; }
+  }
+}

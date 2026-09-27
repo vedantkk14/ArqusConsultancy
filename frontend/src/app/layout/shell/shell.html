@@ -1,0 +1,16 @@
+@if (layout.isDesktop()) {
+  <aside id="app-sidebar" class="sidebar">
+    <app-sidebar />
+  </aside>
+}
+
+<div class="main">
+  <app-topbar />
+  <main class="content" id="main-content">
+    <router-outlet />
+  </main>
+</div>
+
+@if (!layout.isDesktop()) {
+  <app-tabbar />
+}

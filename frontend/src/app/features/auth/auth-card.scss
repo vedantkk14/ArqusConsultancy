@@ -1,0 +1,63 @@
+// Auth frame: the form panel and a plain white card (logo, then the form).
+.auth {
+  min-height: 100dvh;
+  background: var(--paper);
+}
+
+.side {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: -40px;
+  padding: 0 16px var(--space-6);
+}
+
+.card-wrap {
+  width: 100%;
+  max-width: 420px;
+}
+
+.card-x {
+  padding: var(--space-8) 0 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.logo {
+  display: block;
+  width: 132px;
+  height: auto;
+  margin: 0 auto var(--space-2);
+}
+
+.body {
+  padding: var(--space-2) var(--space-6) var(--space-6);
+}
+
+.foot {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+@media (min-width: 1024px) {
+  .auth {
+    display: grid;
+    grid-template-columns: 55fr 45fr;
+  }
+
+  .side {
+    justify-content: center;
+    margin: 0;
+    padding: var(--space-10) var(--space-8);
+  }
+
+  .body {
+    padding: var(--space-2) var(--space-8) var(--space-8);
+  }
+}

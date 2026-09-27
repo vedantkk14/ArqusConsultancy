@@ -1,0 +1,32 @@
+// Row action menu. The menu panel is rendered in the overlay, so these rules target its panel class.
+// Item text stays ink on a light hover fill (the default hover made the labels unreadable).
+::ng-deep .leads-menu.mat-mdc-menu-panel {
+  min-width: 220px;
+
+  .mat-mdc-menu-item {
+    --mat-menu-item-label-text-color: var(--ink);
+    --mat-menu-item-icon-color: var(--ink-3);
+    --mat-menu-item-hover-state-layer-color: var(--subtle);
+    --mat-menu-item-focus-state-layer-color: var(--subtle);
+    --mat-menu-item-hover-state-layer-opacity: 1;
+    --mat-menu-item-focus-state-layer-opacity: 1;
+    min-height: 44px;
+    color: var(--ink);
+
+    &:hover:not([disabled]),
+    &.cdk-program-focused:not([disabled]),
+    &.cdk-keyboard-focused:not([disabled]),
+    &.mat-mdc-menu-item-highlighted:not([disabled]) {
+      background: var(--subtle);
+      color: var(--ink);
+
+      .mat-icon {
+        color: var(--brand-deep);
+      }
+    }
+
+    &[disabled] {
+      color: var(--ink-3);
+    }
+  }
+}

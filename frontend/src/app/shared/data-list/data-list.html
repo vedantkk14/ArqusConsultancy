@@ -1,0 +1,55 @@
+<div class="table-scroll">
+  <table [attr.aria-label]="label()" [attr.aria-busy]="loading()">
+    <thead>
+      <tr>
+        @for (col of columns(); track col.key) {
+          <th scope="col" [class.end]="col.align === 'end' || col.type === 'money'" [class.hide-sm]="col.hideOnMobile">
+            {{ col.label }}
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading()) {
+        @for (r of skeletonRows; track r) {
+          <tr>
+            @for (col of columns(); track col.key) {
+              <td [class.hide-sm]="col.hideOnMobile"><app-skeleton width="70%" /></td>
+            }
+          </tr>
+        }
+      } @else {
+        @for (row of rows(); track $index) {
+          <tr>
+            @for (col of columns(); track col.key) {
+              <td
+                [class.end]="col.align === 'end' || col.type === 'money'"
+                [class.hide-sm]="col.hideOnMobile"
+                [attr.data-label]="col.label"
+              >
+                @switch (col.type) {
+                  @case ('money') {
+                    <span class="num">{{ text(row, col.key) | inr }}</span>
+                  }
+                  @case ('date') {
+                    {{ text(row, col.key) | date: 'd MMM y' }}
+                  }
+                  @case ('status') {
+                    <app-status-chip [status]="text(row, col.key)" />
+                  }
+                  @default {
+                    {{ text(row, col.key) }}
+                  }
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty" [attr.colspan]="columns().length">{{ emptyText() }}</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>

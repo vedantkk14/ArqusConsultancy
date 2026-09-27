@@ -1,0 +1,132 @@
+// KPI cards: label, figure, one visual. Loaded after dashboard-page.scss.
+.kpi {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--space-4);
+}
+
+.kpi-label {
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.kpi-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.kpi-figs {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.kpi-value {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kpi-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.delta {
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--positive-bg);
+  color: var(--positive);
+  font-size: var(--text-xs);
+  font-weight: 600;
+
+  &.neg {
+    background: var(--negative-bg);
+    color: var(--negative);
+  }
+}
+
+.pill.overdue {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px 2px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--tint-rose);
+  color: var(--tint-rose-ink);
+  font-size: var(--text-xs);
+  font-weight: 600;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.spark {
+  --spark-h: 36px;
+  margin-top: auto;
+}
+
+app-stacked-bar {
+  margin-top: auto;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+  }
+}
+
+.wl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+
+  b {
+    color: var(--ink);
+    font-size: var(--text-lg);
+  }
+}
+
+@container (min-width: 560px) {
+  .kpi {
+    padding: var(--space-5);
+  }
+
+  .kpi-value {
+    font-size: 26px;
+  }
+}

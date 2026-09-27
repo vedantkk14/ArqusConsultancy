@@ -1,0 +1,43 @@
+<header class="topbar">
+  @if (!layout.isDesktop()) {
+    <img class="emblem" src="brand/arqus-emblem.png" alt="ARQUS" width="48" height="24" decoding="async" />
+  }
+  <div class="titles">
+    <h1 class="page-title">{{ pageTitle() }}</h1>
+    @if (layout.subtitle()) {
+      <span class="subtitle">{{ layout.subtitle() }}</span>
+    }
+  </div>
+  <span class="spacer"></span>
+
+  <div class="actions">
+    <app-notification-bell />
+
+  @if (auth.user(); as user) {
+      <button type="button" class="avatar-btn" [attr.aria-label]="'Account menu for ' + user.name" [matMenuTriggerFor]="accountMenu">
+      <span class="hi">Hi, <strong>{{ firstName(user.name) }}</strong></span>
+      <app-user-avatar [name]="user.name" [size]="36" />
+    </button>
+    <mat-menu #accountMenu="matMenu" xPosition="before">
+      <div class="menu-user">
+        <span class="greet">{{ greeting() }}</span>
+        <strong>{{ user.name }}</strong>
+        <span class="mail">{{ user.email }}</span>
+        <app-role-badge [role]="user.role" />
+      </div>
+      <a mat-menu-item routerLink="/settings/profile">
+        <mat-icon>person</mat-icon>
+        <span>Profile</span>
+      </a>
+      <a mat-menu-item routerLink="/account/change-password">
+        <mat-icon>lock</mat-icon>
+        <span>Change password</span>
+      </a>
+      <button mat-menu-item (click)="auth.logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Log out</span>
+      </button>
+    </mat-menu>
+  }
+  </div>
+</header>

@@ -1,0 +1,34 @@
+# Open decisions
+
+Business rules not yet confirmed. Each has a **recommended default**; build to the default unless told otherwise,
+and record the final answer here.
+
+| # | Decision | Recommended default |
+| --- | --- | --- |
+| 1 | **Who sets the Total Amount?** | The Sales Exec *proposes* an amount on the lead; the Admin *finalises* it when the Ledger is created. Only the Admin can change it afterwards. **Built:** the ledger starts at the proposed amount (`Ledger.total_amount`, unfinalized); `finalize_ledger` confirms it once; `revise-total` changes it later with a reason, never below what was received or below the linked project's sanctioned budget. |
+| 2 | **Lost status and reason** | Add a `LOST` lead status. Marking a lead Lost requires a reason (choice + optional note). Lost leads are kept (soft delete), excluded from the funnel's active count, and can be reopened by a Sales Manager. |
+| 3 | **Expense over budget** | **Decided: never blocked.** There is no separate sanctioned budget; the budget is the finalized deal total, shown to the Admin only. Expenses are never blocked, and there are no alerts, overrides, budget requests or releases. |
+| 4 | **Sanctioned budget vs total amount** | **Decided: removed.** The sanctioned budget does not exist; `projects.0003` dropped the column and the budget request table. |
+| 5 | **Overpayment rule** | Reject a payment that would make total payments exceed the Ledger's total amount. Refunds/adjustments are separate entries made by an Admin. **Built:** `BLOCK_OVERPAYMENT = True`, no override; a mistaken payment is voided (with a reason) and re-entered. |
+| 6 | **Profit margin definition** | Margin = Total Amount − total Expenses, shown as an amount and as % of Total Amount. There is no commission. Only Admin sees it. The project detail shows *live margin* = received minus expenses (`selectors.project_margins`). |
+| 7 | **Commission rate** | **Decided: no commission for anyone.** `users.0003` dropped `commission_rate`; the endpoint, the Commission Rates page and every commission figure are gone. |
+| 8 | **Soft delete + audit log for money records** | Ledgers, payments and expenses are never hard-deleted (`SoftDeleteModel`). Every create/update/delete writes an audit-log entry (who, when, before/after). Only an Admin can delete. |
+| 9 | **Who can reopen a completed project** | Admin only, with a reason. It is logged in the audit trail. |
+| 10 | **WhatsApp approach** | Phase 1: `wa.me` click-to-chat links with a pre-filled template message, and a manual Message Log. Phase 2 (later): WhatsApp Business (Meta Cloud) API for automated sends. |
+| 11 | **Dashboard "Year" and "Quarter"** | Indian financial year (1 April to 31 March); quarters Apr-Jun, Jul-Sep, Oct-Dec, Jan-Mar. Change `FINANCIAL_YEAR_START_MONTH` in `apps/reports/services.py` to 1 for calendar years. |
+| 12 | **Dashboard for non-admin roles** | Sales Manager (`GET /dashboard/sales-manager`) and Sales Exec (`GET /dashboard/sales-exec`) now have real dashboards, both Dev A. Project Manager still sees a "coming soon" note on /dashboard until theirs is specified. |
+| 13 | **Can a Sales Exec create leads?** (`EXEC_CAN_CREATE_LEADS` in `apps/leads/services.py`) | **Undecided.** Default `False`: managers add and assign leads; execs work their own. |
+| 14 | **Who sees the finalized total on a lead?** (`FINAL_AMOUNT_VISIBLE_TO`) | **Undecided.** Default `{"ADMIN", "SALES_MANAGER"}`; an Exec never sees it. |
+| 15 | **PM edit window for expenses** (`PM_EDIT_WINDOW_MINUTES` in `apps/projects/rules.py`) | **Undecided.** Default 30 minutes: the PM who logged an expense may edit or void it within 30 minutes; after that, or for anyone else's expense, only an Admin. Never on a completed project. |
+| 16 | **Client name visible to a PM** | **Undecided.** Default yes: the project carries `client_name` (copied from the lead when converted) and a PM sees it. The lead itself (phone, email, source, exec, value) is never shown. To hide it, remove `client_name` from `ProjectPMSerializer`. |
+| 17 | **Receipt rules** (`RECEIPT_REQUIRED`, `RECEIPT_EXEMPT_CATEGORIES` in `apps/projects/rules.py`) | **Undecided.** Default: a receipt is required for every category except Labour; JPG, PNG, WebP or PDF up to 5 MB, checked by the file's bytes; images are re-encoded (EXIF removed, at most 1600 px). Receipts have no public URL. |
+| 18 | **Suggested sanctioned budget** | **Removed** with the sanctioned budget. |
+| 19 | **Convert before the deal is finalized** | Until accounts exposes `get_project_finance`, conversion is allowed and the budget ceiling is the lead's proposed amount. Once it exists, only finalized deals can be converted (see API_CONTRACT). |
+| 20 | **Budget changes on a completed project** | Blocked (`project_completed`). The Admin reopens the project first. |
+| 21 | **Payment backdating and duplicates** (`PAYMENT_BACKDATE_DAYS`, `DUPLICATE_WINDOW_SECONDS` in `apps/accounts/rules.py`) | **Undecided.** Default: a payment date may be up to 90 days back, never in the future; an identical payment (same ledger, amount, mode, reference and date) within 60 seconds needs an explicit confirmation. |
+| 22 | **When a ledger is overdue** (`PAYMENT_OVERDUE_DAYS`) | **Undecided.** Default 30: a finalized ledger with a balance is overdue when more than 30 days have passed since its last active payment (else since finalization). Buckets 0-30, 31-60, 61-90, 90+. Only finalized ledgers count. |
+| 23 | **Who can record and void payments** (`ACCOUNTS_ROLES`) | **Undecided.** Default: Admin only, for everything in Accounts. Void needs a reason, works at any age, and the payment stays visible. |
+| 24 | **Won to Lost after a ledger exists** | A won deal can go back to Lost only before any payment (Leads enforces it). Accounts then deletes the unfinalized or unpaid ledger (`cancel_ledger`), because the deal no longer exists. Confirm you do not want a soft "cancelled" ledger instead. |
+| 25 | **Payment receipt number** | `RC-<year of the payment date>-<payment id, 6 digits>`. The number follows the payment id, so it can skip numbers when payments are voided. Confirm whether an accountant needs a gapless series. |
+| 26 | **"Lost in period" without a `lost_at` field** | `Lead` has `won_at` but no `lost_at`. The Sales Manager dashboard (`apps/leads/dashboard_manager_views.py`) approximates "lost within the period" with `status=LOST` + `updated_at`, which drifts if a lost lead is edited again later. **Recommended default:** add a real `lost_at` field (set alongside `won_at`/`lost_reason` in `services.change_status()`) the next time this app takes a migration, and switch the dashboard to use it. |
+| 27 | **Commission visible on the Exec/Manager dashboards?** | **Removed:** there is no commission. |

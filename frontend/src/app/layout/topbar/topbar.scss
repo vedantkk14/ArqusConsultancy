@@ -1,0 +1,105 @@
+// One calm row: the page on the left, notifications and the account on the right.
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: var(--topbar-h);
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+
+  @supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: saturate(1.4) blur(10px);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  }
+}
+
+.emblem { display: block; width: auto; height: 26px; }
+
+.titles {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.page-title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle {
+  display: none;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.spacer { flex: 1; }
+
+.actions { display: flex; flex: none; align-items: center; gap: 6px; }
+
+.avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 4px 0 4px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--dur-fast);
+
+  &:hover,
+  &[aria-expanded='true'] { background: var(--subtle); }
+}
+
+.hi {
+  display: none;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+
+  strong { color: var(--ink); font-weight: 600; }
+}
+
+.menu-user {
+  display: flex;
+  min-width: 220px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-bottom: 4px;
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid var(--line);
+
+  strong { color: var(--ink); font-size: var(--text-md); font-weight: 600; }
+  .greet, .mail { color: var(--ink-3); font-size: var(--text-xs); }
+  app-role-badge { margin-top: 6px; }
+}
+
+@media (min-width: 640px) {
+  .subtitle { display: block; }
+  .hi { display: inline; }
+  .avatar-btn { padding-left: 14px; }
+}
+
+@media (min-width: 1024px) {
+  .page-title { font-size: var(--text-lg); }
+}

@@ -1,0 +1,118 @@
+<ng-template #changes let-e>
+  @if (open().has(e.id)) {
+    <ul class="diff" [id]="'chg-' + e.id">
+      @for (c of entries(e); track c[0]) {
+        <li>
+          <span class="f">{{ field(c[0]) }}</span>
+          <span class="o">{{ show(c[1].old) }}</span><mat-icon aria-hidden="true">arrow_forward</mat-icon><span class="n">{{ show(c[1].new) }}</span>
+        </li>
+      } @empty {
+        <li class="f">No field details were recorded.</li>
+      }
+    </ul>
+  }
+</ng-template>
+
+<header class="head"><p class="count" aria-live="polite">{{ countText() }}</p></header>
+
+<app-filter-shell [compact]="!wide()" [active]="anyFilter()" [activeCount]="dropdownCount()" (cleared)="clear()">
+  <label search class="search">
+    <span class="sr-only">Search by object</span>
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input type="search" placeholder="Search by object, e.g. a lead name" autocomplete="off" [value]="filters().q" (input)="onSearch($any($event.target).value)" />
+  </label>
+  <div filters class="dds">
+    <label class="dd">
+      <span class="lbl">Model</span>
+      <select class="ctl" (change)="set('model_label', $any($event.target).value)">
+        <option value="" [selected]="!filters().model_label">All models</option>
+        @for (m of models(); track m) { <option [value]="m" [selected]="filters().model_label === m">{{ m }}</option> }
+      </select>
+    </label>
+    <label class="dd">
+      <span class="lbl">Person</span>
+      <select class="ctl" (change)="set('actor', $any($event.target).value)">
+        <option value="" [selected]="!filters().actor">Everyone</option>
+        @for (u of actors(); track u.id) { <option [value]="u.id" [selected]="filters().actor === '' + u.id">{{ u.name }}</option> }
+      </select>
+    </label>
+    <label class="dd">
+      <span class="lbl">Action</span>
+      <select class="ctl" (change)="set('action', $any($event.target).value)">
+        <option value="" [selected]="!filters().action">Any action</option>
+        @for (a of actions; track a[0]) { <option [value]="a[0]" [selected]="filters().action === a[0]">{{ a[1] }}</option> }
+      </select>
+    </label>
+    <label class="dd">
+      <span class="lbl">From</span>
+      <input class="ctl" type="date" [value]="filters().from" (change)="set('from', $any($event.target).value)" />
+    </label>
+    <label class="dd">
+      <span class="lbl">To</span>
+      <input class="ctl" type="date" [value]="filters().to" (change)="set('to', $any($event.target).value)" />
+    </label>
+  </div>
+</app-filter-shell>
+
+@if (list.error() && !list.rows().length) {
+  <app-error-state title="Couldn't load the audit log" (retry)="list.reload()" />
+} @else if (list.loaded() && !list.rows().length) {
+  <app-empty-state
+    [icon]="anyFilter() ? 'filter_alt_off' : 'fact_check'"
+    [title]="anyFilter() ? 'No activity matches these filters' : 'No activity yet.'"
+    [message]="anyFilter() ? 'Try a different search or clear the filters.' : 'Changes to leads, projects and accounts will be listed here.'"
+  >
+    @if (anyFilter()) { <button matButton="outlined" type="button" (click)="clear()">Clear filters</button> }
+  </app-empty-state>
+} @else {
+  <section class="card list" [class.busy]="list.loading() && list.loaded()" [attr.aria-busy]="list.loading()" aria-label="Audit log">
+    @if (wide()) {
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Model</th><th>Object</th><th><span class="sr-only">Changes</span></th></tr></thead>
+          <tbody>
+            @if (!list.loaded()) {
+              @for (i of placeholders; track i) { <tr aria-hidden="true"><td colspan="6"><app-skeleton width="60%" /></td></tr> }
+            } @else {
+              @for (e of list.rows(); track e.id) {
+                <tr>
+                  <td class="muted nowrap">{{ when(e.created_at) }}</td>
+                  <td>{{ e.actor?.name ?? 'System' }}</td>
+                  <td><span class="pill" [class.ok]="e.action === 'CREATE'" [class.warn]="e.action === 'UPDATE'" [class.bad]="e.action === 'DELETE'">{{ actionLabels[e.action] }}</span></td>
+                  <td>{{ modelName(e.model_label) }}</td>
+                  <td class="obj">{{ e.object_repr }}</td>
+                  <td class="r"><button type="button" class="view" [attr.aria-expanded]="open().has(e.id)" [attr.aria-controls]="'chg-' + e.id" (click)="toggle(e.id)">{{ open().has(e.id) ? 'Hide changes' : 'View changes' }}</button></td>
+                </tr>
+                @if (open().has(e.id)) {
+                  <tr class="dr"><td colspan="6"><ng-container *ngTemplateOutlet="changes; context: { $implicit: e }" /></td></tr>
+                }
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <ul class="cards">
+        @if (!list.loaded()) {
+          @for (i of placeholders.slice(0, 3); track i) { <li class="card lc" aria-hidden="true"><app-skeleton width="50%" height="16px" /><app-skeleton width="70%" /></li> }
+        } @else {
+          @for (e of list.rows(); track e.id) {
+            <li class="card lc">
+              <span class="top">
+                <span class="pill" [class.ok]="e.action === 'CREATE'" [class.warn]="e.action === 'UPDATE'" [class.bad]="e.action === 'DELETE'">{{ actionLabels[e.action] }}</span>
+                <span class="muted">{{ when(e.created_at) }}</span>
+              </span>
+              <strong class="obj">{{ modelName(e.model_label) }}: {{ e.object_repr }}</strong>
+              <span class="meta">by {{ e.actor?.name ?? 'System' }}</span>
+              <button type="button" class="view" [attr.aria-expanded]="open().has(e.id)" [attr.aria-controls]="'chg-' + e.id" (click)="toggle(e.id)">{{ open().has(e.id) ? 'Hide changes' : 'View changes' }}</button>
+              <ng-container *ngTemplateOutlet="changes; context: { $implicit: e }" />
+            </li>
+          }
+        }
+      </ul>
+    }
+  </section>
+  @if (list.hasMore()) {
+    <div class="more"><button matButton="outlined" type="button" [disabled]="list.loading()" (click)="list.more()">{{ list.loading() ? 'Loading…' : 'Load more' }}</button></div>
+  }
+}

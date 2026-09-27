@@ -1,0 +1,100 @@
+<div class="row">
+  <label class="search">
+    <span class="sr-only">Search expenses</span>
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input
+      type="search"
+      placeholder="Search vendor, description or project"
+      autocomplete="off"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </label>
+
+  @if (compact()) {
+    <button type="button" class="ctl more" (click)="openSheet()">
+      <mat-icon aria-hidden="true">tune</mat-icon>Filters{{ dropdownCount() ? ' (' + dropdownCount() + ')' : '' }}
+    </button>
+  } @else {
+    <ng-container *ngTemplateOutlet="dropdowns" />
+  }
+
+  <label class="sort">
+    <span class="sr-only">Sort by</span>
+    <select class="ctl" (change)="set('ordering', $any($event.target).value)">
+      <option value="" [selected]="!filters().ordering">Default order</option>
+      @for (o of orderings; track o.value) {
+        <option [value]="o.value" [selected]="filters().ordering === o.value">{{ o.label }}</option>
+      }
+    </select>
+  </label>
+
+  @if (anyActive()) {
+    <button type="button" class="clear" (click)="cleared.emit()">Clear filters</button>
+  }
+</div>
+
+<div class="chips" role="group" aria-label="Filter by status">
+  @for (s of states; track s.value) {
+    <button type="button" class="chip" [attr.aria-pressed]="filters().state === s.value" (click)="set('state', s.value)">{{ s.label }}</button>
+  }
+</div>
+
+<ng-template #dropdowns>
+  <label class="dd">
+    <span class="lbl">Project</span>
+    <select class="ctl" (change)="set('project', $any($event.target).value)">
+      <option value="" [selected]="!filters().project">All projects</option>
+      @for (p of projects(); track p.id) {
+        <option [value]="p.id" [selected]="filters().project === '' + p.id">{{ p.name }}</option>
+      }
+    </select>
+  </label>
+  <label class="dd">
+    <span class="lbl">Category</span>
+    <select class="ctl" (change)="set('category', $any($event.target).value)">
+      <option value="" [selected]="!filters().category">All categories</option>
+      @for (c of categories; track c[0]) {
+        <option [value]="c[0]" [selected]="filters().category === c[0]">{{ c[1] }}</option>
+      }
+    </select>
+  </label>
+  @if (showLogger()) {
+    <label class="dd">
+      <span class="lbl">Logged by</span>
+      <select class="ctl" (change)="set('logged_by', $any($event.target).value)">
+        <option value="" [selected]="!filters().logged_by">Anyone</option>
+        @for (m of managers(); track m.id) {
+          <option [value]="m.id" [selected]="filters().logged_by === '' + m.id">{{ m.name }}</option>
+        }
+      </select>
+    </label>
+  }
+  <label class="dd">
+    <span class="lbl">Receipt</span>
+    <select class="ctl" (change)="set('has_receipt', $any($event.target).value)">
+      <option value="" [selected]="!filters().has_receipt">Any</option>
+      <option value="true" [selected]="filters().has_receipt === 'true'">With receipt</option>
+      <option value="false" [selected]="filters().has_receipt === 'false'">Without receipt</option>
+    </select>
+  </label>
+  <label class="dd">
+    <span class="lbl">From</span>
+    <input class="ctl" type="date" [value]="filters().date_from" (change)="set('date_from', $any($event.target).value)" />
+  </label>
+  <label class="dd">
+    <span class="lbl">To</span>
+    <input class="ctl" type="date" [value]="filters().date_to" (change)="set('date_to', $any($event.target).value)" />
+  </label>
+</ng-template>
+
+<ng-template #sheet>
+  <div class="sheet">
+    <h2>Filters</h2>
+    <ng-container *ngTemplateOutlet="dropdowns" />
+    <div class="sheet-actions">
+      <button matButton type="button" (click)="cleared.emit(); closeSheet()">Clear filters</button>
+      <button matButton="filled" type="button" (click)="closeSheet()">Done</button>
+    </div>
+  </div>
+</ng-template>

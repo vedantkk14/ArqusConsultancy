@@ -1,0 +1,109 @@
+<div class="row">
+  <label class="search">
+    <span class="sr-only">Search leads</span>
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input
+      type="search"
+      placeholder="Search name, phone or email"
+      autocomplete="off"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </label>
+
+  @if (compact()) {
+    <button type="button" class="ctl more" (click)="openSheet()">
+      <mat-icon aria-hidden="true">tune</mat-icon>Filters{{ dropdownCount() ? ' (' + dropdownCount() + ')' : '' }}
+    </button>
+  } @else {
+    <ng-container *ngTemplateOutlet="dropdowns" />
+  }
+
+  <label class="sort">
+    <span class="sr-only">Sort by</span>
+    <select class="ctl" [value]="filters().ordering" (change)="set('ordering', $any($event.target).value)">
+      <option value="">Default order</option>
+      @for (o of orderings; track o.value) {
+        <option [value]="o.value" [selected]="filters().ordering === o.value">{{ o.label }}</option>
+      }
+    </select>
+  </label>
+
+  @if (anyActive()) {
+    <button type="button" class="clear" (click)="cleared.emit()">Clear filters</button>
+  }
+</div>
+
+@if (showChips()) {
+  <div class="chips" role="group" aria-label="Filter by status">
+    <button type="button" class="chip" [attr.aria-pressed]="filters().status === ''" (click)="set('status', '')">
+      All
+      @if (countFor('') !== null) {
+        <span class="n">{{ countFor('') }}</span>
+      }
+    </button>
+    @for (s of statuses; track s) {
+      <button type="button" class="chip" [attr.aria-pressed]="filters().status === s" (click)="set('status', s)">
+        {{ labels[s] }}
+        @if (countFor(s) !== null) {
+          <span class="n">{{ countFor(s) }}</span>
+        }
+      </button>
+    }
+  </div>
+}
+
+<ng-template #dropdowns>
+  @if (showAssignee()) {
+    <label class="dd">
+      <span class="lbl">Assigned to</span>
+      <select class="ctl" (change)="set('assigned_to', $any($event.target).value)">
+        <option value="" [selected]="!filters().assigned_to">Anyone</option>
+        <option value="none" [selected]="filters().assigned_to === 'none'">Unassigned</option>
+        @for (a of assignees(); track a.id) {
+          <option [value]="a.id" [selected]="filters().assigned_to === '' + a.id">{{ a.name }}</option>
+        }
+      </select>
+    </label>
+  }
+  <label class="dd">
+    <span class="lbl">Source</span>
+    <select class="ctl" (change)="set('source', $any($event.target).value)">
+      <option value="" [selected]="!filters().source">Any source</option>
+      @for (s of sources; track s[0]) {
+        <option [value]="s[0]" [selected]="filters().source === s[0]">{{ s[1] }}</option>
+      }
+    </select>
+  </label>
+  @if (mode() === 'all') {
+    <label class="dd">
+      <span class="lbl">Follow-up</span>
+      <select class="ctl" (change)="set('followup', $any($event.target).value)">
+        <option value="" [selected]="!filters().followup">Any</option>
+        <option value="overdue" [selected]="filters().followup === 'overdue'">Overdue</option>
+        <option value="today" [selected]="filters().followup === 'today'">Today</option>
+        <option value="upcoming" [selected]="filters().followup === 'upcoming'">Upcoming</option>
+        <option value="none" [selected]="filters().followup === 'none'">None</option>
+      </select>
+    </label>
+  }
+  <label class="dd">
+    <span class="lbl">Created from</span>
+    <input class="ctl" type="date" [value]="filters().created_from" (change)="set('created_from', $any($event.target).value)" />
+  </label>
+  <label class="dd">
+    <span class="lbl">Created to</span>
+    <input class="ctl" type="date" [value]="filters().created_to" (change)="set('created_to', $any($event.target).value)" />
+  </label>
+</ng-template>
+
+<ng-template #sheet>
+  <div class="sheet">
+    <h2>Filters</h2>
+    <ng-container *ngTemplateOutlet="dropdowns" />
+    <div class="sheet-actions">
+      <button matButton type="button" (click)="cleared.emit(); closeSheet()">Clear filters</button>
+      <button matButton="filled" type="button" (click)="closeSheet()">Done</button>
+    </div>
+  </div>
+</ng-template>

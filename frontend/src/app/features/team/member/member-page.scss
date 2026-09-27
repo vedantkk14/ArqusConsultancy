@@ -1,0 +1,40 @@
+.back { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; color: var(--brand-deep); font-size: var(--text-sm); font-weight: 500; text-decoration: none; }
+.back mat-icon { width: 18px; height: 18px; font-size: 18px; }
+.panel { padding: var(--space-5); }
+
+.who-card { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+.who-main { display: flex; flex: 1 1 200px; flex-direction: column; gap: 6px; }
+.who-main h2 { margin: 0; padding: 0; font-size: var(--text-lg); }
+.who-main h2::before { display: none; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.kv { display: grid; flex: 1 1 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin: 0; }
+.kv dt { color: var(--ink-3); font-size: var(--text-xs); }
+.kv dd { margin: 2px 0 0; color: var(--ink); font-size: var(--text-sm); overflow-wrap: anywhere; }
+
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-4); border-radius: var(--radius-control); background: var(--surface-2); }
+.tile .k { color: var(--ink-3); font-size: var(--text-xs); }
+.tile .v { color: var(--ink); font-size: var(--text-lg); font-weight: 600; }
+.tile .s { color: var(--ink-3); font-size: var(--text-xs); }
+.v.ok { color: var(--tint-teal-ink); }
+.bad { color: var(--negative); }
+
+.split { display: flex; height: 10px; margin: var(--space-4) 0 0; overflow: hidden; border-radius: 5px; background: var(--surface-2); }
+.split .w { background: var(--data-teal); }
+.split .l { background: var(--data-rose); }
+
+.two { display: grid; gap: var(--space-4); margin-top: var(--space-4); }
+h3 { margin: 0 0 6px; font-size: var(--text-sm); }
+.rows { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.rows li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; min-height: 44px; padding: 6px 0; font-size: var(--text-sm); }
+.rows li + li { border-top: 1px solid var(--line); }
+.rows a { color: var(--ink); text-decoration: none; }
+.rows a:hover { color: var(--brand-deep); text-decoration: underline; }
+.rows .none { color: var(--ink-3); }
+.projects { margin-top: var(--space-4); }
+
+@media (min-width: 768px) {
+  .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kv { flex: 1 1 auto; grid-template-columns: repeat(3, minmax(0, auto)); }
+}

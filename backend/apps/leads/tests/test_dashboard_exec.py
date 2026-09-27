@@ -168,7 +168,7 @@ class TestUpcomingTimezone:
             assigned_to=exec_a, status=LeadStatus.CONTACTED, next_followup_at=followup_utc
         )
 
-        leads_qs = exec_a.assigned_leads.all()
+        leads_qs = exec_a.assigned_opportunities.select_related("lead")
         days = _upcoming(leads_qs, now)
 
         assert len(days) == 1
@@ -182,7 +182,7 @@ class TestUpcomingTimezone:
             assigned_to=exec_a, status=LeadStatus.CONTACTED, next_followup_at=followup_utc
         )
 
-        leads_qs = exec_a.assigned_leads.all()
+        leads_qs = exec_a.assigned_opportunities.select_related("lead")
         days = _upcoming(leads_qs, now)
 
         # "Upcoming" starts strictly after the end of today (IST) - 23:55 IST today is due_today,

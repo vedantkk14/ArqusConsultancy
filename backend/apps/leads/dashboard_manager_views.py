@@ -9,7 +9,7 @@ payment, project or total/final amount, not even as null (see docs/API_CONTRACT.
 """
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Q, Sum, Value
+from django.db.models import Count, F, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -28,38 +28,45 @@ from .dashboard_common import (
     queue,
     with_last_note,
 )
-from .models import Interaction, Lead, LeadStatus
+from .models import Interaction, LeadStatus, Opportunity
 from .serializers import days_overdue
 
 #: Highlight (not judge) an exec whose overdue count passes this on the by-executive list.
 OVERDUE_HIGHLIGHT_THRESHOLD = 3
 
 
+def _deals():
+    return Opportunity.objects.filter(lead__is_deleted=False).select_related("lead")
+
+
 def _team_qs():
-    """Leads owned by an active Sales Exec - the manager's team, never anyone else's."""
-    return Lead.objects.filter(assigned_to__role=SALES_EXEC, assigned_to__is_active=True)
+    """Deals owned by an active Sales Exec - the manager's team, never anyone else's."""
+    return _deals().filter(assigned_to__role=SALES_EXEC, assigned_to__is_active=True)
 
 
 def _unassigned_qs():
-    return Lead.objects.filter(assigned_to__isnull=True)
+    """Leads with no owner, one row each (their current deal)."""
+    return _deals().filter(lead__assigned_to__isnull=True, lead__current_opportunity=F("pk"))
 
 
-def _lead_item(lead, *, with_assignee: bool) -> dict:
+def _lead_item(deal, *, with_assignee: bool) -> dict:
+    """One queue row: the deal's fields with its lead's id and contact details."""
+    lead = deal.lead
     item = {
         "id": lead.id,
         "name": lead.name,
         "phone": lead.phone,
-        "status": lead.status,
+        "status": deal.status,
         "source_label": lead.source_other or lead.get_source_display(),
-        "next_followup_at": lead.next_followup_at,
-        "days_overdue": days_overdue(lead),
-        "proposed_amount": money(lead.proposed_amount),
-        "last_note": getattr(lead, "last_note", "") or "",
+        "next_followup_at": deal.next_followup_at,
+        "days_overdue": days_overdue(deal),
+        "proposed_amount": money(deal.proposed_amount),
+        "last_note": getattr(deal, "last_note", "") or "",
     }
     if with_assignee:
         item["assigned_to"] = (
-            {"id": lead.assigned_to_id, "name": lead.assigned_to.display_name}
-            if lead.assigned_to_id
+            {"id": deal.assigned_to_id, "name": deal.assigned_to.display_name}
+            if deal.assigned_to_id
             else None
         )
     return item
@@ -97,22 +104,24 @@ def build_sales_manager_dashboard(period: str = DEFAULT_PERIOD, today=None) -> d
         ),
     }
 
-    # ---- By executive: one annotated query over active Sales Execs (zero-lead execs included) --
+    # ---- By executive: one annotated query over active Sales Execs (zero-deal execs included) --
     User = get_user_model()
-    exec_won_q = Q(assigned_leads__status=LeadStatus.WON)
-    exec_lost_q = Q(assigned_leads__status=LeadStatus.LOST)
+    rel = "assigned_opportunities"
+    live = Q(**{f"{rel}__is_deleted": False, f"{rel}__lead__is_deleted": False})
+    exec_won_q = live & Q(**{f"{rel}__status": LeadStatus.WON})
+    exec_lost_q = live & Q(**{f"{rel}__status": LeadStatus.LOST})
     if rng.start:
-        exec_won_q &= Q(assigned_leads__won_at__date__gte=rng.start)
-        exec_lost_q &= Q(assigned_leads__updated_at__date__gte=rng.start)
+        exec_won_q &= Q(**{f"{rel}__won_at__date__gte": rng.start})
+        exec_lost_q &= Q(**{f"{rel}__updated_at__date__gte": rng.start})
     by_exec_rows = (
         User.objects.filter(role=SALES_EXEC, is_active=True)
         .annotate(
-            open_leads=Count("assigned_leads", filter=selectors.open_q("assigned_leads__")),
-            overdue=Count("assigned_leads", filter=selectors.overdue_q(now, "assigned_leads__")),
-            won_count=Count("assigned_leads", filter=exec_won_q),
-            lost_count=Count("assigned_leads", filter=exec_lost_q),
+            open_leads=Count(rel, filter=live & selectors.open_q(f"{rel}__")),
+            overdue=Count(rel, filter=live & selectors.overdue_q(now, f"{rel}__")),
+            won_count=Count(rel, filter=exec_won_q),
+            lost_count=Count(rel, filter=exec_lost_q),
             won_value=Coalesce(
-                Sum("assigned_leads__proposed_amount", filter=exec_won_q),
+                Sum(f"{rel}__proposed_amount", filter=exec_won_q),
                 Value(0),
                 output_field=MONEY_FIELD,
             ),
@@ -136,15 +145,15 @@ def build_sales_manager_dashboard(period: str = DEFAULT_PERIOD, today=None) -> d
     # ---- Recent team activity: last interactions logged by any active Sales Exec --------------
     recent_rows = (
         Interaction.objects.filter(created_by__role=SALES_EXEC, created_by__is_active=True)
-        .select_related("created_by", "lead")
+        .select_related("created_by", "opportunity__lead")
         .order_by("-created_at")[:MAX_QUEUE_ITEMS]
     )
     recent_activity = [
         {
             "at": row.created_at,
             "exec_name": row.created_by.display_name if row.created_by else "",
-            "lead_id": row.lead_id,
-            "lead_name": row.lead.name,
+            "lead_id": row.opportunity.lead_id,
+            "lead_name": row.opportunity.lead.name,
             "type": row.type,
             "text": row.notes,
         }

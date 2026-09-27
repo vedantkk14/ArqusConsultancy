@@ -36,10 +36,10 @@ LAST_NOTE_MAX = 80
 
 
 def _leads_qs(user):
-    """This Exec's own leads. `selectors.leads_for` already scopes SALES_EXEC to `assigned_to=user`
-    and the default manager already excludes soft-deleted rows.
+    """This Exec's own deals: every opportunity of the leads assigned to them (soft-deleted leads
+    and deals excluded by `selectors.opportunities_for`), with the lead joined for contact fields.
     """
-    return selectors.leads_for(user)
+    return selectors.opportunities_for(user)
 
 
 def _truncated_note(lead) -> str:
@@ -47,19 +47,21 @@ def _truncated_note(lead) -> str:
     return note[:LAST_NOTE_MAX]
 
 
-def _lead_item(lead) -> dict:
+def _lead_item(deal) -> dict:
+    """One queue row: the deal's fields with its lead's id and contact details."""
+    lead = deal.lead
     return {
         "id": lead.id,
         "name": lead.name,
         "phone": lead.phone,
         "source": lead.source,
-        "status": lead.status,
-        "created_at": lead.created_at,
-        "next_followup_at": lead.next_followup_at,
-        "days_overdue": days_overdue(lead),
-        "last_note": _truncated_note(lead),
-        "last_interaction_at": getattr(lead, "last_interaction_at", None),
-        "proposed_amount": None if lead.proposed_amount is None else money(lead.proposed_amount),
+        "status": deal.status,
+        "created_at": deal.created_at,
+        "next_followup_at": deal.next_followup_at,
+        "days_overdue": days_overdue(deal),
+        "last_note": _truncated_note(deal),
+        "last_interaction_at": getattr(deal, "last_interaction_at", None),
+        "proposed_amount": None if deal.proposed_amount is None else money(deal.proposed_amount),
     }
 
 
@@ -126,14 +128,14 @@ def build_sales_exec_dashboard(user, period: str = DEFAULT_PERIOD, today=None) -
 
     recent_rows = (
         Interaction.objects.filter(created_by=user)
-        .select_related("lead")
+        .select_related("opportunity__lead")
         .order_by("-created_at")[:MAX_RECENT_ACTIVITY]
     )
     recent_activity = [
         {
             "at": row.created_at,
-            "lead_id": row.lead_id,
-            "lead_name": row.lead.name,
+            "lead_id": row.opportunity.lead_id,
+            "lead_name": row.opportunity.lead.name,
             "type": row.type,
             "text": row.notes,
         }

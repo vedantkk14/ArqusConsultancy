@@ -67,6 +67,8 @@ export class ProjectsListPage {
 
   protected readonly mode: ProjectMode = this.route.snapshot.data['mode'] ?? 'running';
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  /** Read-only and money-free: no spent figures, no budget, no actions. */
+  protected readonly isSalesManager = computed(() => this.auth.role() === Role.SalesManager);
 
   private readonly queryMap = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,

@@ -29,7 +29,9 @@
             <th class="c-bar">Budget used</th>
             <th class="r">Total budget</th>
           }
-          <th class="r">{{ showBudget() ? 'Spent' : 'Expenses so far' }}</th>
+          @if (showSpent()) {
+            <th class="r">{{ showBudget() ? 'Spent' : 'Expenses so far' }}</th>
+          }
           @if (showBudget()) {
             <th class="r">Remaining</th>
           }
@@ -70,7 +72,9 @@
                 </td>
                 <td class="r num">{{ p.total_budget ? (p.total_budget | inrCompact) : '—' }}</td>
               }
-              <td class="r num">{{ p.spent | inrCompact }}</td>
+              @if (showSpent()) {
+                <td class="r num">{{ p.spent | inrCompact }}</td>
+              }
               @if (showBudget()) {
                 <td class="r num" [class.neg]="p.state === 'over'">
                   {{ p.remaining ? (p.remaining | inrCompact) : '—' }}
@@ -129,7 +133,7 @@
                 }}</strong></span
               >
             </span>
-          } @else {
+          } @else if (showSpent()) {
             <span class="lc-fig">
               <span
                 ><span class="lbl">Expenses so far</span

@@ -15,6 +15,8 @@ import {
   makeDetail,
   makeExpense,
   makePmDetail,
+  makeSmDetail,
+  makeSmExpense,
 } from '../testing/fake-projects-api';
 import { ProjectDetailPage } from './project-detail-page';
 
@@ -66,6 +68,30 @@ const byLabel = (root: ParentNode, label: string) =>
 const buttonByText = (root: ParentNode, label: string) =>
   [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).includes(label));
 const field = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+describe('ProjectDetailPage for a Sales Manager', () => {
+  it('shows the project with no money anywhere in the DOM, and links the client to the lead', async () => {
+    const { el } = await setup({
+      role: Role.SalesManager,
+      project: makeSmDetail(1),
+      expenses: [makeSmExpense(1), makeSmExpense(2)],
+    });
+    const body = text(el).toLowerCase();
+    for (const word of ['budget', 'spent', 'remaining', 'margin']) {
+      expect(body).not.toContain(word);
+    }
+    expect(el.querySelector('app-budget-panel')).toBeNull();
+    const table = el.querySelector('app-expense-rows') as HTMLElement;
+    expect(table.querySelectorAll('tbody tr').length).toBe(2);
+    expect(text(table)).not.toMatch(/₹\s?[\d,]+/);
+    expect(text(table)).not.toContain('Amount');
+    expect(table.querySelector('[aria-label="Receipt attached"]')).toBeTruthy();
+    expect(table.querySelector('button[aria-label^="View receipt"]')).toBeNull();
+    expect(el.querySelector('a.client')!.getAttribute('href')).toBe('/leads/9');
+    expect(buttonByText(el, 'Add expense')).toBeUndefined();
+    expect(buttonByText(el, 'Mark complete')).toBeUndefined();
+  });
+});
 
 describe('ProjectDetailPage', () => {
   afterEach(() => TestBed.inject(MatDialog).closeAll());

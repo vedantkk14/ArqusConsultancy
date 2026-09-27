@@ -20,6 +20,7 @@
   [summary]="store.summary()"
   [showPm]="isAdmin()"
   [showBudget]="isAdmin()"
+  [showSpend]="!isSalesManager()"
   [managers]="managers()"
   [compact]="!wide()"
   (changed)="setFilters($event)"
@@ -37,7 +38,7 @@
     >
       <button matButton="outlined" type="button" (click)="clearFilters()">Clear filters</button>
     </app-empty-state>
-  } @else if (!isAdmin()) {
+  } @else if (!isAdmin() && !isSalesManager()) {
     <app-empty-state
       icon="assignment"
       title="No projects assigned yet"
@@ -70,6 +71,7 @@
       [layout]="wide() ? 'table' : 'cards'"
       [canAssign]="isAdmin()"
       [showBudget]="isAdmin()"
+      [showSpent]="!isSalesManager()"
       [skeleton]="!store.loaded()"
       [now]="now()"
       (assign)="assign($event)"

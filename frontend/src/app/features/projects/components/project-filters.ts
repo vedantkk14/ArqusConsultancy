@@ -50,7 +50,11 @@ export class ProjectFiltersBar {
   readonly changed = output<Partial<ProjectFilters>>();
   readonly cleared = output<void>();
 
-  protected readonly orderings = computed(() => (this.showBudget() ? ADMIN_ORDERINGS : ORDERINGS));
+  /** False for the Sales Manager: no "Highest spend" ordering. */
+  readonly showSpend = input(true);
+  protected readonly orderings = computed(() =>
+    this.showBudget() ? ADMIN_ORDERINGS : ORDERINGS.filter((o) => this.showSpend() || o.value !== '-spent'),
+  );
   protected readonly search = signal('');
   protected readonly chip = computed(() => activeChip(this.filters()));
   protected readonly dropdownCount = computed(() => activeFilterCount(this.filters()));

@@ -49,6 +49,8 @@ export class ExpenseRows {
   readonly skeleton = input(false);
   /** The all-expenses page can void but not edit (editing happens on the project page). */
   readonly allowEdit = input(true);
+  /** False for the Sales Manager: no amount column, and the receipt is an icon only. */
+  readonly showAmount = input(true);
   readonly action = output<ExpenseAction>();
 
   protected readonly placeholders = Array.from({ length: 5 }, (_, i) => i);

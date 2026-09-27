@@ -225,3 +225,11 @@
   &:hover { background: var(--surface); color: var(--ink); }
   mat-icon { width: 20px; height: 20px; font-size: 20px; }
 }
+
+.client {
+  color: var(--brand-deep);
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}

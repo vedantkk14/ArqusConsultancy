@@ -34,6 +34,8 @@ export class ProjectRows {
   readonly canAssign = input(false);
   /** Admin: total budget, remaining and a usage bar. */
   readonly showBudget = input(false);
+  /** False for the Sales Manager, who never sees any money (not even expenses so far). */
+  readonly showSpent = input(true);
   readonly skeleton = input(false);
   readonly now = input<Date>(new Date());
   readonly assign = output<ProjectListItem>();

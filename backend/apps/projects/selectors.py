@@ -27,7 +27,7 @@ from django.db.models import (
 from django.db.models.functions import Coalesce, NullIf
 from django.utils import timezone
 
-from apps.core.permissions import ADMIN, PROJECT_MANAGER
+from apps.core.permissions import ADMIN, PROJECT_MANAGER, SALES_MANAGER
 
 from . import rules
 from .models import Expense, Project, ProjectStatus
@@ -154,9 +154,12 @@ def budget_usage_qs(qs: QuerySet | None = None) -> QuerySet:
 
 
 def projects_for(user) -> QuerySet:
-    """Every project query starts here. A PM only ever sees projects assigned to them."""
+    """Every project query starts here. A PM only ever sees projects assigned to them.
+
+    A Sales Manager reads every project (read-only, no money: SalesManagerProjectSerializer).
+    """
     qs = Project.objects.select_related("pm")
-    if user.role == ADMIN:
+    if user.role in (ADMIN, SALES_MANAGER):
         return qs
     if user.role == PROJECT_MANAGER:
         return qs.filter(pm=user)
@@ -165,7 +168,7 @@ def projects_for(user) -> QuerySet:
 
 def expenses_for(user) -> QuerySet:
     qs = Expense.objects.select_related("project", "logged_by")
-    if user.role == ADMIN:
+    if user.role in (ADMIN, SALES_MANAGER):
         return qs
     if user.role == PROJECT_MANAGER:
         return qs.filter(project__pm=user)

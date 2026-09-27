@@ -104,6 +104,8 @@ export class ProjectDetailPage {
   protected readonly timelineTick = signal(0);
 
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  /** Read-only, never any money: no budget or finance panel and no expense amounts. */
+  protected readonly isSalesManager = computed(() => this.auth.role() === Role.SalesManager);
   protected readonly wide = toSignal(
     inject(BreakpointObserver)
       .observe('(min-width: 768px)')

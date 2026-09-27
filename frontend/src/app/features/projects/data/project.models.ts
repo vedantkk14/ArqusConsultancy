@@ -37,7 +37,10 @@ export interface ProjectListItem {
   /** Admin only. */
   pm?: Person | null;
   /** Expenses so far (non-void). */
-  spent: string;
+  /** Admin and PM only (a Sales Manager never gets it). */
+  spent?: string;
+  /** Admin and Sales Manager: the client's lead, for the link to their profile. */
+  lead_id?: number | null;
   /** Admin only: the finalized deal total. Null until the deal is finalized. */
   total_budget?: string | null;
   /** Admin only: total budget minus expenses so far (negative when overspent). */
@@ -60,8 +63,6 @@ export interface Finance {
 export interface ProjectDetail extends ProjectListItem {
   scope: string;
   allowed_actions: ProjectAction[];
-  /** Admin and Sales Manager (links the client's name to their lead). */
-  lead_id?: number | null;
   /** Admin only: the won deal this project delivers. */
   opportunity_id?: number | null;
   finance?: Finance | null;
@@ -70,7 +71,8 @@ export interface ProjectDetail extends ProjectListItem {
 export interface ProjectSummary {
   running: number;
   completed: number;
-  spent_total: string;
+  /** Admin and PM only. */
+  spent_total?: string;
   /** Admin only: budget states against the deal total. */
   ok?: number;
   warn?: number;

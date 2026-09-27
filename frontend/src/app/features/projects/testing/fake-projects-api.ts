@@ -66,6 +66,26 @@ export function makeDetail(id: number, patch: Partial<ProjectDetail> = {}): Proj
   };
 }
 
+/** A project as a Sales Manager sees it: no money at all (no spent, budget, finance). */
+export function makeSmProject(id: number, patch: Partial<ProjectListItem> = {}): ProjectListItem {
+  const project = makePmProject(id, patch);
+  delete project.spent;
+  return { ...project, lead_id: 9 };
+}
+
+export function makeSmDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
+  const detail = makePmDetail(id, { allowed_actions: [], ...patch });
+  delete detail.spent;
+  return { ...detail, lead_id: 9 };
+}
+
+/** An expense as a Sales Manager sees it: no amount. */
+export function makeSmExpense(id: number): Expense {
+  const expense = { ...makeExpense(id) } as Partial<Expense>;
+  delete expense.amount;
+  return expense as Expense;
+}
+
 export function makePmDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
   const detail = makeDetail(id, { allowed_actions: ['add_expense', 'complete'], ...patch });
   delete detail.pm;

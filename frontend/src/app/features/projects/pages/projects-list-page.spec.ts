@@ -9,7 +9,7 @@ import { fakeViewport } from '../testing/fake-viewport';
 import { activeChip, filtersFromQuery, listInsight, toQuery } from '../data/projects-list.store';
 import { EMPTY_FILTERS } from '../data/project.models';
 import { ProjectsApi } from '../data/projects-api.service';
-import { FakeProjectsApi, makePmProject, makeProject, page } from '../testing/fake-projects-api';
+import { FakeProjectsApi, makePmProject, makeProject, makeSmProject, page } from '../testing/fake-projects-api';
 import { ProjectsListPage } from './projects-list-page';
 
 async function setup(role: Role = Role.Admin, url = '/projects/running') {
@@ -34,6 +34,7 @@ async function setup(role: Role = Role.Admin, url = '/projects/running') {
   await harness.navigateByUrl(url, ProjectsListPage);
   const el = harness.routeNativeElement as HTMLElement;
   const resolve = (rows = [makeProject(1), makeProject(2, { state: 'warn', usage_pct: '85.00' })], count?: number) => {
+    // (rows are whatever the role's API would send)
     api.pending.next(page(rows, count));
     harness.detectChanges();
   };
@@ -42,6 +43,24 @@ async function setup(role: Role = Role.Admin, url = '/projects/running') {
 
 const text = (el: Element | null) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 const buttonByText = (el: HTMLElement, label: string) => [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).includes(label));
+
+describe('ProjectsListPage for a Sales Manager', () => {
+  it('lists running and completed projects with no money anywhere in the DOM', async () => {
+    for (const url of ['/projects/running', '/projects/completed']) {
+      TestBed.resetTestingModule();
+      const { el, resolve } = await setup(Role.SalesManager, url);
+      resolve([makeSmProject(1), makeSmProject(2)]);
+      const body = (el.textContent ?? '').toLowerCase();
+      for (const word of ['budget', 'spent', 'remaining', 'margin', 'expenses so far']) {
+        expect(body).not.toContain(word);
+      }
+      expect(body).not.toMatch(/₹\s?[\d,]+/);
+      expect(el.querySelectorAll('app-project-rows a').length).toBeGreaterThan(0);
+      const sort = [...el.querySelectorAll('option')].map((o) => o.textContent?.trim());
+      expect(sort).not.toContain('Highest spend');
+    }
+  });
+});
 
 describe('ProjectsListPage', () => {
   beforeEach(() => localStorage.clear());

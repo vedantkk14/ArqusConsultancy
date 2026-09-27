@@ -85,13 +85,13 @@ def test_manager_only_endpoints(client_for, make_user, role, create, check_dup, 
     assert c.get(f"{BASE}/export").status_code == export
 
 
-def test_finalize_is_admin_or_manager_and_delete_admin_only(
-    client_for, manager, exec_a, make_lead
-):
+def test_finalize_is_admin_or_manager_and_delete_admin_only(client_for, manager, exec_a, make_lead):
     lead = make_lead(status=LeadStatus.WON, assigned_to=exec_a, proposed_amount=100)
     for user in (manager, exec_a):
         assert client_for(user).delete(f"{BASE}/{lead.id}").status_code == 403
-    assert client_for(exec_a).post(f"{BASE}/{lead.id}/finalize", {"amount": "100"}).status_code == 403
+    assert (
+        client_for(exec_a).post(f"{BASE}/{lead.id}/finalize", {"amount": "100"}).status_code == 403
+    )
     res = client_for(manager).post(f"{BASE}/{lead.id}/finalize", {"amount": "90"})
     assert res.status_code == 200, res.content
     assert res.json()["finance"] == {

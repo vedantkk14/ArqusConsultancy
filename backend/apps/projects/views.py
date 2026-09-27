@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.pagination import StandardPagination
-from apps.core.permissions import ADMIN, PROJECT_MANAGER, HasRole
+from apps.core.permissions import ADMIN, PROJECT_MANAGER, SALES_MANAGER, HasRole
 
 from . import integrations, rules, selectors, services
 from .filters import (
@@ -36,8 +36,12 @@ from .serializers import (
     project_serializer,
 )
 
-ROLES = (ADMIN, PROJECT_MANAGER)
+ROLES = (ADMIN, PROJECT_MANAGER, SALES_MANAGER)
+#: Read-only roles: every write (convert, edit, PM, complete/reopen, expenses) is 403 for them.
+READ_ONLY_ROLES = (SALES_MANAGER,)
 INELIGIBLE_MAX = 200
+#: Orderings that would reveal money through the order itself.
+MONEY_ORDERINGS = ("-usage_pct", "-spent")
 
 
 class _Echo:
@@ -79,6 +83,10 @@ class ProjectViewSet(GenericViewSet):
         if self.request.user.role != ADMIN:
             raise PermissionDenied()
 
+    def _require_writer(self):
+        if self.request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()
+
     def _project(self, pk):
         return get_object_or_404(self.get_queryset().select_related("opportunity"), pk=pk)
 
@@ -93,6 +101,8 @@ class ProjectViewSet(GenericViewSet):
         ordering = request.query_params.get("ordering")
         if not self._is_admin() and ordering == "-usage_pct":
             ordering = None  # budget usage is Admin-only
+        if request.user.role in READ_ONLY_ROLES and ordering in MONEY_ORDERINGS:
+            ordering = None
         qs = apply_project_ordering(self._filtered(request), ordering)
         page = self.paginate_queryset(qs)
         cls = project_serializer(request.user)
@@ -135,6 +145,8 @@ class ProjectViewSet(GenericViewSet):
         if not self._is_admin():
             for key in ("no_pm", "ok", "warn", "over", "budget_total"):
                 data.pop(key)
+        if request.user.role in READ_ONLY_ROLES:
+            data.pop("spent_total")
         return Response(data)
 
     @action(detail=False, methods=["get"])
@@ -228,6 +240,7 @@ class ProjectViewSet(GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
+        self._require_writer()
         project = self._project(pk)
         services.complete(project.pk, request.user)
         return Response(self._detail(project.pk))
@@ -246,13 +259,16 @@ class ProjectViewSet(GenericViewSet):
         project = self._project(pk)
         qs = ProjectEvent.objects.filter(project=project).select_related("actor")
         page = self.paginate_queryset(qs)
-        return self.get_paginated_response(EventSerializer(page, many=True).data)
+        return self.get_paginated_response(
+            EventSerializer(page, many=True, context={"request": request}).data
+        )
 
     @action(detail=True, methods=["get", "post"])
     def expenses(self, request, pk=None):
         project = self._project(pk)
         user = request.user
         if request.method == "POST":
+            self._require_writer()
             data, upload = _expense_input(request)
             expense = services.add_expense(project.pk, user, data, upload)
             expense = selectors.expenses_for(user).get(pk=expense.pk)
@@ -299,6 +315,8 @@ class ExpenseViewSet(GenericViewSet):
         return Response(self._one(pk))
 
     def partial_update(self, request, pk=None):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         data, upload = _expense_input(request, partial=True)
         services.edit_expense(expense.pk, request.user, data, upload)
@@ -306,6 +324,8 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def void(self, request, pk=None):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = ReasonSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -314,6 +334,8 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=True, methods=["get"])
     def receipt(self, request, pk=None):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()  # the receipt shows the amount; the list shows only the icon
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         if not expense.receipt:
             raise NotFound("This expense has no receipt.")
@@ -329,6 +351,8 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"])
     def summary(self, request):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()  # totals are money
         qs = self._filtered(request)
         active = qs.filter(is_void=False)
         totals = active.aggregate(total=Sum("amount"), count=Count("id"))

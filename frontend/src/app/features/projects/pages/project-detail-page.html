@@ -22,7 +22,13 @@
     <dl class="facts">
       <div>
         <dt>Client</dt>
-        <dd>{{ p.client_name }}</dd>
+        <dd>
+          @if (p.lead_id) {
+            <a class="client" [routerLink]="['/leads', p.lead_id]" [attr.aria-label]="'Open the lead ' + p.client_name">{{ p.client_name }}</a>
+          } @else {
+            {{ p.client_name }}
+          }
+        </dd>
       </div>
       <div>
         <dt>Project manager</dt>
@@ -157,6 +163,7 @@
               [rows]="expenses()"
               [layout]="wide() ? 'table' : 'cards'"
               [skeleton]="!expensesLoaded()"
+              [showAmount]="!isSalesManager()"
               (action)="onExpenseAction($event)"
             />
           </div>

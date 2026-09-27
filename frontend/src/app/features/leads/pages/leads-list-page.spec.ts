@@ -214,7 +214,7 @@ describe('LeadsListPage', () => {
     expect(lost.api.listCalls[0]).toMatchObject({ status: 'LOST' });
   });
 
-  it('Won list: Finalize is Admin only and only while awaiting; the filter goes in the URL', async () => {
+  it('Won list: Finalize is for Admin and Sales Manager, only while awaiting; the filter goes in the URL', async () => {
     const rows = [
       makeLead(3, { status: 'WON', proposed_amount: '400000.00', won_at: '2026-09-20T06:30:00Z', finalized: false, allowed_transitions: ['LOST'] }),
       makeLead(4, { status: 'WON', proposed_amount: '100000.00', won_at: '2026-09-18T06:30:00Z', finalized: true, allowed_transitions: ['LOST'] }),
@@ -230,10 +230,16 @@ describe('LeadsListPage', () => {
     expect(admin.api.listCalls.at(-1)).toMatchObject({ status: 'WON', won_awaiting: 'true' });
 
     TestBed.resetTestingModule();
-    const manager = await setup(Role.SalesManager, '/leads/won');
+    const manager = await setup(Role.SalesManager, '/leads/won?won_awaiting=true');
     manager.resolve(rows);
-    expect(manager.el.querySelectorAll('button.fin').length).toBe(0);
+    expect(manager.el.querySelectorAll('button.fin').length).toBe(1);
     expect(text(manager.el)).toContain('Finalized');
+    manager.el.querySelector<HTMLButtonElement>('button.fin')!.click();
+    manager.harness.detectChanges();
+    await manager.harness.fixture.whenStable();
+    const dialog = document.querySelector('app-finalize-dialog') as HTMLElement;
+    expect(text(dialog)).toContain('Finalize amount');
+    expect(text(dialog)).toContain('Lead 3');
 
     TestBed.resetTestingModule();
     const exec = await setup(Role.SalesExec, '/leads/won');

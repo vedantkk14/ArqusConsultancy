@@ -107,6 +107,15 @@ def ledgers_for(user) -> QuerySet:
     return Ledger.objects.none()
 
 
+def ledgers_to_finalize_for(user) -> QuerySet:
+    """Ledgers `user` may finalize (FINALIZE_ROLES): the only accounts write a Sales Manager has."""
+    if user.role in rules.FINALIZE_ROLES:
+        return Ledger.objects.select_related(
+            "opportunity", "opportunity__lead", "opportunity__assigned_to"
+        )
+    return Ledger.objects.none()
+
+
 def payments_for(user) -> QuerySet:
     if user.role in rules.ACCOUNTS_ROLES:
         return Payment.objects.select_related(

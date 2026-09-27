@@ -76,7 +76,7 @@
       [selected]="store.selected()"
       [canAssign]="isManager()"
       [canStartDeal]="isManager()"
-      [canFinalize]="isAdmin()"
+      [canFinalize]="canFinalize()"
       [canSeeFinal]="isManager()"
       [skeleton]="!store.loaded()"
       [now]="now()"

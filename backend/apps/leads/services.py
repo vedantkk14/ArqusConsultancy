@@ -45,7 +45,7 @@ from .utils import phone_digits
 EXEC_CAN_CREATE_LEADS = False
 FINAL_AMOUNT_VISIBLE_TO = {ADMIN, SALES_MANAGER}
 #: Who may finalize a won deal's total (the first close). Revising it afterwards stays Admin-only.
-FINALIZE_ROLES = {ADMIN}
+FINALIZE_ROLES = {ADMIN, SALES_MANAGER}
 #: Who may start a new deal (opportunity) with an existing lead.
 NEW_OPPORTUNITY_ROLES = {ADMIN, SALES_MANAGER}
 REOPEN_ROLES = {ADMIN, SALES_MANAGER}

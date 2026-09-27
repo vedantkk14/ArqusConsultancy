@@ -49,8 +49,8 @@ def _event(ledger, type_, actor, **data) -> LedgerEvent:
     return LedgerEvent.objects.create(ledger=ledger, type=type_, actor=actor, data=data)
 
 
-def _require_admin(user) -> None:
-    if user is None or user.role not in rules.ACCOUNTS_ROLES:
+def _require_admin(user, roles=None) -> None:
+    if user is None or user.role not in (roles or rules.ACCOUNTS_ROLES):
         raise PermissionDenied()
 
 
@@ -109,8 +109,8 @@ def create_ledger(opportunity) -> Ledger:
 
 @transaction.atomic
 def finalize_ledger(opportunity, amount, by, note: str = "") -> Ledger:
-    """Admin confirms the final Total Amount. Finalizing twice is a 409 `already_finalized`."""
-    _require_admin(by)
+    """Admin or Sales Manager confirms the final Total Amount. Twice is a 409 `already_finalized`."""
+    _require_admin(by, rules.FINALIZE_ROLES)
     create_ledger(opportunity)
     ledger = _locked(Ledger.objects.get(opportunity=opportunity).pk)
     if ledger.finalized_at:

@@ -154,17 +154,28 @@ class LedgerViewSet(GenericViewSet):
     def retrieve(self, request, pk=None):
         return Response(self._detail(pk))
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], permission_classes=[HasRole(*rules.FINALIZE_ROLES)])
     def finalize(self, request, pk=None):
-        ledger = self._ledger(pk)
+        """Admin and Sales Manager. A Sales Manager gets only the finalization back, no figures."""
+        ledger = get_object_or_404(selectors.ledgers_to_finalize_for(request.user), pk=pk)
         serializer = FinalizeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        services.finalize_ledger(
+        ledger = services.finalize_ledger(
             ledger.opportunity,
             serializer.validated_data["amount"],
             request.user,
             serializer.validated_data.get("note", ""),
         )
+        if request.user.role not in rules.ACCOUNTS_ROLES:
+            return Response(
+                {
+                    "id": ledger.pk,
+                    "opportunity": ledger.opportunity_id,
+                    "finalized": True,
+                    "total": selectors.money_str(ledger.total_amount),
+                    "finalized_at": ledger.finalized_at.isoformat(),
+                }
+            )
         return Response(self._detail(pk))
 
     @action(detail=True, methods=["post"], url_path="revise-total")

@@ -149,12 +149,14 @@
             } @else {
               <p class="chip wait">Awaiting finalization</p>
             }
-            @if (isAdmin()) {
+            @if (isManager()) {
               <div class="deal-acts">
                 @if (!f.finalized) {
                   <button matButton="filled" type="button" (click)="finalize(lead)">Finalize amount</button>
                 }
-                <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: lead.current_opportunity_id }">Convert to project</a>
+                @if (isAdmin()) {
+                  <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: lead.current_opportunity_id }">Convert to project</a>
+                }
               </div>
             }
           }

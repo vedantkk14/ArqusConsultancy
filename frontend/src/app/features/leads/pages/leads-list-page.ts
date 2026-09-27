@@ -74,6 +74,8 @@ export class LeadsListPage {
   protected readonly mode: ListMode = this.route.snapshot.data['mode'] ?? 'all';
   protected readonly isManager = computed(() => MANAGERS.includes(this.auth.role() as Role));
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  /** Admin and Sales Manager finalize won deals (revising a finalized total stays Admin-only). */
+  protected readonly canFinalize = this.isManager;
 
   private readonly queryMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
   protected readonly filters = computed(() => filtersFromQuery((k) => this.queryMap().get(k)));

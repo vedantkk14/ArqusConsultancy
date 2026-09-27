@@ -145,10 +145,13 @@ def test_finalize_ledger_rejects_bad_amounts_from_leads(make_opportunity, admin,
         services.finalize_ledger(make_opportunity(), bad, admin)
 
 
-def test_finalize_ledger_is_admin_only(make_opportunity, sales_manager, sales_exec):
+def test_finalize_ledger_is_admin_or_sales_manager(
+    make_opportunity, sales_manager, sales_exec, pm
+):
     from rest_framework.exceptions import PermissionDenied
 
-    for user in (sales_manager, sales_exec):
+    for user in (sales_exec, pm):
         with pytest.raises(PermissionDenied):
             services.finalize_ledger(make_opportunity(), Decimal("10"), user)
+    assert services.finalize_ledger(make_opportunity(), Decimal("10"), sales_manager).finalized_at
     assert LEDGERS  # routes are registered

@@ -13,7 +13,7 @@ export interface FinalizeDialogData {
   lead: { id: number; name: string; proposed_amount: string | null };
 }
 
-/** Admin: confirm the final Total Amount for a won lead (stored on the accounts ledger). */
+/** Admin or Sales Manager: confirm the final Total Amount for a won deal (stored on the accounts ledger). */
 @Component({
   selector: 'app-finalize-dialog',
   imports: [DialogHead, FormsModule, InrPipe, MatButtonModule, MatDialogModule, MoneyInput],

@@ -1,4 +1,5 @@
-"""Sales module (Dev A): leads, interactions, WhatsApp templates and the won-deal hand-off."""
+"""Sales module (Dev A): leads (clients), their opportunities (deals), interactions, WhatsApp
+templates and the won-deal hand-off."""
 
 from django.conf import settings
 from django.db import models
@@ -49,13 +50,14 @@ class InteractionType(models.TextChoices):
 
 
 class Lead(TimeStampedModel, SoftDeleteModel):
+    """The permanent client record. Deal fields (status, follow-up, amounts) live on Opportunity."""
+
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=20, db_index=True)  # normalised, e.g. +919876543210
     email = models.EmailField(blank=True)
     source = models.CharField(max_length=20, choices=LeadSource.choices, default=LeadSource.OTHER)
     source_other = models.CharField(max_length=100, blank=True)  # free text when source is OTHER
     requirements = models.TextField(blank=True)
-    status = models.CharField(max_length=20, choices=LeadStatus.choices, default=LeadStatus.NEW)
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -63,12 +65,6 @@ class Lead(TimeStampedModel, SoftDeleteModel):
         on_delete=models.SET_NULL,
         related_name="assigned_leads",
     )
-    next_followup_at = models.DateTimeField(null=True, blank=True)
-    # The Exec's proposal only. The final Total Amount lives on accounts.Ledger (privacy shield).
-    proposed_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    won_at = models.DateTimeField(null=True, blank=True)
-    lost_reason = models.CharField(max_length=30, choices=LostReason.choices, blank=True)
-    lost_note = models.TextField(blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -76,23 +72,69 @@ class Lead(TimeStampedModel, SoftDeleteModel):
         on_delete=models.SET_NULL,
         related_name="created_leads",
     )
+    # The most recently created opportunity (only the latest one can be open). Denormalised so
+    # list filters and aggregates can join it instead of running a subquery per row.
+    current_opportunity = models.ForeignKey(
+        "Opportunity", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
 
     class Meta:
         ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Opportunity(TimeStampedModel, SoftDeleteModel):
+    """One deal with a lead ("Deal #2"). A lead has at most one open (not WON/LOST) at a time."""
+
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name="opportunities")
+    sequence_no = models.PositiveIntegerField()
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="assigned_opportunities",
+    )
+    status = models.CharField(max_length=20, choices=LeadStatus.choices, default=LeadStatus.NEW)
+    next_followup_at = models.DateTimeField(null=True, blank=True)
+    # The Exec's proposal only. The final Total Amount lives on accounts.Ledger (privacy shield).
+    proposed_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    won_at = models.DateTimeField(null=True, blank=True)
+    lost_reason = models.CharField(max_length=30, choices=LostReason.choices, blank=True)
+    lost_note = models.TextField(blank=True)
+    requirements = models.TextField(blank=True)  # optional note given when the deal was started
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_opportunities",
+    )
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(fields=["lead", "sequence_no"], name="opp_lead_sequence")
+        ]
         indexes = [
+            models.Index(fields=["lead", "-created_at"], name="opp_lead_time"),
             models.Index(
-                fields=["status", "assigned_to", "next_followup_at"], name="lead_status_owner_fu"
+                fields=["status", "assigned_to", "next_followup_at"], name="opp_status_owner_fu"
             ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.status})"
+        return f"Deal #{self.sequence_no} for lead {self.lead_id} ({self.status})"
 
 
 class Interaction(models.Model):
     """Append-only timeline entry. Never edited or deleted."""
 
-    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name="interactions")
+    opportunity = models.ForeignKey(
+        Opportunity, on_delete=models.CASCADE, related_name="interactions"
+    )
     type = models.CharField(max_length=20, choices=InteractionType.choices)
     notes = models.TextField(blank=True)
     created_by = models.ForeignKey(
@@ -105,10 +147,10 @@ class Interaction(models.Model):
 
     class Meta:
         ordering = ["-created_at", "-id"]
-        indexes = [models.Index(fields=["lead", "-created_at"], name="interaction_lead_time")]
+        indexes = [models.Index(fields=["opportunity", "-created_at"], name="interaction_opp_time")]
 
     def __str__(self) -> str:
-        return f"{self.type} on lead {self.lead_id}"
+        return f"{self.type} on opportunity {self.opportunity_id}"
 
 
 class WhatsAppTemplate(TimeStampedModel):
@@ -134,7 +176,9 @@ class MessageLog(models.Model):
         SENT = "SENT", "Sent"
         FAILED = "FAILED", "Failed"
 
-    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name="messages")
+    opportunity = models.ForeignKey(
+        Opportunity, on_delete=models.CASCADE, related_name="messages"
+    )
     template = models.ForeignKey(WhatsAppTemplate, null=True, blank=True, on_delete=models.SET_NULL)
     rendered_text = models.TextField()
     created_by = models.ForeignKey(
@@ -148,4 +192,4 @@ class MessageLog(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return f"{self.channel} to lead {self.lead_id} ({self.status})"
+        return f"{self.channel} on opportunity {self.opportunity_id} ({self.status})"

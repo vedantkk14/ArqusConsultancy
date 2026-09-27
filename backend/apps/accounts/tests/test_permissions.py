@@ -93,7 +93,7 @@ def test_unknown_ids_are_404_for_the_admin(client_for, admin):
 
 def test_leads_exec_screens_carry_no_ledger_data(client_for, sales_exec, ledger, make_payment):
     make_payment(ledger, "12345.67")
-    res = client_for(sales_exec).get(f"/api/v1/leads/{ledger.lead_id}")
+    res = client_for(sales_exec).get(f"/api/v1/leads/{ledger.opportunity.lead_id}")
     assert res.status_code == 200
     text = res.content.decode()
     for needle in ("received", "outstanding", "12345.67", "ledger", "payment"):

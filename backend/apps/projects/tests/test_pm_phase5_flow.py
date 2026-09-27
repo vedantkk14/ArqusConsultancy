@@ -14,13 +14,13 @@ def code(res):
     return res.json()["error"]["code"]
 
 
-def test_phase5_workflow(client_for, admin, pm1, make_lead, notes):
-    lead = make_lead(proposed_amount=Decimal("60000"))  # the deal total is 60,000
+def test_phase5_workflow(client_for, admin, pm1, make_opportunity, notes):
+    lead = make_opportunity(proposed_amount=Decimal("60000"))  # the deal total is 60,000
     a, p = client_for(admin), client_for(pm1)
 
     # 1. Admin converts the won lead and assigns the PM.
     created = a.post(
-        BASE, {"lead": lead.pk, "name": "Riverside Court", "pm": pm1.pk}, format="json"
+        BASE, {"opportunity": lead.pk, "name": "Riverside Court", "pm": pm1.pk}, format="json"
     )
     assert created.status_code == 201, created.content
     pid = created.json()["id"]

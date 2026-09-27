@@ -101,13 +101,17 @@ def bucket_for(days: int) -> str:
 def ledgers_for(user) -> QuerySet:
     """Every ledger query starts here. Only an Admin ever sees ledgers."""
     if user.role in rules.ACCOUNTS_ROLES:
-        return Ledger.objects.select_related("lead", "lead__assigned_to")
+        return Ledger.objects.select_related(
+            "opportunity", "opportunity__lead", "opportunity__assigned_to"
+        )
     return Ledger.objects.none()
 
 
 def payments_for(user) -> QuerySet:
     if user.role in rules.ACCOUNTS_ROLES:
-        return Payment.objects.select_related("ledger", "ledger__lead", "recorded_by")
+        return Payment.objects.select_related(
+            "ledger", "ledger__opportunity", "ledger__opportunity__lead", "recorded_by"
+        )
     return Payment.objects.none()
 
 
@@ -214,7 +218,13 @@ def summary(qs: QuerySet) -> dict:
     counts = {s.value: 0 for s in LedgerState}
     aging_rows, overdue_rows = [], []
     for ledger_id, name, total, rec, out, base, finalized_at in qs.order_by().values_list(
-        "id", "lead__name", "total_amount", "received", "outstanding", "aging_base", "finalized_at"
+        "id",
+        "opportunity__lead__name",
+        "total_amount",
+        "received",
+        "outstanding",
+        "aging_base",
+        "finalized_at",
     ):
         finalized = finalized_at is not None
         counts[ledger_state(total, rec, finalized)] += 1

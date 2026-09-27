@@ -10,12 +10,15 @@ from PIL import Image
 from rest_framework.test import APIClient
 
 from apps.leads.models import Lead, LeadStatus
+from apps.leads.services import add_opportunity
 from apps.projects import integrations, selectors, services
 
 BASE = "/api/v1/projects"
 EXPENSES = "/api/v1/expenses"
 TOTAL = Decimal("1000000.00")  # the deal total the leak tests look for in PM responses
 LEAD_PHONE = "+919812345678"
+#: Client-record fields; everything else passed to make_opportunity belongs to the deal.
+LEAD_FIELDS = {"name", "phone", "email", "source", "source_other", "requirements", "assigned_to"}
 
 
 @pytest.fixture(autouse=True)
@@ -85,7 +88,8 @@ def client_for():
 
 
 @pytest.fixture
-def make_lead(db, sales_exec):
+def make_opportunity(db, sales_exec):
+    """A deal (Opportunity #1 of a fresh lead), WON with a finalized ledger by default."""
     counter = {"n": 0}
 
     def _make(**fields):
@@ -100,31 +104,36 @@ def make_lead(db, sales_exec):
             "assigned_to": sales_exec,
         }
         defaults.update(fields)
-        lead = Lead.objects.create(**defaults)
-        if lead.status == LeadStatus.WON:  # a won deal has a finalized ledger (accounts module)
+        lead = Lead.objects.create(
+            **{k: defaults.pop(k) for k in list(defaults) if k in LEAD_FIELDS}
+        )
+        deal = add_opportunity(lead, **defaults)
+        if deal.status == LeadStatus.WON:  # a won deal has a finalized ledger (accounts module)
             from apps.accounts.models import Ledger
 
             Ledger.objects.create(
-                lead=lead,
-                total_amount=lead.proposed_amount or 0,
+                opportunity=deal,
+                total_amount=deal.proposed_amount or 0,
                 finalized_at=timezone.now(),
                 finalized_on=selectors.business_today(),
             )
-        return lead
+        return deal
 
     return _make
 
 
 @pytest.fixture
-def make_project(admin, make_lead):
+def make_project(admin, make_opportunity):
     """`budget` sets the deal total (the finalized ledger total), which is the Admin's budget."""
 
-    def _make(pm=None, budget=None, lead=None, **extra):
-        if lead is None:
-            lead = make_lead(proposed_amount=Decimal(budget)) if budget else make_lead()
+    def _make(pm=None, budget=None, opportunity=None, **extra):
+        if opportunity is None:
+            opportunity = (
+                make_opportunity(proposed_amount=Decimal(budget)) if budget else make_opportunity()
+            )
         return services.convert(
-            lead.pk,
-            name=extra.pop("name", f"Turf for {lead.name}"),
+            opportunity.pk,
+            name=extra.pop("name", f"Turf for {opportunity.lead.name}"),
             pm_id=pm.pk if pm else None,
             start_date=None,
             expected_end_date=None,

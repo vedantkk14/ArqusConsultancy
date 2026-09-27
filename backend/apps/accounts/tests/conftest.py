@@ -12,11 +12,14 @@ from rest_framework.test import APIClient
 
 from apps.accounts import selectors, services
 from apps.leads.models import Lead, LeadStatus
+from apps.leads.services import add_opportunity
 
 LEDGERS = "/api/v1/ledgers"
 PAYMENTS = "/api/v1/payments"
 TOTAL = Decimal("100000.00")
 LEAD_PHONE = "+919812345678"
+#: Client-record fields; everything else passed to make_opportunity belongs to the deal.
+LEAD_FIELDS = {"name", "phone", "email", "source", "source_other", "requirements", "assigned_to"}
 
 
 @pytest.fixture(autouse=True)
@@ -95,7 +98,8 @@ def notes(monkeypatch):
 
 
 @pytest.fixture
-def make_lead(db, sales_exec):
+def make_opportunity(db, sales_exec):
+    """A won deal (Opportunity #1 of a fresh lead). Lead fields go to the lead, the rest to the deal."""
     counter = {"n": 0}
 
     def _make(**fields):
@@ -110,20 +114,23 @@ def make_lead(db, sales_exec):
             "assigned_to": sales_exec,
         }
         defaults.update(fields)
-        return Lead.objects.create(**defaults)
+        lead = Lead.objects.create(
+            **{k: defaults.pop(k) for k in list(defaults) if k in LEAD_FIELDS}
+        )
+        return add_opportunity(lead, **defaults)
 
     return _make
 
 
 @pytest.fixture
-def make_ledger(admin, make_lead):
+def make_ledger(admin, make_opportunity):
     """A ledger; finalized at `total` unless finalize=False."""
 
-    def _make(total="100000.00", finalize=True, lead=None, days_ago=0):
-        lead = lead or make_lead()
-        ledger = services.create_ledger(lead)
+    def _make(total="100000.00", finalize=True, opportunity=None, days_ago=0):
+        opportunity = opportunity or make_opportunity()
+        ledger = services.create_ledger(opportunity)
         if finalize:
-            services.finalize_ledger(lead, Decimal(total), admin)
+            services.finalize_ledger(opportunity, Decimal(total), admin)
             ledger.refresh_from_db()
             if days_ago:  # backdate the finalization
                 moment = timezone.now() - timedelta(days=days_ago)

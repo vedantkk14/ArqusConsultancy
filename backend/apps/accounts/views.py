@@ -102,14 +102,16 @@ class LedgerViewSet(GenericViewSet):
         """Finalized ledgers with a balance, for the record-payment select."""
         qs = self.get_queryset().filter(selectors.has_balance_q())
         if q := (request.query_params.get("q") or "").strip():
-            qs = qs.filter(Q(lead__name__icontains=q) | Q(lead__phone__contains=q))
-        rows = qs.order_by("lead__name", "id")[:10]
+            qs = qs.filter(
+                Q(opportunity__lead__name__icontains=q) | Q(opportunity__lead__phone__contains=q)
+            )
+        rows = qs.order_by("opportunity__lead__name", "id")[:10]
         return Response(
             [
                 {
                     "id": r.pk,
-                    "client": r.lead.name,
-                    "phone": r.lead.phone,
+                    "client": r.opportunity.lead.name,
+                    "phone": r.opportunity.lead.phone,
                     "total": selectors.money_str(r.total_amount),
                     "outstanding": selectors.money_str(r.outstanding),
                 }
@@ -158,7 +160,7 @@ class LedgerViewSet(GenericViewSet):
         serializer = FinalizeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         services.finalize_ledger(
-            ledger.lead,
+            ledger.opportunity,
             serializer.validated_data["amount"],
             request.user,
             serializer.validated_data.get("note", ""),
@@ -330,7 +332,7 @@ class PaymentViewSet(GenericViewSet):
         def rows():
             for p in qs.iterator(chunk_size=500):
                 yield [
-                    receipt_number(p), p.received_on.isoformat(), p.ledger.lead.name, selectors.money_str(p.amount),
+                    receipt_number(p), p.received_on.isoformat(), p.ledger.opportunity.lead.name, selectors.money_str(p.amount),
                     p.get_mode_display(), p.reference, p.recorded_by.display_name if p.recorded_by else "",
                     "Yes" if p.proof else "No", "Void" if p.is_void else "Active", p.void_reason or p.note,
                 ]  # fmt: skip

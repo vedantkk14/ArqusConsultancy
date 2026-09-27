@@ -25,7 +25,7 @@ def endpoints(w):
         ("get", f"{BASE}/{p}/events", None),
         ("get", f"{BASE}/{p}/expenses", None),
         ("post", f"{BASE}/{p}/expenses", "form"),
-        ("post", BASE, {"lead": 1, "name": "x"}),
+        ("post", BASE, {"opportunity": 1, "name": "x"}),
         ("get", EXPENSES, None),
         ("get", f"{EXPENSES}/summary", None),
         ("get", f"{EXPENSES}/export", None),

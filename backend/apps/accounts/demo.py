@@ -9,7 +9,8 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 from PIL import Image, ImageDraw
 
-from apps.leads.models import Lead
+from apps.leads.models import Lead, Opportunity
+from apps.leads.services import add_opportunity
 
 from . import selectors, services
 from .models import Ledger, LedgerEvent, LedgerEventType, Payment
@@ -80,30 +81,29 @@ def _won_leads(admin):
     )  # projects' own extra won deals: their ledgers must be finalized before converting
     for name, phone, amount in ACCOUNTS_WON:
         if not Lead.all_objects.filter(phone=phone).exists():
-            Lead.objects.create(
-                name=name,
-                phone=phone,
+            lead = Lead.objects.create(name=name, phone=phone, source="REFERRAL", created_by=admin)
+            add_opportunity(
+                lead,
+                by=admin,
                 status="WON",
-                source="REFERRAL",
                 proposed_amount=amount,
                 won_at=timezone.now() - timedelta(days=40),
-                created_by=admin,
             )
-    return list(Lead.objects.filter(status="WON").order_by("id"))
+    return list(Opportunity.objects.filter(status="WON").select_related("lead").order_by("id"))
 
 
 def seed_ledgers(command, users) -> None:
     admin = users["ADMIN"]
-    leads = _won_leads(admin)
+    deals = _won_leads(admin)
     now = timezone.now()
     finalized = 0
-    for i, lead in enumerate(leads):
-        ledger = services.create_ledger(lead)
+    for i, deal in enumerate(deals):
+        ledger = services.create_ledger(deal)
         plan = PLAN[i] if i < len(PLAN) else (None, [])
         days = plan[0]
         if days is None or ledger.finalized_at:
             continue
-        proposed = lead.proposed_amount or Decimal("300000")
+        proposed = deal.proposed_amount or Decimal("300000")
         # Never below the project budget (60% of the proposed amount), so projects stay consistent.
         total = (Decimal(proposed) * (Decimal("1.10") if i % 2 else Decimal("1.00"))).quantize(
             Decimal("1")
@@ -125,7 +125,7 @@ def seed_ledgers(command, users) -> None:
         )
         finalized += 1
     command.stdout.write(
-        f"  ledgers: {len(leads)} won deals, {finalized} finalized now, {Ledger.objects.filter(finalized_at__isnull=True).count()} awaiting finalization"
+        f"  ledgers: {len(deals)} won deals, {finalized} finalized now, {Ledger.objects.filter(finalized_at__isnull=True).count()} awaiting finalization"
     )
 
 
@@ -133,8 +133,10 @@ def seed_payments(command, users) -> None:
     admin = users["ADMIN"]
     now = timezone.now()
     made = 0
-    for i, lead in enumerate(Lead.objects.filter(status="WON").order_by("id")):
-        ledger = Ledger.objects.filter(lead=lead).first()
+    for i, deal in enumerate(
+        Opportunity.objects.filter(status="WON").select_related("lead").order_by("id")
+    ):
+        ledger = Ledger.objects.filter(opportunity=deal).first()
         if ledger is None or not ledger.finalized_at or ledger.payments.exists() or i >= len(PLAN):
             continue
         for n, (days, pct, mode, proof, void) in enumerate(PLAN[i][1]):
@@ -155,7 +157,7 @@ def seed_payments(command, users) -> None:
             )
             if proof:
                 payment.proof.save(
-                    "proof.png", ContentFile(_proof_png(f"{lead.name} {amount}")), save=False
+                    "proof.png", ContentFile(_proof_png(f"{deal.lead.name} {amount}")), save=False
                 )
                 payment.proof_kind, payment.proof_type = "image", "image/png"
             payment.save()

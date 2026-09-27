@@ -73,7 +73,7 @@ def test_the_whole_deal_flow(
         format="json",
     )
     assert won.status_code == 200, won.content
-    ledger = Ledger.objects.get(lead_id=lead_id)
+    ledger = Ledger.objects.get(opportunity__lead_id=lead_id)
     detail = admin_api.get(f"{LEDGERS}/{ledger.pk}").json()
     assert detail["state"] == "AWAITING_FINALIZATION" and detail["total"] == "100000.00"
     no_ledger_data(lead_id)
@@ -89,7 +89,7 @@ def test_the_whole_deal_flow(
         client_for(admin)
         .post(
             f"{BASE}/projects",
-            {"lead": lead_id, "name": "P"},
+            {"opportunity": ledger.opportunity_id, "name": "P"},
             format="json",
         )
         .json()["error"]["code"]
@@ -105,13 +105,19 @@ def test_the_whole_deal_flow(
     )
     assert fin.status_code == 200 and fin.json()["total"] == "84000.00"
     assert [(u, k, p) for u, k, p in notes if k == "deal_finalized"] == [
-        (sales_exec.pk, "deal_finalized", {"lead_id": lead_id, "lead_name": "Client 1"})
+        (
+            sales_exec.pk,
+            "deal_finalized",
+            {"lead_id": lead_id, "lead_name": "Client 1", "opportunity_id": ledger.opportunity_id},
+        )
     ]
     no_ledger_data(lead_id)
 
     # 4. Converted to a project: the finalized total (not the proposal) is the admin's budget.
     ok = admin_api.post(
-        f"{BASE}/projects", {"lead": lead_id, "name": "Turf", "pm": pm.pk}, format="json"
+        f"{BASE}/projects",
+        {"opportunity": ledger.opportunity_id, "name": "Turf", "pm": pm.pk},
+        format="json",
     )
     assert ok.status_code == 201, ok.content
     project_id = ok.json()["id"]

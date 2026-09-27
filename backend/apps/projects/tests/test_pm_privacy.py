@@ -112,7 +112,7 @@ def test_pm_error_bodies_do_not_leak_the_total(client_for, pm1, full_project):
     for url, body in (
         (f"{BASE}/{full_project.pk}/reopen", {"reason": "x"}),
         (f"{BASE}/{full_project.pk}/assign-pm", {"pm": None}),
-        (BASE, {"lead": 1}),
+        (BASE, {"opportunity": 1}),
     ):
         assert_no_leak(client.post(url, body, format="json"))
 

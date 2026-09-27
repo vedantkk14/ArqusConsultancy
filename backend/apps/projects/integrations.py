@@ -1,10 +1,12 @@
 """Adapters to other apps. Projects never imports another app's models directly.
 
 Contract expected from accounts (Dev C), see docs/API_CONTRACT.md "Projects -> Accounts":
-* accounts.services.get_project_finance(lead)
+* accounts.services.get_project_finance(opportunity)
   -> {total_amount, received, outstanding, finalized} | None   (Decimals; None = no ledger)
-  Its existence is also the "finalization marker": once it exists, a lead must be finalized
+  Its existence is also the "finalization marker": once it exists, a deal must be finalized
   before it can be converted.
+
+A project is converted from one leads.Opportunity (a won deal); `opportunity.lead` is the client.
 """
 
 from decimal import Decimal
@@ -24,19 +26,19 @@ def accounts_ready() -> bool:
 
 
 def accounts_missing() -> list[str]:
-    return [] if accounts_ready() else ["accounts.services.get_project_finance(lead)"]
+    return [] if accounts_ready() else ["accounts.services.get_project_finance(opportunity)"]
 
 
 def _dec(value) -> Decimal | None:
     return None if value is None else Decimal(str(value))
 
 
-def finance_for(lead) -> dict | None:
-    """Ledger figures for `lead`, or None when accounts cannot say (no function, no ledger)."""
+def finance_for(opportunity) -> dict | None:
+    """Ledger figures for the deal, or None when accounts cannot say (no function, no ledger)."""
     fn = _accounts_fn()
-    if fn is None or lead is None:
+    if fn is None or opportunity is None:
         return None
-    raw = fn(lead)
+    raw = fn(opportunity)
     if not raw:
         return None
     return {
@@ -47,21 +49,21 @@ def finance_for(lead) -> dict | None:
     }
 
 
-def deal_total(lead) -> Decimal | None:
-    """The deal total: the ledger total, or the lead's proposed amount until accounts exist."""
-    if lead is None:
+def deal_total(opportunity) -> Decimal | None:
+    """The deal total: the ledger total, or the deal's proposed amount until accounts exist."""
+    if opportunity is None:
         return None
-    finance = finance_for(lead)
+    finance = finance_for(opportunity)
     if finance and finance["total_amount"] is not None:
         return finance["total_amount"]
-    return None if accounts_ready() else lead.proposed_amount
+    return None if accounts_ready() else opportunity.proposed_amount
 
 
-def finalization_problem(lead) -> str | None:
+def finalization_problem(opportunity) -> str | None:
     """None when the deal may be converted. Only enforced once the accounts marker exists."""
     if not accounts_ready():
         return None
-    finance = finance_for(lead)
+    finance = finance_for(opportunity)
     return None if finance and finance["finalized"] else "not_finalized"
 
 
@@ -75,6 +77,26 @@ def lead_model():
     return apps.get_model("leads", "Lead")
 
 
-def lock_lead(lead_id):
-    """The lead row, locked for the rest of the transaction (None if missing or soft-deleted)."""
-    return lead_model().objects.select_for_update().filter(pk=lead_id).first()
+def opportunity_model():
+    from django.apps import apps
+
+    return apps.get_model("leads", "Opportunity")
+
+
+def add_opportunity(lead, **fields):
+    """Create a lead's next deal through the leads app (demo data only)."""
+    from apps.leads.services import add_opportunity as _add
+
+    return _add(lead, **fields)
+
+
+def lock_opportunity(opportunity_id):
+    """The deal row with its lead, locked for the rest of the transaction (None if missing or
+    soft-deleted)."""
+    return (
+        opportunity_model()
+        .objects.select_for_update()
+        .select_related("lead")
+        .filter(pk=opportunity_id, lead__is_deleted=False)
+        .first()
+    )

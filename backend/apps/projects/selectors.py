@@ -133,9 +133,9 @@ def budget_usage_qs(qs: QuerySet | None = None) -> QuerySet:
     ledger = _ledger_model()
     if ledger is not None:
         deal_total = Subquery(
-            ledger.objects.filter(lead=OuterRef("lead"), finalized_at__isnull=False).values(
-                "total_amount"
-            )[:1],
+            ledger.objects.filter(
+                opportunity=OuterRef("opportunity"), finalized_at__isnull=False
+            ).values("total_amount")[:1],
             output_field=MONEY,
         )
     else:

@@ -80,7 +80,7 @@ class ProjectViewSet(GenericViewSet):
             raise PermissionDenied()
 
     def _project(self, pk):
-        return get_object_or_404(self.get_queryset().select_related("lead"), pk=pk)
+        return get_object_or_404(self.get_queryset().select_related("opportunity"), pk=pk)
 
     def _detail(self, pk) -> dict:
         project = self._project(pk)
@@ -104,7 +104,7 @@ class ProjectViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         project = services.convert(
-            data["lead"],
+            data["opportunity"],
             name=data["name"],
             pm_id=data.get("pm"),
             start_date=data.get("start_date"),
@@ -139,48 +139,62 @@ class ProjectViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"])
     def convertible(self, request):
-        """Won deals that can become projects. `?lead=<id>` looks one up and says why not."""
+        """Won deals (opportunities) that can become projects, with the client's name.
+
+        `?opportunity=<id>` looks one deal up and says why not; `?lead=<id>` does the same for the
+        lead's current deal.
+        """
         self._require_admin()
-        lead_model = integrations.lead_model()
-        wanted = request.query_params.get("lead", "")
+        deals_qs = (
+            integrations.opportunity_model()
+            .objects.filter(lead__is_deleted=False)
+            .select_related("lead", "assigned_to")
+        )
+        wanted = request.query_params.get("opportunity", "")
+        lead_wanted = request.query_params.get("lead", "")
         if wanted.isdigit():
-            leads = list(lead_model.objects.filter(pk=int(wanted)).select_related("assigned_to"))
+            deals = list(deals_qs.filter(pk=int(wanted)))
+        elif lead_wanted.isdigit():
+            wanted = lead_wanted
+            deals = list(deals_qs.filter(lead_id=int(lead_wanted)).order_by("-sequence_no")[:1])
         else:
-            leads = list(
-                lead_model.objects.filter(status="WON", project__isnull=True)
-                .select_related("assigned_to")
-                .order_by("won_at", "id")[:INELIGIBLE_MAX]
+            deals = list(
+                deals_qs.filter(status="WON", project__isnull=True).order_by("won_at", "id")[
+                    :INELIGIBLE_MAX
+                ]
             )
         from .models import Project
 
         existing = dict(
-            Project.objects.filter(lead_id__in=[lead.pk for lead in leads]).values_list(
-                "lead_id", "id"
+            Project.objects.filter(opportunity_id__in=[d.pk for d in deals]).values_list(
+                "opportunity_id", "id"
             )
         )
         rows = []
-        for lead in leads:
-            if lead.pk in existing:
+        for deal in deals:
+            if deal.pk in existing:
                 reason = "project_exists"
-            elif lead.status != "WON":
+            elif deal.status != "WON":
                 reason = "not_won"
             else:
-                reason = integrations.finalization_problem(lead)
+                reason = integrations.finalization_problem(deal)
             if reason and not wanted:
                 continue
-            total = integrations.deal_total(lead)
+            total = integrations.deal_total(deal)
             rows.append(
                 {
-                    "lead": lead.pk,
-                    "name": lead.name,
-                    "exec_name": lead.assigned_to.display_name if lead.assigned_to else None,
-                    "won_at": lead.won_at,
-                    "proposed_amount": selectors.money_str(lead.proposed_amount)
-                    if lead.proposed_amount is not None
+                    "opportunity": deal.pk,
+                    "sequence_no": deal.sequence_no,
+                    "lead": deal.lead_id,
+                    "name": deal.lead.name,
+                    "exec_name": deal.assigned_to.display_name if deal.assigned_to else None,
+                    "won_at": deal.won_at,
+                    "proposed_amount": selectors.money_str(deal.proposed_amount)
+                    if deal.proposed_amount is not None
                     else None,
                     "total_amount": None if total is None else selectors.money_str(total),
                     "ineligible_reason": reason,
-                    "project_id": existing.get(lead.pk),
+                    "project_id": existing.get(deal.pk),
                 }
             )
         return Response({"count": len(rows), "results": rows})

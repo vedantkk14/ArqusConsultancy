@@ -126,7 +126,8 @@ class ProjectAdminSerializer(ProjectPMSerializer):
 
 class ProjectAdminDetailSerializer(ProjectAdminSerializer):
     allowed_actions = serializers.SerializerMethodField()
-    lead_id = serializers.IntegerField(read_only=True)
+    lead_id = serializers.SerializerMethodField()
+    opportunity_id = serializers.IntegerField(read_only=True)
     finance = serializers.SerializerMethodField()
 
     class Meta(ProjectAdminSerializer.Meta):
@@ -134,16 +135,20 @@ class ProjectAdminDetailSerializer(ProjectAdminSerializer):
             "scope",
             "allowed_actions",
             "lead_id",
+            "opportunity_id",
             "finance",
         )
 
     def get_allowed_actions(self, obj):
         return selectors.allowed_actions(self.context["request"].user, obj)
 
+    def get_lead_id(self, obj):
+        return obj.opportunity.lead_id if obj.opportunity_id else None
+
     def get_finance(self, obj):
         from . import integrations
 
-        raw = integrations.finance_for(obj.lead)
+        raw = integrations.finance_for(obj.opportunity)
         if raw is None:
             return None
         return {
@@ -228,7 +233,7 @@ def expense_serializer(user):
 
 
 class ConvertSerializer(serializers.Serializer):
-    lead = serializers.IntegerField(min_value=1)
+    opportunity = serializers.IntegerField(min_value=1)
     name = serializers.CharField(max_length=200)
     pm = serializers.IntegerField(required=False, allow_null=True)
     start_date = serializers.DateField(required=False, allow_null=True)

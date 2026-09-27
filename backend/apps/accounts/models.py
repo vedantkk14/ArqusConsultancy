@@ -48,7 +48,10 @@ def proof_path(instance, filename: str) -> str:
 
 
 class Ledger(TimeStampedModel):
-    lead = models.OneToOneField("leads.Lead", on_delete=models.PROTECT, related_name="ledger")
+    # One ledger per won deal (a lead can have several deals over time).
+    opportunity = models.OneToOneField(
+        "leads.Opportunity", on_delete=models.PROTECT, related_name="ledger"
+    )
     # The Exec's proposal until finalized, then the agreed Total Project Amount.
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     # The amount first finalized; `total_amount - initial_amount` is what was added by revisions.
@@ -66,7 +69,7 @@ class Ledger(TimeStampedModel):
         indexes = [models.Index(fields=["finalized_at"], name="ledger_finalized_at")]
 
     def __str__(self) -> str:
-        return f"Ledger for lead {self.lead_id}"
+        return f"Ledger for opportunity {self.opportunity_id}"
 
 
 class Payment(TimeStampedModel):

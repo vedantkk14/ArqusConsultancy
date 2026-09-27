@@ -12,7 +12,7 @@ from apps.core.services import notify
 
 def notify_overdue_payments() -> int:
     """Notify admins about newly overdue ledgers; returns how many ledgers were announced."""
-    qs = selectors.with_figures(Ledger.objects.select_related("lead")).filter(
+    qs = selectors.with_figures(Ledger.objects.select_related("opportunity__lead")).filter(
         selectors.overdue_q(), overdue_notified_at__isnull=True
     )
     admins = list(get_user_model().objects.filter(role="ADMIN", is_active=True))
@@ -21,7 +21,7 @@ def notify_overdue_payments() -> int:
     for ledger in qs:
         payload = {
             "ledger_id": ledger.pk,
-            "lead_name": ledger.lead.name,
+            "lead_name": ledger.opportunity.lead.name,
             "days_since": selectors.days_since(ledger.aging_base, today),
         }
         for admin in admins:

@@ -176,9 +176,7 @@ class MessageLog(models.Model):
         SENT = "SENT", "Sent"
         FAILED = "FAILED", "Failed"
 
-    opportunity = models.ForeignKey(
-        Opportunity, on_delete=models.CASCADE, related_name="messages"
-    )
+    opportunity = models.ForeignKey(Opportunity, on_delete=models.CASCADE, related_name="messages")
     template = models.ForeignKey(WhatsAppTemplate, null=True, blank=True, on_delete=models.SET_NULL)
     rendered_text = models.TextField()
     created_by = models.ForeignKey(

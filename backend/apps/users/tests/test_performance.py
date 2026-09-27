@@ -8,6 +8,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.leads.models import Lead
+from apps.leads.testing import make_deal
 from apps.projects.models import Expense, Project
 
 from .conftest import *  # noqa: F401,F403
@@ -56,7 +57,7 @@ def test_sales_figures(people):
 
     def lead(status, amount=None, **kw):
         won = {"won_at": timezone.now()} if status == "WON" else {}
-        return Lead.objects.create(
+        return make_deal(
             name=status, phone=f"+91980000{Lead.objects.count():04d}", status=status,
             assigned_to=ex, proposed_amount=amount, **won, **kw,
         )  # fmt: skip

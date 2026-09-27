@@ -166,6 +166,7 @@ class Command(BaseCommand):
 
         from apps.leads.models import Interaction, Lead
         from apps.leads.selectors import business_tz
+        from apps.leads.services import add_opportunity
 
         User = get_user_model()
         execs = [users["SALES_EXEC"]]
@@ -214,20 +215,25 @@ class Command(BaseCommand):
                 email=f"{name.split()[0].lower()}{i}@example.com" if i % 3 else "",
                 source=sources[i % len(sources)],
                 requirements=REQUIREMENTS[i % len(REQUIREMENTS)],
-                status=status,
                 assigned_to=assignee,
+                created_by=manager,
+            )
+            deal = add_opportunity(
+                lead,
+                by=manager,
+                status=status,
                 next_followup_at=None if status in ("WON", "LOST") else next_fu,
                 proposed_amount=(150000 + 25000 * (i % 12)) if status != "NEW" else None,
                 won_at=created_at + timedelta(days=rnd.randint(3, 20)) if won else None,
                 lost_reason=reasons[i % len(reasons)] if status == "LOST" else "",
-                created_by=manager,
             )
             Lead.objects.filter(pk=lead.pk).update(created_at=created_at)
+            type(deal).objects.filter(pk=deal.pk).update(created_at=created_at)
             touches = 0 if status == "NEW" and i % 2 == 0 else rnd.randint(1, 6)
             for n in range(touches):
                 kind = ["CALL", "WHATSAPP", "MEETING", "NOTE", "EMAIL"][(i + n) % 5]
                 row = Interaction.objects.create(
-                    lead=lead,
+                    opportunity=deal,
                     type=kind,
                     notes=NOTES[(i + n) % len(NOTES)],
                     created_by=assignee or manager,

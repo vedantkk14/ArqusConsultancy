@@ -41,13 +41,15 @@ def _today():
 
 def lead_figures(user) -> dict | None:
     lead = _model("leads", "Lead")
-    if lead is None:
+    deal = _model("leads", "Opportunity")
+    if lead is None or deal is None:
         return None
     from apps.leads import selectors
 
     today, tz = _today()
     month_start = datetime.combine(today.replace(day=1), datetime.min.time(), tzinfo=tz)
-    mine = lead.objects.filter(assigned_to=user)
+    # Deals (opportunities) this user owns: repeat business with one client counts per deal.
+    mine = deal.objects.filter(assigned_to=user, lead__is_deleted=False).select_related("lead")
     agg = mine.aggregate(
         assigned=Count("id"),
         open=Count("id", filter=selectors.open_q()),
@@ -61,7 +63,7 @@ def lead_figures(user) -> dict | None:
     )
     created_total = lead.objects.filter(created_by=user).count()
     won_value = Decimal(agg["won_value"] or 0)
-    lost_reasons = dict(lead._meta.get_field("lost_reason").choices)
+    lost_reasons = dict(deal._meta.get_field("lost_reason").choices)
     reasons = [
         {
             "reason": str(lost_reasons.get(r["lost_reason"], r["lost_reason"] or "Not given")),
@@ -75,8 +77,8 @@ def lead_figures(user) -> dict | None:
     ]
     recent = [
         {
-            "id": x.id,
-            "name": x.name,
+            "id": x.lead_id,
+            "name": x.lead.name,
             "status": x.status,
             "value": _money(x.proposed_amount) if x.proposed_amount is not None else None,
             "when": (x.won_at or x.updated_at).isoformat(),

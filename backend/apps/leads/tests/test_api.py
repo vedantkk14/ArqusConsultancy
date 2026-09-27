@@ -12,7 +12,7 @@ from django.utils import timezone
 from apps.leads import integrations
 from apps.leads.models import Interaction, InteractionType, Lead, LeadStatus, WhatsAppTemplate
 
-from .conftest import BASE
+from .conftest import BASE, deal_of, fresh
 
 pytestmark = pytest.mark.django_db
 IST = ZoneInfo("Asia/Kolkata")
@@ -105,7 +105,7 @@ def test_exec_patch_is_limited(client_for, exec_a, exec_b, make_lead, future):
     for field, value in [("status", "WON"), ("assigned_to", exec_b.id), ("name", "X")]:
         r = c.patch(f"{BASE}/{lead.id}", {field: value}, format="json")
         assert r.status_code == 400 and field in r.json()["error"]["details"]
-    lead.refresh_from_db()
+    lead = fresh(lead)
     assert lead.status == LeadStatus.NEW and lead.assigned_to == exec_a
 
 
@@ -205,7 +205,7 @@ def test_lost_needs_reason_and_clears_followup(client_for, manager, make_lead, f
         {"status": "LOST", "lost_reason": "COMPETITOR", "lost_note": "Cheaper"},
         format="json",
     )
-    lead.refresh_from_db()
+    lead = fresh(lead)
     assert r.status_code == 200 and lead.next_followup_at is None
     assert lead.lost_reason == "COMPETITOR" and lead.lost_note == "Cheaper"
 
@@ -227,7 +227,7 @@ def test_won_creates_ledger_once_and_notifies_admins(client_for, admin, exec_a, 
 def test_status_changes_are_logged(client_for, manager, make_lead):
     lead = make_lead()
     client_for(manager).post(f"{BASE}/{lead.id}/status", {"status": "CONTACTED"})
-    row = Interaction.objects.get(lead=lead, type=InteractionType.STATUS_CHANGE)
+    row = Interaction.objects.get(opportunity__lead=lead, type=InteractionType.STATUS_CHANGE)
     assert (row.from_status, row.to_status) == ("NEW", "CONTACTED")
 
 
@@ -239,14 +239,14 @@ def test_first_outbound_moves_new_to_contacted(client_for, exec_a, make_lead, ki
     lead = make_lead(assigned_to=exec_a)
     r = client_for(exec_a).post(f"{BASE}/{lead.id}/interactions", {"type": kind, "notes": "hi"})
     assert r.status_code == 201
-    lead.refresh_from_db()
+    lead = fresh(lead)
     assert lead.status == LeadStatus.CONTACTED
 
 
 def test_note_never_changes_status(client_for, exec_a, make_lead):
     lead = make_lead(assigned_to=exec_a)
     client_for(exec_a).post(f"{BASE}/{lead.id}/interactions", {"type": "NOTE", "notes": "x"})
-    lead.refresh_from_db()
+    lead = fresh(lead)
     assert lead.status == LeadStatus.NEW
 
 
@@ -258,7 +258,7 @@ def test_interaction_can_set_its_own_status_and_followup(client_for, exec_a, mak
         format="json",
     )
     assert r.status_code == 201
-    lead.refresh_from_db()
+    lead = fresh(lead)
     assert lead.status == LeadStatus.LOST
     lead2 = make_lead(assigned_to=exec_a)
     client_for(exec_a).post(
@@ -266,7 +266,7 @@ def test_interaction_can_set_its_own_status_and_followup(client_for, exec_a, mak
         {"type": "CALL", "next_followup_at": future.isoformat()},
         format="json",
     )
-    lead2.refresh_from_db()
+    lead2 = fresh(lead2)
     assert lead2.next_followup_at is not None
 
 
@@ -307,7 +307,7 @@ def test_followup_in_past_and_on_closed(client_for, manager, make_lead):
 def test_amount_change_is_logged(client_for, manager, make_lead):
     lead = make_lead(proposed_amount=100)
     client_for(manager).patch(f"{BASE}/{lead.id}", {"proposed_amount": "250.50"}, format="json")
-    row = Interaction.objects.get(lead=lead, type=InteractionType.AMOUNT_CHANGE)
+    row = Interaction.objects.get(opportunity__lead=lead, type=InteractionType.AMOUNT_CHANGE)
     assert row.meta == {"from": "100.00", "to": "250.50"}
 
 
@@ -362,7 +362,9 @@ def test_reassign_notifies_both(client_for, manager, exec_a, exec_b, make_lead):
         (exec_a, "lead_reassigned_away"),
     }
     assert (
-        Interaction.objects.get(lead=lead, type=InteractionType.ASSIGNMENT).meta["from"]
+        Interaction.objects.get(opportunity__lead=lead, type=InteractionType.ASSIGNMENT).meta[
+            "from"
+        ]
         == exec_a.id
     )
 
@@ -422,7 +424,7 @@ def test_finalize_creates_a_finalized_ledger(client_for, admin, make_lead):
     assert r.status_code == 200
     from apps.accounts.models import Ledger
 
-    assert Ledger.objects.get(lead=lead).finalized_at is not None
+    assert Ledger.objects.get(opportunity__lead=lead).finalized_at is not None
 
 
 def test_finalize_needs_a_won_lead(client_for, admin, make_lead):
@@ -450,9 +452,9 @@ def test_whatsapp_renders_logs_and_contacts(client_for, exec_a, make_lead):
     assert data["text"].startswith("Hi Rahul Sharma, this is ")
     assert "ARQUS Sports Consultancy" in data["text"]
     assert data["url"].startswith("https://wa.me/919876543210?text=Hi%20Rahul%20Sharma")
-    lead.refresh_from_db()
+    lead = fresh(lead)
     assert lead.status == LeadStatus.CONTACTED
-    assert lead.messages.get().status == "OPENED"
+    assert deal_of(lead).messages.get().status == "OPENED"
 
 
 # ---- Filters, ordering, pagination ----------
@@ -485,7 +487,7 @@ def test_followup_filters_in_ist(client_for, manager, make_lead):
 def test_open_untouched_won_awaiting(client_for, manager, make_lead):
     untouched = make_lead()
     touched = make_lead()
-    Interaction.objects.create(lead=touched, type="NOTE")
+    Interaction.objects.create(opportunity=deal_of(touched), type="NOTE")
     won = make_lead(status=LeadStatus.WON, proposed_amount=5)
     make_lead(status=LeadStatus.LOST, lost_reason="PRICE")
     c = client_for(manager)
@@ -521,7 +523,7 @@ def test_pagination(client_for, manager, make_lead):
 def test_list_query_budget(client_for, manager, exec_a, make_lead):
     for i in range(20):
         lead = make_lead(assigned_to=exec_a if i % 2 else None)
-        Interaction.objects.create(lead=lead, type="NOTE")
+        Interaction.objects.create(opportunity=deal_of(lead), type="NOTE")
     c = client_for(manager)
     with CaptureQueriesContext(connection) as ctx:
         assert c.get(BASE).status_code == 200
@@ -534,7 +536,7 @@ def test_list_query_budget(client_for, manager, exec_a, make_lead):
 def test_csv_is_scoped_filtered_and_safe(client_for, manager, make_lead):
     make_lead(name="=HYPERLINK(1)", status=LeadStatus.CONTACTED)
     make_lead(name="Plain", status=LeadStatus.NEW)
-    r = client_for(manager).get(f"{BASE}/export?status=CONTACTED")
+    r = client_for(manager).get(f"{BASE}/export?status=CONTACTED&format=csv")
     body = b"".join(r.streaming_content).decode("utf-8-sig")
     lines = body.strip().splitlines()
     assert lines[0].startswith("Name,Phone")
@@ -547,8 +549,8 @@ def test_whatsapp_preview_logs_nothing(client_for, exec_a, make_lead):
     template = WhatsAppTemplate.objects.get(name="Follow-up")
     r = client_for(exec_a).get(f"{BASE}/{lead.id}/whatsapp?template_id={template.id}")
     assert r.status_code == 200 and r.json()["text"].startswith("Hi Asha,")
-    assert not lead.messages.exists() and not lead.interactions.exists()
-    lead.refresh_from_db()
+    assert not deal_of(lead).messages.exists() and not deal_of(lead).interactions.exists()
+    lead = fresh(lead)
     assert lead.status == LeadStatus.NEW
 
 
@@ -595,7 +597,7 @@ def test_won_can_still_be_lost_by_managers_only_before_payment(
             f"{BASE}/{lead.id}/status", {"status": "LOST", "lost_reason": "PRICE"}
         )
     assert r.status_code == 409 and err(r) == "has_payments"
-    lead.refresh_from_db()
+    lead = fresh(lead)
     assert lead.status == LeadStatus.WON
 
     with (

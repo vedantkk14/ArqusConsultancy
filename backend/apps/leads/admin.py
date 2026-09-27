@@ -12,7 +12,14 @@ class LeadAdmin(admin.ModelAdmin):
 
 @admin.register(Opportunity)
 class OpportunityAdmin(admin.ModelAdmin):
-    list_display = ("lead", "sequence_no", "status", "assigned_to", "next_followup_at", "created_at")
+    list_display = (
+        "lead",
+        "sequence_no",
+        "status",
+        "assigned_to",
+        "next_followup_at",
+        "created_at",
+    )
     list_filter = ("status",)
     search_fields = ("lead__name", "lead__phone")
 

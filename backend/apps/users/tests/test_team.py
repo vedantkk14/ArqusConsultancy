@@ -201,19 +201,17 @@ def test_assignments_overview_counts_leads_and_projects(admin, exec_):
 
     from django.utils import timezone
 
-    from apps.leads.models import Lead
+    from apps.leads.testing import make_deal
 
     pm = make("paul", "PROJECT_MANAGER", first_name="Paul")
     now = timezone.now()
-    Lead.objects.create(
+    make_deal(
         name="A", phone="+919000000001", assigned_to=exec_, next_followup_at=now - timedelta(days=1)
     )
-    Lead.objects.create(
+    make_deal(
         name="B", phone="+919000000002", assigned_to=exec_, next_followup_at=now + timedelta(days=1)
     )
-    Lead.objects.create(
-        name="C", phone="+919000000003", assigned_to=exec_, status="WON", proposed_amount=1
-    )
+    make_deal(name="C", phone="+919000000003", assigned_to=exec_, status="WON", proposed_amount=1)
     body = client(admin).get(f"{URL}/assignments-overview").json()
     assert body["data_sources"]["leads"] is True
     assert body["execs"] == [{"id": exec_.id, "name": "Eva", "open_leads": 2, "overdue": 1}]

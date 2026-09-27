@@ -9,7 +9,7 @@ from openpyxl import Workbook, load_workbook
 from apps.core.models import AuditLog
 from apps.leads.models import Lead
 
-from .conftest import BASE
+from .conftest import BASE, deal_of
 
 pytestmark = pytest.mark.django_db
 URL = BASE + "/import"
@@ -54,7 +54,7 @@ def test_import_creates_leads_and_reports(client_for, manager, exec_a):
     assert body["duplicate_count"] == 1 and body["duplicates"][0]["row"] == 6
     assert {e["row"] for e in body["errors"]} == {4, 5}
     rahul = Lead.objects.get(phone="+919876543210")
-    assert rahul.source == "REFERRAL" and str(rahul.proposed_amount) == "250000.00"
+    assert rahul.source == "REFERRAL" and str(deal_of(rahul).proposed_amount) == "250000.00"
     assert rahul.created_by_id == manager.id
     meera = Lead.objects.get(phone="+919876543211")
     assert meera.source == "OTHER" and meera.source_other == "Some Blog"

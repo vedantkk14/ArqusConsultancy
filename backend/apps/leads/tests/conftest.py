@@ -6,9 +6,30 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from apps.leads.models import Lead, LeadStatus
+from apps.leads.models import Lead, LeadStatus, Opportunity
+from apps.leads.selectors import with_current_opportunity
+from apps.leads.services import add_opportunity
 
 BASE = "/api/v1/leads"
+#: make_lead() arguments that belong to the deal (Opportunity), not the client record.
+DEAL_FIELDS = {
+    "status",
+    "next_followup_at",
+    "proposed_amount",
+    "won_at",
+    "lost_reason",
+    "lost_note",
+}
+
+
+def fresh(lead) -> Lead:
+    """The lead re-read with its current deal's fields (status, follow-up, ...) annotated."""
+    return with_current_opportunity(Lead.all_objects.all()).get(pk=lead.pk)
+
+
+def deal_of(lead) -> Opportunity:
+    """The lead's current deal."""
+    return Opportunity.all_objects.get(pk=Lead.all_objects.get(pk=lead.pk).current_opportunity_id)
 
 
 @pytest.fixture
@@ -77,7 +98,21 @@ def make_lead(db):
             "status": LeadStatus.NEW,
         }
         defaults.update(fields)
-        return Lead.objects.create(**defaults)
+        deal = {k: defaults.pop(k) for k in list(defaults) if k in DEAL_FIELDS}
+        lead = Lead.objects.create(**defaults)
+        add_opportunity(lead, **deal)  # every lead starts with Deal #1, like create_lead()
+        return fresh(lead)
+
+    return _make
+
+
+@pytest.fixture
+def make_opportunity(db):
+    """Another deal for an existing lead (becomes its current deal)."""
+
+    def _make(lead, **fields):
+        fields.setdefault("status", LeadStatus.NEW)
+        return add_opportunity(Lead.all_objects.get(pk=lead.pk), **fields)
 
     return _make
 

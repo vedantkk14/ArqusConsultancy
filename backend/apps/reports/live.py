@@ -51,7 +51,14 @@ def _sum(qs, field="amount") -> Decimal:
 
 def lead_figures(rng, months: list[str]) -> dict:
     from apps.leads import selectors
-    from apps.leads.models import Interaction, InteractionType, Lead, LeadSource, LeadStatus
+    from apps.leads.models import (
+        Interaction,
+        InteractionType,
+        Lead,
+        LeadSource,
+        LeadStatus,
+        Opportunity,
+    )
 
     date_of = {
         "created_at": "created_at__date",
@@ -61,11 +68,14 @@ def lead_figures(rng, months: list[str]) -> dict:
     prev_q = _in(date_of["created_at"], rng.prev_start, rng.prev_end)
     won_q = Q(status=LeadStatus.WON) & _in(date_of["won_at"], rng.start, rng.end)
     lost_q = Q(status=LeadStatus.LOST) & _in(date_of["upd"], rng.start, rng.end)
-    leads = Lead.objects
+    leads = Lead.objects  # clients: totals, new, trend and sources
+    deals = Opportunity.objects.filter(lead__is_deleted=False)  # pipeline, won/lost, value
     agg = leads.aggregate(
         total=Count("id"),
         new=Count("id", filter=_in(date_of["created_at"], rng.start, rng.end)),
         new_prev=Count("id", filter=prev_q if rng.prev_start else Q(pk__isnull=True)),
+    )
+    agg |= deals.aggregate(
         open_count=Count("id", filter=selectors.open_q()),
         open_value=Sum("proposed_amount", filter=selectors.open_q()),
         won=Count("id", filter=won_q),
@@ -84,7 +94,7 @@ def lead_figures(rng, months: list[str]) -> dict:
     labels = dict(LeadStatus.choices)
     rows = {
         r["status"]: r
-        for r in leads.order_by().values("status").annotate(n=Count("id"), v=Sum("proposed_amount"))
+        for r in deals.order_by().values("status").annotate(n=Count("id"), v=Sum("proposed_amount"))
     }
     funnel = [
         {
@@ -97,7 +107,7 @@ def lead_figures(rng, months: list[str]) -> dict:
     ]
 
     exec_rows = list(
-        leads.filter(assigned_to__isnull=False)
+        deals.filter(assigned_to__isnull=False)
         .order_by()
         .values("assigned_to", "assigned_to__first_name", "assigned_to__last_name")
         .annotate(
@@ -156,13 +166,14 @@ def lead_figures(rng, months: list[str]) -> dict:
         InteractionType.AMOUNT_CHANGE: "changed the value of",
     }
     activity = []
-    for i in Interaction.objects.select_related("lead", "created_by").order_by("-created_at")[
-        :ACTIVITY
-    ]:
+    for i in Interaction.objects.select_related("opportunity__lead", "created_by").order_by(
+        "-created_at"
+    )[:ACTIVITY]:
+        name = i.opportunity.lead.name
         if i.type == InteractionType.STATUS_CHANGE:
-            action = f"moved {i.lead.name} to {labels.get(i.to_status, i.to_status)}"
+            action = f"moved {name} to {labels.get(i.to_status, i.to_status)}"
         else:
-            action = f"{verbs.get(i.type, 'updated')} {i.lead.name}"
+            action = f"{verbs.get(i.type, 'updated')} {name}"
         activity.append(
             {
                 "when": i.created_at.isoformat(),
@@ -274,23 +285,25 @@ def finance_figures(rng, months: list[str]) -> dict:
     top = [
         {
             "ledger_id": ledger.id,
-            "client": ledger.lead.name,
+            "client": ledger.opportunity.lead.name,
             "outstanding": money(ledger.outstanding),
             "days": selectors.days_since(ledger.aging_base, today) or 0,
         }
         for ledger in finalized.filter(selectors.overdue_q(today))
-        .select_related("lead")
+        .select_related("opportunity__lead")
         .order_by("aging_base")[:TOP_OVERDUE]
     ]
     recent = [
         {
             "date": p.received_on.isoformat(),
-            "client": p.ledger.lead.name,
+            "client": p.ledger.opportunity.lead.name,
             "reference": p.reference or "—",
             "amount": money(p.amount),
             "at": p.created_at,
         }
-        for p in payments.select_related("ledger__lead").order_by("-received_on", "-id")[:RECENT]
+        for p in payments.select_related("ledger__opportunity__lead").order_by(
+            "-received_on", "-id"
+        )[:RECENT]
     ]
     pay = payments.aggregate(
         cur=Sum("amount", filter=_in("received_on", rng.start, rng.end)),

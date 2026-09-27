@@ -19,7 +19,7 @@ MANIFEST = [
         "key": "lead_lost_reasons",
         "label": "Lead lost reasons",
         "app": "leads",
-        "model": "Lead",
+        "model": "Opportunity",
         "field": "lost_reason",
     },
     {

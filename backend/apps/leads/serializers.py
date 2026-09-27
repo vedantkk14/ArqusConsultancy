@@ -1,7 +1,10 @@
 """Separate light list, detail, create and exec-update serializers.
 
 Privacy: Exec responses never contain ledger, payment, project or total_amount keys (not even null).
-`finance` is added in the view only for FINAL_AMOUNT_VISIBLE_TO roles.
+`finance` and the deal links (project/ledger) are added in the view only for the roles allowed.
+
+A lead row shows the client plus its CURRENT deal (status, follow-up, proposed amount...): those
+are annotations on the lead queryset (selectors.with_current_opportunity), not Lead fields.
 """
 
 from decimal import Decimal
@@ -17,6 +20,7 @@ from .models import (
     LeadSource,
     LeadStatus,
     LostReason,
+    Opportunity,
     WhatsAppTemplate,
 )
 from .selectors import CLOSED_STATUSES, business_tz
@@ -44,9 +48,10 @@ class PhoneField(serializers.CharField):
             raise serializers.ValidationError(str(exc)) from exc
 
 
-def days_overdue(lead: Lead) -> int:
-    when = lead.next_followup_at
-    if not when or lead.status in CLOSED_STATUSES or when >= timezone.now():
+def days_overdue(deal) -> int:
+    """`deal`: an Opportunity, or a Lead annotated with its current deal."""
+    when = getattr(deal, "next_followup_at", None)
+    if not when or deal.status in CLOSED_STATUSES or when >= timezone.now():
         return 0
     today = timezone.now().astimezone(business_tz()).date()
     return max(1, (today - when.astimezone(business_tz()).date()).days)
@@ -55,7 +60,16 @@ def days_overdue(lead: Lead) -> int:
 class LeadListSerializer(serializers.ModelSerializer):
     assigned_to = PersonSerializer(allow_null=True, read_only=True)
     source_label = serializers.CharField(source="get_source_display", read_only=True)
-    proposed_amount = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    # The current deal's fields (annotations, see selectors.with_current_opportunity).
+    status = serializers.CharField(read_only=True, allow_null=True)
+    next_followup_at = serializers.DateTimeField(read_only=True, allow_null=True)
+    proposed_amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, allow_null=True
+    )
+    won_at = serializers.DateTimeField(read_only=True, allow_null=True)
+    lost_reason = serializers.CharField(read_only=True, allow_null=True)
+    current_opportunity_id = serializers.IntegerField(read_only=True, allow_null=True)
+    deals_count = serializers.IntegerField(read_only=True, default=1)
     last_activity_at = serializers.DateTimeField(read_only=True, allow_null=True)
     days_overdue = serializers.SerializerMethodField()
     allowed_transitions = serializers.SerializerMethodField()
@@ -82,6 +96,8 @@ class LeadListSerializer(serializers.ModelSerializer):
             "created_at",
             "allowed_transitions",
             "finalized",
+            "current_opportunity_id",
+            "deals_count",
         ]
 
     def get_days_overdue(self, lead) -> int:
@@ -104,6 +120,7 @@ class LeadListSerializer(serializers.ModelSerializer):
 
 class LeadDetailSerializer(LeadListSerializer):
     created_by = PersonSerializer(allow_null=True, read_only=True)
+    lost_note = serializers.CharField(read_only=True, allow_null=True)
     interactions_count = serializers.IntegerField(read_only=True)
 
     class Meta(LeadListSerializer.Meta):
@@ -120,6 +137,8 @@ class LeadWriteSerializer(serializers.ModelSerializer):
     """Create and manager/admin edit."""
 
     phone = PhoneField(max_length=30)
+    # Deal fields: saved on the lead's current opportunity (services.DEAL_FIELDS).
+    next_followup_at = serializers.DateTimeField(required=False, allow_null=True)
     proposed_amount = serializers.DecimalField(**MONEY, required=False, allow_null=True)
     requirements = serializers.CharField(
         max_length=REQUIREMENTS_MAX, required=False, allow_blank=True
@@ -161,6 +180,7 @@ class LeadManagerUpdateSerializer(LeadWriteSerializer):
 class LeadExecUpdateSerializer(serializers.ModelSerializer):
     """What a Sales Exec may change on their own lead through PATCH."""
 
+    next_followup_at = serializers.DateTimeField(required=False, allow_null=True)
     proposed_amount = serializers.DecimalField(**MONEY, required=False, allow_null=True)
     requirements = serializers.CharField(
         max_length=REQUIREMENTS_MAX, required=False, allow_blank=True
@@ -169,6 +189,67 @@ class LeadExecUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = ["email", "requirements", "next_followup_at", "proposed_amount"]
+
+
+class OpportunitySerializer(serializers.ModelSerializer):
+    """One deal. Project/ledger links and the finalized total are added in the view by role."""
+
+    assigned_to = PersonSerializer(allow_null=True, read_only=True)
+    created_by = PersonSerializer(allow_null=True, read_only=True)
+    proposed_amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, allow_null=True
+    )
+    days_overdue = serializers.SerializerMethodField()
+    allowed_transitions = serializers.SerializerMethodField()
+    is_current = serializers.SerializerMethodField()
+    is_open = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Opportunity
+        fields = [
+            "id",
+            "lead",
+            "sequence_no",
+            "status",
+            "assigned_to",
+            "next_followup_at",
+            "days_overdue",
+            "proposed_amount",
+            "won_at",
+            "lost_reason",
+            "lost_note",
+            "requirements",
+            "created_by",
+            "created_at",
+            "updated_at",
+            "allowed_transitions",
+            "is_current",
+            "is_open",
+        ]
+
+    def get_days_overdue(self, deal) -> int:
+        return days_overdue(deal)
+
+    def get_allowed_transitions(self, deal) -> list[str]:
+        return services.allowed_transitions(deal, self.context["request"].user)
+
+    def get_is_current(self, deal) -> bool:
+        return deal.pk == deal.lead.current_opportunity_id
+
+    def get_is_open(self, deal) -> bool:
+        return services.is_open(deal)
+
+
+class OpportunityCreateSerializer(serializers.Serializer):
+    assigned_to = serializers.IntegerField(required=False, allow_null=True)
+    requirements = serializers.CharField(
+        max_length=REQUIREMENTS_MAX, required=False, allow_blank=True
+    )
+
+
+class OpportunityUpdateSerializer(serializers.Serializer):
+    next_followup_at = serializers.DateTimeField(required=False, allow_null=True)
+    proposed_amount = serializers.DecimalField(**MONEY, required=False, allow_null=True)
 
 
 class StatusChangeSerializer(serializers.Serializer):

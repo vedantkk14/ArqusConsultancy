@@ -10,6 +10,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import Ledger, Payment
 from apps.leads.models import Interaction, Lead
+from apps.leads.testing import make_deal
 from apps.projects.models import Expense, Project
 from apps.reports import report_services as rs
 from apps.users.tests.conftest import *  # noqa: F401,F403
@@ -28,7 +29,7 @@ def world():
 
     def lead(name, status="NEW", amount=None, source="WEBSITE", **kw):
         won = {"won_at": timezone.now()} if status == "WON" else {}
-        return Lead.objects.create(
+        return make_deal(
             name=name, phone=f"+91980000{Lead.objects.count():04d}", status=status,
             proposed_amount=amount, source=source, assigned_to=eva, **won, **kw,
         )  # fmt: skip
@@ -39,12 +40,12 @@ def world():
     lead("Lost one", "LOST")
     won_a = lead("Won A", "WON", "20000.00")
     won_b = lead("Won B", "WON", "10000.00")
-    Interaction.objects.create(lead=won_a, type="CALL", created_by=eva)
+    Interaction.objects.create(opportunity=won_a, type="CALL", created_by=eva)
 
     # Won A: finalized 100000, 40000 paid 40 days ago (overdue); Won B still awaiting finalization.
     ledger = Ledger.objects.create(
-        lead=won_a, total_amount="100000.00", finalized_at=timezone.now() - timedelta(days=60),
-        finalized_on=today - timedelta(days=60),
+        opportunity=won_a, total_amount="100000.00",
+        finalized_at=timezone.now() - timedelta(days=60), finalized_on=today - timedelta(days=60),
     )  # fmt: skip
     Payment.objects.create(
         ledger=ledger, amount="40000.00", mode="UPI", received_on=today - timedelta(days=40)
@@ -56,7 +57,7 @@ def world():
         ledger=ledger, amount="5000.00", mode="CASH", received_on=today - timedelta(days=35)
     )
 
-    project = Project.objects.create(name="Turf", client_name="Won A", pm=pm, lead=won_a)
+    project = Project.objects.create(name="Turf", client_name="Won A", pm=pm, opportunity=won_a)
     Project.objects.create(name="Done", client_name="X", status="COMPLETED")
     Expense.objects.create(project=project, amount="52000.00", category="MATERIALS", spent_on=today)
     Expense.objects.create(

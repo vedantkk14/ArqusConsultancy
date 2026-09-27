@@ -1,4 +1,7 @@
-"""List filters. Query names are a contract with the dashboard "View all" links."""
+"""List filters. Query names are a contract with the dashboard "View all" links.
+
+The list is one row per lead; deal filters (status, follow-up, ...) apply to its current deal.
+"""
 
 import re
 from datetime import datetime, time, timedelta
@@ -9,6 +12,7 @@ from django.utils.dateparse import parse_date
 
 from .models import LeadStatus
 from .selectors import (
+    LEAD_REF,
     business_tz,
     due_today_q,
     no_followup_q,
@@ -37,7 +41,8 @@ ORDERINGS = {
     "won_at": [F("won_at").asc(nulls_last=True)],  # oldest first
     "-won_at": [F("won_at").desc(nulls_last=True)],
 }
-DEFAULT_ORDERING = "-created_at"
+#: "Most recent": the latest of creation, current-deal change and any interaction.
+DEFAULT_ORDERING = "-last_activity_at"
 TRUE = {"1", "true", "yes"}
 
 
@@ -73,9 +78,9 @@ def apply_filters(qs: QuerySet, params, *, now=None, skip: tuple[str, ...] = ())
     if "open" not in skip and (get("open") or "").lower() in TRUE:
         qs = qs.filter(open_q())
     if "untouched" not in skip and (get("untouched") or "").lower() in TRUE:
-        qs = qs.filter(untouched_q())
+        qs = qs.filter(untouched_q(LEAD_REF))
     if "won_awaiting" not in skip and (get("won_awaiting") or "").lower() in TRUE:
-        qs = qs.filter(won_awaiting_q())
+        qs = qs.filter(won_awaiting_q(LEAD_REF))
     if start := _day_start(get("created_from")):
         qs = qs.filter(created_at__gte=start)
     if start := _day_start(get("created_to")):

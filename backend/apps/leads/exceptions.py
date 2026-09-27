@@ -56,6 +56,12 @@ class NotWon(LeadError):
     default_detail = "Only won leads can be finalized."
 
 
+class OpportunityOpen(LeadError):
+    status_code = status.HTTP_409_CONFLICT
+    default_code = "opportunity_open"
+    default_detail = "This lead already has an open deal. Close it (won or lost) first."
+
+
 class PhoneUnusable(LeadError):
     default_code = "phone_unusable"
     default_detail = "This lead's phone number cannot be used for WhatsApp."

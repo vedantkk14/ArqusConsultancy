@@ -19,6 +19,24 @@
       @if (canAssign()) {
         <button mat-menu-item type="button" (click)="emit('assign', lead)"><mat-icon>person_add</mat-icon>Assign…</button>
       }
+      @if (canStartDeal()) {
+        @if (isOpen(lead.status)) {
+          <!-- Looks disabled but stays clickable: it opens the deal that is still open. -->
+          <button
+            mat-menu-item
+            type="button"
+            class="is-off"
+            [matTooltip]="dealOpenTip"
+            matTooltipPosition="left"
+            [attr.aria-description]="dealOpenTip + '. Opens that deal.'"
+            (click)="emit('new-deal', lead)"
+          >
+            <mat-icon>add_business</mat-icon>New project
+          </button>
+        } @else {
+          <button mat-menu-item type="button" (click)="emit('new-deal', lead)"><mat-icon>add_business</mat-icon>New project</button>
+        }
+      }
       @if (mode() === 'overdue') {
         @for (o of snoozeOptions(); track o.label) {
           <button mat-menu-item type="button" (click)="action.emit({ kind: 'snooze', lead, at: o.at })">
@@ -119,7 +137,12 @@
                 <span class="who">
                   <app-lead-avatar [name]="lead.name" />
                   <span class="who-t">
-                    <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                    <span class="nm">
+                      <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                      @if (lead.deals_count > 1) {
+                        <span class="deals num">{{ lead.deals_count }} deals</span>
+                      }
+                    </span>
                     <span class="ph num">{{ formatPhone(lead.phone) }}</span>
                   </span>
                 </span>
@@ -179,7 +202,12 @@
               }
               <app-lead-avatar [name]="lead.name" [size]="40" />
               <span class="who-t">
-                <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                <span class="nm">
+                  <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                  @if (lead.deals_count > 1) {
+                    <span class="deals num">{{ lead.deals_count }} deals</span>
+                  }
+                </span>
                 <span class="ph num">{{ formatPhone(lead.phone) }}</span>
               </span>
             </span>

@@ -10,7 +10,7 @@
   </div>
   <div class="head-a">
     @if (isManager()) {
-      <button matButton="outlined" type="button" (click)="exportCsv()"><mat-icon>download</mat-icon>Export CSV</button>
+      <button matButton="outlined" type="button" (click)="exportExcel()"><mat-icon>download</mat-icon>Export as Excel</button>
       @if (mode === 'all') {
         <button matButton="outlined" type="button" (click)="importLeads()"><mat-icon>upload_file</mat-icon>Import<span class="lg">&nbsp;from Excel</span></button>
         <a matButton="filled" routerLink="/leads/new"><mat-icon>add</mat-icon>Add lead</a>
@@ -60,7 +60,7 @@
   } @else if (mode === 'overdue') {
     <app-empty-state icon="event_available" title="No overdue follow-ups" message="Every open lead is on schedule." />
   } @else if (isManager()) {
-    <app-empty-state icon="contacts" title="No open leads" message="Add a lead to get started. Won and lost leads have their own pages.">
+    <app-empty-state icon="contacts" title="No leads yet" message="Add a lead to get started.">
       <a matButton="filled" routerLink="/leads/new">Add your first lead</a>
     </app-empty-state>
   } @else {
@@ -75,6 +75,7 @@
       [selectable]="isManager() && (mode === 'all' || mode === 'overdue')"
       [selected]="store.selected()"
       [canAssign]="isManager()"
+      [canStartDeal]="isManager()"
       [canFinalize]="isAdmin()"
       [canSeeFinal]="isManager()"
       [skeleton]="!store.loaded()"

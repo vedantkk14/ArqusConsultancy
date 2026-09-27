@@ -27,6 +27,9 @@ export function makeLead(id: number, patch: Partial<LeadDetail> = {}): LeadDetai
     created_by: null,
     updated_at: '2026-09-01T06:30:00Z',
     interactions_count: 0,
+    current_opportunity_id: id * 10,
+    deals_count: 1,
+    opportunities: [],
     ...patch,
   };
 }
@@ -85,8 +88,16 @@ export class FakeLeadsApi {
   templates() {
     return of([]);
   }
-  exportCsv() {
+  exportCalls: { params: QueryParams; choice: unknown }[] = [];
+  startCalls: { id: number; body: unknown }[] = [];
+  startResult: Observable<unknown> = of({ id: 99, sequence_no: 2, status: 'NEW' });
+  exportExcel(params: QueryParams, choice: unknown) {
+    this.exportCalls.push({ params, choice });
     return of(new Blob());
+  }
+  startOpportunity(id: number, body: unknown = {}) {
+    this.startCalls.push({ id, body });
+    return this.startResult;
   }
   importTemplate() {
     return of(new Blob());

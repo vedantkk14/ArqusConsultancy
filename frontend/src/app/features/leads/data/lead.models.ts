@@ -63,6 +63,15 @@ export interface LeadListItem {
   allowed_transitions: LeadStatus[];
   /** Only sent to roles that may see the final amount (Admin, Sales Manager). */
   finalized?: boolean;
+  /** The deal the row's status, follow-up and value come from (the lead's latest). */
+  current_opportunity_id: number | null;
+  /** How many deals (opportunities) this client has had. */
+  deals_count: number;
+}
+
+/** WON and LOST close a deal; anything else is open. */
+export function isOpenStatus(status: LeadStatus | null | undefined): boolean {
+  return !!status && status !== 'WON' && status !== 'LOST';
 }
 
 export interface LeadFinance {
@@ -79,6 +88,46 @@ export interface LeadDetail extends LeadListItem {
   interactions_count: number;
   /** Only for roles allowed to see the final amount (Admin, Sales Manager). */
   finance?: LeadFinance;
+  /** Every deal with this client, newest first. */
+  opportunities: Opportunity[];
+}
+
+/** One deal with a lead ("Deal #2"). */
+export interface Opportunity {
+  id: number;
+  lead: number;
+  sequence_no: number;
+  status: LeadStatus;
+  assigned_to: Person | null;
+  next_followup_at: string | null;
+  days_overdue: number;
+  proposed_amount: string | null;
+  won_at: string | null;
+  lost_reason: LostReason | '';
+  lost_note: string;
+  requirements: string;
+  created_by: Person | null;
+  created_at: string;
+  updated_at: string;
+  allowed_transitions: LeadStatus[];
+  is_current: boolean;
+  is_open: boolean;
+  /** Admin and Sales Manager only (absent for a Sales Exec, not even null). */
+  project_id?: number | null;
+  project_name?: string | null;
+  ledger_id?: number | null;
+  finance?: LeadFinance;
+}
+
+export interface NewOpportunity {
+  assigned_to?: number | null;
+  requirements?: string;
+}
+
+/** Excel export: every lead, or those created in one month ("YYYY-MM"). */
+export interface ExportChoice {
+  scope: 'all' | 'month';
+  month?: string;
 }
 
 export interface Interaction {
@@ -160,7 +209,7 @@ export interface NewInteraction {
 
 // ---- List filters (the URL query uses the API's names) ---------------------------------------------
 
-/** all = open leads; won / lost = the closed lists; overdue = open with a missed follow-up. */
+/** all = every lead, any status; won / lost = the closed lists; overdue = a missed follow-up. */
 export type ListMode = 'all' | 'overdue' | 'won' | 'lost';
 export type FollowupFilter = '' | 'overdue' | 'today' | 'upcoming' | 'none';
 
@@ -170,6 +219,8 @@ export interface LeadFilters {
   assigned_to: string;
   source: string;
   followup: FollowupFilter;
+  /** Only open deals (a dashboard "open leads" link); never applied by default. */
+  open: '' | 'true';
   won_awaiting: '' | 'true';
   created_from: string;
   created_to: string;
@@ -182,20 +233,24 @@ export const EMPTY_FILTERS: LeadFilters = {
   assigned_to: '',
   source: '',
   followup: '',
+  open: '',
   won_awaiting: '',
   created_from: '',
   created_to: '',
   ordering: '',
 };
 
+/** The All leads default: latest of creation, current-deal change and any activity. */
+export const DEFAULT_ORDERING = '-last_activity_at';
+
 export const ORDERINGS: { value: string; label: string }[] = [
+  { value: '-last_activity_at', label: 'Most recent' },
   { value: '-created_at', label: 'Newest first' },
   { value: 'created_at', label: 'Oldest first' },
   { value: 'name', label: 'Name A-Z' },
   { value: 'next_followup_at', label: 'Next follow-up' },
   { value: '-days_overdue', label: 'Most overdue' },
   { value: '-proposed_amount', label: 'Highest value' },
-  { value: '-last_activity_at', label: 'Recent activity' },
   { value: '-won_at', label: 'Recently won' },
 ];
 

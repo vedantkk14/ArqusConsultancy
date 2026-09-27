@@ -8,18 +8,28 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { interval, map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
-import { Role } from '../../../core/models';
+import { ApiError, Role } from '../../../core/models';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { ImportDialog } from '../components/dialogs/import-dialog';
 import { AssignDialog, AssignDialogData } from '../components/dialogs/assign-dialog';
+import { ExportDialog, ExportDialogData } from '../components/dialogs/export-dialog';
 import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finalize-dialog';
 import { SnoozeDialog } from '../components/dialogs/snooze-dialog';
 import { StatusDialog, StatusDialogData } from '../components/dialogs/status-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../components/dialogs/whatsapp-dialog';
 import { LeadFiltersBar } from '../components/lead-filters';
 import { LeadRows, RowAction } from '../components/lead-rows';
-import { Assignee, EMPTY_FILTERS, LeadDetail, LeadFilters, LeadListItem, ListMode } from '../data/lead.models';
+import {
+  Assignee,
+  EMPTY_FILTERS,
+  ExportChoice,
+  LeadDetail,
+  LeadFilters,
+  LeadListItem,
+  ListMode,
+  isOpenStatus,
+} from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
 import { LeadsListStore, filtersFromQuery, toQuery } from '../data/leads-list.store';
 
@@ -162,7 +172,36 @@ export class LeadsListPage {
       case 'finalize':
         this.finalize(lead);
         break;
+      case 'new-deal':
+        this.newDeal(lead);
+        break;
     }
+  }
+
+  /**
+   * "New project" = a new deal with this client. While a deal is still open the item only opens it;
+   * otherwise the new deal is created and its fresh pipeline opens on the lead page.
+   */
+  protected newDeal(lead: LeadListItem): void {
+    const open = (dealId: number | null) =>
+      void this.router.navigate(['/leads', lead.id], { queryParams: dealId ? { deal: dealId } : {} });
+    if (isOpenStatus(lead.status)) {
+      open(lead.current_opportunity_id);
+      return;
+    }
+    this.api.startOpportunity(lead.id).subscribe({
+      next: (deal) => {
+        this.snack.open(`Deal #${deal.sequence_no} started for ${lead.name}.`, undefined, { duration: 3500 });
+        open(deal.id);
+      },
+      error: (err: ApiError) => {
+        if (err.code === 'opportunity_open') {
+          open(Number(err.details?.['opportunity_id']) || null);
+          return;
+        }
+        this.snack.open(err.message || "Couldn't start a new deal.", 'Dismiss', { duration: 5000 });
+      },
+    });
   }
 
   protected bulkAssign(): void {
@@ -182,13 +221,21 @@ export class LeadsListPage {
       });
   }
 
-  protected exportCsv(): void {
-    this.api.exportCsv(this.query()).subscribe({
+  /** Export as Excel: choose all leads or one month, then download the .xlsx. */
+  protected exportExcel(): void {
+    this.dialog
+      .open<ExportDialog, ExportDialogData, ExportChoice>(ExportDialog, { data: { filtered: this.hasFilters() } })
+      .afterClosed()
+      .subscribe((choice) => choice && this.download(choice));
+  }
+
+  private download(choice: ExportChoice): void {
+    this.api.exportExcel(this.query(), choice).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'leads.csv';
+        a.download = `leads-${choice.scope === 'month' ? choice.month : 'all'}.xlsx`;
         a.click();
         URL.revokeObjectURL(url);
       },

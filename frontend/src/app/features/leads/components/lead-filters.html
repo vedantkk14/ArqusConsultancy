@@ -21,10 +21,16 @@
 
   <label class="sort">
     <span class="sr-only">Sort by</span>
-    <select class="ctl" [value]="filters().ordering" (change)="set('ordering', $any($event.target).value)">
-      <option value="">Default order</option>
+    <select
+      class="ctl"
+      [value]="filters().ordering || defaultOrdering()"
+      (change)="set('ordering', $any($event.target).value === defaultOrdering() ? '' : $any($event.target).value)"
+    >
+      @if (!defaultOrdering()) {
+        <option value="">Default order</option>
+      }
       @for (o of orderings; track o.value) {
-        <option [value]="o.value" [selected]="filters().ordering === o.value">{{ o.label }}</option>
+        <option [value]="o.value" [selected]="(filters().ordering || defaultOrdering()) === o.value">{{ o.label }}</option>
       }
     </select>
   </label>

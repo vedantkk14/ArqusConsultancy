@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -12,6 +13,9 @@ import { EMPTY_FILTERS } from '../data/lead.models';
 import { FakeLeadsApi, makeLead, page } from '../testing/fake-leads-api';
 import { LeadsListPage, listInsight } from './leads-list-page';
 
+@Component({ template: 'lead page' })
+class LeadStub {}
+
 async function setup(role: Role = Role.Admin, url = '/leads/all') {
   const api = new FakeLeadsApi();
   TestBed.configureTestingModule({
@@ -21,6 +25,7 @@ async function setup(role: Role = Role.Admin, url = '/leads/all') {
         { path: 'leads/overdue', component: LeadsListPage, data: { mode: 'overdue' } },
         { path: 'leads/won', component: LeadsListPage, data: { mode: 'won' } },
         { path: 'leads/lost', component: LeadsListPage, data: { mode: 'lost' } },
+        { path: 'leads/:id', component: LeadStub },
       ]),
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -47,6 +52,9 @@ const rowCount = (el: HTMLElement) => el.querySelectorAll('app-lead-rows a.stret
 const rowBoxes = (el: HTMLElement) => el.querySelectorAll<HTMLInputElement>('app-lead-rows input[type=checkbox][aria-label^="Select Lead"]');
 const buttonByText = (el: HTMLElement, label: string) =>
   [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).startsWith(label));
+/** Buttons whose text also carries an icon name ("download Export as Excel"). */
+const buttonWith = (el: HTMLElement, label: string) =>
+  [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).includes(label));
 
 describe('LeadsListPage', () => {
   beforeEach(() => localStorage.clear());
@@ -93,7 +101,7 @@ describe('LeadsListPage', () => {
     const exec = await setup(Role.SalesExec);
     exec.resolve();
     expect(text(exec.el)).not.toContain('Add lead');
-    expect(text(exec.el)).not.toContain('Export CSV');
+    expect(text(exec.el)).not.toContain('Export as Excel');
     expect(rowBoxes(exec.el).length).toBe(0);
   });
 
@@ -105,12 +113,97 @@ describe('LeadsListPage', () => {
     expect(text(el.querySelector('.bulk'))).toContain('1 selected');
   });
 
-  it('All leads shows open leads only, with chips for the open statuses', async () => {
+  it('All leads shows every status by default, most recent first', async () => {
     const { api, el, resolve } = await setup();
-    expect(api.listCalls[0]).toMatchObject({ open: 'true', ordering: '-created_at' });
-    resolve();
+    expect(api.listCalls[0]).toEqual({ ordering: '-last_activity_at', page: 1, page_size: 20 });
+    expect(api.listCalls[0]).not.toHaveProperty('open');
+    resolve([makeLead(1), makeLead(2, { status: 'WON' }), makeLead(3, { status: 'LOST' })]);
+    expect(rowCount(el)).toBe(3);
     const chips = [...el.querySelectorAll('.chips .chip')].map((c) => text(c).replace(/\d+$/, '').trim());
-    expect(chips).toEqual(['All', 'New', 'Contacted', 'Interested']);
+    expect(chips).toEqual(['All', 'New', 'Contacted', 'Interested', 'Won', 'Lost']);
+    const sort = el.querySelector<HTMLSelectElement>('.sort select')!;
+    expect(sort.selectedOptions[0].textContent?.trim()).toBe('Most recent');
+    expect([...sort.options].map((o) => o.textContent?.trim())).toContain('Newest first');
+  });
+
+  it('an explicit ?open=true (dashboard link) still narrows to open deals', async () => {
+    const { api } = await setup(Role.Admin, '/leads/all?open=true');
+    expect(api.listCalls[0]).toMatchObject({ open: 'true' });
+  });
+
+  it('marks a client with several deals with a "2 deals" badge', async () => {
+    const { el, resolve } = await setup();
+    resolve([makeLead(1, { deals_count: 2 }), makeLead(2)]);
+    const badges = [...el.querySelectorAll('.deals')].map(text);
+    expect(badges).toEqual(['2 deals']);
+  });
+
+  it('Export as Excel asks for all leads or one month', async () => {
+    const { api, el, resolve, harness } = await setup();
+    resolve();
+    buttonWith(el, 'Export as Excel')!.click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    const dialog = document.querySelector('app-export-dialog') as HTMLElement;
+    expect(text(dialog)).toContain('All leads');
+    expect(text(dialog)).toContain('A specific month');
+    buttonByText(dialog, 'Download')!.click();
+    await vi.waitFor(() => expect(api.exportCalls.length).toBe(1)); // after the close animation
+    expect(api.exportCalls[0].choice).toEqual({ scope: 'all' });
+
+    buttonWith(el, 'Export as Excel')!.click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    const again = [...document.querySelectorAll('app-export-dialog')].at(-1) as HTMLElement;
+    again.querySelector<HTMLInputElement>('input[value=month]')!.click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const month = again.querySelector<HTMLInputElement>('input[type=month]')!;
+    expect(month.value).toMatch(/^\d{4}-\d{2}$/);
+    month.value = '2026-09';
+    month.dispatchEvent(new Event('input'));
+    buttonByText(again, 'Download')!.click();
+    await vi.waitFor(() => expect(api.exportCalls.length).toBe(2));
+    expect(api.exportCalls[1].choice).toEqual({ scope: 'month', month: '2026-09' });
+  });
+
+  it('"New project" is disabled with a tooltip while a deal is open, and then opens that deal', async () => {
+    const { api, el, resolve, harness } = await setup();
+    resolve([makeLead(1, { status: 'CONTACTED' }), makeLead(2, { status: 'WON', allowed_transitions: ['LOST'] })]);
+    const openMenu = (i: number) => {
+      el.querySelectorAll<HTMLButtonElement>('button[aria-label^="More actions"]')[i].click();
+      harness.detectChanges();
+      return [...document.querySelectorAll<HTMLButtonElement>('.leads-menu button')].find((b) => text(b).includes('New project'))!;
+    };
+    const blocked = openMenu(0);
+    expect(blocked.classList).toContain('is-off'); // shown disabled, still clickable
+    expect(blocked.getAttribute('aria-description')).toContain('This lead already has an open deal');
+    blocked.click();
+    await harness.fixture.whenStable();
+    expect(api.startCalls).toEqual([]);
+    expect(TestBed.inject(Router).url).toBe('/leads/1?deal=10');
+  });
+
+  it('"New project" on a closed lead starts Deal #2 and opens it', async () => {
+    const { api, el, resolve, harness } = await setup(Role.SalesManager);
+    resolve([makeLead(2, { status: 'WON', allowed_transitions: ['LOST'] })]);
+    el.querySelector<HTMLButtonElement>('button[aria-label^="More actions"]')!.click();
+    harness.detectChanges();
+    const item = [...document.querySelectorAll<HTMLButtonElement>('.leads-menu button')].find((b) => text(b).includes('New project'))!;
+    expect(item.classList).not.toContain('is-off');
+    item.click();
+    await harness.fixture.whenStable();
+    expect(api.startCalls).toEqual([{ id: 2, body: {} }]);
+    expect(TestBed.inject(Router).url).toBe('/leads/2?deal=99');
+  });
+
+  it('a Sales Exec never gets "New project"', async () => {
+    const { el, resolve, harness } = await setup(Role.SalesExec);
+    resolve([makeLead(2, { status: 'WON', allowed_transitions: [] })]);
+    el.querySelector<HTMLButtonElement>('button[aria-label^="More actions"]')!.click();
+    harness.detectChanges();
+    expect(text(document.querySelector('.leads-menu'))).not.toContain('New project');
   });
 
   it('Won and Lost have their own lists', async () => {
@@ -181,7 +274,7 @@ describe('list helpers', () => {
   it('round-trips filters and applies mode presets', () => {
     const f = filtersFromQuery((k) => ({ status: 'WON', q: 'ra' })[k] ?? null);
     expect(f).toEqual({ ...EMPTY_FILTERS, status: 'WON', q: 'ra' });
-    expect(toQuery('all', f)).toEqual({ status: 'WON', q: 'ra', open: 'true', ordering: '-created_at' });
+    expect(toQuery('all', f)).toEqual({ status: 'WON', q: 'ra', ordering: '-last_activity_at' });
     expect(toQuery('won', EMPTY_FILTERS)).toEqual({ status: 'WON', ordering: '-won_at' });
     expect(toQuery('overdue', EMPTY_FILTERS)).toEqual({ followup: 'overdue', ordering: '-days_overdue' });
   });

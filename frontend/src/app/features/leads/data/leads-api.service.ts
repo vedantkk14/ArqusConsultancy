@@ -6,6 +6,7 @@ import { PaginatedResponse } from '../../../core/models';
 import {
   Assignee,
   DuplicateInfo,
+  ExportChoice,
   ImportReport,
   Interaction,
   LeadDetail,
@@ -13,6 +14,8 @@ import {
   LeadListItem,
   LeadSummary,
   NewInteraction,
+  NewOpportunity,
+  Opportunity,
   StatusChange,
   WhatsAppTemplate,
 } from './lead.models';
@@ -109,11 +112,25 @@ export class LeadsApi {
     return this.api.post<LeadDetail>(`${BASE}/${id}/finalize`, { amount, note });
   }
 
-  /** CSV of the current filters (auth header added by the interceptor). */
-  exportCsv(params: QueryParams): Observable<Blob> {
-    let httpParams = new HttpParams();
+  // ---- Deals (opportunities) -----------------------------------------------------------------
+
+  /** Start a new deal with this client. 409 `opportunity_open` (details.opportunity_id) if one is open. */
+  startOpportunity(leadId: number, body: NewOpportunity = {}): Observable<Opportunity> {
+    return this.api.post<Opportunity>(`${BASE}/${leadId}/opportunities`, body);
+  }
+
+  opportunityInteractions(leadId: number, oppId: number, page = 1): Observable<PaginatedResponse<Interaction>> {
+    return this.api.list<Interaction>(`${BASE}/${leadId}/opportunities/${oppId}/interactions`, { page });
+  }
+
+  /** An Excel workbook of the current filters, all or one month (auth header added by the interceptor). */
+  exportExcel(params: QueryParams, choice: ExportChoice): Observable<Blob> {
+    let httpParams = new HttpParams().set('format', 'xlsx').set('scope', choice.scope);
+    if (choice.scope === 'month' && choice.month) {
+      httpParams = httpParams.set('month', choice.month);
+    }
     for (const [key, value] of Object.entries(params)) {
-      if (value !== null && value !== undefined && value !== '') {
+      if (value !== null && value !== undefined && value !== '' && key !== 'page' && key !== 'page_size') {
         httpParams = httpParams.set(key, String(value));
       }
     }

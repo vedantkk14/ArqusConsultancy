@@ -9,7 +9,12 @@
       <app-lead-avatar [name]="lead.name" [size]="64" />
       <div class="id-t">
         <p class="nm" aria-hidden="true">{{ lead.name }}</p>
-        <app-lead-status [status]="lead.status" />
+        <span class="id-s">
+          <app-lead-status [status]="lead.status" />
+          @if (lead.opportunities.length > 1 && current(); as d) {
+            <span class="deal-no">Deal #{{ d.sequence_no }} of {{ lead.opportunities.length }}</span>
+          }
+        </span>
       </div>
     </div>
 
@@ -71,6 +76,20 @@
       }
       <button matButton="filled" type="button" (click)="logActivity()"><mat-icon>edit_note</mat-icon>Log activity</button>
       <button matButton="outlined" type="button" (click)="edit(lead)" [attr.aria-label]="'Edit ' + lead.name"><mat-icon>edit</mat-icon>Edit</button>
+      @if (isManager()) {
+        <button
+          matButton="outlined"
+          type="button"
+          class="new-deal"
+          [class.is-off]="dealOpen()"
+          [disabled]="starting()"
+          [matTooltip]="dealOpen() ? dealOpenTip : ''"
+          [attr.aria-description]="dealOpen() ? dealOpenTip : null"
+          (click)="newDeal(lead)"
+        >
+          <mat-icon>add_business</mat-icon>New project
+        </button>
+      }
       @if (isAdmin()) {
         <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + lead.name">
           <mat-icon aria-hidden="true">more_vert</mat-icon>
@@ -83,7 +102,7 @@
   </section>
 
   <!-- Stage -->
-  <section class="card stage rise-in" style="--i: 1" aria-label="Stage">
+  <section class="card stage rise-in" style="--i: 1" id="stage" aria-label="Stage">
     <app-stage-stepper [status]="lead.status" [allowed]="lead.allowed_transitions" (pick)="changeStatus(lead, $event)" />
     @if (lead.status === 'LOST' && lostReason()) {
       <p class="lost">Lost: {{ lostReason() }}{{ lead.lost_note ? ' · ' + lead.lost_note : '' }}</p>
@@ -99,8 +118,20 @@
         </section>
       }
       <section class="card panel rise-in" style="--i: 3" aria-labelledby="tl-title">
-        <app-panel-head title="Timeline" [subtitle]="lead.interactions_count + ' entries, newest first'" headingId="tl-title" />
+        <app-panel-head
+          title="Timeline"
+          [subtitle]="(current() ? 'Deal #' + current()!.sequence_no + ', ' : '') + 'newest first'"
+          headingId="tl-title"
+        />
         <app-lead-timeline [leadId]="lead.id" [refresh]="timelineTick()" />
+      </section>
+      <section class="card panel rise-in" style="--i: 4" aria-labelledby="deals-title">
+        <app-panel-head
+          title="Opportunities"
+          [subtitle]="lead.opportunities.length + (lead.opportunities.length === 1 ? ' deal' : ' deals') + ' with this client'"
+          headingId="deals-title"
+        />
+        <app-opportunities-panel [leadId]="lead.id" [deals]="lead.opportunities" [focusId]="focusDeal()" />
       </section>
     </div>
 
@@ -123,7 +154,7 @@
                 @if (!f.finalized) {
                   <button matButton="filled" type="button" (click)="finalize(lead)">Finalize amount</button>
                 }
-                <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ lead: lead.id }">Convert to project</a>
+                <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: lead.current_opportunity_id }">Convert to project</a>
               </div>
             }
           }

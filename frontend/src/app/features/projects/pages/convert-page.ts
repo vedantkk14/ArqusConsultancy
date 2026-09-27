@@ -26,7 +26,10 @@ const REASONS: Record<string, string> = {
   not_won: 'This lead is not won yet.',
 };
 
-/** Admin: won deals waiting to become projects. `?lead=<id>` (from the lead page) opens the panel directly. */
+/**
+ * Admin: won deals waiting to become projects. `?opportunity=<id>` (or `?lead=<id>` for the lead's
+ * current deal), from the lead page, opens the panel directly.
+ */
 @Component({
   selector: 'app-convert-page',
   imports: [
@@ -105,18 +108,20 @@ export class ConvertPage {
     });
   }
 
-  /** `?lead=<id>` from the lead page or the "finalized" snackbar. */
+  /** `?opportunity=<id>` or `?lead=<id>` from the lead page or the "finalized" snackbar. */
   private openFromLink(): void {
-    const id = Number(this.route.snapshot.queryParamMap.get('lead'));
-    if (!id) {
+    const params = this.route.snapshot.queryParamMap;
+    const dealId = Number(params.get('opportunity'));
+    const leadId = Number(params.get('lead'));
+    if (!dealId && !leadId) {
       return;
     }
-    const listed = this.rows().find((r) => r.lead === id);
+    const listed = this.rows().find((r) => (dealId ? r.opportunity === dealId : r.lead === leadId));
     if (listed && !listed.ineligible_reason) {
       this.open(listed);
       return;
     }
-    this.api.convertible(id).subscribe({
+    this.api.convertible(dealId ? { opportunity: dealId } : { lead: leadId }).subscribe({
       next: (res) => {
         const row = res.results[0];
         if (row && !row.ineligible_reason) {
@@ -166,15 +171,21 @@ export class ConvertPage {
     this.dialogRef = null;
     this.sheetRef = null;
     this.active.set(null);
-    if (this.route.snapshot.queryParamMap.has('lead')) {
-      void this.router.navigate([], { relativeTo: this.route, queryParams: { lead: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    const params = this.route.snapshot.queryParamMap;
+    if (params.has('lead') || params.has('opportunity')) {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { lead: null, opportunity: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
     }
   }
 
   protected onConverted(project: ProjectDetail): void {
-    const lead = this.active()?.lead;
+    const deal = this.active()?.opportunity;
     this.close();
-    this.rows.update((rows) => rows.filter((r) => r.lead !== lead));
+    this.rows.update((rows) => rows.filter((r) => r.opportunity !== deal));
     this.snack
       .open('Project created', 'Open project', { duration: 8000 })
       .onAction()

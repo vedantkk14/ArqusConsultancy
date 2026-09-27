@@ -286,7 +286,12 @@ export class LeadsListPage {
         this.snack
           .open(`${lead.name} finalized.`, 'Convert to project', { duration: 8000 })
           .onAction()
-          .subscribe(() => void this.router.navigate(['/projects/convert'], { queryParams: { lead: lead.id } }));
+          .subscribe(
+            () =>
+              void this.router.navigate(['/projects/convert'], {
+                queryParams: { opportunity: lead.current_opportunity_id ?? undefined },
+              }),
+          );
       });
   }
 }

@@ -185,7 +185,7 @@ export class ConvertForm implements OnInit {
     this.exists.set(null);
     this.api
       .convert({
-        lead: this.lead().lead,
+        opportunity: this.lead().opportunity,
         name: this.name.trim(),
         pm: this.pm ? Number(this.pm) : null,
         start_date: this.start || null,

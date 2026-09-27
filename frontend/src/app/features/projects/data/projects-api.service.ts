@@ -68,8 +68,9 @@ export class ProjectsApi {
     return obs;
   }
 
-  convertible(lead?: number): Observable<{ count: number; results: ConvertibleLead[] }> {
-    return this.api.get(`${PROJECTS}/convertible`, lead ? { lead } : {});
+  /** Won deals ready to convert; `lookup` explains why one deal (or a lead's current deal) is not. */
+  convertible(lookup?: { opportunity?: number; lead?: number }): Observable<{ count: number; results: ConvertibleLead[] }> {
+    return this.api.get(`${PROJECTS}/convertible`, lookup ?? {});
   }
 
   managers(): Observable<Manager[]> {

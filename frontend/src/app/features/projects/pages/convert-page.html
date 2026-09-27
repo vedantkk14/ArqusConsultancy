@@ -55,10 +55,10 @@
                 </tr>
               }
             } @else {
-              @for (row of rows(); track row.lead) {
+              @for (row of rows(); track row.opportunity) {
                 <tr>
                   <td>
-                    <a class="nm" [routerLink]="['/leads', row.lead]">{{ row.name }}</a>
+                    <a class="nm" [routerLink]="['/leads', row.lead]">{{ row.name }}@if (row.sequence_no > 1) {<span class="deal-no"> · Deal #{{ row.sequence_no }}</span>}</a>
                   </td>
                   <td>
                     @if (row.exec_name) {
@@ -107,9 +107,9 @@
             </li>
           }
         } @else {
-          @for (row of rows(); track row.lead; let i = $index) {
+          @for (row of rows(); track row.opportunity; let i = $index) {
             <li class="card lc rise-in" [style.--i]="i % 10">
-              <a class="nm" [routerLink]="['/leads', row.lead]">{{ row.name }}</a>
+              <a class="nm" [routerLink]="['/leads', row.lead]">{{ row.name }}@if (row.sequence_no > 1) {<span class="deal-no"> · Deal #{{ row.sequence_no }}</span>}</a>
               <span class="lc-meta">
                 <span>{{ row.exec_name ?? 'Unassigned' }}</span>
                 <span

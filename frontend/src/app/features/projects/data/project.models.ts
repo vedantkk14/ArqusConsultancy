@@ -60,8 +60,10 @@ export interface Finance {
 export interface ProjectDetail extends ProjectListItem {
   scope: string;
   allowed_actions: ProjectAction[];
-  /** Admin only. */
+  /** Admin and Sales Manager (links the client's name to their lead). */
   lead_id?: number | null;
+  /** Admin only: the won deal this project delivers. */
+  opportunity_id?: number | null;
   finance?: Finance | null;
 }
 
@@ -77,7 +79,11 @@ export interface ProjectSummary {
   budget_total?: string;
 }
 
+/** A won deal (opportunity) that can become a project, with its client's name. */
 export interface ConvertibleLead {
+  opportunity: number;
+  /** "Deal #2" for repeat business with the same client. */
+  sequence_no: number;
   lead: number;
   name: string;
   exec_name: string | null;
@@ -89,7 +95,7 @@ export interface ConvertibleLead {
 }
 
 export interface ConvertInput {
-  lead: number;
+  opportunity: number;
   name: string;
   pm: number | null;
   start_date: string | null;

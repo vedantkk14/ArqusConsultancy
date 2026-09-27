@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -23,10 +24,12 @@ import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finali
 import { StatusDialog, StatusDialogData } from '../components/dialogs/status-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../components/dialogs/whatsapp-dialog';
 import { FollowupPill, LeadAvatar, LeadStatusChip, STATUS_TINT } from '../components/lead-bits';
+import { DEAL_OPEN_TOOLTIP } from '../components/lead-rows';
 import { LeadTimeline } from '../components/lead-timeline';
+import { OpportunitiesPanel } from '../components/opportunities-panel';
 import { MoneyInput, isPositiveMoney } from '../components/money-input';
 import { StageStepper } from '../components/stage-stepper';
-import { LOST_REASONS, LeadDetail, LeadStatus } from '../data/lead.models';
+import { LOST_REASONS, LeadDetail, LeadStatus, isOpenStatus } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
 import { atBusinessTime, formatBusinessFull, nextMonday, relativeLabel } from '../utils/business-time';
 import { formatPhone, toTelHref } from '../utils/phone';
@@ -48,7 +51,9 @@ const MANAGERS: Role[] = [Role.Admin, Role.SalesManager];
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    MatTooltipModule,
     MoneyInput,
+    OpportunitiesPanel,
     PanelHead,
     RouterLink,
     StageStepper,
@@ -77,6 +82,14 @@ export class LeadDetailPage {
     return fresh && base && fresh.id === base.id ? fresh : base;
   });
   protected readonly timelineTick = signal(0);
+  /** `?deal=<id>`: the deal to point at in the Opportunities panel (e.g. just started). */
+  private readonly queryMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
+  protected readonly focusDeal = computed(() => Number(this.queryMap().get('deal')) || null);
+  protected readonly current = computed(() => this.lead()?.opportunities?.find((d) => d.is_current) ?? null);
+  /** A new deal can start only once the current one is won or lost. */
+  protected readonly dealOpen = computed(() => isOpenStatus(this.lead()?.status));
+  protected readonly dealOpenTip = DEAL_OPEN_TOOLTIP;
+  protected readonly starting = signal(false);
 
   /** Back goes to the list the lead belongs to: All leads, or Won / Lost leads once it is closed. */
   protected readonly back = computed(() => {
@@ -228,9 +241,41 @@ export class LeadDetailPage {
           this.snack
             .open('Amount finalized.', 'Convert to project', { duration: 8000 })
             .onAction()
-            .subscribe(() => void this.router.navigate(['/projects/convert'], { queryParams: { lead: lead.id } }));
+            .subscribe(
+              () =>
+                void this.router.navigate(['/projects/convert'], {
+                  queryParams: { opportunity: lead.current_opportunity_id ?? undefined },
+                }),
+            );
         }
       });
+  }
+
+  // ---- Deals ----------------------------------------------------------------------------------------
+
+  /** "New project": the next deal with this client. While one is open this just shows it. */
+  protected newDeal(lead: LeadDetail): void {
+    if (this.dealOpen()) {
+      document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.snack.open(`${DEAL_OPEN_TOOLTIP}: Deal #${this.current()?.sequence_no ?? ''}.`, undefined, { duration: 3000 });
+      return;
+    }
+    this.starting.set(true);
+    this.api.startOpportunity(lead.id).subscribe({
+      next: (deal) => {
+        this.starting.set(false);
+        this.snack.open(`Deal #${deal.sequence_no} started.`, undefined, { duration: 3000 });
+        void this.router.navigate([], { relativeTo: this.route, queryParams: { deal: deal.id }, replaceUrl: true });
+        this.refresh();
+      },
+      error: (err: ApiError) => {
+        this.starting.set(false);
+        this.snack.open(err.code === 'opportunity_open' ? `${DEAL_OPEN_TOOLTIP}.` : err.message, 'Dismiss', {
+          duration: 5000,
+        });
+        this.refresh();
+      },
+    });
   }
 
   // ---- Cards ----------------------------------------------------------------------------------------

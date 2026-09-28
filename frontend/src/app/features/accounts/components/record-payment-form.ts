@@ -68,6 +68,7 @@ export function proofProblem(file: { name: string; type: string; size: number })
   styleUrl: '../ui/dialog.scss',
   templateUrl: './record-payment-form.html',
   styles: `
+    .cno { margin-right: 4px; color: var(--ink-3); font-weight: 500; }
     .modes {
       display: flex;
       flex-wrap: wrap;

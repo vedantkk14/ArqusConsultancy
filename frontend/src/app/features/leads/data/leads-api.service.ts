@@ -108,8 +108,9 @@ export class LeadsApi {
     return this.api.post(`${BASE}/${id}/whatsapp`, { template_id: templateId });
   }
 
-  finalize(id: number, amount: string, note = ''): Observable<LeadDetail> {
-    return this.api.post<LeadDetail>(`${BASE}/${id}/finalize`, { amount, note });
+  finalize(id: number, amount: string, note = '', opportunityId?: number): Observable<LeadDetail> {
+    const path = opportunityId ? `${BASE}/${id}/opportunities/${opportunityId}/finalize` : `${BASE}/${id}/finalize`;
+    return this.api.post<LeadDetail>(path, { amount, note });
   }
 
   // ---- Deals (opportunities) -----------------------------------------------------------------

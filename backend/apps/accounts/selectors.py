@@ -12,10 +12,12 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db.models import (
+    Count,
     DateField,
     DecimalField,
     ExpressionWrapper,
     F,
+    IntegerField,
     Max,
     OuterRef,
     Q,
@@ -144,7 +146,35 @@ def with_figures(qs: QuerySet | None = None) -> QuerySet:
     ).annotate(
         outstanding=ExpressionWrapper(F("total_amount") - F("received"), output_field=MONEY),
         aging_base=Coalesce("last_payment_on", "finalized_on", output_field=DateField()),
+        **_client_numbers(),
     )
+
+
+def _client_numbers() -> dict:
+    """`client_ledgers`: how many ledgers (won deals) the client has; `ledger_no`: this one's place
+    among them, oldest = 1. Lists show "#2 Badagu Textiles" once a client has more than one."""
+    same = Ledger.objects.filter(opportunity__lead=OuterRef("opportunity__lead")).order_by()
+    count = same.values("opportunity__lead").annotate(c=Count("pk")).values("c")
+    up_to_me = (
+        same.filter(
+            Q(created_at__lt=OuterRef("created_at"))
+            | Q(created_at=OuterRef("created_at"), pk__lte=OuterRef("pk"))
+        )
+        .values("opportunity__lead")
+        .annotate(c=Count("pk"))
+        .values("c")
+    )
+    return {
+        "client_ledgers": Coalesce(Subquery(count, output_field=IntegerField()), Value(1)),
+        "ledger_no": Coalesce(Subquery(up_to_me, output_field=IntegerField()), Value(1)),
+    }
+
+
+def ledger_no(ledger) -> int | None:
+    """`#N` only when the client has more than one ledger."""
+    if (getattr(ledger, "client_ledgers", None) or 1) <= 1:
+        return None
+    return getattr(ledger, "ledger_no", None)
 
 
 def state_q(state: str) -> Q:

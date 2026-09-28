@@ -53,15 +53,18 @@
             </tr>
           }
         } @else {
-          @for (p of rows(); track p.id) {
-            <tr>
+          @for (p of rows(); track p.id; let i = $index) {
+            <tr [class.past]="isPast(p)" [class.cont]="continues(i)">
               <td>
                 <span class="who-t">
                   <a class="stretch" [routerLink]="['/projects', p.id]">
-                    @if (p.deal_no) { <span class="deal-no">#{{ p.deal_no }}</span> }
+                    @if (p.project_no) { <span class="deal-no">#{{ p.project_no }}</span> }
                     {{ p.name }}
                   </a>
-                  <span class="ph">{{ p.client_name }}</span>
+                  <span class="ph">
+                    {{ p.client_name }}
+                    @if (isPast(p)) { <span class="done-tag">Completed</span> }
+                  </span>
                 </span>
               </td>
               <td><ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" /></td>
@@ -107,14 +110,17 @@
       }
     } @else {
       @for (p of rows(); track p.id; let i = $index) {
-        <li class="card lc rise-in" [style.--i]="i % 10">
+        <li class="card lc rise-in" [class.past]="isPast(p)" [style.--i]="i % 10">
           <span class="lc-top">
             <span class="who-t">
               <a class="stretch" [routerLink]="['/projects', p.id]">
-                @if (p.deal_no) { <span class="deal-no">#{{ p.deal_no }}</span> }
+                @if (p.project_no) { <span class="deal-no">#{{ p.project_no }}</span> }
                 {{ p.name }}
               </a>
-              <span class="ph">{{ p.client_name }}</span>
+              <span class="ph">
+                {{ p.client_name }}
+                @if (isPast(p)) { <span class="done-tag">Completed</span> }
+              </span>
             </span>
           </span>
           @if (showBudget()) {

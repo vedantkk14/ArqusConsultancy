@@ -15,8 +15,9 @@ export const PAGE_SIZE = 20;
 
 /** Fixed query parts per page mode (the user's filters come on top). */
 export const MODE_PRESETS: Record<ProjectMode, { params: QueryParams; ordering: string }> = {
-  running: { params: { status: 'RUNNING' }, ordering: '-created_at' },
-  completed: { params: { status: 'COMPLETED' }, ordering: '-created_at' },
+  // A returning client's completed projects are listed with their running one (#1, #2, ...).
+  running: { params: { status: 'RUNNING', history: '1' }, ordering: 'recent' },
+  completed: { params: { status: 'COMPLETED' }, ordering: 'recent' },
 };
 
 export function toQuery(mode: ProjectMode, filters: ProjectFilters): QueryParams {

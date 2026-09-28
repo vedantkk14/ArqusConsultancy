@@ -117,8 +117,8 @@ be open). **At most one open deal per lead** (open = not WON/LOST): starting ano
 | ✅ | `POST /leads` | A, SM | 409 `duplicate_lead` `{existing:{id,name,status,assigned_to_name}}` unless `force=true` |
 | ✅ | `GET /leads/check-duplicate?phone=&exclude=` | A, SM | `{existing: {...} | null}` |
 | ✅ | `GET /leads/{id}` | A, SM, SE | Adds `allowed_transitions`, `interactions_count` (all deals), `current_opportunity_id`, `opportunities` (newest first, see below); `finance {finalized,total_amount,finalized_at}` of the current deal for A, SM |
-| ✅ | `GET /leads/{id}/opportunities` | A, SM, SE | Paginated deals, newest first: `{id, lead, sequence_no, status, assigned_to, next_followup_at, days_overdue, proposed_amount, won_at, lost_reason, lost_note, requirements, created_by, created_at, updated_at, allowed_transitions, is_current, is_open}`; A, SM also get `project_id, project_name, ledger_id, finance` (SE: absent, not null) |
-| ✅ | `POST /leads/{id}/opportunities` | A, SM | New deal `{assigned_to?, requirements?}` (assignee defaults to the lead's; the lead follows its current deal's owner). 201 with the deal. 409 `opportunity_open` `{opportunity_id}` while one is open |
+| ✅ | `GET /leads/{id}/opportunities` | A, SM, SE | Paginated deals, newest first: `{id, lead, sequence_no, status, assigned_to, next_followup_at, days_overdue, proposed_amount, won_at, lost_reason, lost_note, requirements, created_by, created_at, updated_at, allowed_transitions, is_current, is_open}`; A, SM also get `project_id, project_name, project_status, project_pm_name, ledger_id, finance` (SE: absent, not null) |
+| ✅ | `POST /leads/{id}/opportunities` | A, SM | New deal `{assigned_to?, requirements?, next_followup_at?}` (follow-up must not be in the past; assignee defaults to the lead's; the lead follows its current deal's owner). 201 with the deal. 409 `opportunity_open` `{opportunity_id}` while one is open |
 | ✅ | `GET/PATCH /leads/{id}/opportunities/{opp_id}` | A, SM, SE | One deal; PATCH `{next_followup_at?, proposed_amount?}` |
 | ✅ | `POST .../opportunities/{opp_id}/status`, `GET/POST .../interactions`, `POST .../assign` (A, SM), `GET/POST .../whatsapp`, `POST .../finalize` (A, SM) | as the lead-level ones | Same bodies and rules, on that deal (each deal has its own timeline). A deal of another lead is 404 |
 | ✅ | `PATCH /leads/{id}` | A, SM (contact fields), SE (email, requirements, next_followup_at, proposed_amount) | Other keys -> 400. `next_followup_at`/`proposed_amount` go to the current deal; an amount change logs AMOUNT_CHANGE |
@@ -159,7 +159,8 @@ OTHER). The first CALL / WHATSAPP / EMAIL / MEETING on a NEW lead moves it to CO
 **UI lists:** All leads = every status, Most recent first (no hidden `open=true`; a dashboard link may still pass
 it); Won leads = `status=WON` (optionally
 `won_awaiting=true`); Lost leads = `status=LOST`; Overdue = `followup=overdue`. List rows carry `finalized`
-(true/false) for Admin and Sales Manager only; it is absent for Sales Execs.
+(true/false) and `final_amount` (the finalized total, null until finalized) for Admin and Sales Manager only; both are
+absent for Sales Execs.
 
 **Leads -> Accounts contract (built):**
 1. `accounts.Ledger` with `opportunity` (one-to-one to `leads.Opportunity`), `total_amount` Decimal(12,2) and a
@@ -277,7 +278,7 @@ outstanding, collection rate and aging. Routes have no trailing slash.
 
 | Status | Method & path | Notes |
 | --- | --- | --- |
-| ✅ | `GET /ledgers` | Paginated (20). Row: `id, lead, opportunity, sequence_no, client, phone, exec_name, state, state_label, finalized, is_overdue, total, received, outstanding, collected_pct, days_since, last_payment_on, created_at` |
+| ✅ | `GET /ledgers` | Paginated (20). Row: `id, lead, opportunity, sequence_no, client, client_no (#N among the client's ledgers, null with only one), phone, exec_name, state, state_label, finalized, is_overdue, total, received, outstanding, collected_pct, days_since, last_payment_on, created_at` |
 | ✅ | `GET /ledgers/summary` | `total_value, received, outstanding, overdue_amount, clients_with_balance, overdue_clients, collection_rate_pct, awaiting_finalization, counts{state}, aging[{bucket,count,amount}], top_overdue[3]`. Accepts `q`, `created_from`, `created_to` |
 | ✅ | `GET /ledgers/options?q=` | Up to 10 finalized ledgers with a balance (the record-payment select) |
 | ✅ | `GET /ledgers/{id}` | Row + `lead_block`, `project` (id, name, status, spent, remaining, live_margin, or null), `finalized_at/by/note`, `proposed_amount`, `allowed_actions` |
@@ -363,7 +364,7 @@ Routes have no trailing slash, like the rest of the API.
 | ✅ | `GET /projects/convertible` | A | Won deals (opportunities) that can become projects: `{count, results: [{opportunity, sequence_no, lead, name (the client), exec_name, won_at, proposed_amount, total_amount, ineligible_reason, project_id}]}`. `?opportunity=<id>` (or `?lead=<id>` for the lead's current deal) looks one up and says why it cannot be converted: `not_won`, `project_exists` (with `project_id`) or `not_finalized` |
 | ✅ | `GET /projects/managers` | A | Active project managers with `running_projects`, for the assign selects |
 | ✅ | `POST /projects` | A | Convert a won deal. Body: `opportunity`, `name`, `pm?` (null = assign later), `start_date?`, `expected_end_date?`, `scope?`. Returns the admin detail (201) |
-| ✅ | `GET /projects/{id}` | A, PM, SM | PM shape, Sales Manager shape (above) or admin shape (adds `pm`, `lead_id`, `opportunity_id`, `finance`), plus `allowed_actions` computed by the server. Admin shape also has `total_budget`, `remaining`, `usage_pct`, `state` |
+| ✅ | `GET /projects/{id}` | A, PM, SM | PM shape, Sales Manager shape (above) or admin shape (adds `pm`, `lead_id`, `opportunity_id`, `finance`), plus `allowed_actions` computed by the server. `finance` carries `ledger_id` (for Revise total). Admin shape also has `total_budget`, `remaining`, `usage_pct`, `state` |
 | ✅ | `PATCH /projects/{id}` | A | `name`, `start_date`, `expected_end_date`, `scope` |
 | ✅ | `POST /projects/{id}/assign-pm` | A | `{pm}` (null unassigns). Notifies the old and the new PM |
 | ✅ | `POST /projects/{id}/complete` | A, PM (own) | Locks expenses |
@@ -381,8 +382,12 @@ Routes have no trailing slash, like the rest of the API.
 **`GET /projects` filters** (names are a contract with the dashboard links): `status` (`running`, `completed`, comma
 separated), `pm` (id or `none`), `q` (name or client), `state` (`ok`, `warn`, `over`), `over_budget=true` (warn and
 over), `near_limit=true` (warn only) (budget filters are Admin only), `no_pm=true`, `created_from`, `created_to` (YYYY-MM-DD, business days),
-`ordering` (`name`, `-usage_pct`, `-spent`, `-created_at`, `expected_end_date`; default `-created_at`), `page`,
-`page_size`. Dashboard links: `/projects/running?over_budget=true` and `/projects/running?no_pm=true`.
+`ordering` (`recent`, `name`, `-usage_pct`, `-spent`, `-created_at`, `expected_end_date`; default `recent` = most
+recent first with a client's projects kept together), `page`, `page_size`. `history=1` with `status=RUNNING` also
+lists the completed projects of the same clients (ignored with `state`, `over_budget`, `near_limit`, `no_pm`, `pm`,
+`created_from`, `created_to`). Every row has `project_no`: its number among the client's projects (oldest = 1), or
+null when the client has one project. Dashboard links: `/projects/running?over_budget=true` and
+`/projects/running?no_pm=true`.
 
 **`GET /expenses` filters**: `project`, `category` (comma separated), `logged_by`, `q` (vendor, description, project),
 `date_from`, `date_to`, `has_receipt` (`true`/`false`), `state` (`active`, `void`), `ordering`

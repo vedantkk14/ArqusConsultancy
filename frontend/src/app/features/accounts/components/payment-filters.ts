@@ -24,7 +24,6 @@ import { activeFilterCount } from '../data/payments-list.store';
 export const SEARCH_DEBOUNCE_MS = 300;
 
 const ORDERINGS = [
-  { value: '-received_on', label: 'Newest first' },
   { value: 'received_on', label: 'Oldest first' },
   { value: '-amount', label: 'Highest amount' },
   { value: 'amount', label: 'Lowest amount' },

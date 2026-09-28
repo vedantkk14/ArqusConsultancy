@@ -61,7 +61,7 @@ def test_state_filter_and_row_shape(client_for, admin, book):
     ]
     row = next(r for r in c.get(f"{LEDGERS}?state=PARTIAL&ordering=client").json()["results"])
     assert set(row) == {
-        "id", "lead", "opportunity", "sequence_no", "client", "phone", "exec_name", "state", "state_label", "finalized", "is_overdue",
+        "id", "lead", "opportunity", "sequence_no", "client", "client_no", "phone", "exec_name", "state", "state_label", "finalized", "is_overdue",
         "total", "received", "outstanding", "collected_pct", "days_since", "last_payment_on", "created_at",
     }  # fmt: skip
     assert (

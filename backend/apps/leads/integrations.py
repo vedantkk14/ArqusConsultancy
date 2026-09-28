@@ -13,7 +13,7 @@ from urllib.parse import quote
 from django.apps import apps
 from django.core.exceptions import FieldError
 from django.db.models import BooleanField as _Bool
-from django.db.models import Exists, OuterRef, Value
+from django.db.models import DecimalField, Exists, OuterRef, Subquery, Value
 
 from apps.core.services import notify as _notify
 
@@ -73,6 +73,19 @@ def finalized_exists(ref: str = "pk"):
     if model is None:
         return Value(False, output_field=_Bool())
     return Exists(model.objects.filter(opportunity=OuterRef(ref), finalized_at__isnull=False))
+
+
+def finalized_total(ref: str = "pk"):
+    """Subquery: the deal's finalized ledger total (None until finalized, or without accounts)."""
+    model = _ledger_model()
+    if model is None:
+        return Value(None, output_field=DecimalField(max_digits=12, decimal_places=2))
+    return Subquery(
+        model.objects.filter(opportunity=OuterRef(ref), finalized_at__isnull=False).values(
+            "total_amount"
+        )[:1],
+        output_field=DecimalField(max_digits=12, decimal_places=2),
+    )
 
 
 def has_ledger(opportunity) -> bool:

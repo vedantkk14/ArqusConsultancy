@@ -48,7 +48,7 @@ def test_pm_response_has_exactly_the_allowed_keys(client_for, pm1, full_project)
     body = client_for(pm1).get(f"{BASE}/{full_project.pk}").json()
     assert set(body) == {
         "id", "name", "client_name", "status", "start_date", "expected_end_date", "completed_at",
-        "created_at", "pm_name", "spent", "deal_no", "scope", "allowed_actions",
+        "created_at", "pm_name", "spent", "project_no", "scope", "allowed_actions",
     }  # fmt: skip
 
 

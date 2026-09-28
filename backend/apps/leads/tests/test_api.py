@@ -626,3 +626,28 @@ def test_finalized_flag_is_for_managers_only(client_for, manager, exec_a, make_l
     make_lead(status=LeadStatus.WON, assigned_to=exec_a, proposed_amount=5)
     assert client_for(manager).get(BASE).json()["results"][0]["finalized"] is False
     assert "finalized" not in client_for(exec_a).get(BASE).json()["results"][0]
+
+
+def test_won_rows_carry_the_finalized_value_for_managers_only(
+    client_for, manager, admin, exec_a, make_lead
+):
+    from django.utils import timezone
+
+    from apps.accounts.models import Ledger
+
+    lead = make_lead(status=LeadStatus.WON, assigned_to=exec_a, proposed_amount=1000)
+    assert (
+        client_for(manager).get(f"{BASE}?status=WON").json()["results"][0]["final_amount"] is None
+    )
+    Ledger.objects.update_or_create(
+        opportunity=lead.current_opportunity,
+        defaults={"total_amount": 10000, "finalized_at": timezone.now()},
+    )
+    row = client_for(manager).get(f"{BASE}?status=WON").json()["results"][0]
+    assert row["proposed_amount"] == "1000.00" and row["final_amount"] == "10000.00"
+    assert (
+        client_for(admin).get(f"{BASE}?status=WON").json()["results"][0]["final_amount"]
+        == "10000.00"
+    )
+    exec_row = client_for(exec_a).get(f"{BASE}?status=WON").json()["results"][0]
+    assert "final_amount" not in exec_row and "finalized" not in exec_row

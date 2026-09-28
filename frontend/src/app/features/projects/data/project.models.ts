@@ -34,8 +34,8 @@ export interface ProjectListItem {
   completed_at: string | null;
   created_at: string;
   pm_name: string | null;
-  /** This client's Nth deal, only when they have more than one project (>= 2). Else absent. */
-  deal_no?: number | null;
+  /** #N among the client's projects (oldest = 1); null when the client has only one. */
+  project_no?: number | null;
   /** Admin only. */
   pm?: Person | null;
   /** Expenses so far (non-void). */
@@ -145,7 +145,6 @@ export const EMPTY_FILTERS: ProjectFilters = {
 export const ORDERINGS = [
   { value: '-spent', label: 'Highest spend' },
   { value: 'expected_end_date', label: 'Due soonest' },
-  { value: '-created_at', label: 'Newest' },
   { value: 'name', label: 'Name A to Z' },
 ] as const;
 

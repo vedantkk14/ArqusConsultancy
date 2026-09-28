@@ -30,7 +30,7 @@ import {
   ORDERINGS,
   STATUS_LABELS,
 } from '../data/lead.models';
-import { activeFilterCount } from '../data/leads-list.store';
+import { MODE_PRESETS, activeFilterCount } from '../data/leads-list.store';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
@@ -55,7 +55,8 @@ export class LeadFiltersBar {
   /** All leads shows every status, won and lost included. */
   protected readonly statuses = LEAD_STATUSES;
   /** All leads sorts by "Most recent" unless another order is picked. */
-  protected readonly defaultOrdering = computed(() => (this.mode() === 'all' ? DEFAULT_ORDERING : ''));
+  /** Every mode has a preset ordering (most recent); the select shows its label, never "Default order". */
+  protected readonly defaultOrdering = computed(() => MODE_PRESETS[this.mode()]?.ordering ?? DEFAULT_ORDERING);
   protected readonly labels = STATUS_LABELS;
   protected readonly sources = LEAD_SOURCES;
   protected readonly orderings = ORDERINGS;

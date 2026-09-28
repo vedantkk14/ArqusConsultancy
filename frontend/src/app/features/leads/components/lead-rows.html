@@ -88,6 +88,7 @@
             <th>Assigned</th>
             <th class="r">Proposed value</th>
             @if (canFinalize() || canSeeFinal()) {
+              <th class="r">Finalized value</th>
               <th>Finalization</th>
             }
           } @else if (mode() === 'lost') {
@@ -152,6 +153,7 @@
                 <td>{{ lead.assigned_to?.name ?? 'Unassigned' }}</td>
                 <td class="r num">{{ lead.proposed_amount | inr }}</td>
                 @if (canFinalize() || canSeeFinal()) {
+                  <td class="r num">{{ lead.final_amount ? (lead.final_amount | inr) : '—' }}</td>
                   <td><ng-container *ngTemplateOutlet="finState; context: { $implicit: lead }" /></td>
                 }
               } @else if (mode() === 'lost') {
@@ -220,7 +222,10 @@
           <span class="lc-meta">
             @if (mode() === 'won') {
               <span>Won {{ wonOn(lead) }} · {{ lead.assigned_to?.name ?? 'Unassigned' }}</span>
-              <strong class="num">{{ lead.proposed_amount | inr }}</strong>
+              <span class="num">Proposed {{ lead.proposed_amount | inr }}</span>
+              @if (lead.final_amount) {
+                <strong class="num">Final {{ lead.final_amount | inr }}</strong>
+              }
             } @else if (mode() === 'lost') {
               <span>{{ reasonLabel(lead.lost_reason) }} · {{ lead.assigned_to?.name ?? 'Unassigned' }}</span>
               @if (lead.proposed_amount) {

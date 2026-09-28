@@ -293,7 +293,7 @@ describe('list helpers', () => {
     expect(f).toEqual({ ...EMPTY_FILTERS, status: 'WON', q: 'ra' });
     expect(toQuery('all', f)).toEqual({ status: 'WON', q: 'ra', ordering: '-last_activity_at' });
     expect(toQuery('won', EMPTY_FILTERS)).toEqual({ status: 'WON', ordering: '-won_at' });
-    expect(toQuery('overdue', EMPTY_FILTERS)).toEqual({ followup: 'overdue', ordering: '-days_overdue' });
+    expect(toQuery('overdue', EMPTY_FILTERS)).toEqual({ followup: 'overdue', ordering: '-last_activity_at' });
   });
 
   it('composes the insight and skips zero parts', () => {

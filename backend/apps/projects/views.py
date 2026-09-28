@@ -55,6 +55,27 @@ def csv_safe(value) -> str:
     return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
 
 
+#: A narrowing filter hides the past projects: they would not match it anyway.
+HISTORY_BLOCKERS = (
+    "state",
+    "over_budget",
+    "near_limit",
+    "no_pm",
+    "pm",
+    "created_from",
+    "created_to",
+)
+
+
+def _wants_history(params) -> bool:
+    """`?status=RUNNING&history=1`: also list the completed projects of the same clients."""
+    return (
+        (params.get("history") or "").lower() in ("1", "true", "yes")
+        and (params.get("status") or "").upper() == "RUNNING"
+        and not any(params.get(key) for key in HISTORY_BLOCKERS)
+    )
+
+
 def _expense_input(request, partial=False):
     serializer = ExpenseWriteSerializer(data=request.data, partial=partial)
     serializer.is_valid(raise_exception=True)
@@ -68,7 +89,9 @@ class ProjectViewSet(GenericViewSet):
     lookup_value_regex = r"\d+"
 
     def get_queryset(self):
-        return selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+        return selectors.with_client_numbers(
+            selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+        )
 
     def _is_admin(self) -> bool:
         return self.request.user.role == ADMIN
@@ -78,6 +101,17 @@ class ProjectViewSet(GenericViewSet):
         if not self._is_admin():
             skip = (*skip, "state")
         return apply_project_filters(self.get_queryset(), request.query_params, skip=skip)
+
+    def _with_history(self, running):
+        """Running projects plus the completed projects of the same clients, so a returning
+        client's earlier work sits right under their current project (#1, #2, ...)."""
+        clients = running.exclude(opportunity__isnull=True).values("opportunity__lead")
+        past = self.get_queryset().filter(
+            status=ProjectStatus.COMPLETED, opportunity__lead__in=clients
+        )
+        return self.get_queryset().filter(
+            Q(pk__in=running.values("pk")) | Q(pk__in=past.values("pk"))
+        )
 
     def _require_admin(self):
         if self.request.user.role != ADMIN:
@@ -103,7 +137,10 @@ class ProjectViewSet(GenericViewSet):
             ordering = None  # budget usage is Admin-only
         if request.user.role in READ_ONLY_ROLES and ordering in MONEY_ORDERINGS:
             ordering = None
-        qs = apply_project_ordering(self._filtered(request), ordering)
+        qs = self._filtered(request)
+        if _wants_history(request.query_params):
+            qs = self._with_history(qs)
+        qs = apply_project_ordering(qs, ordering)
         page = self.paginate_queryset(qs)
         cls = project_serializer(request.user)
         return self.get_paginated_response(cls(page, many=True, context={"request": request}).data)

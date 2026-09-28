@@ -404,6 +404,7 @@ def build_statement(ledger, date_from=None, date_to=None) -> dict:
     return {
         "client": {
             "name": client.name,
+            "no": selectors.ledger_no(ledger),
             "phone": client.phone,
             "email": client.email,
         },

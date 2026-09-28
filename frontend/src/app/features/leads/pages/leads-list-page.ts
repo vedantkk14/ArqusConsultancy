@@ -281,7 +281,7 @@ export class LeadsListPage {
           return;
         }
         if (this.mode === 'won') {
-          this.store.patchRow(lead.id, { finalized: true });
+          this.store.patchRow(lead.id, { finalized: true, final_amount: done.finance?.total_amount ?? null });
         } else {
           this.store.removeRow(lead.id);
         }

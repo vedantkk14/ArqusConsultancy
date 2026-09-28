@@ -65,6 +65,7 @@ def ledger_row(ledger, today=None) -> dict:
         "opportunity": deal.pk,
         "sequence_no": deal.sequence_no,
         "client": deal.lead.name,
+        "client_no": selectors.ledger_no(ledger),
         "phone": deal.lead.phone,
         "exec_name": deal.assigned_to.display_name if deal.assigned_to else None,
         "state": state,

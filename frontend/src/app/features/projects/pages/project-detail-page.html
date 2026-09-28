@@ -104,7 +104,7 @@
     <div class="main">
       <!-- Budget: the deal total, admin only (never rendered for a project manager) -->
       @if (isAdmin()) {
-        <app-budget-panel [project]="p" [exporting]="exporting()" (exportExcel)="exportExcel(p)" />
+        <app-budget-panel [project]="p" />
       }
 
       <!-- Expenses -->
@@ -127,6 +127,17 @@
               }
             </select>
           </label>
+          @if (isAdmin()) {
+            <button
+              matButton="outlined"
+              type="button"
+              [disabled]="exporting()"
+              [attr.aria-label]="'Download the expenses of ' + p.name + ' as an Excel file'"
+              (click)="exportExcel(p)"
+            >
+              <mat-icon aria-hidden="true">table_view</mat-icon>{{ exporting() ? 'Preparing…' : 'Export to Excel' }}
+            </button>
+          }
           @if (can('add_expense') && layout.isDesktop()) {
             <button
               matButton="filled"

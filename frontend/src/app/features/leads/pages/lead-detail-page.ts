@@ -61,7 +61,7 @@ const MANAGERS: Role[] = [Role.Admin, Role.SalesManager];
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lead-detail-page.html',
-  styleUrls: ['./lead-detail-page.scss', './lead-detail-cards.scss', '../components/leads-menu.scss'],
+  styleUrls: ['./lead-detail-page.scss', './lead-detail-cards.scss', '../components/leads-menu.scss', './lead-detail-deals.scss'],
 })
 export class LeadDetailPage {
   private readonly route = inject(ActivatedRoute);
@@ -253,6 +253,29 @@ export class LeadDetailPage {
   }
 
   // ---- Deals ----------------------------------------------------------------------------------------
+
+  /** An earlier won deal of this client that is still waiting to be finalized. */
+  protected finalizeDeal(lead: LeadDetail, deal: Opportunity): void {
+    this.dialog
+      .open<FinalizeDialog, FinalizeDialogData, LeadDetail>(FinalizeDialog, {
+        data: {
+          lead: { id: lead.id, name: `${lead.name} · Deal #${deal.sequence_no}`, proposed_amount: deal.proposed_amount },
+          opportunityId: deal.id,
+        },
+      })
+      .afterClosed()
+      .subscribe((fresh) => {
+        if (fresh) {
+          this.apply(fresh);
+          this.snack.open(`Deal #${deal.sequence_no} finalized.`, undefined, { duration: 3000 });
+        }
+      });
+  }
+
+  /** A deal's own requirements; Deal #1 falls back to what was written on the lead itself. */
+  protected dealRequirements(deal: Opportunity, lead: LeadDetail): string {
+    return deal.requirements || (deal.sequence_no === 1 ? lead.requirements : '');
+  }
 
   /** "New project": the next deal with this client. While one is open this just shows it. */
   protected newDeal(lead: LeadDetail): void {

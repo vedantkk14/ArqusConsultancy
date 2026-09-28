@@ -181,6 +181,7 @@ def with_list_annotations(qs: QuerySet) -> QuerySet:
     return qs.annotate(
         last_activity_at=last_activity(),
         is_finalized=integrations.finalized_exists(LEAD_REF),
+        final_amount=integrations.finalized_total(LEAD_REF),
         deals_count=deals_count(),
     )
 

@@ -63,6 +63,8 @@ export interface LeadListItem {
   allowed_transitions: LeadStatus[];
   /** Only sent to roles that may see the final amount (Admin, Sales Manager). */
   finalized?: boolean;
+  /** Admin and Sales Manager only: the finalized deal total (null until finalized). */
+  final_amount?: string | null;
   /** The deal the row's status, follow-up and value come from (the lead's latest). */
   current_opportunity_id: number | null;
   /** How many deals (opportunities) this client has had. */

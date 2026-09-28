@@ -55,7 +55,7 @@
             <tr>
               <td>
                 <span class="who-t">
-                  <a class="stretch" [routerLink]="['/accounts/ledgers', r.id]">{{ r.client }}</a>
+                  <a class="stretch" [routerLink]="['/accounts/ledgers', r.id]">@if (r.client_no) {<span class="cno">#{{ r.client_no }}</span>}{{ r.client }}</a>
                   <span class="ph num">{{ r.phone }}</span>
                 </span>
               </td>
@@ -107,7 +107,7 @@
         <li class="card lc rise-in" [style.--i]="i % 10">
           <span class="lc-top">
             <span class="who-t">
-              <a class="stretch" [routerLink]="['/accounts/ledgers', r.id]">{{ r.client }}</a>
+              <a class="stretch" [routerLink]="['/accounts/ledgers', r.id]">@if (r.client_no) {<span class="cno">#{{ r.client_no }}</span>}{{ r.client }}</a>
               <span class="ph num">{{ r.phone }}</span>
             </span>
             <span class="st"><app-ledger-state [state]="r.state" />@if (r.is_overdue) { <app-overdue-pill [days]="r.days_since" /> }</span>

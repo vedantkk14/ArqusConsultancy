@@ -91,7 +91,7 @@ describe('ProjectsListPage', () => {
     expect(el.querySelectorAll('app-project-rows app-skeleton').length).toBeGreaterThan(0);
     resolve();
     expect(el.querySelectorAll('app-project-rows a.stretch').length).toBe(2);
-    expect(text(el.querySelector('.count'))).toBe('2 projects');
+    expect(text(el.querySelector('.count'))).toBe('2 running projects');
     expect(text(el.querySelector('.insight'))).toBe('2 over budget · 1 near limit · 1 without a project manager');
   });
 
@@ -142,7 +142,7 @@ describe('ProjectsListPage', () => {
 describe('project list helpers', () => {
   it('maps filters to the API query and back', () => {
     const query = toQuery('running', { ...EMPTY_FILTERS, state: 'warn', q: 'x' });
-    expect(query).toEqual({ state: 'warn', q: 'x', status: 'RUNNING', ordering: '-created_at' });
+    expect(query).toEqual({ state: 'warn', q: 'x', status: 'RUNNING', history: '1', ordering: 'recent' });
     expect(filtersFromQuery((k) => (k === 'q' ? 'abc' : null)).q).toBe('abc');
   });
 

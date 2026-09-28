@@ -17,6 +17,7 @@ from django.db.models import (
     DecimalField,
     ExpressionWrapper,
     F,
+    IntegerField,
     OuterRef,
     Q,
     QuerySet,
@@ -246,3 +247,41 @@ def project_summary(qs: QuerySet, status: str) -> dict:
         "budget_total": money_str(budget_total),
         "spent_total": money_str(spent_total),
     }
+
+
+# ---- A client's projects: #1, #2, #3 ----------
+
+
+def with_client_numbers(qs: QuerySet) -> QuerySet:
+    """Annotate each project with its place among the same client's projects (oldest = 1).
+
+    `client_projects`: how many projects the client (the lead behind the deal) has.
+    `project_no`: this project's number among them, by creation.
+    `client_latest`: when the client's newest project was created, so a list can keep a client's
+    projects together, the client with the most recent project first.
+    A project without a deal (legacy) has no client: 1 of 1, grouped by its own date.
+    """
+    same_client = Project.objects.filter(opportunity__lead=OuterRef("opportunity__lead")).order_by()
+    count = same_client.values("opportunity__lead").annotate(c=Count("pk")).values("c")
+    up_to_me = (
+        same_client.filter(
+            Q(created_at__lt=OuterRef("created_at"))
+            | Q(created_at=OuterRef("created_at"), pk__lte=OuterRef("pk"))
+        )
+        .values("opportunity__lead")
+        .annotate(c=Count("pk"))
+        .values("c")
+    )
+    newest = same_client.order_by("-created_at").values("created_at")[:1]
+    return qs.annotate(
+        client_projects=Coalesce(Subquery(count, output_field=IntegerField()), Value(1)),
+        project_no=Coalesce(Subquery(up_to_me, output_field=IntegerField()), Value(1)),
+        client_latest=Coalesce(Subquery(newest), F("created_at")),
+    )
+
+
+def project_no(obj) -> int | None:
+    """`#N` only matters when the client has more than one project."""
+    if (getattr(obj, "client_projects", None) or 1) <= 1:
+        return None
+    return getattr(obj, "project_no", None)

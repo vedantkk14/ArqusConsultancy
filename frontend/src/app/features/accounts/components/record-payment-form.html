@@ -3,7 +3,7 @@
     <label for="rp-ledger-q">Client</label>
     @if (picked(); as p) {
       <div class="picked-client">
-        <span><strong>{{ p.client }}</strong> · <span class="num">{{ p.phone }}</span></span>
+        <span><strong>@if (p.client_no) {#{{ p.client_no }} }{{ p.client }}</strong> · <span class="num">{{ p.phone }}</span></span>
         @if (!locked()) {
           <button type="button" class="fill" (click)="change()" [attr.aria-label]="'Change client from ' + p.client">Change</button>
         }
@@ -23,7 +23,7 @@
           @for (o of options(); track o.id) {
             <li>
               <button type="button" (click)="pick(o)">
-                <span>{{ o.client }}</span>
+                <span>@if (o.client_no) {<span class="cno">#{{ o.client_no }}</span>}{{ o.client }}</span>
                 <span class="ph num">Outstanding {{ o.outstanding | inr }}</span>
               </button>
             </li>

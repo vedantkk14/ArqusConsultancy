@@ -74,6 +74,7 @@ class LeadListSerializer(serializers.ModelSerializer):
     days_overdue = serializers.SerializerMethodField()
     allowed_transitions = serializers.SerializerMethodField()
     finalized = serializers.SerializerMethodField()
+    final_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
@@ -96,6 +97,7 @@ class LeadListSerializer(serializers.ModelSerializer):
             "created_at",
             "allowed_transitions",
             "finalized",
+            "final_amount",
             "current_opportunity_id",
             "deals_count",
         ]
@@ -106,12 +108,17 @@ class LeadListSerializer(serializers.ModelSerializer):
     def get_finalized(self, lead):
         return getattr(lead, "is_finalized", None)
 
+    def get_final_amount(self, lead):
+        value = getattr(lead, "final_amount", None)
+        return None if value is None else f"{value:.2f}"
+
     def to_representation(self, lead):
         data = super().to_representation(lead)
         request = self.context.get("request")
         # Only roles allowed to see the final amount learn whether it is finalized.
         if request is None or not services.can_see_final_amount(request.user):
             data.pop("finalized", None)
+            data.pop("final_amount", None)
         return data
 
     def get_allowed_transitions(self, lead) -> list[str]:

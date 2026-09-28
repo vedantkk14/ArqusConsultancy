@@ -10,7 +10,7 @@ export const PAGE_SIZE = 20;
 /** Fixed query parts per page mode (the user's filters come on top). */
 export const MODE_PRESETS: Record<LedgerMode, { params: QueryParams; ordering: string }> = {
   all: { params: {}, ordering: '-created_at' },
-  pending: { params: { has_balance: 'true' }, ordering: '-days_since' },
+  pending: { params: { has_balance: 'true' }, ordering: '-created_at' },
 };
 
 export function toQuery(mode: LedgerMode, filters: LedgerFilters): QueryParams {

@@ -16,7 +16,7 @@
     <mat-autocomplete #clientList="matAutocomplete" class="client-list" (optionSelected)="pick($event.option.value)">
       @for (o of options(); track o.id) {
         <mat-option [value]="o">
-          <span class="opt-row"><span class="opt-nm">{{ o.client }}</span><span class="opt-ph num">{{ o.phone }}</span></span>
+          <span class="opt-row"><span class="opt-nm">{{ label(o.client, o.client_no) }}</span><span class="opt-ph num">{{ o.phone }}</span></span>
         </mat-option>
       } @empty {
         <mat-option disabled>No client matches “{{ search() }}”.</mat-option>
@@ -60,7 +60,7 @@
     <dl class="doc-meta">
       <div>
         <dt>Client</dt>
-        <dd>{{ s.client.name }}</dd>
+        <dd>{{ label(s.client.name, s.client.no) }}</dd>
       </div>
       <div>
         <dt>Phone</dt>

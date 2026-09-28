@@ -96,9 +96,18 @@ export class ProjectsListPage {
     this.mode === 'running' && this.isAdmin() ? listInsight(this.store.summary()) : '',
   );
   protected readonly countText = computed(() => {
+    if (!this.store.loaded()) {
+      return 'Loading…';
+    }
     const n = this.store.count();
-    const kind = this.mode === 'completed' ? 'completed ' : '';
-    return this.store.loaded() ? `${n} ${kind}${n === 1 ? 'project' : 'projects'}` : 'Loading…';
+    if (this.mode === 'completed') {
+      return `${n} completed ${n === 1 ? 'project' : 'projects'}`;
+    }
+    // Running also lists returning clients' earlier (completed) projects: count them apart.
+    const past = this.store.rows().filter((r) => r.status === 'COMPLETED').length;
+    const running = n - past;
+    const base = `${running} running ${running === 1 ? 'project' : 'projects'}`;
+    return past ? `${base} · ${past} earlier` : base;
   });
   protected readonly hasFilters = computed(() =>
     Object.entries(this.filters()).some(([key, value]) => key !== 'ordering' && value !== ''),

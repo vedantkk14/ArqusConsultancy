@@ -11,7 +11,7 @@ export const PAGE_SIZE = 20;
 export const MODE_PRESETS: Record<ListMode, { params: QueryParams; ordering: string }> = {
   // Every status by default (won and lost included), most recently active first.
   all: { params: {}, ordering: DEFAULT_ORDERING },
-  overdue: { params: { followup: 'overdue' }, ordering: '-days_overdue' },
+  overdue: { params: { followup: 'overdue' }, ordering: DEFAULT_ORDERING },
   won: { params: { status: 'WON' }, ordering: '-won_at' },
   lost: { params: { status: 'LOST' }, ordering: '-last_activity_at' },
 };

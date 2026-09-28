@@ -74,6 +74,7 @@
       [showSpent]="!isSalesManager()"
       [skeleton]="!store.loaded()"
       [now]="now()"
+      [markCompleted]="mode === 'running'"
       (assign)="assign($event)"
     />
   </section>

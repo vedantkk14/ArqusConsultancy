@@ -34,6 +34,8 @@ export interface ProjectListItem {
   completed_at: string | null;
   created_at: string;
   pm_name: string | null;
+  /** This client's Nth deal, only when they have more than one project (>= 2). Else absent. */
+  deal_no?: number | null;
   /** Admin only. */
   pm?: Person | null;
   /** Expenses so far (non-void). */
@@ -53,6 +55,8 @@ export interface ProjectListItem {
 
 /** Admin only: ledger figures from accounts. Null until accounts can answer. */
 export interface Finance {
+  /** Admin only: lets the Finance panel offer Revise total. */
+  ledger_id?: number | null;
   total_amount: string;
   received: string | null;
   outstanding: string | null;

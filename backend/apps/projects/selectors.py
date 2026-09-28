@@ -158,7 +158,7 @@ def projects_for(user) -> QuerySet:
 
     A Sales Manager reads every project (read-only, no money: SalesManagerProjectSerializer).
     """
-    qs = Project.objects.select_related("pm")
+    qs = Project.objects.select_related("pm", "opportunity")
     if user.role in (ADMIN, SALES_MANAGER):
         return qs
     if user.role == PROJECT_MANAGER:

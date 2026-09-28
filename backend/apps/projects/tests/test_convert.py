@@ -170,6 +170,7 @@ def test_admin_detail_carries_finance_and_margins(
         {"amount": Decimal("50000"), "category": "LABOUR", "spent_on": selectors.business_today()},
     )  # fmt: skip
     finance = client_for(admin).get(f"{BASE}/{project.pk}").json()["finance"]
+    finance.pop("ledger_id")  # this test's `accounts` fixture is a bare mock, no real ledger
     assert finance == {
         "total_amount": "800000.00",
         "received": "300000.00",

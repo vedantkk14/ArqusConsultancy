@@ -15,7 +15,7 @@ export const PAGE_SIZE = 20;
 
 /** Fixed query parts per page mode (the user's filters come on top). */
 export const MODE_PRESETS: Record<ProjectMode, { params: QueryParams; ordering: string }> = {
-  running: { params: { status: 'RUNNING' }, ordering: '-usage_pct' },
+  running: { params: { status: 'RUNNING' }, ordering: '-created_at' },
   completed: { params: { status: 'COMPLETED' }, ordering: '-created_at' },
 };
 

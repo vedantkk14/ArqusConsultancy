@@ -13,6 +13,7 @@ import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { ImportDialog } from '../components/dialogs/import-dialog';
 import { AssignDialog, AssignDialogData } from '../components/dialogs/assign-dialog';
+import { NewDealDialog, NewDealDialogData } from '../components/dialogs/new-deal-dialog';
 import { ExportDialog, ExportDialogData } from '../components/dialogs/export-dialog';
 import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finalize-dialog';
 import { SnoozeDialog } from '../components/dialogs/snooze-dialog';
@@ -28,6 +29,7 @@ import {
   LeadFilters,
   LeadListItem,
   ListMode,
+  Opportunity,
   isOpenStatus,
 } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
@@ -191,19 +193,18 @@ export class LeadsListPage {
       open(lead.current_opportunity_id);
       return;
     }
-    this.api.startOpportunity(lead.id).subscribe({
-      next: (deal) => {
-        this.snack.open(`Deal #${deal.sequence_no} started for ${lead.name}.`, undefined, { duration: 3500 });
-        open(deal.id);
-      },
-      error: (err: ApiError) => {
-        if (err.code === 'opportunity_open') {
-          open(Number(err.details?.['opportunity_id']) || null);
+    this.dialog
+      .open<NewDealDialog, NewDealDialogData, Opportunity>(NewDealDialog, {
+        data: { leadId: lead.id, name: lead.name, assignedToId: lead.assigned_to?.id ?? null },
+      })
+      .afterClosed()
+      .subscribe((deal) => {
+        if (!deal) {
           return;
         }
-        this.snack.open(err.message || "Couldn't start a new deal.", 'Dismiss', { duration: 5000 });
-      },
-    });
+        this.snack.open(`Deal #${deal.sequence_no} started for ${lead.name}.`, undefined, { duration: 3500 });
+        open(deal.id);
+      });
   }
 
   protected bulkAssign(): void {

@@ -19,6 +19,7 @@ import { InrPipe } from '../../../shared/money/inr.pipe';
 import { PanelHead } from '../../dashboard/components/panel-head';
 import { ActivityComposer } from '../components/activity-composer';
 import { AssignDialog, AssignDialogData } from '../components/dialogs/assign-dialog';
+import { NewDealDialog, NewDealDialogData } from '../components/dialogs/new-deal-dialog';
 import { EditLeadDialog, EditLeadDialogData } from '../components/dialogs/edit-lead-dialog';
 import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finalize-dialog';
 import { StatusDialog, StatusDialogData } from '../components/dialogs/status-dialog';
@@ -29,7 +30,7 @@ import { LeadTimeline } from '../components/lead-timeline';
 import { OpportunitiesPanel } from '../components/opportunities-panel';
 import { MoneyInput, isPositiveMoney } from '../components/money-input';
 import { StageStepper } from '../components/stage-stepper';
-import { LOST_REASONS, LeadDetail, LeadStatus, isOpenStatus } from '../data/lead.models';
+import { LOST_REASONS, LeadDetail, LeadStatus, Opportunity, isOpenStatus } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
 import { atBusinessTime, formatBusinessFull, nextMonday, relativeLabel } from '../utils/business-time';
 import { formatPhone, toTelHref } from '../utils/phone';
@@ -260,22 +261,19 @@ export class LeadDetailPage {
       this.snack.open(`${DEAL_OPEN_TOOLTIP}: Deal #${this.current()?.sequence_no ?? ''}.`, undefined, { duration: 3000 });
       return;
     }
-    this.starting.set(true);
-    this.api.startOpportunity(lead.id).subscribe({
-      next: (deal) => {
-        this.starting.set(false);
+    this.dialog
+      .open<NewDealDialog, NewDealDialogData, Opportunity>(NewDealDialog, {
+        data: { leadId: lead.id, name: lead.name, assignedToId: lead.assigned_to?.id ?? null },
+      })
+      .afterClosed()
+      .subscribe((deal) => {
+        if (!deal) {
+          return;
+        }
         this.snack.open(`Deal #${deal.sequence_no} started.`, undefined, { duration: 3000 });
         void this.router.navigate([], { relativeTo: this.route, queryParams: { deal: deal.id }, replaceUrl: true });
         this.refresh();
-      },
-      error: (err: ApiError) => {
-        this.starting.set(false);
-        this.snack.open(err.code === 'opportunity_open' ? `${DEAL_OPEN_TOOLTIP}.` : err.message, 'Dismiss', {
-          duration: 5000,
-        });
-        this.refresh();
-      },
-    });
+      });
   }
 
   // ---- Cards ----------------------------------------------------------------------------------------

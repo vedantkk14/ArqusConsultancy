@@ -115,6 +115,8 @@ export interface Opportunity {
   /** Admin and Sales Manager only (absent for a Sales Exec, not even null). */
   project_id?: number | null;
   project_name?: string | null;
+  project_status?: 'RUNNING' | 'COMPLETED' | null;
+  project_pm_name?: string | null;
   ledger_id?: number | null;
   finance?: LeadFinance;
 }
@@ -122,6 +124,7 @@ export interface Opportunity {
 export interface NewOpportunity {
   assigned_to?: number | null;
   requirements?: string;
+  next_followup_at?: string | null;
 }
 
 /** Excel export: every lead, or those created in one month ("YYYY-MM"). */

@@ -56,6 +56,7 @@ class ProjectPMSerializer(serializers.ModelSerializer):
 
     pm_name = serializers.SerializerMethodField()
     spent = serializers.SerializerMethodField()
+    deal_no = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -70,6 +71,7 @@ class ProjectPMSerializer(serializers.ModelSerializer):
             "created_at",
             "pm_name",
             "spent",
+            "deal_no",
         )
 
     def get_pm_name(self, obj):
@@ -77,6 +79,11 @@ class ProjectPMSerializer(serializers.ModelSerializer):
 
     def get_spent(self, obj):
         return selectors.money_str(obj.spent)
+
+    def get_deal_no(self, obj):
+        """This client's Nth deal (>= 2 when they have more than one project). None for 1st/only."""
+        seq = obj.opportunity.sequence_no if obj.opportunity_id else None
+        return seq if seq and seq > 1 else None
 
 
 class ProjectPMDetailSerializer(ProjectPMSerializer):
@@ -152,6 +159,7 @@ class ProjectAdminDetailSerializer(ProjectAdminSerializer):
         if raw is None:
             return None
         return {
+            "ledger_id": raw.get("ledger_id"),
             "total_amount": selectors.money_str(raw["total_amount"]),
             "received": None if raw["received"] is None else selectors.money_str(raw["received"]),
             "outstanding": (
@@ -215,6 +223,7 @@ class SalesManagerProjectSerializer(serializers.ModelSerializer):
 
     pm_name = serializers.SerializerMethodField()
     lead_id = serializers.SerializerMethodField()
+    deal_no = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -229,10 +238,15 @@ class SalesManagerProjectSerializer(serializers.ModelSerializer):
             "completed_at",
             "created_at",
             "pm_name",
+            "deal_no",
         )
 
     def get_pm_name(self, obj):
         return obj.pm.display_name if obj.pm else None
+
+    def get_deal_no(self, obj):
+        seq = obj.opportunity.sequence_no if obj.opportunity_id else None
+        return seq if seq and seq > 1 else None
 
     def get_lead_id(self, obj):
         """The client's lead, so the project links back to their lead profile."""

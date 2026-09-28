@@ -185,7 +185,7 @@ describe('LeadsListPage', () => {
     expect(TestBed.inject(Router).url).toBe('/leads/1?deal=10');
   });
 
-  it('"New project" on a closed lead starts Deal #2 and opens it', async () => {
+  it('"New project" on a closed lead opens a form, then starts Deal #2 and opens it', async () => {
     const { api, el, resolve, harness } = await setup(Role.SalesManager);
     resolve([makeLead(2, { status: 'WON', allowed_transitions: ['LOST'] })]);
     el.querySelector<HTMLButtonElement>('button[aria-label^="More actions"]')!.click();
@@ -194,7 +194,18 @@ describe('LeadsListPage', () => {
     expect(item.classList).not.toContain('is-off');
     item.click();
     await harness.fixture.whenStable();
-    expect(api.startCalls).toEqual([{ id: 2, body: {} }]);
+    harness.detectChanges();
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    expect(text(overlay)).toContain('New project');
+    const requirements = document.getElementById('nd-req') as HTMLTextAreaElement;
+    requirements.value = 'Second turf install';
+    requirements.dispatchEvent(new Event('input'));
+    [...overlay.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b).startsWith('Start deal'))!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    await new Promise((r) => setTimeout(r, 300));
+    await harness.fixture.whenStable();
+    expect(api.startCalls).toEqual([{ id: 2, body: { requirements: 'Second turf install', assigned_to: 7, next_followup_at: null } }]);
     expect(TestBed.inject(Router).url).toBe('/leads/2?deal=99');
   });
 

@@ -99,6 +99,13 @@ tbody tr {
   color: var(--ink-3);
   font-size: var(--text-xs);
 }
+
+// Marks the client's 2nd+ project so same-named rows stay tellable apart.
+.deal-no {
+  margin-right: 4px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
 .neg {
   color: var(--negative);
   font-weight: 600;

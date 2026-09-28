@@ -10,7 +10,9 @@
   </div>
   <div class="head-a">
     @if (isManager()) {
-      <button matButton="outlined" type="button" (click)="exportExcel()"><mat-icon>download</mat-icon>Export as Excel</button>
+      @if (mode !== 'won') {
+        <button matButton="outlined" type="button" (click)="exportExcel()"><mat-icon>download</mat-icon>Export as Excel</button>
+      }
       @if (mode === 'all') {
         <button matButton="outlined" type="button" (click)="importLeads()"><mat-icon>upload_file</mat-icon>Import<span class="lg">&nbsp;from Excel</span></button>
         <a matButton="filled" routerLink="/leads/new"><mat-icon>add</mat-icon>Add lead</a>
@@ -20,9 +22,14 @@
 </header>
 
 @if (mode === 'won') {
-  <div class="seg" role="group" aria-label="Won leads">
-    <button type="button" [attr.aria-pressed]="!awaitingOnly()" (click)="setAwaiting(false)">All won</button>
-    <button type="button" [attr.aria-pressed]="awaitingOnly()" (click)="setAwaiting(true)">Awaiting finalization</button>
+  <div class="seg-row">
+    <div class="seg" role="group" aria-label="Won leads">
+      <button type="button" [attr.aria-pressed]="!awaitingOnly()" (click)="setAwaiting(false)">All won</button>
+      <button type="button" [attr.aria-pressed]="awaitingOnly()" (click)="setAwaiting(true)">Awaiting finalization</button>
+    </div>
+    @if (isManager()) {
+      <button matButton="outlined" type="button" (click)="exportExcel()"><mat-icon>download</mat-icon>Export as Excel</button>
+    }
   </div>
 }
 

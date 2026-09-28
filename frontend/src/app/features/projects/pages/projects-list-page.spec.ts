@@ -142,7 +142,7 @@ describe('ProjectsListPage', () => {
 describe('project list helpers', () => {
   it('maps filters to the API query and back', () => {
     const query = toQuery('running', { ...EMPTY_FILTERS, state: 'warn', q: 'x' });
-    expect(query).toEqual({ state: 'warn', q: 'x', status: 'RUNNING', ordering: '-usage_pct' });
+    expect(query).toEqual({ state: 'warn', q: 'x', status: 'RUNNING', ordering: '-created_at' });
     expect(filtersFromQuery((k) => (k === 'q' ? 'abc' : null)).q).toBe('abc');
   });
 

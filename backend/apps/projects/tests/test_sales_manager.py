@@ -88,7 +88,7 @@ def test_sales_manager_list_rows_have_the_basics(client_for, sales_manager, pm1,
     (row,) = client_for(sales_manager).get(BASE).json()["results"]
     assert set(row) == {
         "id", "name", "client_name", "lead_id", "status", "start_date", "expected_end_date",
-        "completed_at", "created_at", "pm_name",
+        "completed_at", "created_at", "pm_name", "deal_no",
     }  # fmt: skip
 
 

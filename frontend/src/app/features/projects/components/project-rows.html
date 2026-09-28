@@ -57,7 +57,10 @@
             <tr>
               <td>
                 <span class="who-t">
-                  <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
+                  <a class="stretch" [routerLink]="['/projects', p.id]">
+                    @if (p.deal_no) { <span class="deal-no">#{{ p.deal_no }}</span> }
+                    {{ p.name }}
+                  </a>
                   <span class="ph">{{ p.client_name }}</span>
                 </span>
               </td>
@@ -107,7 +110,10 @@
         <li class="card lc rise-in" [style.--i]="i % 10">
           <span class="lc-top">
             <span class="who-t">
-              <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
+              <a class="stretch" [routerLink]="['/projects', p.id]">
+                @if (p.deal_no) { <span class="deal-no">#{{ p.deal_no }}</span> }
+                {{ p.name }}
+              </a>
               <span class="ph">{{ p.client_name }}</span>
             </span>
           </span>

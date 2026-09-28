@@ -47,7 +47,13 @@ function day(iso: string | null): string {
           </p>
           @if (d.project_id) {
             <a class="proj" [routerLink]="['/projects', d.project_id]">
-              <mat-icon aria-hidden="true">assignment</mat-icon>Project: {{ d.project_name }}
+              <mat-icon aria-hidden="true">assignment</mat-icon>
+              <span>
+                Project: {{ d.project_name }}
+                <span class="proj-meta">
+                  · {{ d.project_status === 'COMPLETED' ? 'Completed' : 'Running' }} · {{ d.project_pm_name ?? 'No PM' }}
+                </span>
+              </span>
             </a>
           }
           @if (d.requirements) {
@@ -99,7 +105,8 @@ function day(iso: string | null): string {
       color: var(--brand-deep); font-size: var(--text-sm); font-weight: 500; text-decoration: none;
     }
     .proj:hover { text-decoration: underline; }
-    .proj mat-icon { width: 18px; height: 18px; font-size: 18px; }
+    .proj mat-icon { width: 18px; height: 18px; font-size: 18px; flex: none; }
+    .proj-meta { color: var(--ink-3); font-weight: 400; }
     .more {
       display: inline-flex; align-items: center; gap: 4px; min-height: 40px; margin-top: 4px; padding: 0 8px 0 2px;
       border: 0; border-radius: var(--radius-control); background: transparent; color: var(--ink-2);

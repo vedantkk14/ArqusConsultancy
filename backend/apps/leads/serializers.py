@@ -245,6 +245,7 @@ class OpportunityCreateSerializer(serializers.Serializer):
     requirements = serializers.CharField(
         max_length=REQUIREMENTS_MAX, required=False, allow_blank=True
     )
+    next_followup_at = serializers.DateTimeField(required=False, allow_null=True)
 
 
 class OpportunityUpdateSerializer(serializers.Serializer):

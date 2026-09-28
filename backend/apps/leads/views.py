@@ -151,6 +151,8 @@ class LeadViewSet(viewsets.GenericViewSet):
             link = links.get(row["id"], {})
             row["project_id"] = link.get("project_id")
             row["project_name"] = link.get("project_name")
+            row["project_status"] = link.get("project_status")
+            row["project_pm_name"] = link.get("project_pm_name")
             row["ledger_id"] = link.get("ledger_id")
             if see_total:
                 row["finance"] = link.get("finance")
@@ -479,6 +481,7 @@ class LeadViewSet(viewsets.GenericViewSet):
                 request.user,
                 assigned_to=serializer.validated_data.get("assigned_to"),
                 requirements=serializer.validated_data.get("requirements", ""),
+                next_followup_at=serializer.validated_data.get("next_followup_at"),
             )
             deal = self._deal(lead, deal.pk)
             return Response(self._deal_rows([deal])[0], status=status.HTTP_201_CREATED)

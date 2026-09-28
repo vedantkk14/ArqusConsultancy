@@ -211,7 +211,14 @@ def add_opportunity(lead: Lead, *, by=None, **fields) -> Opportunity:
 
 
 @transaction.atomic
-def start_opportunity(lead: Lead, by, *, assigned_to: int | None = None, requirements: str = ""):
+def start_opportunity(
+    lead: Lead,
+    by,
+    *,
+    assigned_to: int | None = None,
+    requirements: str = "",
+    next_followup_at=None,
+):
     """A new deal with an existing client. Only one open deal per lead: 409 opportunity_open."""
     if not can_start_opportunity(by):
         raise PermissionDenied()
@@ -224,9 +231,15 @@ def start_opportunity(lead: Lead, by, *, assigned_to: int | None = None, require
     )
     if open_deal is not None:
         raise OpportunityOpen(opportunity_id=open_deal.pk)
+    if next_followup_at is not None:
+        validate_followup(LeadStatus.NEW, next_followup_at)
     assignee = _check_assignee(assigned_to) if assigned_to else lead.assigned_to
     opportunity = add_opportunity(
-        lead, by=by, assigned_to=assignee, requirements=(requirements or "").strip()
+        lead,
+        by=by,
+        assigned_to=assignee,
+        requirements=(requirements or "").strip(),
+        next_followup_at=next_followup_at,
     )
     if assignee and assignee.pk != lead.assigned_to_id:
         lead.assigned_to = assignee

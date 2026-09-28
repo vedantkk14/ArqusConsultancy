@@ -142,12 +142,13 @@ def finalize_ledger(opportunity, amount, by, note: str = "") -> Ledger:
 
 
 def get_project_finance(opportunity) -> dict | None:
-    """{total_amount, received, outstanding, finalized} for the deal's ledger, or None without one."""
+    """{ledger_id, total_amount, received, outstanding, finalized} for the deal's ledger, or None."""
     ledger = Ledger.objects.filter(opportunity=opportunity).first()
     if ledger is None:
         return None
     received = selectors.received_for(ledger)
     return {
+        "ledger_id": ledger.pk,
         "total_amount": ledger.total_amount,
         "received": received,
         "outstanding": ledger.total_amount - received,

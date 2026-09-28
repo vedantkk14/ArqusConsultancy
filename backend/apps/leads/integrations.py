@@ -124,13 +124,19 @@ def finance_for(opportunity) -> dict:
 
 
 def deal_links(opportunity_ids) -> dict[int, dict]:
-    """{opportunity_id: {ledger_id, project_id, project_name, finance}} for the given deals.
-
-    Two queries whatever the number of deals. The view decides which keys a role may see.
-    """
+    """{opportunity_id: {ledger_id, project_id, project_name, project_status, project_pm_name,
+    finance}} for the given deals. Two queries whatever the number of deals; the view decides which
+    keys a role may see."""
     ids = [i for i in opportunity_ids if i]
     out = {
-        i: {"ledger_id": None, "project_id": None, "project_name": None, "finance": _finance(None)}
+        i: {
+            "ledger_id": None,
+            "project_id": None,
+            "project_name": None,
+            "project_status": None,
+            "project_pm_name": None,
+            "finance": _finance(None),
+        }
         for i in ids
     }
     model = _ledger_model()
@@ -140,11 +146,12 @@ def deal_links(opportunity_ids) -> dict[int, dict]:
             out[ledger.opportunity_id]["finance"] = _finance(ledger)
     project = _project_model()
     if project is not None and ids:
-        for pid, name, opp_id in project.objects.filter(opportunity_id__in=ids).values_list(
-            "id", "name", "opportunity_id"
-        ):
-            out[opp_id]["project_id"] = pid
-            out[opp_id]["project_name"] = name
+        rows = project.objects.filter(opportunity_id__in=ids).select_related("pm")
+        for p in rows:
+            out[p.opportunity_id]["project_id"] = p.pk
+            out[p.opportunity_id]["project_name"] = p.name
+            out[p.opportunity_id]["project_status"] = p.status
+            out[p.opportunity_id]["project_pm_name"] = p.pm.display_name if p.pm else None
     return out
 
 

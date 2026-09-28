@@ -205,6 +205,10 @@
             </dl>
             @if (!f.finalized) {
               <p class="small">The deal is not finalized yet.</p>
+            } @else if (f.ledger_id) {
+              <button matButton="outlined" class="revise" type="button" (click)="reviseTotal(p)">
+                <mat-icon>edit</mat-icon>Revise total
+              </button>
             }
           } @else {
             <p class="small">Awaiting accounts data</p>

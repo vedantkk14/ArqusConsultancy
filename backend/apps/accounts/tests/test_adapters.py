@@ -41,7 +41,10 @@ def test_get_project_finance_shapes(make_opportunity, make_payment, admin):
     lead = make_opportunity()
     assert services.get_project_finance(lead) is None  # no ledger
     services.create_ledger(lead)
-    assert services.get_project_finance(lead) == {
+    finance = services.get_project_finance(lead)
+    ledger_id = finance.pop("ledger_id")
+    assert ledger_id
+    assert finance == {
         "total_amount": Decimal("100000.00"), "received": Decimal("0.00"),
         "outstanding": Decimal("100000.00"), "finalized": False,
     }  # fmt: skip

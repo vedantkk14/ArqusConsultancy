@@ -42,6 +42,7 @@ def finance_for(opportunity) -> dict | None:
     if not raw:
         return None
     return {
+        "ledger_id": raw.get("ledger_id"),
         "total_amount": _dec(raw.get("total_amount")),
         "received": _dec(raw.get("received")),
         "outstanding": _dec(raw.get("outstanding")),

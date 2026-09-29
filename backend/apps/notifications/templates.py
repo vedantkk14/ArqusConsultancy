@@ -47,6 +47,12 @@ TEMPLATES: dict[str, tuple[str, str]] = {
     "project_unassigned": ("Project reassigned", "{project_name} moved to another manager."),
     "project_completed": ("Project completed", "{project_name} was marked complete."),
     "project_reopened": ("Project reopened", "{project_name} was reopened: {reason}"),
+    "leave_requested": (
+        "Leave request",
+        "{employee_name} requested leave from {start_date} to {end_date}.",
+    ),
+    "leave_approved": ("Leave approved", "Your leave from {start_date} to {end_date} was approved."),
+    "leave_rejected": ("Leave rejected", "Your leave from {start_date} to {end_date} was rejected."),
 }
 MONEY_KEYS = {"proposed_amount", "amount", "total_amount"}
 

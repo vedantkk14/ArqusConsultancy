@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.notifications",
     "apps.reports",
+    "apps.leaves",
 ]
 
 MIDDLEWARE = [

@@ -187,6 +187,12 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     ],
   },
   {
+    label: 'Leaves',
+    icon: 'event_available',
+    route: '/leaves',
+    roles: ALL,
+  },
+  {
     label: 'Settings',
     icon: 'settings',
     route: '/settings',

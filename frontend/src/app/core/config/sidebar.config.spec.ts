@@ -14,13 +14,14 @@ describe('sidebar config', () => {
       'Reports',
       'Team',
       'Communication',
+      'Leaves',
       'Settings',
     ]);
   });
 
   it('never shows Accounts, Reports or Team to a project manager (privacy shield)', () => {
     const visible = labels(Role.ProjectManager);
-    expect(visible).toEqual(['Dashboard', 'Projects', 'Expenses', 'Communication', 'Settings']);
+    expect(visible).toEqual(['Dashboard', 'Projects', 'Expenses', 'Communication', 'Leaves', 'Settings']);
   });
 
   it('filters children by role', () => {

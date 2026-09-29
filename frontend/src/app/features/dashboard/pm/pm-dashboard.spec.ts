@@ -161,6 +161,7 @@ describe('PROJECT_MANAGER navigation', () => {
       '/projects/completed',
       '/expenses/all',
       '/communication/notifications',
+      '/leaves',
       '/settings/profile',
     ]);
   });

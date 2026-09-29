@@ -1,0 +1,1190 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-C47BHXAF.js");import {
+  PersonAvatar
+} from "/chunk-USLFVLHY.js";
+import {
+  DialogHead,
+  fieldError,
+  formatBusinessFull,
+  formatDay
+} from "/chunk-CCBQUJFX.js";
+import {
+  ProjectsApi
+} from "/chunk-NTS2YAGV.js";
+import {
+  ErrorState,
+  Skeleton
+} from "/chunk-ANQ6CQ5N.js";
+import {
+  InrPipe
+} from "/chunk-QYAVNIBR.js";
+
+// src/app/features/projects/components/dialogs/reason-dialog.ts
+import { ChangeDetectionStrategy, Component, inject, signal } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { FormsModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import { MatButtonModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i3 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import * as i4 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+function ReasonDialog_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 5);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.reasonError());
+  }
+}
+function ReasonDialog_Conditional_7_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 6);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.error());
+  }
+}
+var ReasonDialog = class _ReasonDialog {
+  data = inject(MAT_DIALOG_DATA);
+  ref = inject(MatDialogRef);
+  reason = "";
+  saving = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "saving" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  reasonError = signal(
+    "",
+    ...ngDevMode ? [{ debugName: "reasonError" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  error = signal(
+    "",
+    ...ngDevMode ? [{ debugName: "error" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  submit() {
+    if (this.saving()) {
+      return;
+    }
+    this.reasonError.set(this.reason.trim() ? "" : "Give a reason.");
+    if (this.reasonError()) {
+      document.getElementById("rd-reason")?.focus();
+      return;
+    }
+    this.saving.set(true);
+    this.error.set("");
+    this.data.action(this.reason.trim()).subscribe({
+      next: (result) => this.ref.close(result ?? true),
+      error: (err) => {
+        this.saving.set(false);
+        this.reasonError.set(fieldError(err, "reason"));
+        this.error.set(this.reasonError() ? "" : err.message);
+      }
+    });
+  }
+  static \u0275fac = function ReasonDialog_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _ReasonDialog)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _ReasonDialog, selectors: [["app-reason-dialog"]], decls: 13, vars: 10, consts: [["headingId", "dlg-title", 3, "closed", "title", "subtitle"], ["novalidate", "", 3, "ngSubmit"], [1, "field"], ["for", "rd-reason"], ["id", "rd-reason", "name", "reason", "maxlength", "300", 3, "ngModelChange", "ngModel"], ["id", "rd-reason-err", 1, "error"], ["role", "alert", 1, "error"], [1, "actions"], ["matButton", "", "type", "button", 3, "click"], ["matButton", "filled", "type", "submit", 3, "disabled"]], template: function ReasonDialog_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275elementStart(0, "app-dialog-head", 0);
+      i0.\u0275\u0275listener("closed", function ReasonDialog_Template_app_dialog_head_closed_0_listener() {
+        return ctx.ref.close();
+      });
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(1, "form", 1);
+      i0.\u0275\u0275listener("ngSubmit", function ReasonDialog_Template_form_ngSubmit_1_listener() {
+        return ctx.submit();
+      });
+      i0.\u0275\u0275elementStart(2, "div", 2)(3, "label", 3);
+      i0.\u0275\u0275text(4);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(5, "textarea", 4);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275twoWayListener("ngModelChange", function ReasonDialog_Template_textarea_ngModelChange_5_listener($event) {
+        i0.\u0275\u0275twoWayBindingSet(ctx.reason, $event) || (ctx.reason = $event);
+        return $event;
+      });
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275conditionalCreate(6, ReasonDialog_Conditional_6_Template, 2, 1, "p", 5);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275conditionalCreate(7, ReasonDialog_Conditional_7_Template, 2, 1, "p", 6);
+      i0.\u0275\u0275elementStart(8, "div", 7)(9, "button", 8);
+      i0.\u0275\u0275listener("click", function ReasonDialog_Template_button_click_9_listener() {
+        return ctx.ref.close();
+      });
+      i0.\u0275\u0275text(10, "Cancel");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(11, "button", 9);
+      i0.\u0275\u0275text(12);
+      i0.\u0275\u0275elementEnd()()();
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275property("title", ctx.data.title)("subtitle", ctx.data.subtitle);
+      i0.\u0275\u0275advance(4);
+      i0.\u0275\u0275textInterpolate(ctx.data.prompt);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275twoWayProperty("ngModel", ctx.reason);
+      i0.\u0275\u0275attribute("aria-invalid", ctx.reasonError() ? true : null)("aria-describedby", ctx.reasonError() ? "rd-reason-err" : null);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.reasonError() ? 6 : -1);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.error() ? 7 : -1);
+      i0.\u0275\u0275advance(4);
+      i0.\u0275\u0275property("disabled", ctx.saving());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275textInterpolate(ctx.saving() ? "Saving\u2026" : ctx.data.confirmText);
+    }
+  }, dependencies: [DialogHead, FormsModule, i1.\u0275NgNoValidate, i1.NgSelectOption, i1.\u0275NgSelectMultipleOption, i1.DefaultValueAccessor, i1.NumberValueAccessor, i1.RangeValueAccessor, i1.CheckboxControlValueAccessor, i1.SelectControlValueAccessor, i1.SelectMultipleControlValueAccessor, i1.RadioControlValueAccessor, i1.NgControlStatus, i1.NgControlStatusGroup, i1.RequiredValidator, i1.MinLengthValidator, i1.MaxLengthValidator, i1.PatternValidator, i1.CheckboxRequiredValidator, i1.EmailValidator, i1.MinValidator, i1.MaxValidator, i1.NgModel, i1.NgModelGroup, i1.NgForm, MatButtonModule, i2.Dir, i3.MatButton, i3.MatMiniFabButton, i3.MatIconButton, i3.MatFabButton, MatDialogModule, i4.MatDialogContainer, i4.MatDialogClose, i4.MatDialogTitle, i4.MatDialogActions, i4.MatDialogContent], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--%NS%space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.in-sheet[_nghost-%COMP%] {\n  width: auto;\n  max-height: none;\n  padding: var(--%NS%space-2) var(--%NS%space-1) calc(var(--%NS%space-4) + env(safe-area-inset-bottom));\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%]   label[_ngcontent-%COMP%], \n.field[_ngcontent-%COMP%]   .lbl[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\nselect[_ngcontent-%COMP%], \ntextarea[_ngcontent-%COMP%], \ninput[type=text][_ngcontent-%COMP%], \ninput[type=search][_ngcontent-%COMP%], \ninput[type=email][_ngcontent-%COMP%], \ninput[type=tel][_ngcontent-%COMP%], \ninput[type=number][_ngcontent-%COMP%], \ninput[type=date][_ngcontent-%COMP%] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface);\n  color: var(--%NS%ink);\n  font: inherit;\n}\nselect[_ngcontent-%COMP%]:focus-visible, \ntextarea[_ngcontent-%COMP%]:focus-visible, \ninput[_ngcontent-%COMP%]:focus-visible {\n  outline: none;\n  border-color: var(--%NS%brand-deep);\n  box-shadow: var(--%NS%field-ring);\n}\ntextarea[_ngcontent-%COMP%] {\n  min-height: 88px;\n  resize: vertical;\n}\n.hint[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.error[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%negative);\n  font-size: var(--%NS%text-sm);\n}\n.note[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-4);\n  padding: 10px 12px;\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n  font-size: var(--%NS%text-sm);\n}\n.note.warn[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-amber);\n  color: var(--%NS%tint-amber-ink);\n}\n.actions[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--%NS%space-2);\n  margin-top: var(--%NS%space-5);\n}\n/*# sourceMappingURL=dialog.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(ReasonDialog, [{
+    type: Component,
+    args: [{ selector: "app-reason-dialog", imports: [DialogHead, FormsModule, MatButtonModule, MatDialogModule], changeDetection: ChangeDetectionStrategy.OnPush, template: `
+    <app-dialog-head headingId="dlg-title" [title]="data.title" [subtitle]="data.subtitle" (closed)="ref.close()" />
+    <form (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="rd-reason">{{ data.prompt }}</label>
+        <textarea
+          id="rd-reason"
+          name="reason"
+          maxlength="300"
+          [(ngModel)]="reason"
+          [attr.aria-invalid]="reasonError() ? true : null"
+          [attr.aria-describedby]="reasonError() ? 'rd-reason-err' : null"
+        ></textarea>
+        @if (reasonError()) {
+          <p class="error" id="rd-reason-err">{{ reasonError() }}</p>
+        }
+      </div>
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <div class="actions">
+        <button matButton type="button" (click)="ref.close()">Cancel</button>
+        <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving\u2026' : data.confirmText }}</button>
+      </div>
+    </form>
+  `, styles: ["/* src/app/features/projects/ui/dialog.scss */\n:host {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n:host(.in-sheet) {\n  width: auto;\n  max-height: none;\n  padding: var(--space-2) var(--space-1) calc(var(--space-4) + env(safe-area-inset-bottom));\n}\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--space-4);\n}\n.field label,\n.field .lbl {\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\nselect,\ntextarea,\ninput[type=text],\ninput[type=search],\ninput[type=email],\ninput[type=tel],\ninput[type=number],\ninput[type=date] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface);\n  color: var(--ink);\n  font: inherit;\n}\nselect:focus-visible,\ntextarea:focus-visible,\ninput:focus-visible {\n  outline: none;\n  border-color: var(--brand-deep);\n  box-shadow: var(--field-ring);\n}\ntextarea {\n  min-height: 88px;\n  resize: vertical;\n}\n.hint {\n  margin: 0;\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.error {\n  margin: 0;\n  color: var(--negative);\n  font-size: var(--text-sm);\n}\n.note {\n  margin: 0 0 var(--space-4);\n  padding: 10px 12px;\n  border-radius: var(--radius-control);\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n  font-size: var(--text-sm);\n}\n.note.warn {\n  background: var(--tint-amber);\n  color: var(--tint-amber-ink);\n}\n.actions {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--space-2);\n  margin-top: var(--space-5);\n}\n/*# sourceMappingURL=dialog.css.map */\n"] }]
+  }], null, null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(ReasonDialog, { className: "ReasonDialog", filePath: "src/app/features/projects/components/dialogs/reason-dialog.ts", lineNumber: 53 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fprojects%2Fcomponents%2Fdialogs%2Freason-dialog.ts%40ReasonDialog";
+  function ReasonDialog_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(ReasonDialog, m.default, [i0, i1, i2, i3, i4], [DialogHead, FormsModule, MatButtonModule, MatDialogModule, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && ReasonDialog_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && ReasonDialog_HmrLoad(d.timestamp)));
+})();
+
+// src/app/features/projects/components/dialogs/receipt-viewer.ts
+import { ChangeDetectionStrategy as ChangeDetectionStrategy2, Component as Component2, DestroyRef, inject as inject2, signal as signal2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { DomSanitizer } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_platform-browser.js?v=a85cac02";
+import { MatButtonModule as MatButtonModule2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import { MAT_DIALOG_DATA as MAT_DIALOG_DATA2, MatDialogModule as MatDialogModule2, MatDialogRef as MatDialogRef2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+import * as i02 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i12 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i22 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import * as i32 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+function ReceiptViewer_Conditional_3_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r1 = i02.\u0275\u0275getCurrentView();
+    i02.\u0275\u0275elementStart(0, "app-error-state", 8);
+    i02.\u0275\u0275listener("retry", function ReceiptViewer_Conditional_3_Template_app_error_state_retry_0_listener() {
+      i02.\u0275\u0275restoreView(_r1);
+      const ctx_r1 = i02.\u0275\u0275nextContext();
+      return i02.\u0275\u0275resetView(ctx_r1.load());
+    });
+    i02.\u0275\u0275elementEnd();
+  }
+}
+function ReceiptViewer_Conditional_4_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275element(0, "app-skeleton", 3);
+  }
+}
+function ReceiptViewer_Conditional_5_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275element(0, "iframe", 4);
+  }
+  if (rf & 2) {
+    const ctx_r1 = i02.\u0275\u0275nextContext();
+    i02.\u0275\u0275property("src", ctx_r1.url(), i02.\u0275\u0275sanitizeResourceUrl);
+  }
+}
+function ReceiptViewer_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275element(0, "img", 5);
+  }
+  if (rf & 2) {
+    const ctx_r1 = i02.\u0275\u0275nextContext();
+    i02.\u0275\u0275property("src", ctx_r1.url(), i02.\u0275\u0275sanitizeUrl);
+  }
+}
+var ReceiptViewer = class _ReceiptViewer {
+  data = inject2(MAT_DIALOG_DATA2);
+  ref = inject2(MatDialogRef2);
+  api = inject2(ProjectsApi);
+  sanitizer = inject2(DomSanitizer);
+  url = signal2(
+    null,
+    ...ngDevMode ? [{ debugName: "url" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  failed = signal2(
+    false,
+    ...ngDevMode ? [{ debugName: "failed" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  isPdf = signal2(
+    this.data.expense.receipt_kind === "pdf",
+    ...ngDevMode ? [{ debugName: "isPdf" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  objectUrl = null;
+  constructor() {
+    inject2(DestroyRef).onDestroy(() => this.revoke());
+    this.load();
+  }
+  load() {
+    this.failed.set(false);
+    this.api.receipt(this.data.expense.id).subscribe({
+      next: (blob) => {
+        this.revoke();
+        this.isPdf.set(blob.type === "application/pdf");
+        this.objectUrl = URL.createObjectURL(blob);
+        this.url.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl));
+      },
+      error: () => this.failed.set(true)
+    });
+  }
+  revoke() {
+    if (this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+      this.objectUrl = null;
+    }
+  }
+  static \u0275fac = function ReceiptViewer_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _ReceiptViewer)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i02.\u0275\u0275defineComponent({ type: _ReceiptViewer, selectors: [["app-receipt-viewer"]], decls: 11, vars: 5, consts: [["headingId", "dlg-title", "title", "Receipt", 3, "closed", "subtitle"], [1, "view"], ["title", "Couldn't load the receipt"], ["height", "320px", "radius", "12px"], ["title", "Receipt PDF", 3, "src"], ["alt", "Receipt image", 3, "src"], [1, "actions"], ["matButton", "filled", "type", "button", 3, "click"], ["title", "Couldn't load the receipt", 3, "retry"]], template: function ReceiptViewer_Template(rf, ctx) {
+    if (rf & 1) {
+      i02.\u0275\u0275elementStart(0, "app-dialog-head", 0);
+      i02.\u0275\u0275pipe(1, "inr");
+      i02.\u0275\u0275listener("closed", function ReceiptViewer_Template_app_dialog_head_closed_0_listener() {
+        return ctx.ref.close();
+      });
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(2, "div", 1);
+      i02.\u0275\u0275conditionalCreate(3, ReceiptViewer_Conditional_3_Template, 1, 0, "app-error-state", 2)(4, ReceiptViewer_Conditional_4_Template, 1, 0, "app-skeleton", 3)(5, ReceiptViewer_Conditional_5_Template, 1, 1, "iframe", 4)(6, ReceiptViewer_Conditional_6_Template, 1, 1, "img", 5);
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(7, "div", 6);
+      i02.\u0275\u0275element(8, "span");
+      i02.\u0275\u0275elementStart(9, "button", 7);
+      i02.\u0275\u0275listener("click", function ReceiptViewer_Template_button_click_9_listener() {
+        return ctx.ref.close();
+      });
+      i02.\u0275\u0275text(10, "Close");
+      i02.\u0275\u0275elementEnd()();
+    }
+    if (rf & 2) {
+      i02.\u0275\u0275property("subtitle", ctx.data.expense.category_label + (ctx.data.expense.vendor ? " \xB7 " + ctx.data.expense.vendor : "") + " \xB7 " + i02.\u0275\u0275pipeBind2(1, 2, ctx.data.expense.amount, "paise"));
+      i02.\u0275\u0275advance(3);
+      i02.\u0275\u0275conditional(ctx.failed() ? 3 : !ctx.url() ? 4 : ctx.isPdf() ? 5 : 6);
+    }
+  }, dependencies: [DialogHead, ErrorState, MatButtonModule2, i12.Dir, i22.MatButton, i22.MatMiniFabButton, i22.MatIconButton, i22.MatFabButton, MatDialogModule2, i32.MatDialogContainer, i32.MatDialogClose, i32.MatDialogTitle, i32.MatDialogActions, i32.MatDialogContent, Skeleton, InrPipe], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--%NS%space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.in-sheet[_nghost-%COMP%] {\n  width: auto;\n  max-height: none;\n  padding: var(--%NS%space-2) var(--%NS%space-1) calc(var(--%NS%space-4) + env(safe-area-inset-bottom));\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%]   label[_ngcontent-%COMP%], \n.field[_ngcontent-%COMP%]   .lbl[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\nselect[_ngcontent-%COMP%], \ntextarea[_ngcontent-%COMP%], \ninput[type=text][_ngcontent-%COMP%], \ninput[type=search][_ngcontent-%COMP%], \ninput[type=email][_ngcontent-%COMP%], \ninput[type=tel][_ngcontent-%COMP%], \ninput[type=number][_ngcontent-%COMP%], \ninput[type=date][_ngcontent-%COMP%] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface);\n  color: var(--%NS%ink);\n  font: inherit;\n}\nselect[_ngcontent-%COMP%]:focus-visible, \ntextarea[_ngcontent-%COMP%]:focus-visible, \ninput[_ngcontent-%COMP%]:focus-visible {\n  outline: none;\n  border-color: var(--%NS%brand-deep);\n  box-shadow: var(--%NS%field-ring);\n}\ntextarea[_ngcontent-%COMP%] {\n  min-height: 88px;\n  resize: vertical;\n}\n.hint[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.error[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%negative);\n  font-size: var(--%NS%text-sm);\n}\n.note[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-4);\n  padding: 10px 12px;\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n  font-size: var(--%NS%text-sm);\n}\n.note.warn[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-amber);\n  color: var(--%NS%tint-amber-ink);\n}\n.actions[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--%NS%space-2);\n  margin-top: var(--%NS%space-5);\n}\n/*# sourceMappingURL=dialog.css.map */", "\n[_nghost-%COMP%] {\n  width: min(720px, 100vw - 32px);\n}\n.view[_ngcontent-%COMP%] {\n  display: grid;\n  min-height: 200px;\n  place-items: center;\n  overflow: hidden;\n  border: 1px solid var(--%NS%line);\n  border-radius: 12px;\n  background: var(--%NS%subtle);\n}\nimg[_ngcontent-%COMP%] {\n  display: block;\n  max-width: 100%;\n  max-height: 65vh;\n  object-fit: contain;\n}\niframe[_ngcontent-%COMP%] {\n  display: block;\n  width: 100%;\n  height: 65vh;\n  border: 0;\n  background: var(--%NS%surface);\n}\n/*# sourceMappingURL=receipt-viewer.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassMetadata(ReceiptViewer, [{
+    type: Component2,
+    args: [{ selector: "app-receipt-viewer", imports: [DialogHead, ErrorState, InrPipe, MatButtonModule2, MatDialogModule2, Skeleton], changeDetection: ChangeDetectionStrategy2.OnPush, template: `
+    <app-dialog-head
+      headingId="dlg-title"
+      title="Receipt"
+      [subtitle]="data.expense.category_label + (data.expense.vendor ? ' \xB7 ' + data.expense.vendor : '') + ' \xB7 ' + (data.expense.amount | inr: 'paise')"
+      (closed)="ref.close()"
+    />
+    <div class="view">
+      @if (failed()) {
+        <app-error-state title="Couldn't load the receipt" (retry)="load()" />
+      } @else if (!url()) {
+        <app-skeleton height="320px" radius="12px" />
+      } @else if (isPdf()) {
+        <iframe title="Receipt PDF" [src]="url()!"></iframe>
+      } @else {
+        <img [src]="url()!" alt="Receipt image" />
+      }
+    </div>
+    <div class="actions">
+      <span></span>
+      <button matButton="filled" type="button" (click)="ref.close()">Close</button>
+    </div>
+  `, styles: ["/* src/app/features/projects/ui/dialog.scss */\n:host {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n:host(.in-sheet) {\n  width: auto;\n  max-height: none;\n  padding: var(--space-2) var(--space-1) calc(var(--space-4) + env(safe-area-inset-bottom));\n}\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--space-4);\n}\n.field label,\n.field .lbl {\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\nselect,\ntextarea,\ninput[type=text],\ninput[type=search],\ninput[type=email],\ninput[type=tel],\ninput[type=number],\ninput[type=date] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface);\n  color: var(--ink);\n  font: inherit;\n}\nselect:focus-visible,\ntextarea:focus-visible,\ninput:focus-visible {\n  outline: none;\n  border-color: var(--brand-deep);\n  box-shadow: var(--field-ring);\n}\ntextarea {\n  min-height: 88px;\n  resize: vertical;\n}\n.hint {\n  margin: 0;\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.error {\n  margin: 0;\n  color: var(--negative);\n  font-size: var(--text-sm);\n}\n.note {\n  margin: 0 0 var(--space-4);\n  padding: 10px 12px;\n  border-radius: var(--radius-control);\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n  font-size: var(--text-sm);\n}\n.note.warn {\n  background: var(--tint-amber);\n  color: var(--tint-amber-ink);\n}\n.actions {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--space-2);\n  margin-top: var(--space-5);\n}\n/*# sourceMappingURL=dialog.css.map */\n", "/* angular:styles/component:scss;262b76cb07c456b7a69bf121b5da8e3227eda4266a9521425d2ee316636afc20;D:/arqus_consultancy/frontend/src/app/features/projects/components/dialogs/receipt-viewer.ts */\n:host {\n  width: min(720px, 100vw - 32px);\n}\n.view {\n  display: grid;\n  min-height: 200px;\n  place-items: center;\n  overflow: hidden;\n  border: 1px solid var(--line);\n  border-radius: 12px;\n  background: var(--subtle);\n}\nimg {\n  display: block;\n  max-width: 100%;\n  max-height: 65vh;\n  object-fit: contain;\n}\niframe {\n  display: block;\n  width: 100%;\n  height: 65vh;\n  border: 0;\n  background: var(--surface);\n}\n/*# sourceMappingURL=receipt-viewer.css.map */\n"] }]
+  }], () => [], null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassDebugInfo(ReceiptViewer, { className: "ReceiptViewer", filePath: "src/app/features/projects/components/dialogs/receipt-viewer.ts", lineNumber: 55 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fprojects%2Fcomponents%2Fdialogs%2Freceipt-viewer.ts%40ReceiptViewer";
+  function ReceiptViewer_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i02.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i02.\u0275\u0275replaceMetadata(ReceiptViewer, m.default, [i02, i12, i22, i32], [DialogHead, ErrorState, MatButtonModule2, MatDialogModule2, Skeleton, InrPipe, Component2, ChangeDetectionStrategy2], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && ReceiptViewer_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && ReceiptViewer_HmrLoad(d.timestamp)));
+})();
+
+// src/app/features/projects/components/expense-rows.ts
+import { NgTemplateOutlet } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_common.js?v=a85cac02";
+import { ChangeDetectionStrategy as ChangeDetectionStrategy3, Component as Component3, input, output } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import { MatMenuModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_menu.js?v=a85cac02";
+import { RouterLink } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_router.js?v=a85cac02";
+import * as i03 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i13 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i23 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i33 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_scrolling.js?v=a85cac02";
+import * as i42 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_menu.js?v=a85cac02";
+var _c0 = (a0) => ({ $implicit: a0 });
+var _c1 = (a0) => ["/projects", a0];
+var _forTrack0 = ($index, $item) => $item.id;
+function ExpenseRows_ng_template_0_Conditional_0_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 5);
+    i03.\u0275\u0275text(1, "Void");
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r1 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275attribute("title", e_r1.void_reason);
+  }
+}
+function ExpenseRows_ng_template_0_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275conditionalCreate(0, ExpenseRows_ng_template_0_Conditional_0_Template, 2, 1, "span", 5);
+  }
+  if (rf & 2) {
+    const e_r1 = ctx.$implicit;
+    i03.\u0275\u0275conditional(e_r1.is_void ? 0 : -1);
+  }
+}
+function ExpenseRows_ng_template_2_Conditional_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 7)(1, "mat-icon", 9);
+    i03.\u0275\u0275text(2);
+    i03.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const e_r2 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275textInterpolate(e_r2.receipt_kind === "pdf" ? "picture_as_pdf" : "image");
+  }
+}
+function ExpenseRows_ng_template_2_Conditional_2_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r3 = i03.\u0275\u0275getCurrentView();
+    i03.\u0275\u0275elementStart(0, "button", 10);
+    i03.\u0275\u0275listener("click", function ExpenseRows_ng_template_2_Conditional_2_Template_button_click_0_listener() {
+      i03.\u0275\u0275restoreView(_r3);
+      const e_r2 = i03.\u0275\u0275nextContext().$implicit;
+      const ctx_r3 = i03.\u0275\u0275nextContext();
+      return i03.\u0275\u0275resetView(ctx_r3.emit("receipt", e_r2));
+    });
+    i03.\u0275\u0275elementStart(1, "mat-icon", 9);
+    i03.\u0275\u0275text(2);
+    i03.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const e_r2 = i03.\u0275\u0275nextContext().$implicit;
+    const ctx_r3 = i03.\u0275\u0275nextContext();
+    i03.\u0275\u0275attribute("aria-label", "View receipt: " + ctx_r3.label(e_r2));
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275textInterpolate(e_r2.receipt_kind === "pdf" ? "picture_as_pdf" : "image");
+  }
+}
+function ExpenseRows_ng_template_2_Conditional_3_Conditional_5_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r6 = i03.\u0275\u0275getCurrentView();
+    i03.\u0275\u0275elementStart(0, "button", 14);
+    i03.\u0275\u0275listener("click", function ExpenseRows_ng_template_2_Conditional_3_Conditional_5_Template_button_click_0_listener() {
+      i03.\u0275\u0275restoreView(_r6);
+      const e_r2 = i03.\u0275\u0275nextContext(2).$implicit;
+      const ctx_r3 = i03.\u0275\u0275nextContext();
+      return i03.\u0275\u0275resetView(ctx_r3.emit("edit", e_r2));
+    });
+    i03.\u0275\u0275elementStart(1, "mat-icon");
+    i03.\u0275\u0275text(2, "edit");
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275text(3, "Edit ");
+    i03.\u0275\u0275elementEnd();
+  }
+}
+function ExpenseRows_ng_template_2_Conditional_3_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r5 = i03.\u0275\u0275getCurrentView();
+    i03.\u0275\u0275elementStart(0, "button", 11)(1, "mat-icon", 9);
+    i03.\u0275\u0275text(2, "more_vert");
+    i03.\u0275\u0275elementEnd()();
+    i03.\u0275\u0275elementStart(3, "mat-menu", 12, 2);
+    i03.\u0275\u0275conditionalCreate(5, ExpenseRows_ng_template_2_Conditional_3_Conditional_5_Template, 4, 0, "button", 13);
+    i03.\u0275\u0275elementStart(6, "button", 14);
+    i03.\u0275\u0275listener("click", function ExpenseRows_ng_template_2_Conditional_3_Template_button_click_6_listener() {
+      i03.\u0275\u0275restoreView(_r5);
+      const e_r2 = i03.\u0275\u0275nextContext().$implicit;
+      const ctx_r3 = i03.\u0275\u0275nextContext();
+      return i03.\u0275\u0275resetView(ctx_r3.emit("void", e_r2));
+    });
+    i03.\u0275\u0275elementStart(7, "mat-icon");
+    i03.\u0275\u0275text(8, "block");
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275text(9, "Void\u2026 ");
+    i03.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const more_r7 = i03.\u0275\u0275reference(4);
+    const e_r2 = i03.\u0275\u0275nextContext().$implicit;
+    const ctx_r3 = i03.\u0275\u0275nextContext();
+    i03.\u0275\u0275property("matMenuTriggerFor", more_r7);
+    i03.\u0275\u0275attribute("aria-label", "More actions: " + ctx_r3.label(e_r2));
+    i03.\u0275\u0275advance(5);
+    i03.\u0275\u0275conditional(ctx_r3.allowEdit() ? 5 : -1);
+  }
+}
+function ExpenseRows_ng_template_2_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 6);
+    i03.\u0275\u0275conditionalCreate(1, ExpenseRows_ng_template_2_Conditional_1_Template, 3, 1, "span", 7)(2, ExpenseRows_ng_template_2_Conditional_2_Template, 3, 2, "button", 8);
+    i03.\u0275\u0275conditionalCreate(3, ExpenseRows_ng_template_2_Conditional_3_Template, 10, 3);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r2 = ctx.$implicit;
+    const ctx_r3 = i03.\u0275\u0275nextContext();
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(e_r2.has_receipt && !ctx_r3.showAmount() ? 1 : e_r2.has_receipt ? 2 : -1);
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275conditional(e_r2.can_edit ? 3 : -1);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_10_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "th");
+    i03.\u0275\u0275text(1, "Project");
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275elementStart(2, "th", 17);
+    i03.\u0275\u0275text(3, "Logged by");
+    i03.\u0275\u0275elementEnd();
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_11_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "th", 15);
+    i03.\u0275\u0275text(1, "Amount");
+    i03.\u0275\u0275elementEnd();
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_16_For_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "tr", 18)(1, "td")(2, "span", 19);
+    i03.\u0275\u0275element(3, "app-skeleton", 20)(4, "app-skeleton", 21)(5, "app-skeleton", 22)(6, "app-skeleton", 23);
+    i03.\u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const ctx_r3 = i03.\u0275\u0275nextContext(3);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275attribute("colspan", ctx_r3.showProject() ? 7 : 5);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_16_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275repeaterCreate(0, ExpenseRows_Conditional_4_Conditional_16_For_1_Template, 7, 1, "tr", 18, i03.\u0275\u0275repeaterTrackByIdentity);
+  }
+  if (rf & 2) {
+    const ctx_r3 = i03.\u0275\u0275nextContext(2);
+    i03.\u0275\u0275repeater(ctx_r3.placeholders);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_ng_container_9_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementContainer(0);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_10_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 29);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r8 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r8.description);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_11_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 29);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r8 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate1("Voided: ", e_r8.void_reason);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_12_Conditional_4_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 32);
+    i03.\u0275\u0275element(1, "app-person-avatar", 33);
+    i03.\u0275\u0275text(2);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r8 = i03.\u0275\u0275nextContext(2).$implicit;
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275property("name", e_r8.logged_by.name)("size", 24);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r8.logged_by.name);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_12_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "td")(1, "a", 31);
+    i03.\u0275\u0275text(2);
+    i03.\u0275\u0275elementEnd()();
+    i03.\u0275\u0275elementStart(3, "td", 17);
+    i03.\u0275\u0275conditionalCreate(4, ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_12_Conditional_4_Template, 3, 3, "span", 32);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r8 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275property("routerLink", i03.\u0275\u0275pureFunction1(3, _c1, e_r8.project));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r8.project_name);
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275conditional(e_r8.logged_by ? 4 : -1);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_13_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "td", 34);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275pipe(2, "inr");
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r8 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275classProp("strike", e_r8.is_void);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(i03.\u0275\u0275pipeBind2(2, 3, e_r8.amount, "paise"));
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_ng_container_15_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementContainer(0);
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_For_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "tr")(1, "td", 25);
+    i03.\u0275\u0275text(2);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275elementStart(3, "td")(4, "span");
+    i03.\u0275\u0275text(5);
+    i03.\u0275\u0275elementEnd()();
+    i03.\u0275\u0275elementStart(6, "td", 26)(7, "span", 27);
+    i03.\u0275\u0275text(8);
+    i03.\u0275\u0275template(9, ExpenseRows_Conditional_4_Conditional_17_For_1_ng_container_9_Template, 1, 0, "ng-container", 28);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(10, ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_10_Template, 2, 1, "span", 29);
+    i03.\u0275\u0275conditionalCreate(11, ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_11_Template, 2, 1, "span", 29);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(12, ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_12_Template, 5, 5);
+    i03.\u0275\u0275conditionalCreate(13, ExpenseRows_Conditional_4_Conditional_17_For_1_Conditional_13_Template, 3, 6, "td", 30);
+    i03.\u0275\u0275elementStart(14, "td", 15);
+    i03.\u0275\u0275template(15, ExpenseRows_Conditional_4_Conditional_17_For_1_ng_container_15_Template, 1, 0, "ng-container", 28);
+    i03.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const e_r8 = ctx.$implicit;
+    const ctx_r3 = i03.\u0275\u0275nextContext(3);
+    const tags_r9 = i03.\u0275\u0275reference(1);
+    const acts_r10 = i03.\u0275\u0275reference(3);
+    i03.\u0275\u0275classProp("is-void", e_r8.is_void);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275attribute("title", ctx_r3.full(e_r8.created_at));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(ctx_r3.day(e_r8.spent_on));
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275classMap("cat t-" + ctx_r3.tint(e_r8.category));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r8.category_label);
+    i03.\u0275\u0275advance(3);
+    i03.\u0275\u0275textInterpolate(e_r8.vendor || e_r8.description || "\u2014");
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275property("ngTemplateOutlet", tags_r9)("ngTemplateOutletContext", i03.\u0275\u0275pureFunction1(16, _c0, e_r8));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(e_r8.vendor && e_r8.description ? 10 : -1);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(e_r8.is_void && e_r8.void_reason ? 11 : -1);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(ctx_r3.showProject() ? 12 : -1);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(ctx_r3.showAmount() ? 13 : -1);
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275property("ngTemplateOutlet", acts_r10)("ngTemplateOutletContext", i03.\u0275\u0275pureFunction1(18, _c0, e_r8));
+  }
+}
+function ExpenseRows_Conditional_4_Conditional_17_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275repeaterCreate(0, ExpenseRows_Conditional_4_Conditional_17_For_1_Template, 16, 20, "tr", 24, _forTrack0);
+  }
+  if (rf & 2) {
+    const ctx_r3 = i03.\u0275\u0275nextContext(2);
+    i03.\u0275\u0275repeater(ctx_r3.rows());
+  }
+}
+function ExpenseRows_Conditional_4_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "div", 3)(1, "table")(2, "thead")(3, "tr")(4, "th");
+    i03.\u0275\u0275text(5, "Date");
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275elementStart(6, "th");
+    i03.\u0275\u0275text(7, "Category");
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275elementStart(8, "th");
+    i03.\u0275\u0275text(9, "Details");
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(10, ExpenseRows_Conditional_4_Conditional_10_Template, 4, 0);
+    i03.\u0275\u0275conditionalCreate(11, ExpenseRows_Conditional_4_Conditional_11_Template, 2, 0, "th", 15);
+    i03.\u0275\u0275elementStart(12, "th", 15)(13, "span", 16);
+    i03.\u0275\u0275text(14, "Actions");
+    i03.\u0275\u0275elementEnd()()()();
+    i03.\u0275\u0275elementStart(15, "tbody");
+    i03.\u0275\u0275conditionalCreate(16, ExpenseRows_Conditional_4_Conditional_16_Template, 2, 0)(17, ExpenseRows_Conditional_4_Conditional_17_Template, 2, 0);
+    i03.\u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const ctx_r3 = i03.\u0275\u0275nextContext();
+    i03.\u0275\u0275advance(10);
+    i03.\u0275\u0275conditional(ctx_r3.showProject() ? 10 : -1);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(ctx_r3.showAmount() ? 11 : -1);
+    i03.\u0275\u0275advance(5);
+    i03.\u0275\u0275conditional(ctx_r3.skeleton() ? 16 : 17);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_1_For_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "li", 35);
+    i03.\u0275\u0275element(1, "app-skeleton", 36)(2, "app-skeleton", 37);
+    i03.\u0275\u0275elementEnd();
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275repeaterCreate(0, ExpenseRows_Conditional_5_Conditional_1_For_1_Template, 3, 0, "li", 35, i03.\u0275\u0275repeaterTrackByIdentity);
+  }
+  if (rf & 2) {
+    const ctx_r3 = i03.\u0275\u0275nextContext(2);
+    i03.\u0275\u0275repeater(ctx_r3.placeholders.slice(0, 3));
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_4_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "strong", 44);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275pipe(2, "inr");
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r11 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275classProp("strike", e_r11.is_void);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(i03.\u0275\u0275pipeBind2(2, 3, e_r11.amount, "paise"));
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_ng_container_7_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementContainer(0);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_8_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 29);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r11 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r11.description);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_9_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 29);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r11 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate1("Voided: ", e_r11.void_reason);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_13_Conditional_2_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span");
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r11 = i03.\u0275\u0275nextContext(2).$implicit;
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r11.logged_by.name);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_13_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "a", 31);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(2, ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_13_Conditional_2_Template, 2, 1, "span");
+  }
+  if (rf & 2) {
+    const e_r11 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275property("routerLink", i03.\u0275\u0275pureFunction1(3, _c1, e_r11.project));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r11.project_name);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(e_r11.logged_by ? 2 : -1);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_14_ng_container_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementContainer(0);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_14_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "span", 43);
+    i03.\u0275\u0275template(1, ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_14_ng_container_1_Template, 1, 0, "ng-container", 28);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r11 = i03.\u0275\u0275nextContext().$implicit;
+    i03.\u0275\u0275nextContext(3);
+    const acts_r10 = i03.\u0275\u0275reference(3);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275property("ngTemplateOutlet", acts_r10)("ngTemplateOutletContext", i03.\u0275\u0275pureFunction1(2, _c0, e_r11));
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_For_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "li", 39)(1, "span", 40)(2, "span");
+    i03.\u0275\u0275text(3);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(4, ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_4_Template, 3, 6, "strong", 41);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275elementStart(5, "span", 27);
+    i03.\u0275\u0275text(6);
+    i03.\u0275\u0275template(7, ExpenseRows_Conditional_5_Conditional_2_For_1_ng_container_7_Template, 1, 0, "ng-container", 28);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(8, ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_8_Template, 2, 1, "span", 29);
+    i03.\u0275\u0275conditionalCreate(9, ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_9_Template, 2, 1, "span", 29);
+    i03.\u0275\u0275elementStart(10, "span", 42)(11, "span");
+    i03.\u0275\u0275text(12);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(13, ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_13_Template, 3, 5);
+    i03.\u0275\u0275elementEnd();
+    i03.\u0275\u0275conditionalCreate(14, ExpenseRows_Conditional_5_Conditional_2_For_1_Conditional_14_Template, 2, 4, "span", 43);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const e_r11 = ctx.$implicit;
+    const \u0275$index_162_r12 = ctx.$index;
+    const ctx_r3 = i03.\u0275\u0275nextContext(3);
+    const tags_r9 = i03.\u0275\u0275reference(1);
+    i03.\u0275\u0275styleProp("--%NS%i", \u0275$index_162_r12 % 10);
+    i03.\u0275\u0275classProp("is-void", e_r11.is_void);
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275classMap("cat t-" + ctx_r3.tint(e_r11.category));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(e_r11.category_label);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(ctx_r3.showAmount() ? 4 : -1);
+    i03.\u0275\u0275advance(2);
+    i03.\u0275\u0275textInterpolate(e_r11.vendor || e_r11.description || "\u2014");
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275property("ngTemplateOutlet", tags_r9)("ngTemplateOutletContext", i03.\u0275\u0275pureFunction1(16, _c0, e_r11));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(e_r11.vendor && e_r11.description ? 8 : -1);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(e_r11.is_void && e_r11.void_reason ? 9 : -1);
+    i03.\u0275\u0275advance(3);
+    i03.\u0275\u0275textInterpolate(ctx_r3.day(e_r11.spent_on));
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(ctx_r3.showProject() ? 13 : -1);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(e_r11.has_receipt || e_r11.can_edit ? 14 : -1);
+  }
+}
+function ExpenseRows_Conditional_5_Conditional_2_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275repeaterCreate(0, ExpenseRows_Conditional_5_Conditional_2_For_1_Template, 15, 18, "li", 38, _forTrack0);
+  }
+  if (rf & 2) {
+    const ctx_r3 = i03.\u0275\u0275nextContext(2);
+    i03.\u0275\u0275repeater(ctx_r3.rows());
+  }
+}
+function ExpenseRows_Conditional_5_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "ul", 4);
+    i03.\u0275\u0275conditionalCreate(1, ExpenseRows_Conditional_5_Conditional_1_Template, 2, 0)(2, ExpenseRows_Conditional_5_Conditional_2_Template, 2, 0);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r3 = i03.\u0275\u0275nextContext();
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275conditional(ctx_r3.skeleton() ? 1 : 2);
+  }
+}
+var CATEGORY_TINT = {
+  MATERIALS: "cyan",
+  LABOUR: "teal",
+  TRANSPORT: "slate",
+  EQUIPMENT: "amber",
+  FOOD: "rose",
+  PERMITS: "slate",
+  OTHER: "slate"
+};
+var ExpenseRows = class _ExpenseRows {
+  rows = input.required(
+    ...ngDevMode ? [{ debugName: "rows" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  layout = input(
+    "table",
+    ...ngDevMode ? [{ debugName: "layout" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** The all-expenses page shows the project (as a link) and who logged it. */
+  showProject = input(
+    false,
+    ...ngDevMode ? [{ debugName: "showProject" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  skeleton = input(
+    false,
+    ...ngDevMode ? [{ debugName: "skeleton" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** The all-expenses page can void but not edit (editing happens on the project page). */
+  allowEdit = input(
+    true,
+    ...ngDevMode ? [{ debugName: "allowEdit" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** False for the Sales Manager: no amount column, and the receipt is an icon only. */
+  showAmount = input(
+    true,
+    ...ngDevMode ? [{ debugName: "showAmount" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  action = output();
+  placeholders = Array.from({ length: 5 }, (_, i) => i);
+  day = formatDay;
+  full = formatBusinessFull;
+  tint = (category) => CATEGORY_TINT[category] ?? "slate";
+  label(e) {
+    return `${e.category_label} expense of ${e.amount}${e.vendor ? " from " + e.vendor : ""}`;
+  }
+  emit(kind, expense) {
+    this.action.emit({ kind, expense });
+  }
+  static \u0275fac = function ExpenseRows_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _ExpenseRows)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i03.\u0275\u0275defineComponent({ type: _ExpenseRows, selectors: [["app-expense-rows"]], inputs: { rows: [1, "rows"], layout: [1, "layout"], showProject: [1, "showProject"], skeleton: [1, "skeleton"], allowEdit: [1, "allowEdit"], showAmount: [1, "showAmount"] }, outputs: { action: "action" }, decls: 6, vars: 1, consts: [["tags", ""], ["acts", ""], ["more", "matMenu"], [1, "table-scroll"], [1, "cards"], [1, "tag", "void"], [1, "acts"], ["role", "img", "aria-label", "Receipt attached", 1, "ib"], ["type", "button", 1, "ib"], ["aria-hidden", "true"], ["type", "button", 1, "ib", 3, "click"], ["type", "button", 1, "ib", 3, "matMenuTriggerFor"], ["xPosition", "before"], ["mat-menu-item", "", "type", "button"], ["mat-menu-item", "", "type", "button", 3, "click"], [1, "r"], [1, "sr-only"], [1, "c-by"], ["aria-hidden", "true", 1, "sk"], [1, "sk-row"], ["width", "12%", "height", "14px"], ["width", "10%", "height", "22px", "radius", "999px"], ["width", "30%", "height", "14px"], ["width", "10%", "height", "14px"], [3, "is-void"], [1, "nw"], [1, "det"], [1, "det-t"], [4, "ngTemplateOutlet", "ngTemplateOutletContext"], [1, "ph"], [1, "r", "num", 3, "strike"], [1, "pl", 3, "routerLink"], [1, "who"], [3, "name", "size"], [1, "r", "num"], ["aria-hidden", "true", 1, "card", "lc"], ["width", "45%", "height", "16px"], ["width", "70%", "height", "13px"], [1, "card", "lc", "rise-in", 3, "--%NS%i", "is-void"], [1, "card", "lc", "rise-in"], [1, "lc-top"], [1, "num", 3, "strike"], [1, "lc-meta"], [1, "lc-acts"], [1, "num"]], template: function ExpenseRows_Template(rf, ctx) {
+    if (rf & 1) {
+      i03.\u0275\u0275template(0, ExpenseRows_ng_template_0_Template, 1, 1, "ng-template", null, 0, i03.\u0275\u0275templateRefExtractor)(2, ExpenseRows_ng_template_2_Template, 4, 2, "ng-template", null, 1, i03.\u0275\u0275templateRefExtractor);
+      i03.\u0275\u0275conditionalCreate(4, ExpenseRows_Conditional_4_Template, 18, 3, "div", 3)(5, ExpenseRows_Conditional_5_Template, 3, 1, "ul", 4);
+    }
+    if (rf & 2) {
+      i03.\u0275\u0275advance(4);
+      i03.\u0275\u0275conditional(ctx.layout() === "table" ? 4 : 5);
+    }
+  }, dependencies: [
+    MatIconModule,
+    i13.MatIcon,
+    i23.Dir,
+    MatMenuModule,
+    i33.CdkScrollable,
+    i42.MatMenu,
+    i42.MatMenuItem,
+    i42.MatMenuContent,
+    i42.MatMenuTrigger,
+    i42.MatContextMenuTrigger,
+    NgTemplateOutlet,
+    PersonAvatar,
+    RouterLink,
+    Skeleton,
+    InrPipe
+  ], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n}\ntable[_ngcontent-%COMP%] {\n  width: 100%;\n  border-collapse: separate;\n  border-spacing: 0;\n  font-size: var(--%NS%text-sm);\n}\nth[_ngcontent-%COMP%] {\n  height: 40px;\n  padding: 0 12px;\n  background: var(--%NS%subtle);\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-xs);\n  font-weight: 600;\n  text-align: left;\n  white-space: nowrap;\n}\nth[_ngcontent-%COMP%]:first-child {\n  border-top-left-radius: var(--%NS%radius-sm);\n  border-bottom-left-radius: var(--%NS%radius-sm);\n}\nth[_ngcontent-%COMP%]:last-child {\n  border-top-right-radius: var(--%NS%radius-sm);\n  border-bottom-right-radius: var(--%NS%radius-sm);\n}\ntd[_ngcontent-%COMP%] {\n  height: 56px;\n  padding: 6px 12px;\n  border-bottom: 1px solid var(--%NS%line);\n  color: var(--%NS%ink-2);\n}\ntbody[_ngcontent-%COMP%]   tr[_ngcontent-%COMP%] {\n  transition: background-color var(--%NS%dur-fast);\n}\ntbody[_ngcontent-%COMP%]   tr[_ngcontent-%COMP%]:hover {\n  background: var(--%NS%surface-2);\n}\ntr.is-void[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n}\n.nw[_ngcontent-%COMP%] {\n  white-space: nowrap;\n}\n.r[_ngcontent-%COMP%] {\n  text-align: right;\n  white-space: nowrap;\n}\n.c-by[_ngcontent-%COMP%] {\n  display: none;\n}\n.strike[_ngcontent-%COMP%] {\n  text-decoration: line-through;\n}\n.cat[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  height: 24px;\n  padding: 0 10px;\n  border-radius: var(--%NS%radius-pill);\n  font-size: var(--%NS%text-xs);\n  font-weight: 600;\n  white-space: nowrap;\n}\n.t-slate[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-slate);\n  color: var(--%NS%tint-slate-ink);\n}\n.t-cyan[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n}\n.t-amber[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-amber);\n  color: var(--%NS%tint-amber-ink);\n}\n.t-teal[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-teal);\n  color: var(--%NS%tint-teal-ink);\n}\n.t-rose[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-rose);\n  color: var(--%NS%tint-rose-ink);\n}\n.det[_ngcontent-%COMP%] {\n  max-width: 320px;\n}\n.det-t[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 6px;\n  color: var(--%NS%ink);\n  font-weight: 500;\n  overflow-wrap: anywhere;\n}\n.ph[_ngcontent-%COMP%] {\n  display: block;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-xs);\n  overflow-wrap: anywhere;\n}\n.tag[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  height: 20px;\n  padding: 0 8px;\n  border-radius: var(--%NS%radius-pill);\n  font-size: var(--%NS%text-xs);\n  font-weight: 600;\n}\n.tag.void[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-rose);\n  color: var(--%NS%tint-rose-ink);\n}\n.pl[_ngcontent-%COMP%] {\n  color: var(--%NS%brand-deep);\n  font-weight: 500;\n  text-decoration: none;\n}\n.pl[_ngcontent-%COMP%]:hover {\n  text-decoration: underline;\n}\n.who[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n.acts[_ngcontent-%COMP%] {\n  display: inline-flex;\n  gap: 2px;\n}\n.ib[_ngcontent-%COMP%] {\n  display: inline-grid;\n  width: 40px;\n  height: 40px;\n  place-items: center;\n  border: 0;\n  border-radius: var(--%NS%radius-control);\n  background: transparent;\n  color: var(--%NS%ink-3);\n  cursor: pointer;\n}\n.ib[_ngcontent-%COMP%]:hover {\n  background: var(--%NS%subtle);\n  color: var(--%NS%ink);\n}\n.ib[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n.sk-row[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n}\n.cards[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: var(--%NS%space-3);\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.lc[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: var(--%NS%space-4);\n}\n.lc.is-void[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n}\n.lc-top[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n.lc-top[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: var(--%NS%ink);\n}\n.lc-meta[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 4px 12px;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.lc-acts[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: flex-end;\n  padding-top: 8px;\n  border-top: 1px solid var(--%NS%line);\n}\n.lc-acts[_ngcontent-%COMP%]   .ib[_ngcontent-%COMP%] {\n  width: 48px;\n  height: 44px;\n}\n@media (min-width: 1100px) {\n  .c-by[_ngcontent-%COMP%] {\n    display: table-cell;\n  }\n}\n/*# sourceMappingURL=expense-rows.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i03.\u0275setClassMetadata(ExpenseRows, [{
+    type: Component3,
+    args: [{ selector: "app-expense-rows", imports: [
+      InrPipe,
+      MatIconModule,
+      MatMenuModule,
+      NgTemplateOutlet,
+      PersonAvatar,
+      RouterLink,
+      Skeleton
+    ], changeDetection: ChangeDetectionStrategy3.OnPush, template: `<ng-template #tags let-e>
+  @if (e.is_void) {
+    <span class="tag void" [attr.title]="e.void_reason">Void</span>
+  }
+</ng-template>
+
+<ng-template #acts let-e>
+  <span class="acts">
+    @if (e.has_receipt && !showAmount()) {
+      <span class="ib" role="img" aria-label="Receipt attached">
+        <mat-icon aria-hidden="true">{{ e.receipt_kind === 'pdf' ? 'picture_as_pdf' : 'image' }}</mat-icon>
+      </span>
+    } @else if (e.has_receipt) {
+      <button
+        type="button"
+        class="ib"
+        [attr.aria-label]="'View receipt: ' + label(e)"
+        (click)="emit('receipt', e)"
+      >
+        <mat-icon aria-hidden="true">{{
+          e.receipt_kind === 'pdf' ? 'picture_as_pdf' : 'image'
+        }}</mat-icon>
+      </button>
+    }
+    @if (e.can_edit) {
+      <button
+        type="button"
+        class="ib"
+        [matMenuTriggerFor]="more"
+        [attr.aria-label]="'More actions: ' + label(e)"
+      >
+        <mat-icon aria-hidden="true">more_vert</mat-icon>
+      </button>
+      <mat-menu #more="matMenu" xPosition="before">
+        @if (allowEdit()) {
+          <button mat-menu-item type="button" (click)="emit('edit', e)">
+            <mat-icon>edit</mat-icon>Edit
+          </button>
+        }
+        <button mat-menu-item type="button" (click)="emit('void', e)">
+          <mat-icon>block</mat-icon>Void\u2026
+        </button>
+      </mat-menu>
+    }
+  </span>
+</ng-template>
+
+@if (layout() === 'table') {
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Details</th>
+          @if (showProject()) {
+            <th>Project</th>
+            <th class="c-by">Logged by</th>
+          }
+          @if (showAmount()) {
+            <th class="r">Amount</th>
+          }
+          <th class="r"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (skeleton()) {
+          @for (i of placeholders; track i) {
+            <tr class="sk" aria-hidden="true">
+              <td [attr.colspan]="showProject() ? 7 : 5">
+                <span class="sk-row">
+                  <app-skeleton width="12%" height="14px" />
+                  <app-skeleton width="10%" height="22px" radius="999px" />
+                  <app-skeleton width="30%" height="14px" />
+                  <app-skeleton width="10%" height="14px" />
+                </span>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (e of rows(); track e.id) {
+            <tr [class.is-void]="e.is_void">
+              <td class="nw" [attr.title]="full(e.created_at)">{{ day(e.spent_on) }}</td>
+              <td>
+                <span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span>
+              </td>
+              <td class="det">
+                <span class="det-t"
+                  >{{ e.vendor || e.description || '\u2014'
+                  }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }"
+                /></span>
+                @if (e.vendor && e.description) {
+                  <span class="ph">{{ e.description }}</span>
+                }
+                @if (e.is_void && e.void_reason) {
+                  <span class="ph">Voided: {{ e.void_reason }}</span>
+                }
+              </td>
+              @if (showProject()) {
+                <td>
+                  <a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a>
+                </td>
+                <td class="c-by">
+                  @if (e.logged_by) {
+                    <span class="who"
+                      ><app-person-avatar [name]="e.logged_by.name" [size]="24" />{{
+                        e.logged_by.name
+                      }}</span
+                    >
+                  }
+                </td>
+              }
+              @if (showAmount()) {
+                <td class="r num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</td>
+              }
+              <td class="r">
+                <ng-container *ngTemplateOutlet="acts; context: { $implicit: e }" />
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <ul class="cards">
+    @if (skeleton()) {
+      @for (i of placeholders.slice(0, 3); track i) {
+        <li class="card lc" aria-hidden="true">
+          <app-skeleton width="45%" height="16px" />
+          <app-skeleton width="70%" height="13px" />
+        </li>
+      }
+    } @else {
+      @for (e of rows(); track e.id; let i = $index) {
+        <li class="card lc rise-in" [style.--i]="i % 10" [class.is-void]="e.is_void">
+          <span class="lc-top">
+            <span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span>
+            @if (showAmount()) {
+              <strong class="num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</strong>
+            }
+          </span>
+          <span class="det-t"
+            >{{ e.vendor || e.description || '\u2014'
+            }}<ng-container *ngTemplateOutlet="tags; context: { $implicit: e }"
+          /></span>
+          @if (e.vendor && e.description) {
+            <span class="ph">{{ e.description }}</span>
+          }
+          @if (e.is_void && e.void_reason) {
+            <span class="ph">Voided: {{ e.void_reason }}</span>
+          }
+          <span class="lc-meta">
+            <span>{{ day(e.spent_on) }}</span>
+            @if (showProject()) {
+              <a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a>
+              @if (e.logged_by) {
+                <span>{{ e.logged_by.name }}</span>
+              }
+            }
+          </span>
+          @if (e.has_receipt || e.can_edit) {
+            <span class="lc-acts"
+              ><ng-container *ngTemplateOutlet="acts; context: { $implicit: e }"
+            /></span>
+          }
+        </li>
+      }
+    }
+  </ul>
+}
+`, styles: ["/* src/app/features/projects/components/expense-rows.scss */\n:host {\n  display: block;\n}\ntable {\n  width: 100%;\n  border-collapse: separate;\n  border-spacing: 0;\n  font-size: var(--text-sm);\n}\nth {\n  height: 40px;\n  padding: 0 12px;\n  background: var(--subtle);\n  color: var(--ink-3);\n  font-size: var(--text-xs);\n  font-weight: 600;\n  text-align: left;\n  white-space: nowrap;\n}\nth:first-child {\n  border-top-left-radius: var(--radius-sm);\n  border-bottom-left-radius: var(--radius-sm);\n}\nth:last-child {\n  border-top-right-radius: var(--radius-sm);\n  border-bottom-right-radius: var(--radius-sm);\n}\ntd {\n  height: 56px;\n  padding: 6px 12px;\n  border-bottom: 1px solid var(--line);\n  color: var(--ink-2);\n}\ntbody tr {\n  transition: background-color var(--dur-fast);\n}\ntbody tr:hover {\n  background: var(--surface-2);\n}\ntr.is-void td {\n  color: var(--ink-3);\n}\n.nw {\n  white-space: nowrap;\n}\n.r {\n  text-align: right;\n  white-space: nowrap;\n}\n.c-by {\n  display: none;\n}\n.strike {\n  text-decoration: line-through;\n}\n.cat {\n  display: inline-flex;\n  align-items: center;\n  height: 24px;\n  padding: 0 10px;\n  border-radius: var(--radius-pill);\n  font-size: var(--text-xs);\n  font-weight: 600;\n  white-space: nowrap;\n}\n.t-slate {\n  background: var(--tint-slate);\n  color: var(--tint-slate-ink);\n}\n.t-cyan {\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n}\n.t-amber {\n  background: var(--tint-amber);\n  color: var(--tint-amber-ink);\n}\n.t-teal {\n  background: var(--tint-teal);\n  color: var(--tint-teal-ink);\n}\n.t-rose {\n  background: var(--tint-rose);\n  color: var(--tint-rose-ink);\n}\n.det {\n  max-width: 320px;\n}\n.det-t {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 6px;\n  color: var(--ink);\n  font-weight: 500;\n  overflow-wrap: anywhere;\n}\n.ph {\n  display: block;\n  color: var(--ink-3);\n  font-size: var(--text-xs);\n  overflow-wrap: anywhere;\n}\n.tag {\n  display: inline-flex;\n  align-items: center;\n  height: 20px;\n  padding: 0 8px;\n  border-radius: var(--radius-pill);\n  font-size: var(--text-xs);\n  font-weight: 600;\n}\n.tag.void {\n  background: var(--tint-rose);\n  color: var(--tint-rose-ink);\n}\n.pl {\n  color: var(--brand-deep);\n  font-weight: 500;\n  text-decoration: none;\n}\n.pl:hover {\n  text-decoration: underline;\n}\n.who {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n.acts {\n  display: inline-flex;\n  gap: 2px;\n}\n.ib {\n  display: inline-grid;\n  width: 40px;\n  height: 40px;\n  place-items: center;\n  border: 0;\n  border-radius: var(--radius-control);\n  background: transparent;\n  color: var(--ink-3);\n  cursor: pointer;\n}\n.ib:hover {\n  background: var(--subtle);\n  color: var(--ink);\n}\n.ib mat-icon {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n.sk-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n}\n.cards {\n  display: flex;\n  flex-direction: column;\n  gap: var(--space-3);\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.lc {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: var(--space-4);\n}\n.lc.is-void {\n  color: var(--ink-3);\n}\n.lc-top {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n.lc-top strong {\n  color: var(--ink);\n}\n.lc-meta {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 4px 12px;\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.lc-acts {\n  display: flex;\n  justify-content: flex-end;\n  padding-top: 8px;\n  border-top: 1px solid var(--line);\n}\n.lc-acts .ib {\n  width: 48px;\n  height: 44px;\n}\n@media (min-width: 1100px) {\n  .c-by {\n    display: table-cell;\n  }\n}\n/*# sourceMappingURL=expense-rows.css.map */\n"] }]
+  }], null, { rows: [{ type: i03.Input, args: [{ isSignal: true, alias: "rows", required: true }] }], layout: [{ type: i03.Input, args: [{ isSignal: true, alias: "layout", required: false }] }], showProject: [{ type: i03.Input, args: [{ isSignal: true, alias: "showProject", required: false }] }], skeleton: [{ type: i03.Input, args: [{ isSignal: true, alias: "skeleton", required: false }] }], allowEdit: [{ type: i03.Input, args: [{ isSignal: true, alias: "allowEdit", required: false }] }], showAmount: [{ type: i03.Input, args: [{ isSignal: true, alias: "showAmount", required: false }] }], action: [{ type: i03.Output, args: ["action"] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i03.\u0275setClassDebugInfo(ExpenseRows, { className: "ExpenseRows", filePath: "src/app/features/projects/components/expense-rows.ts", lineNumber: 44 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fprojects%2Fcomponents%2Fexpense-rows.ts%40ExpenseRows";
+  function ExpenseRows_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i03.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i03.\u0275\u0275replaceMetadata(ExpenseRows, m.default, [i03, i13, i23, i33, i42], [MatIconModule, MatMenuModule, NgTemplateOutlet, PersonAvatar, RouterLink, Skeleton, InrPipe, Component3, ChangeDetectionStrategy3], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && ExpenseRows_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && ExpenseRows_HmrLoad(d.timestamp)));
+})();
+
+export {
+  ReasonDialog,
+  ReceiptViewer,
+  ExpenseRows
+};
+//# debugId=32c12259-ec80-55b6-8dfd-e1416aff0ff9
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvcHJvamVjdHMvY29tcG9uZW50cy9kaWFsb2dzL3JlYXNvbi1kaWFsb2cudHMiLCJzcmMvYXBwL2ZlYXR1cmVzL3Byb2plY3RzL2NvbXBvbmVudHMvZGlhbG9ncy9yZWNlaXB0LXZpZXdlci50cyIsInNyYy9hcHAvZmVhdHVyZXMvcHJvamVjdHMvY29tcG9uZW50cy9leHBlbnNlLXJvd3MudHMiLCJzcmMvYXBwL2ZlYXR1cmVzL3Byb2plY3RzL2NvbXBvbmVudHMvZXhwZW5zZS1yb3dzLmh0bWwiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3ksIENvbXBvbmVudCwgaW5qZWN0LCBzaWduYWwgfSBmcm9tICdAYW5ndWxhci9jb3JlJztcbmltcG9ydCB7IEZvcm1zTW9kdWxlIH0gZnJvbSAnQGFuZ3VsYXIvZm9ybXMnO1xuaW1wb3J0IHsgTWF0QnV0dG9uTW9kdWxlIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvYnV0dG9uJztcbmltcG9ydCB7IE1BVF9ESUFMT0dfREFUQSwgTWF0RGlhbG9nTW9kdWxlLCBNYXREaWFsb2dSZWYgfSBmcm9tICdAYW5ndWxhci9tYXRlcmlhbC9kaWFsb2cnO1xuaW1wb3J0IHsgT2JzZXJ2YWJsZSB9IGZyb20gJ3J4anMnO1xuaW1wb3J0IHsgQXBpRXJyb3IgfSBmcm9tICcuLi8uLi8uLi8uLi9jb3JlL21vZGVscyc7XG5pbXBvcnQgeyBEaWFsb2dIZWFkIH0gZnJvbSAnLi4vLi4vdWkvZGlhbG9nLWhlYWQnO1xuaW1wb3J0IHsgZmllbGRFcnJvciB9IGZyb20gJy4uLy4uL3VpL29wZW4nO1xuXG5leHBvcnQgaW50ZXJmYWNlIFJlYXNvbkRpYWxvZ0RhdGE8VCA9IHVua25vd24+IHtcbiAgdGl0bGU6IHN0cmluZztcbiAgc3VidGl0bGU6IHN0cmluZztcbiAgLyoqIExhYmVsIGFib3ZlIHRoZSBib3gsIGUuZy4gXCJXaHkgYXJlIHlvdSByZW9wZW5pbmcgaXQ/XCIuICovXG4gIHByb21wdDogc3RyaW5nO1xuICBjb25maXJtVGV4dDogc3RyaW5nO1xuICAvKiogUnVucyB0aGUgQVBJIGNhbGw7IGEgZmFpbHVyZSBpcyBzaG93biBpbmxpbmUgYW5kIHRoZSBkaWFsb2cgc3RheXMgb3Blbi4gKi9cbiAgYWN0aW9uOiAocmVhc29uOiBzdHJpbmcpID0+IE9ic2VydmFibGU8VD47XG59XG5cbi8qKiBBIHJlYXNvbiAocmVxdWlyZWQpIHBsdXMgQ2FuY2VsIC8gY29uZmlybS4gVXNlZCB0byB2b2lkIGFuIGV4cGVuc2UgYW5kIHRvIHJlb3BlbiBhIHByb2plY3QuICovXG5AQ29tcG9uZW50KHtcbiAgc2VsZWN0b3I6ICdhcHAtcmVhc29uLWRpYWxvZycsXG4gIGltcG9ydHM6IFtEaWFsb2dIZWFkLCBGb3Jtc01vZHVsZSwgTWF0QnV0dG9uTW9kdWxlLCBNYXREaWFsb2dNb2R1bGVdLFxuICBjaGFuZ2VEZXRlY3Rpb246IENoYW5nZURldGVjdGlvblN0cmF0ZWd5Lk9uUHVzaCxcbiAgc3R5bGVVcmw6ICcuLi8uLi91aS9kaWFsb2cuc2NzcycsXG4gIHRlbXBsYXRlOiBgXG4gICAgPGFwcC1kaWFsb2ctaGVhZCBoZWFkaW5nSWQ9XCJkbGctdGl0bGVcIiBbdGl0bGVdPVwiZGF0YS50aXRsZVwiIFtzdWJ0aXRsZV09XCJkYXRhLnN1YnRpdGxlXCIgKGNsb3NlZCk9XCJyZWYuY2xvc2UoKVwiIC8+XG4gICAgPGZvcm0gKG5nU3VibWl0KT1cInN1Ym1pdCgpXCIgbm92YWxpZGF0ZT5cbiAgICAgIDxkaXYgY2xhc3M9XCJmaWVsZFwiPlxuICAgICAgICA8bGFiZWwgZm9yPVwicmQtcmVhc29uXCI+e3sgZGF0YS5wcm9tcHQgfX08L2xhYmVsPlxuICAgICAgICA8dGV4dGFyZWFcbiAgICAgICAgICBpZD1cInJkLXJlYXNvblwiXG4gICAgICAgICAgbmFtZT1cInJlYXNvblwiXG4gICAgICAgICAgbWF4bGVuZ3RoPVwiMzAwXCJcbiAgICAgICAgICBbKG5nTW9kZWwpXT1cInJlYXNvblwiXG4gICAgICAgICAgW2F0dHIuYXJpYS1pbnZhbGlkXT1cInJlYXNvbkVycm9yKCkgPyB0cnVlIDogbnVsbFwiXG4gICAgICAgICAgW2F0dHIuYXJpYS1kZXNjcmliZWRieV09XCJyZWFzb25FcnJvcigpID8gJ3JkLXJlYXNvbi1lcnInIDogbnVsbFwiXG4gICAgICAgID48L3RleHRhcmVhPlxuICAgICAgICBAaWYgKHJlYXNvbkVycm9yKCkpIHtcbiAgICAgICAgICA8cCBjbGFzcz1cImVycm9yXCIgaWQ9XCJyZC1yZWFzb24tZXJyXCI+e3sgcmVhc29uRXJyb3IoKSB9fTwvcD5cbiAgICAgICAgfVxuICAgICAgPC9kaXY+XG4gICAgICBAaWYgKGVycm9yKCkpIHtcbiAgICAgICAgPHAgY2xhc3M9XCJlcnJvclwiIHJvbGU9XCJhbGVydFwiPnt7IGVycm9yKCkgfX08L3A+XG4gICAgICB9XG4gICAgICA8ZGl2IGNsYXNzPVwiYWN0aW9uc1wiPlxuICAgICAgICA8YnV0dG9uIG1hdEJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgKGNsaWNrKT1cInJlZi5jbG9zZSgpXCI+Q2FuY2VsPC9idXR0b24+XG4gICAgICAgIDxidXR0b24gbWF0QnV0dG9uPVwiZmlsbGVkXCIgdHlwZT1cInN1Ym1pdFwiIFtkaXNhYmxlZF09XCJzYXZpbmcoKVwiPnt7IHNhdmluZygpID8gJ1NhdmluZ+KApicgOiBkYXRhLmNvbmZpcm1UZXh0IH19PC9idXR0b24+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Zvcm0+XG4gIGAsXG59KVxuZXhwb3J0IGNsYXNzIFJlYXNvbkRpYWxvZyB7XG4gIHByb3RlY3RlZCByZWFkb25seSBkYXRhID0gaW5qZWN0PFJlYXNvbkRpYWxvZ0RhdGE+KE1BVF9ESUFMT0dfREFUQSk7XG4gIHByb3RlY3RlZCByZWFkb25seSByZWYgPSBpbmplY3QoTWF0RGlhbG9nUmVmPFJlYXNvbkRpYWxvZywgdW5rbm93bj4pO1xuXG4gIHByb3RlY3RlZCByZWFzb24gPSAnJztcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IHNhdmluZyA9IHNpZ25hbChmYWxzZSk7XG4gIHByb3RlY3RlZCByZWFkb25seSByZWFzb25FcnJvciA9IHNpZ25hbCgnJyk7XG4gIHByb3RlY3RlZCByZWFkb25seSBlcnJvciA9IHNpZ25hbCgnJyk7XG5cbiAgcHJvdGVjdGVkIHN1Ym1pdCgpOiB2b2lkIHtcbiAgICBpZiAodGhpcy5zYXZpbmcoKSkge1xuICAgICAgcmV0dXJuO1xuICAgIH1cbiAgICB0aGlzLnJlYXNvbkVycm9yLnNldCh0aGlzLnJlYXNvbi50cmltKCkgPyAnJyA6ICdHaXZlIGEgcmVhc29uLicpO1xuICAgIGlmICh0aGlzLnJlYXNvbkVycm9yKCkpIHtcbiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyZC1yZWFzb24nKT8uZm9jdXMoKTtcbiAgICAgIHJldHVybjtcbiAgICB9XG4gICAgdGhpcy5zYXZpbmcuc2V0KHRydWUpO1xuICAgIHRoaXMuZXJyb3Iuc2V0KCcnKTtcbiAgICB0aGlzLmRhdGEuYWN0aW9uKHRoaXMucmVhc29uLnRyaW0oKSkuc3Vic2NyaWJlKHtcbiAgICAgIG5leHQ6IChyZXN1bHQpID0+IHRoaXMucmVmLmNsb3NlKHJlc3VsdCA/PyB0cnVlKSxcbiAgICAgIGVycm9yOiAoZXJyOiBBcGlFcnJvcikgPT4ge1xuICAgICAgICB0aGlzLnNhdmluZy5zZXQoZmFsc2UpO1xuICAgICAgICB0aGlzLnJlYXNvbkVycm9yLnNldChmaWVsZEVycm9yKGVyciwgJ3JlYXNvbicpKTtcbiAgICAgICAgdGhpcy5lcnJvci5zZXQodGhpcy5yZWFzb25FcnJvcigpID8gJycgOiBlcnIubWVzc2FnZSk7XG4gICAgICB9LFxuICAgIH0pO1xuICB9XG59XG4iLCJpbXBvcnQgeyBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSwgQ29tcG9uZW50LCBEZXN0cm95UmVmLCBpbmplY3QsIHNpZ25hbCB9IGZyb20gJ0Bhbmd1bGFyL2NvcmUnO1xuaW1wb3J0IHsgRG9tU2FuaXRpemVyLCBTYWZlUmVzb3VyY2VVcmwgfSBmcm9tICdAYW5ndWxhci9wbGF0Zm9ybS1icm93c2VyJztcbmltcG9ydCB7IE1hdEJ1dHRvbk1vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2J1dHRvbic7XG5pbXBvcnQgeyBNQVRfRElBTE9HX0RBVEEsIE1hdERpYWxvZ01vZHVsZSwgTWF0RGlhbG9nUmVmIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvZGlhbG9nJztcbmltcG9ydCB7IEVycm9yU3RhdGUgfSBmcm9tICcuLi8uLi8uLi8uLi9zaGFyZWQvZXJyb3Itc3RhdGUvZXJyb3Itc3RhdGUnO1xuaW1wb3J0IHsgSW5yUGlwZSB9IGZyb20gJy4uLy4uLy4uLy4uL3NoYXJlZC9tb25leS9pbnIucGlwZSc7XG5pbXBvcnQgeyBTa2VsZXRvbiB9IGZyb20gJy4uLy4uLy4uLy4uL3NoYXJlZC9za2VsZXRvbi9za2VsZXRvbic7XG5pbXBvcnQgeyBFeHBlbnNlIH0gZnJvbSAnLi4vLi4vZGF0YS9wcm9qZWN0Lm1vZGVscyc7XG5pbXBvcnQgeyBQcm9qZWN0c0FwaSB9IGZyb20gJy4uLy4uL2RhdGEvcHJvamVjdHMtYXBpLnNlcnZpY2UnO1xuaW1wb3J0IHsgRGlhbG9nSGVhZCB9IGZyb20gJy4uLy4uL3VpL2RpYWxvZy1oZWFkJztcblxuZXhwb3J0IGludGVyZmFjZSBSZWNlaXB0Vmlld2VyRGF0YSB7XG4gIGV4cGVuc2U6IFBpY2s8RXhwZW5zZSwgJ2lkJyB8ICdjYXRlZ29yeV9sYWJlbCcgfCAndmVuZG9yJyB8ICdhbW91bnQnIHwgJ3JlY2VpcHRfa2luZCc+O1xufVxuXG4vKipcbiAqIFNob3dzIGEgcmVjZWlwdC4gVGhlIGZpbGUgaXMgZmV0Y2hlZCB3aXRoIHRoZSB1c2VyJ3MgdG9rZW4gYW5kIHNob3duIGZyb20gYSBibG9iIFVSTDogcmVjZWlwdHMgaGF2ZSBub1xuICogcHVibGljIFVSTCwgc28gbm90aGluZyBjYW4gYmUgb3BlbmVkLCBzaGFyZWQgb3IgY2FjaGVkIG91dHNpZGUgdGhlIGFwcC5cbiAqL1xuQENvbXBvbmVudCh7XG4gIHNlbGVjdG9yOiAnYXBwLXJlY2VpcHQtdmlld2VyJyxcbiAgaW1wb3J0czogW0RpYWxvZ0hlYWQsIEVycm9yU3RhdGUsIEluclBpcGUsIE1hdEJ1dHRvbk1vZHVsZSwgTWF0RGlhbG9nTW9kdWxlLCBTa2VsZXRvbl0sXG4gIGNoYW5nZURldGVjdGlvbjogQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3kuT25QdXNoLFxuICBzdHlsZVVybDogJy4uLy4uL3VpL2RpYWxvZy5zY3NzJyxcbiAgdGVtcGxhdGU6IGBcbiAgICA8YXBwLWRpYWxvZy1oZWFkXG4gICAgICBoZWFkaW5nSWQ9XCJkbGctdGl0bGVcIlxuICAgICAgdGl0bGU9XCJSZWNlaXB0XCJcbiAgICAgIFtzdWJ0aXRsZV09XCJkYXRhLmV4cGVuc2UuY2F0ZWdvcnlfbGFiZWwgKyAoZGF0YS5leHBlbnNlLnZlbmRvciA/ICcgwrcgJyArIGRhdGEuZXhwZW5zZS52ZW5kb3IgOiAnJykgKyAnIMK3ICcgKyAoZGF0YS5leHBlbnNlLmFtb3VudCB8IGlucjogJ3BhaXNlJylcIlxuICAgICAgKGNsb3NlZCk9XCJyZWYuY2xvc2UoKVwiXG4gICAgLz5cbiAgICA8ZGl2IGNsYXNzPVwidmlld1wiPlxuICAgICAgQGlmIChmYWlsZWQoKSkge1xuICAgICAgICA8YXBwLWVycm9yLXN0YXRlIHRpdGxlPVwiQ291bGRuJ3QgbG9hZCB0aGUgcmVjZWlwdFwiIChyZXRyeSk9XCJsb2FkKClcIiAvPlxuICAgICAgfSBAZWxzZSBpZiAoIXVybCgpKSB7XG4gICAgICAgIDxhcHAtc2tlbGV0b24gaGVpZ2h0PVwiMzIwcHhcIiByYWRpdXM9XCIxMnB4XCIgLz5cbiAgICAgIH0gQGVsc2UgaWYgKGlzUGRmKCkpIHtcbiAgICAgICAgPGlmcmFtZSB0aXRsZT1cIlJlY2VpcHQgUERGXCIgW3NyY109XCJ1cmwoKSFcIj48L2lmcmFtZT5cbiAgICAgIH0gQGVsc2Uge1xuICAgICAgICA8aW1nIFtzcmNdPVwidXJsKCkhXCIgYWx0PVwiUmVjZWlwdCBpbWFnZVwiIC8+XG4gICAgICB9XG4gICAgPC9kaXY+XG4gICAgPGRpdiBjbGFzcz1cImFjdGlvbnNcIj5cbiAgICAgIDxzcGFuPjwvc3Bhbj5cbiAgICAgIDxidXR0b24gbWF0QnV0dG9uPVwiZmlsbGVkXCIgdHlwZT1cImJ1dHRvblwiIChjbGljayk9XCJyZWYuY2xvc2UoKVwiPkNsb3NlPC9idXR0b24+XG4gICAgPC9kaXY+XG4gIGAsXG4gIHN0eWxlczogYFxuICAgIDpob3N0IHsgd2lkdGg6IG1pbig3MjBweCwgY2FsYygxMDB2dyAtIDMycHgpKTsgfVxuICAgIC52aWV3IHsgZGlzcGxheTogZ3JpZDsgbWluLWhlaWdodDogMjAwcHg7IHBsYWNlLWl0ZW1zOiBjZW50ZXI7IG92ZXJmbG93OiBoaWRkZW47IGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWxpbmUpOyBib3JkZXItcmFkaXVzOiAxMnB4OyBiYWNrZ3JvdW5kOiB2YXIoLS1zdWJ0bGUpOyB9XG4gICAgaW1nIHsgZGlzcGxheTogYmxvY2s7IG1heC13aWR0aDogMTAwJTsgbWF4LWhlaWdodDogNjV2aDsgb2JqZWN0LWZpdDogY29udGFpbjsgfVxuICAgIGlmcmFtZSB7IGRpc3BsYXk6IGJsb2NrOyB3aWR0aDogMTAwJTsgaGVpZ2h0OiA2NXZoOyBib3JkZXI6IDA7IGJhY2tncm91bmQ6IHZhcigtLXN1cmZhY2UpOyB9XG4gIGAsXG59KVxuZXhwb3J0IGNsYXNzIFJlY2VpcHRWaWV3ZXIge1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgZGF0YSA9IGluamVjdDxSZWNlaXB0Vmlld2VyRGF0YT4oTUFUX0RJQUxPR19EQVRBKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IHJlZiA9IGluamVjdChNYXREaWFsb2dSZWY8UmVjZWlwdFZpZXdlciwgdm9pZD4pO1xuICBwcml2YXRlIHJlYWRvbmx5IGFwaSA9IGluamVjdChQcm9qZWN0c0FwaSk7XG4gIHByaXZhdGUgcmVhZG9ubHkgc2FuaXRpemVyID0gaW5qZWN0KERvbVNhbml0aXplcik7XG5cbiAgcHJvdGVjdGVkIHJlYWRvbmx5IHVybCA9IHNpZ25hbDxTYWZlUmVzb3VyY2VVcmwgfCBudWxsPihudWxsKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGZhaWxlZCA9IHNpZ25hbChmYWxzZSk7XG4gIHByb3RlY3RlZCByZWFkb25seSBpc1BkZiA9IHNpZ25hbCh0aGlzLmRhdGEuZXhwZW5zZS5yZWNlaXB0X2tpbmQgPT09ICdwZGYnKTtcbiAgcHJpdmF0ZSBvYmplY3RVcmw6IHN0cmluZyB8IG51bGwgPSBudWxsO1xuXG4gIGNvbnN0cnVjdG9yKCkge1xuICAgIGluamVjdChEZXN0cm95UmVmKS5vbkRlc3Ryb3koKCkgPT4gdGhpcy5yZXZva2UoKSk7XG4gICAgdGhpcy5sb2FkKCk7XG4gIH1cblxuICBwcm90ZWN0ZWQgbG9hZCgpOiB2b2lkIHtcbiAgICB0aGlzLmZhaWxlZC5zZXQoZmFsc2UpO1xuICAgIHRoaXMuYXBpLnJlY2VpcHQodGhpcy5kYXRhLmV4cGVuc2UuaWQpLnN1YnNjcmliZSh7XG4gICAgICBuZXh0OiAoYmxvYikgPT4ge1xuICAgICAgICB0aGlzLnJldm9rZSgpO1xuICAgICAgICB0aGlzLmlzUGRmLnNldChibG9iLnR5cGUgPT09ICdhcHBsaWNhdGlvbi9wZGYnKTtcbiAgICAgICAgdGhpcy5vYmplY3RVcmwgPSBVUkwuY3JlYXRlT2JqZWN0VVJMKGJsb2IpO1xuICAgICAgICAvLyBBIGJsb2IgVVJMIG1hZGUgaGVyZSBmcm9tIHRoZSBBUEkncyBvd24gcmVzcG9uc2U6IHNhZmUgdG8gdHJ1c3QgYXMgYSByZXNvdXJjZSBVUkwuXG4gICAgICAgIHRoaXMudXJsLnNldCh0aGlzLnNhbml0aXplci5ieXBhc3NTZWN1cml0eVRydXN0UmVzb3VyY2VVcmwodGhpcy5vYmplY3RVcmwpKTtcbiAgICAgIH0sXG4gICAgICBlcnJvcjogKCkgPT4gdGhpcy5mYWlsZWQuc2V0KHRydWUpLFxuICAgIH0pO1xuICB9XG5cbiAgcHJpdmF0ZSByZXZva2UoKTogdm9pZCB7XG4gICAgaWYgKHRoaXMub2JqZWN0VXJsKSB7XG4gICAgICBVUkwucmV2b2tlT2JqZWN0VVJMKHRoaXMub2JqZWN0VXJsKTtcbiAgICAgIHRoaXMub2JqZWN0VXJsID0gbnVsbDtcbiAgICB9XG4gIH1cbn1cbiIsImltcG9ydCB7IE5nVGVtcGxhdGVPdXRsZXQgfSBmcm9tICdAYW5ndWxhci9jb21tb24nO1xuaW1wb3J0IHsgQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3ksIENvbXBvbmVudCwgaW5wdXQsIG91dHB1dCB9IGZyb20gJ0Bhbmd1bGFyL2NvcmUnO1xuaW1wb3J0IHsgTWF0SWNvbk1vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2ljb24nO1xuaW1wb3J0IHsgTWF0TWVudU1vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL21lbnUnO1xuaW1wb3J0IHsgUm91dGVyTGluayB9IGZyb20gJ0Bhbmd1bGFyL3JvdXRlcic7XG5pbXBvcnQgeyBJbnJQaXBlIH0gZnJvbSAnLi4vLi4vLi4vc2hhcmVkL21vbmV5L2luci5waXBlJztcbmltcG9ydCB7IFNrZWxldG9uIH0gZnJvbSAnLi4vLi4vLi4vc2hhcmVkL3NrZWxldG9uL3NrZWxldG9uJztcbmltcG9ydCB7IEV4cGVuc2UgfSBmcm9tICcuLi9kYXRhL3Byb2plY3QubW9kZWxzJztcbmltcG9ydCB7IFBlcnNvbkF2YXRhciB9IGZyb20gJy4uL3VpL2JpdHMnO1xuaW1wb3J0IHsgZm9ybWF0QnVzaW5lc3NGdWxsLCBmb3JtYXREYXkgfSBmcm9tICcuLi91aS9idXNpbmVzcy10aW1lJztcblxuLyoqIENhdGVnb3J5IHRpbnRzOiB0aGUgbGFiZWwgaXMgYWx3YXlzIHdyaXR0ZW4sIHRoZSB0aW50IG9ubHkgcmVpbmZvcmNlcyBpdC4gKi9cbmV4cG9ydCBjb25zdCBDQVRFR09SWV9USU5UOiBSZWNvcmQ8c3RyaW5nLCBzdHJpbmc+ID0ge1xuICBNQVRFUklBTFM6ICdjeWFuJyxcbiAgTEFCT1VSOiAndGVhbCcsXG4gIFRSQU5TUE9SVDogJ3NsYXRlJyxcbiAgRVFVSVBNRU5UOiAnYW1iZXInLFxuICBGT09EOiAncm9zZScsXG4gIFBFUk1JVFM6ICdzbGF0ZScsXG4gIE9USEVSOiAnc2xhdGUnLFxufTtcblxuZXhwb3J0IGludGVyZmFjZSBFeHBlbnNlQWN0aW9uIHtcbiAga2luZDogJ3JlY2VpcHQnIHwgJ2VkaXQnIHwgJ3ZvaWQnO1xuICBleHBlbnNlOiBFeHBlbnNlO1xufVxuXG4vKiogRXhwZW5zZXMgYXMgYSB0YWJsZSAoPj0gNzY4cHgpIG9yIHN0YWNrZWQgY2FyZHMgKHBob25lcykuIFZvaWQgcm93cyBzdGF5IHZpc2libGUgd2l0aCBhIFwiVm9pZFwiIHRhZy4gKi9cbkBDb21wb25lbnQoe1xuICBzZWxlY3RvcjogJ2FwcC1leHBlbnNlLXJvd3MnLFxuICBpbXBvcnRzOiBbXG4gICAgSW5yUGlwZSxcbiAgICBNYXRJY29uTW9kdWxlLFxuICAgIE1hdE1lbnVNb2R1bGUsXG4gICAgTmdUZW1wbGF0ZU91dGxldCxcbiAgICBQZXJzb25BdmF0YXIsXG4gICAgUm91dGVyTGluayxcbiAgICBTa2VsZXRvbixcbiAgXSxcbiAgY2hhbmdlRGV0ZWN0aW9uOiBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneS5PblB1c2gsXG4gIHRlbXBsYXRlVXJsOiAnLi9leHBlbnNlLXJvd3MuaHRtbCcsXG4gIHN0eWxlVXJsOiAnLi9leHBlbnNlLXJvd3Muc2NzcycsXG59KVxuZXhwb3J0IGNsYXNzIEV4cGVuc2VSb3dzIHtcbiAgcmVhZG9ubHkgcm93cyA9IGlucHV0LnJlcXVpcmVkPEV4cGVuc2VbXT4oKTtcbiAgcmVhZG9ubHkgbGF5b3V0ID0gaW5wdXQ8J3RhYmxlJyB8ICdjYXJkcyc+KCd0YWJsZScpO1xuICAvKiogVGhlIGFsbC1leHBlbnNlcyBwYWdlIHNob3dzIHRoZSBwcm9qZWN0IChhcyBhIGxpbmspIGFuZCB3aG8gbG9nZ2VkIGl0LiAqL1xuICByZWFkb25seSBzaG93UHJvamVjdCA9IGlucHV0KGZhbHNlKTtcbiAgcmVhZG9ubHkgc2tlbGV0b24gPSBpbnB1dChmYWxzZSk7XG4gIC8qKiBUaGUgYWxsLWV4cGVuc2VzIHBhZ2UgY2FuIHZvaWQgYnV0IG5vdCBlZGl0IChlZGl0aW5nIGhhcHBlbnMgb24gdGhlIHByb2plY3QgcGFnZSkuICovXG4gIHJlYWRvbmx5IGFsbG93RWRpdCA9IGlucHV0KHRydWUpO1xuICAvKiogRmFsc2UgZm9yIHRoZSBTYWxlcyBNYW5hZ2VyOiBubyBhbW91bnQgY29sdW1uLCBhbmQgdGhlIHJlY2VpcHQgaXMgYW4gaWNvbiBvbmx5LiAqL1xuICByZWFkb25seSBzaG93QW1vdW50ID0gaW5wdXQodHJ1ZSk7XG4gIHJlYWRvbmx5IGFjdGlvbiA9IG91dHB1dDxFeHBlbnNlQWN0aW9uPigpO1xuXG4gIHByb3RlY3RlZCByZWFkb25seSBwbGFjZWhvbGRlcnMgPSBBcnJheS5mcm9tKHsgbGVuZ3RoOiA1IH0sIChfLCBpKSA9PiBpKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGRheSA9IGZvcm1hdERheTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGZ1bGwgPSBmb3JtYXRCdXNpbmVzc0Z1bGw7XG4gIHByb3RlY3RlZCByZWFkb25seSB0aW50ID0gKGNhdGVnb3J5OiBzdHJpbmcpOiBzdHJpbmcgPT4gQ0FURUdPUllfVElOVFtjYXRlZ29yeV0gPz8gJ3NsYXRlJztcblxuICBwcm90ZWN0ZWQgbGFiZWwoZTogRXhwZW5zZSk6IHN0cmluZyB7XG4gICAgcmV0dXJuIGAke2UuY2F0ZWdvcnlfbGFiZWx9IGV4cGVuc2Ugb2YgJHtlLmFtb3VudH0ke2UudmVuZG9yID8gJyBmcm9tICcgKyBlLnZlbmRvciA6ICcnfWA7XG4gIH1cblxuICBwcm90ZWN0ZWQgZW1pdChraW5kOiBFeHBlbnNlQWN0aW9uWydraW5kJ10sIGV4cGVuc2U6IEV4cGVuc2UpOiB2b2lkIHtcbiAgICB0aGlzLmFjdGlvbi5lbWl0KHsga2luZCwgZXhwZW5zZSB9KTtcbiAgfVxufVxuIiwiPG5nLXRlbXBsYXRlICN0YWdzIGxldC1lPlxuICBAaWYgKGUuaXNfdm9pZCkge1xuICAgIDxzcGFuIGNsYXNzPVwidGFnIHZvaWRcIiBbYXR0ci50aXRsZV09XCJlLnZvaWRfcmVhc29uXCI+Vm9pZDwvc3Bhbj5cbiAgfVxuPC9uZy10ZW1wbGF0ZT5cblxuPG5nLXRlbXBsYXRlICNhY3RzIGxldC1lPlxuICA8c3BhbiBjbGFzcz1cImFjdHNcIj5cbiAgICBAaWYgKGUuaGFzX3JlY2VpcHQgJiYgIXNob3dBbW91bnQoKSkge1xuICAgICAgPHNwYW4gY2xhc3M9XCJpYlwiIHJvbGU9XCJpbWdcIiBhcmlhLWxhYmVsPVwiUmVjZWlwdCBhdHRhY2hlZFwiPlxuICAgICAgICA8bWF0LWljb24gYXJpYS1oaWRkZW49XCJ0cnVlXCI+e3sgZS5yZWNlaXB0X2tpbmQgPT09ICdwZGYnID8gJ3BpY3R1cmVfYXNfcGRmJyA6ICdpbWFnZScgfX08L21hdC1pY29uPlxuICAgICAgPC9zcGFuPlxuICAgIH0gQGVsc2UgaWYgKGUuaGFzX3JlY2VpcHQpIHtcbiAgICAgIDxidXR0b25cbiAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgIGNsYXNzPVwiaWJcIlxuICAgICAgICBbYXR0ci5hcmlhLWxhYmVsXT1cIidWaWV3IHJlY2VpcHQ6ICcgKyBsYWJlbChlKVwiXG4gICAgICAgIChjbGljayk9XCJlbWl0KCdyZWNlaXB0JywgZSlcIlxuICAgICAgPlxuICAgICAgICA8bWF0LWljb24gYXJpYS1oaWRkZW49XCJ0cnVlXCI+e3tcbiAgICAgICAgICBlLnJlY2VpcHRfa2luZCA9PT0gJ3BkZicgPyAncGljdHVyZV9hc19wZGYnIDogJ2ltYWdlJ1xuICAgICAgICB9fTwvbWF0LWljb24+XG4gICAgICA8L2J1dHRvbj5cbiAgICB9XG4gICAgQGlmIChlLmNhbl9lZGl0KSB7XG4gICAgICA8YnV0dG9uXG4gICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICBjbGFzcz1cImliXCJcbiAgICAgICAgW21hdE1lbnVUcmlnZ2VyRm9yXT1cIm1vcmVcIlxuICAgICAgICBbYXR0ci5hcmlhLWxhYmVsXT1cIidNb3JlIGFjdGlvbnM6ICcgKyBsYWJlbChlKVwiXG4gICAgICA+XG4gICAgICAgIDxtYXQtaWNvbiBhcmlhLWhpZGRlbj1cInRydWVcIj5tb3JlX3ZlcnQ8L21hdC1pY29uPlxuICAgICAgPC9idXR0b24+XG4gICAgICA8bWF0LW1lbnUgI21vcmU9XCJtYXRNZW51XCIgeFBvc2l0aW9uPVwiYmVmb3JlXCI+XG4gICAgICAgIEBpZiAoYWxsb3dFZGl0KCkpIHtcbiAgICAgICAgICA8YnV0dG9uIG1hdC1tZW51LWl0ZW0gdHlwZT1cImJ1dHRvblwiIChjbGljayk9XCJlbWl0KCdlZGl0JywgZSlcIj5cbiAgICAgICAgICAgIDxtYXQtaWNvbj5lZGl0PC9tYXQtaWNvbj5FZGl0XG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgIH1cbiAgICAgICAgPGJ1dHRvbiBtYXQtbWVudS1pdGVtIHR5cGU9XCJidXR0b25cIiAoY2xpY2spPVwiZW1pdCgndm9pZCcsIGUpXCI+XG4gICAgICAgICAgPG1hdC1pY29uPmJsb2NrPC9tYXQtaWNvbj5Wb2lk4oCmXG4gICAgICAgIDwvYnV0dG9uPlxuICAgICAgPC9tYXQtbWVudT5cbiAgICB9XG4gIDwvc3Bhbj5cbjwvbmctdGVtcGxhdGU+XG5cbkBpZiAobGF5b3V0KCkgPT09ICd0YWJsZScpIHtcbiAgPGRpdiBjbGFzcz1cInRhYmxlLXNjcm9sbFwiPlxuICAgIDx0YWJsZT5cbiAgICAgIDx0aGVhZD5cbiAgICAgICAgPHRyPlxuICAgICAgICAgIDx0aD5EYXRlPC90aD5cbiAgICAgICAgICA8dGg+Q2F0ZWdvcnk8L3RoPlxuICAgICAgICAgIDx0aD5EZXRhaWxzPC90aD5cbiAgICAgICAgICBAaWYgKHNob3dQcm9qZWN0KCkpIHtcbiAgICAgICAgICAgIDx0aD5Qcm9qZWN0PC90aD5cbiAgICAgICAgICAgIDx0aCBjbGFzcz1cImMtYnlcIj5Mb2dnZWQgYnk8L3RoPlxuICAgICAgICAgIH1cbiAgICAgICAgICBAaWYgKHNob3dBbW91bnQoKSkge1xuICAgICAgICAgICAgPHRoIGNsYXNzPVwiclwiPkFtb3VudDwvdGg+XG4gICAgICAgICAgfVxuICAgICAgICAgIDx0aCBjbGFzcz1cInJcIj48c3BhbiBjbGFzcz1cInNyLW9ubHlcIj5BY3Rpb25zPC9zcGFuPjwvdGg+XG4gICAgICAgIDwvdHI+XG4gICAgICA8L3RoZWFkPlxuICAgICAgPHRib2R5PlxuICAgICAgICBAaWYgKHNrZWxldG9uKCkpIHtcbiAgICAgICAgICBAZm9yIChpIG9mIHBsYWNlaG9sZGVyczsgdHJhY2sgaSkge1xuICAgICAgICAgICAgPHRyIGNsYXNzPVwic2tcIiBhcmlhLWhpZGRlbj1cInRydWVcIj5cbiAgICAgICAgICAgICAgPHRkIFthdHRyLmNvbHNwYW5dPVwic2hvd1Byb2plY3QoKSA/IDcgOiA1XCI+XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJzay1yb3dcIj5cbiAgICAgICAgICAgICAgICAgIDxhcHAtc2tlbGV0b24gd2lkdGg9XCIxMiVcIiBoZWlnaHQ9XCIxNHB4XCIgLz5cbiAgICAgICAgICAgICAgICAgIDxhcHAtc2tlbGV0b24gd2lkdGg9XCIxMCVcIiBoZWlnaHQ9XCIyMnB4XCIgcmFkaXVzPVwiOTk5cHhcIiAvPlxuICAgICAgICAgICAgICAgICAgPGFwcC1za2VsZXRvbiB3aWR0aD1cIjMwJVwiIGhlaWdodD1cIjE0cHhcIiAvPlxuICAgICAgICAgICAgICAgICAgPGFwcC1za2VsZXRvbiB3aWR0aD1cIjEwJVwiIGhlaWdodD1cIjE0cHhcIiAvPlxuICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgPC90ZD5cbiAgICAgICAgICAgIDwvdHI+XG4gICAgICAgICAgfVxuICAgICAgICB9IEBlbHNlIHtcbiAgICAgICAgICBAZm9yIChlIG9mIHJvd3MoKTsgdHJhY2sgZS5pZCkge1xuICAgICAgICAgICAgPHRyIFtjbGFzcy5pcy12b2lkXT1cImUuaXNfdm9pZFwiPlxuICAgICAgICAgICAgICA8dGQgY2xhc3M9XCJud1wiIFthdHRyLnRpdGxlXT1cImZ1bGwoZS5jcmVhdGVkX2F0KVwiPnt7IGRheShlLnNwZW50X29uKSB9fTwvdGQ+XG4gICAgICAgICAgICAgIDx0ZD5cbiAgICAgICAgICAgICAgICA8c3BhbiBbY2xhc3NdPVwiJ2NhdCB0LScgKyB0aW50KGUuY2F0ZWdvcnkpXCI+e3sgZS5jYXRlZ29yeV9sYWJlbCB9fTwvc3Bhbj5cbiAgICAgICAgICAgICAgPC90ZD5cbiAgICAgICAgICAgICAgPHRkIGNsYXNzPVwiZGV0XCI+XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJkZXQtdFwiXG4gICAgICAgICAgICAgICAgICA+e3sgZS52ZW5kb3IgfHwgZS5kZXNjcmlwdGlvbiB8fCAn4oCUJ1xuICAgICAgICAgICAgICAgICAgfX08bmctY29udGFpbmVyICpuZ1RlbXBsYXRlT3V0bGV0PVwidGFnczsgY29udGV4dDogeyAkaW1wbGljaXQ6IGUgfVwiXG4gICAgICAgICAgICAgICAgLz48L3NwYW4+XG4gICAgICAgICAgICAgICAgQGlmIChlLnZlbmRvciAmJiBlLmRlc2NyaXB0aW9uKSB7XG4gICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cInBoXCI+e3sgZS5kZXNjcmlwdGlvbiB9fTwvc3Bhbj5cbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgQGlmIChlLmlzX3ZvaWQgJiYgZS52b2lkX3JlYXNvbikge1xuICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJwaFwiPlZvaWRlZDoge3sgZS52b2lkX3JlYXNvbiB9fTwvc3Bhbj5cbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgIDwvdGQ+XG4gICAgICAgICAgICAgIEBpZiAoc2hvd1Byb2plY3QoKSkge1xuICAgICAgICAgICAgICAgIDx0ZD5cbiAgICAgICAgICAgICAgICAgIDxhIGNsYXNzPVwicGxcIiBbcm91dGVyTGlua109XCJbJy9wcm9qZWN0cycsIGUucHJvamVjdF1cIj57eyBlLnByb2plY3RfbmFtZSB9fTwvYT5cbiAgICAgICAgICAgICAgICA8L3RkPlxuICAgICAgICAgICAgICAgIDx0ZCBjbGFzcz1cImMtYnlcIj5cbiAgICAgICAgICAgICAgICAgIEBpZiAoZS5sb2dnZWRfYnkpIHtcbiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJ3aG9cIlxuICAgICAgICAgICAgICAgICAgICAgID48YXBwLXBlcnNvbi1hdmF0YXIgW25hbWVdPVwiZS5sb2dnZWRfYnkubmFtZVwiIFtzaXplXT1cIjI0XCIgLz57e1xuICAgICAgICAgICAgICAgICAgICAgICAgZS5sb2dnZWRfYnkubmFtZVxuICAgICAgICAgICAgICAgICAgICAgIH19PC9zcGFuXG4gICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICA8L3RkPlxuICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgIEBpZiAoc2hvd0Ftb3VudCgpKSB7XG4gICAgICAgICAgICAgICAgPHRkIGNsYXNzPVwiciBudW1cIiBbY2xhc3Muc3RyaWtlXT1cImUuaXNfdm9pZFwiPnt7IGUuYW1vdW50IHwgaW5yOiAncGFpc2UnIH19PC90ZD5cbiAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICA8dGQgY2xhc3M9XCJyXCI+XG4gICAgICAgICAgICAgICAgPG5nLWNvbnRhaW5lciAqbmdUZW1wbGF0ZU91dGxldD1cImFjdHM7IGNvbnRleHQ6IHsgJGltcGxpY2l0OiBlIH1cIiAvPlxuICAgICAgICAgICAgICA8L3RkPlxuICAgICAgICAgICAgPC90cj5cbiAgICAgICAgICB9XG4gICAgICAgIH1cbiAgICAgIDwvdGJvZHk+XG4gICAgPC90YWJsZT5cbiAgPC9kaXY+XG59IEBlbHNlIHtcbiAgPHVsIGNsYXNzPVwiY2FyZHNcIj5cbiAgICBAaWYgKHNrZWxldG9uKCkpIHtcbiAgICAgIEBmb3IgKGkgb2YgcGxhY2Vob2xkZXJzLnNsaWNlKDAsIDMpOyB0cmFjayBpKSB7XG4gICAgICAgIDxsaSBjbGFzcz1cImNhcmQgbGNcIiBhcmlhLWhpZGRlbj1cInRydWVcIj5cbiAgICAgICAgICA8YXBwLXNrZWxldG9uIHdpZHRoPVwiNDUlXCIgaGVpZ2h0PVwiMTZweFwiIC8+XG4gICAgICAgICAgPGFwcC1za2VsZXRvbiB3aWR0aD1cIjcwJVwiIGhlaWdodD1cIjEzcHhcIiAvPlxuICAgICAgICA8L2xpPlxuICAgICAgfVxuICAgIH0gQGVsc2Uge1xuICAgICAgQGZvciAoZSBvZiByb3dzKCk7IHRyYWNrIGUuaWQ7IGxldCBpID0gJGluZGV4KSB7XG4gICAgICAgIDxsaSBjbGFzcz1cImNhcmQgbGMgcmlzZS1pblwiIFtzdHlsZS4tLWldPVwiaSAlIDEwXCIgW2NsYXNzLmlzLXZvaWRdPVwiZS5pc192b2lkXCI+XG4gICAgICAgICAgPHNwYW4gY2xhc3M9XCJsYy10b3BcIj5cbiAgICAgICAgICAgIDxzcGFuIFtjbGFzc109XCInY2F0IHQtJyArIHRpbnQoZS5jYXRlZ29yeSlcIj57eyBlLmNhdGVnb3J5X2xhYmVsIH19PC9zcGFuPlxuICAgICAgICAgICAgQGlmIChzaG93QW1vdW50KCkpIHtcbiAgICAgICAgICAgICAgPHN0cm9uZyBjbGFzcz1cIm51bVwiIFtjbGFzcy5zdHJpa2VdPVwiZS5pc192b2lkXCI+e3sgZS5hbW91bnQgfCBpbnI6ICdwYWlzZScgfX08L3N0cm9uZz5cbiAgICAgICAgICAgIH1cbiAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgPHNwYW4gY2xhc3M9XCJkZXQtdFwiXG4gICAgICAgICAgICA+e3sgZS52ZW5kb3IgfHwgZS5kZXNjcmlwdGlvbiB8fCAn4oCUJ1xuICAgICAgICAgICAgfX08bmctY29udGFpbmVyICpuZ1RlbXBsYXRlT3V0bGV0PVwidGFnczsgY29udGV4dDogeyAkaW1wbGljaXQ6IGUgfVwiXG4gICAgICAgICAgLz48L3NwYW4+XG4gICAgICAgICAgQGlmIChlLnZlbmRvciAmJiBlLmRlc2NyaXB0aW9uKSB7XG4gICAgICAgICAgICA8c3BhbiBjbGFzcz1cInBoXCI+e3sgZS5kZXNjcmlwdGlvbiB9fTwvc3Bhbj5cbiAgICAgICAgICB9XG4gICAgICAgICAgQGlmIChlLmlzX3ZvaWQgJiYgZS52b2lkX3JlYXNvbikge1xuICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJwaFwiPlZvaWRlZDoge3sgZS52b2lkX3JlYXNvbiB9fTwvc3Bhbj5cbiAgICAgICAgICB9XG4gICAgICAgICAgPHNwYW4gY2xhc3M9XCJsYy1tZXRhXCI+XG4gICAgICAgICAgICA8c3Bhbj57eyBkYXkoZS5zcGVudF9vbikgfX08L3NwYW4+XG4gICAgICAgICAgICBAaWYgKHNob3dQcm9qZWN0KCkpIHtcbiAgICAgICAgICAgICAgPGEgY2xhc3M9XCJwbFwiIFtyb3V0ZXJMaW5rXT1cIlsnL3Byb2plY3RzJywgZS5wcm9qZWN0XVwiPnt7IGUucHJvamVjdF9uYW1lIH19PC9hPlxuICAgICAgICAgICAgICBAaWYgKGUubG9nZ2VkX2J5KSB7XG4gICAgICAgICAgICAgICAgPHNwYW4+e3sgZS5sb2dnZWRfYnkubmFtZSB9fTwvc3Bhbj5cbiAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgfVxuICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICBAaWYgKGUuaGFzX3JlY2VpcHQgfHwgZS5jYW5fZWRpdCkge1xuICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJsYy1hY3RzXCJcbiAgICAgICAgICAgICAgPjxuZy1jb250YWluZXIgKm5nVGVtcGxhdGVPdXRsZXQ9XCJhY3RzOyBjb250ZXh0OiB7ICRpbXBsaWNpdDogZSB9XCJcbiAgICAgICAgICAgIC8+PC9zcGFuPlxuICAgICAgICAgIH1cbiAgICAgICAgPC9saT5cbiAgICAgIH1cbiAgICB9XG4gIDwvdWw+XG59XG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQVMseUJBQXlCLFdBQVcsUUFBUSxjQUFjO0FBQ25FLFNBQVMsbUJBQW1CO0FBQzVCLFNBQVMsdUJBQXVCO0FBQ2hDLFNBQVMsaUJBQWlCLGlCQUFpQixvQkFBb0I7Ozs7Ozs7O0FBb0Ny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QSxhQUFBLFFBQUEsR0FBQSxDQUFBLGlCQUFBLElBQUEsUUFBQSxRQUFBLEdBQUEsQ0FBQSxpQkFBQSxJQUFBLFFBQUEsVUFBQSxHQUFBLE9BQUEsR0FBQSxDQUFBLEdBQUEsR0FBQSxHQUFBLENBQUEsR0FBQSxTQUFBLEdBQUEsQ0FBQSxHQUFBLE1BQUEsR0FBQSxDQUFBLGVBQUEsUUFBQSxHQUFBLElBQUEsR0FBQSxDQUFBLEdBQUEsUUFBQSxHQUFBLENBQUEsU0FBQSxPQUFBLFVBQUEsTUFBQSxHQUFBLENBQUEsU0FBQSxPQUFBLFVBQUEsUUFBQSxVQUFBLE9BQUEsR0FBQSxDQUFBLFNBQUEsT0FBQSxVQUFBLE1BQUEsR0FBQSxDQUFBLFNBQUEsT0FBQSxVQUFBLE1BQUEsR0FBQSxDQUFBLEdBQUEsU0FBQSxHQUFBLENBQUEsR0FBQSxJQUFBLEdBQUEsQ0FBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLEdBQUEsT0FBQSxHQUFBLENBQUEsR0FBQSxvQkFBQSx5QkFBQSxHQUFBLENBQUEsR0FBQSxJQUFBLEdBQUEsQ0FBQSxHQUFBLEtBQUEsT0FBQSxHQUFBLFFBQUEsR0FBQSxDQUFBLEdBQUEsTUFBQSxHQUFBLFlBQUEsR0FBQSxDQUFBLEdBQUEsS0FBQSxHQUFBLENBQUEsR0FBQSxRQUFBLE1BQUEsR0FBQSxDQUFBLEdBQUEsS0FBQSxLQUFBLEdBQUEsQ0FBQSxlQUFBLFFBQUEsR0FBQSxRQUFBLElBQUEsR0FBQSxDQUFBLFNBQUEsT0FBQSxVQUFBLE1BQUEsR0FBQSxDQUFBLFNBQUEsT0FBQSxVQUFBLE1BQUEsR0FBQSxDQUFBLEdBQUEsUUFBQSxNQUFBLFdBQUEsR0FBQSxXQUFBLFNBQUEsR0FBQSxDQUFBLEdBQUEsUUFBQSxNQUFBLFNBQUEsR0FBQSxDQUFBLEdBQUEsUUFBQSxHQUFBLENBQUEsR0FBQSxPQUFBLEdBQUEsUUFBQSxHQUFBLENBQUEsR0FBQSxTQUFBLEdBQUEsQ0FBQSxHQUFBLFNBQUEsR0FBQSxDQUFBLEdBQUEsS0FBQSxDQUFBLEdBQUEsVUFBQSxTQUFBLHFCQUFBLElBQUEsS0FBQTtBQUFBLFFBQUEsS0FBQSxHQUFBO0FDM0N4QixNQUFBLHlCQUFBLEdBQUEsb0NBQUEsR0FBQSxHQUFBLGVBQUEsTUFBQSxHQUFBLG9DQUFBLEVBQXlCLEdBQUEsb0NBQUEsR0FBQSxHQUFBLGVBQUEsTUFBQSxHQUFBLG9DQUFBO0FBK0N6QixNQUFBLGtDQUFBLEdBQUEsb0NBQUEsSUFBQSxHQUFBLE9BQUEsQ0FBQSxFQUE0QixHQUFBLG9DQUFBLEdBQUEsR0FBQSxNQUFBLENBQUE7OztBQUE1QixNQUFBLHdCQUFBLENBQUE7QUFBQSxNQUFBLDRCQUFBLElBQUEsT0FBQSxNQUFBLFVBQUEsSUFBQSxDQUFBOzs7SURmSTtJQUFhO0lBQUE7SUFDYjtJQUFhO0lBQUE7SUFBQTtJQUFBO0lBQUE7SUFBQTtJQUNiO0lBQ0E7SUFDQTtJQUNBO0lBTkE7RUFBTyxHQUFBLFFBQUEsQ0FBQSx5cUpBQUEsRUFBQSxDQUFBOzs7Z0ZBWUUsYUFBVyxDQUFBO1VBZnZCQzt1QkFDVyxvQkFBa0IsU0FDbkI7TUFDUDtNQUNBO01BQ0E7TUFDQTtNQUNBO01BQ0E7TUFDQTtPQUNELGlCQUNnQkMseUJBQXdCLFFBQU0sVUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0dBQUEsUUFBQSxDQUFBLHNySEFBQSxFQUFBLENBQUE7Ozs7aUZBSXBDLGFBQVcsRUFBQSxXQUFBLGVBQUEsVUFBQSx3REFBQSxZQUFBLEdBQUEsQ0FBQTtBQUFBLEdBQUE7Ozs7Ozs7K0RBQVgsYUFBVyxFQUFBLFNBQUEsQ0FBQUMsS0FBQUMsS0FBQUMsS0FBQUMsS0FBQUMsR0FBQSxHQUFBLENBQUEsZUFBQSxlQUFBLGtCQUFBLGNBQUEsWUFBQSxVQUFBLFNBQUFOLFlBQUFDLHdCQUFBLEdBQUEsYUFBQSxFQUFBLENBQUE7RUFBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsY0FBQSxvQkFBQSxLQUFBLElBQUEsQ0FBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsZUFBQSxZQUFBLE9BQUEsWUFBQSxJQUFBLEdBQUEsNEJBQUEsQ0FBQSxNQUFBLEVBQUEsT0FBQSxNQUFBLG9CQUFBLEVBQUEsU0FBQSxDQUFBO0FBQUEsR0FBQTsiLCJuYW1lcyI6WyJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsIkNvbXBvbmVudCIsImluamVjdCIsInNpZ25hbCIsIk1hdEJ1dHRvbk1vZHVsZSIsIk1BVF9ESUFMT0dfREFUQSIsIk1hdERpYWxvZ01vZHVsZSIsIk1hdERpYWxvZ1JlZiIsImluamVjdCIsIk1BVF9ESUFMT0dfREFUQSIsIk1hdERpYWxvZ1JlZiIsInNpZ25hbCIsIk1hdEJ1dHRvbk1vZHVsZSIsIk1hdERpYWxvZ01vZHVsZSIsIkNvbXBvbmVudCIsIkNoYW5nZURldGVjdGlvblN0cmF0ZWd5IiwiaTAiLCJpMSIsImkyIiwiaTMiLCJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsIkNvbXBvbmVudCIsIkNvbXBvbmVudCIsIkNoYW5nZURldGVjdGlvblN0cmF0ZWd5IiwiaTAiLCJpMSIsImkyIiwiaTMiLCJpNCJdLCJkZWJ1Z0lkIjoiMzJjMTIyNTktZWM4MC01NWI2LThkZmQtZTE0MTZhZmYwZmY5In0=

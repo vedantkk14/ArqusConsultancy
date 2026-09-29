@@ -1,0 +1,593 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-S6O54PS2.js");import {
+  LeadsApi
+} from "/chunk-HM4VKXQK.js";
+import {
+  LeadAvatar,
+  normalizePhone
+} from "/chunk-5KP5FJVB.js";
+import {
+  AuthService
+} from "/chunk-MYKLYJY6.js";
+
+// src/app/features/leads/components/dialogs/assign-dialog.ts
+import { ChangeDetectionStrategy as ChangeDetectionStrategy2, Component as Component2, computed, inject, signal } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatButtonModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import { MAT_DIALOG_DATA, MatDialogModule as MatDialogModule2, MatDialogRef } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+
+// src/app/features/leads/components/dialogs/dialog-head.ts
+import { ChangeDetectionStrategy, Component, input } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatDialogModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+import * as i3 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+function DialogHead_Conditional_3_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p");
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.subtitle());
+  }
+}
+var DialogHead = class _DialogHead {
+  title = input.required(
+    ...ngDevMode ? [{ debugName: "title" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  subtitle = input(
+    "",
+    ...ngDevMode ? [{ debugName: "subtitle" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  static \u0275fac = function DialogHead_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _DialogHead)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _DialogHead, selectors: [["app-dialog-head"]], inputs: { title: [1, "title"], subtitle: [1, "subtitle"] }, decls: 7, vars: 2, consts: [[1, "t"], ["mat-dialog-title", ""], ["type", "button", "mat-dialog-close", "", "aria-label", "Close", 1, "x"], ["aria-hidden", "true"]], template: function DialogHead_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275elementStart(0, "div", 0)(1, "h2", 1);
+      i0.\u0275\u0275text(2);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275conditionalCreate(3, DialogHead_Conditional_3_Template, 2, 1, "p");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(4, "button", 2)(5, "mat-icon", 3);
+      i0.\u0275\u0275text(6, "close");
+      i0.\u0275\u0275elementEnd()();
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275textInterpolate(ctx.title());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.subtitle() ? 3 : -1);
+    }
+  }, dependencies: [MatDialogModule, i1.Dir, i2.MatDialogContainer, i2.MatDialogClose, i2.MatDialogTitle, i2.MatDialogActions, i2.MatDialogContent, MatIconModule, i3.MatIcon], styles: ["\n[_nghost-%COMP%] {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: var(--%NS%space-5);\n}\n.t[_ngcontent-%COMP%] {\n  min-width: 0;\n}\nh2[_ngcontent-%COMP%] {\n  margin: 0;\n  padding: 0;\n  font-size: var(--%NS%text-lg);\n  font-weight: 600;\n}\nh2[_ngcontent-%COMP%]::before {\n  display: none;\n}\np[_ngcontent-%COMP%] {\n  margin: 2px 0 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n  overflow-wrap: anywhere;\n}\n.x[_ngcontent-%COMP%] {\n  display: grid;\n  width: 40px;\n  height: 40px;\n  flex: none;\n  margin: -6px -8px 0 0;\n  place-items: center;\n  border: 0;\n  border-radius: 50%;\n  background: transparent;\n  color: var(--%NS%ink-2);\n  cursor: pointer;\n}\n.x[_ngcontent-%COMP%]:hover {\n  background: var(--%NS%subtle);\n  color: var(--%NS%ink);\n}\n.x[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n/*# sourceMappingURL=dialog-head.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(DialogHead, [{
+    type: Component,
+    args: [{ selector: "app-dialog-head", imports: [MatDialogModule, MatIconModule], changeDetection: ChangeDetectionStrategy.OnPush, template: `
+    <div class="t">
+      <h2 mat-dialog-title>{{ title() }}</h2>
+      @if (subtitle()) {
+        <p>{{ subtitle() }}</p>
+      }
+    </div>
+    <button type="button" class="x" mat-dialog-close aria-label="Close">
+      <mat-icon aria-hidden="true">close</mat-icon>
+    </button>
+  `, styles: ["/* angular:styles/component:scss;d07d76aa230540dd175d725aab19ec2483de2ab23fda183154f06e5ee6d836a6;D:/arqus_consultancy/frontend/src/app/features/leads/components/dialogs/dialog-head.ts */\n:host {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: var(--space-5);\n}\n.t {\n  min-width: 0;\n}\nh2 {\n  margin: 0;\n  padding: 0;\n  font-size: var(--text-lg);\n  font-weight: 600;\n}\nh2::before {\n  display: none;\n}\np {\n  margin: 2px 0 0;\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n  overflow-wrap: anywhere;\n}\n.x {\n  display: grid;\n  width: 40px;\n  height: 40px;\n  flex: none;\n  margin: -6px -8px 0 0;\n  place-items: center;\n  border: 0;\n  border-radius: 50%;\n  background: transparent;\n  color: var(--ink-2);\n  cursor: pointer;\n}\n.x:hover {\n  background: var(--subtle);\n  color: var(--ink);\n}\n.x mat-icon {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n/*# sourceMappingURL=dialog-head.css.map */\n"] }]
+  }], null, { title: [{ type: i0.Input, args: [{ isSignal: true, alias: "title", required: true }] }], subtitle: [{ type: i0.Input, args: [{ isSignal: true, alias: "subtitle", required: false }] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(DialogHead, { className: "DialogHead", filePath: "src/app/features/leads/components/dialogs/dialog-head.ts", lineNumber: 35 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fleads%2Fcomponents%2Fdialogs%2Fdialog-head.ts%40DialogHead";
+  function DialogHead_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(DialogHead, m.default, [i0, i1, i2, i3], [MatDialogModule, MatIconModule, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && DialogHead_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && DialogHead_HmrLoad(d.timestamp)));
+})();
+
+// src/app/features/leads/components/dialogs/assign-dialog.ts
+import * as i02 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i12 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i22 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import * as i32 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+var _forTrack0 = ($index, $item) => $item.id;
+function AssignDialog_Conditional_1_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r1 = i02.\u0275\u0275getCurrentView();
+    i02.\u0275\u0275elementStart(0, "button", 8);
+    i02.\u0275\u0275listener("click", function AssignDialog_Conditional_1_Template_button_click_0_listener() {
+      i02.\u0275\u0275restoreView(_r1);
+      const ctx_r1 = i02.\u0275\u0275nextContext();
+      ctx_r1.choice.set(ctx_r1.meId());
+      return i02.\u0275\u0275resetView(ctx_r1.save());
+    });
+    i02.\u0275\u0275text(1, "Assign to me");
+    i02.\u0275\u0275elementEnd();
+  }
+}
+function AssignDialog_Conditional_2_For_5_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275elementStart(0, "span", 14);
+    i02.\u0275\u0275text(1, "Admin");
+    i02.\u0275\u0275elementEnd();
+  }
+}
+function AssignDialog_Conditional_2_For_5_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r3 = i02.\u0275\u0275getCurrentView();
+    i02.\u0275\u0275elementStart(0, "li")(1, "label", 10)(2, "input", 11);
+    i02.\u0275\u0275listener("change", function AssignDialog_Conditional_2_For_5_Template_input_change_2_listener() {
+      const a_r4 = i02.\u0275\u0275restoreView(_r3).$implicit;
+      const ctx_r1 = i02.\u0275\u0275nextContext(2);
+      return i02.\u0275\u0275resetView(ctx_r1.choice.set(a_r4.id));
+    });
+    i02.\u0275\u0275elementEnd();
+    i02.\u0275\u0275element(3, "app-lead-avatar", 12);
+    i02.\u0275\u0275elementStart(4, "span", 13);
+    i02.\u0275\u0275text(5);
+    i02.\u0275\u0275elementEnd();
+    i02.\u0275\u0275conditionalCreate(6, AssignDialog_Conditional_2_For_5_Conditional_6_Template, 2, 0, "span", 14);
+    i02.\u0275\u0275elementStart(7, "span", 15);
+    i02.\u0275\u0275text(8);
+    i02.\u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const a_r4 = ctx.$implicit;
+    const ctx_r1 = i02.\u0275\u0275nextContext(2);
+    i02.\u0275\u0275advance(2);
+    i02.\u0275\u0275property("value", a_r4.id)("checked", ctx_r1.choice() === a_r4.id);
+    i02.\u0275\u0275advance();
+    i02.\u0275\u0275property("name", a_r4.name)("size", 32);
+    i02.\u0275\u0275advance(2);
+    i02.\u0275\u0275textInterpolate2("", a_r4.name, "", a_r4.id === ctx_r1.meId() ? " (you)" : "");
+    i02.\u0275\u0275advance();
+    i02.\u0275\u0275conditional(a_r4.role === "ADMIN" ? 6 : -1);
+    i02.\u0275\u0275advance(2);
+    i02.\u0275\u0275textInterpolate1("", a_r4.open_count, " open");
+  }
+}
+function AssignDialog_Conditional_2_ForEmpty_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275elementStart(0, "li", 3);
+    i02.\u0275\u0275text(1, "No one available to assign.");
+    i02.\u0275\u0275elementEnd();
+  }
+}
+function AssignDialog_Conditional_2_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275elementStart(0, "fieldset", 2)(1, "legend", 9);
+    i02.\u0275\u0275text(2, "Assign to");
+    i02.\u0275\u0275elementEnd();
+    i02.\u0275\u0275elementStart(3, "ul");
+    i02.\u0275\u0275repeaterCreate(4, AssignDialog_Conditional_2_For_5_Template, 9, 8, "li", null, _forTrack0, false, AssignDialog_Conditional_2_ForEmpty_6_Template, 2, 0, "li", 3);
+    i02.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    i02.\u0275\u0275advance(4);
+    i02.\u0275\u0275repeater(ctx);
+  }
+}
+function AssignDialog_Conditional_3_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275elementStart(0, "p", 3);
+    i02.\u0275\u0275text(1, "Loading executives\u2026");
+    i02.\u0275\u0275elementEnd();
+  }
+}
+function AssignDialog_Conditional_4_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275elementStart(0, "p", 4);
+    i02.\u0275\u0275text(1);
+    i02.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r1 = i02.\u0275\u0275nextContext();
+    i02.\u0275\u0275advance();
+    i02.\u0275\u0275textInterpolate(ctx_r1.error());
+  }
+}
+var AssignDialog = class _AssignDialog {
+  data = inject(MAT_DIALOG_DATA);
+  ref = inject(MatDialogRef);
+  api = inject(LeadsApi);
+  assignees = signal(
+    null,
+    ...ngDevMode ? [{ debugName: "assignees" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  choice = signal(
+    this.data.currentId ?? null,
+    ...ngDevMode ? [{ debugName: "choice" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  saving = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "saving" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  error = signal(
+    "",
+    ...ngDevMode ? [{ debugName: "error" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** An admin can take a lead and work it end to end. */
+  auth = inject(AuthService);
+  meId = computed(
+    () => this.auth.user()?.id ?? null,
+    ...ngDevMode ? [{ debugName: "meId" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  canTakeIt = computed(
+    () => !!this.assignees()?.some((a) => a.id === this.meId() && a.role === "ADMIN"),
+    ...ngDevMode ? [{ debugName: "canTakeIt" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  constructor() {
+    this.api.assignees().subscribe({
+      next: (list) => this.assignees.set(list),
+      error: (err) => {
+        this.assignees.set([]);
+        this.error.set(err.message);
+      }
+    });
+  }
+  save() {
+    const to = this.choice();
+    if (!to) {
+      return;
+    }
+    this.saving.set(true);
+    const request = this.data.ids.length === 1 ? this.api.assign(this.data.ids[0], to) : this.api.bulkAssign(this.data.ids, to);
+    request.subscribe({
+      next: () => this.ref.close(true),
+      error: (err) => {
+        this.saving.set(false);
+        this.error.set(err.message);
+      }
+    });
+  }
+  static \u0275fac = function AssignDialog_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _AssignDialog)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i02.\u0275\u0275defineComponent({ type: _AssignDialog, selectors: [["app-assign-dialog"]], decls: 10, vars: 6, consts: [["title", "Assign to\u2026", 3, "subtitle"], ["matButton", "outlined", "type", "button", 1, "me"], [2, "border", "0", "margin", "0", "padding", "0"], [1, "sub"], ["role", "alert", 1, "error"], [1, "actions"], ["matButton", "", "type", "button", "mat-dialog-close", ""], ["matButton", "filled", "type", "button", 3, "click", "disabled"], ["matButton", "outlined", "type", "button", 1, "me", 3, "click"], [1, "sr-only"], [1, "opt"], ["type", "radio", "name", "assignee", 3, "change", "value", "checked"], [3, "name", "size"], [1, "nm"], [1, "tag"], [1, "ct"]], template: function AssignDialog_Template(rf, ctx) {
+    if (rf & 1) {
+      i02.\u0275\u0275element(0, "app-dialog-head", 0);
+      i02.\u0275\u0275conditionalCreate(1, AssignDialog_Conditional_1_Template, 2, 0, "button", 1);
+      i02.\u0275\u0275conditionalCreate(2, AssignDialog_Conditional_2_Template, 7, 1, "fieldset", 2)(3, AssignDialog_Conditional_3_Template, 2, 0, "p", 3);
+      i02.\u0275\u0275conditionalCreate(4, AssignDialog_Conditional_4_Template, 2, 1, "p", 4);
+      i02.\u0275\u0275elementStart(5, "div", 5)(6, "button", 6);
+      i02.\u0275\u0275text(7, "Cancel");
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(8, "button", 7);
+      i02.\u0275\u0275listener("click", function AssignDialog_Template_button_click_8_listener() {
+        return ctx.save();
+      });
+      i02.\u0275\u0275text(9);
+      i02.\u0275\u0275elementEnd()();
+    }
+    if (rf & 2) {
+      let tmp_2_0;
+      i02.\u0275\u0275property("subtitle", ctx.data.label);
+      i02.\u0275\u0275advance();
+      i02.\u0275\u0275conditional(ctx.canTakeIt() ? 1 : -1);
+      i02.\u0275\u0275advance();
+      i02.\u0275\u0275conditional((tmp_2_0 = ctx.assignees()) ? 2 : 3, tmp_2_0);
+      i02.\u0275\u0275advance(2);
+      i02.\u0275\u0275conditional(ctx.error() ? 4 : -1);
+      i02.\u0275\u0275advance(4);
+      i02.\u0275\u0275property("disabled", !ctx.choice() || ctx.saving());
+      i02.\u0275\u0275advance();
+      i02.\u0275\u0275textInterpolate1(" ", ctx.saving() ? "Assigning\u2026" : "Assign", " ");
+    }
+  }, dependencies: [DialogHead, LeadAvatar, MatButtonModule, i12.Dir, i22.MatButton, i22.MatMiniFabButton, i22.MatIconButton, i22.MatFabButton, MatDialogModule2, i32.MatDialogContainer, i32.MatDialogClose, i32.MatDialogTitle, i32.MatDialogActions, i32.MatDialogContent], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--%NS%space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\nh2[_ngcontent-%COMP%] {\n  margin: 0 0 4px;\n  font-size: var(--%NS%text-lg);\n}\n.sub[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-5);\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%]   label[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\nselect[_ngcontent-%COMP%], \ntextarea[_ngcontent-%COMP%], \ninput[type=text][_ngcontent-%COMP%], \ninput[type=datetime-local][_ngcontent-%COMP%] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface);\n  color: var(--%NS%ink);\n  font: inherit;\n}\ntextarea[_ngcontent-%COMP%] {\n  min-height: 88px;\n  resize: vertical;\n}\n.error[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%negative);\n  font-size: var(--%NS%text-sm);\n}\n.note[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-4);\n  padding: 10px 12px;\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n  font-size: var(--%NS%text-sm);\n}\n.note.warn[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-amber);\n  color: var(--%NS%tint-amber-ink);\n}\n.actions[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--%NS%space-2);\n  margin-top: var(--%NS%space-5);\n}\n/*# sourceMappingURL=dialog.css.map */", "\nul[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  max-height: 320px;\n  margin: 0;\n  padding: 0;\n  overflow: auto;\n  list-style: none;\n}\nlabel.opt[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 52px;\n  padding: 6px 10px;\n  border: 1px solid var(--%NS%line);\n  border-radius: var(--%NS%radius-control);\n  cursor: pointer;\n}\nlabel.opt[_ngcontent-%COMP%]:has(input:checked) {\n  border-color: var(--%NS%brand-deep);\n  background: var(--%NS%brand-tint);\n}\n.nm[_ngcontent-%COMP%] {\n  flex: 1;\n  color: var(--%NS%ink);\n  font-weight: 500;\n}\n.ct[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.tag[_ngcontent-%COMP%] {\n  padding: 0 8px;\n  border-radius: 999px;\n  background: var(--%NS%tint-slate);\n  color: var(--%NS%tint-slate-ink);\n  font-size: var(--%NS%text-xs);\n  line-height: 20px;\n}\n.me[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-3);\n}\ninput[type=radio][_ngcontent-%COMP%] {\n  width: 18px;\n  height: 18px;\n  accent-color: var(--%NS%brand-deep);\n}\n/*# sourceMappingURL=assign-dialog.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassMetadata(AssignDialog, [{
+    type: Component2,
+    args: [{ selector: "app-assign-dialog", imports: [DialogHead, LeadAvatar, MatButtonModule, MatDialogModule2], changeDetection: ChangeDetectionStrategy2.OnPush, template: `
+    <app-dialog-head title="Assign to\u2026" [subtitle]="data.label" />
+    @if (canTakeIt()) {
+      <button matButton="outlined" type="button" class="me" (click)="choice.set(meId()); save()">Assign to me</button>
+    }
+    @if (assignees(); as list) {
+      <fieldset style="border:0;margin:0;padding:0">
+        <legend class="sr-only">Assign to</legend>
+        <ul>
+          @for (a of list; track a.id) {
+            <li>
+              <label class="opt">
+                <input type="radio" name="assignee" [value]="a.id" [checked]="choice() === a.id" (change)="choice.set(a.id)" />
+                <app-lead-avatar [name]="a.name" [size]="32" />
+                <span class="nm">{{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}</span>
+                @if (a.role === 'ADMIN') {
+                  <span class="tag">Admin</span>
+                }
+                <span class="ct">{{ a.open_count }} open</span>
+              </label>
+            </li>
+          } @empty {
+            <li class="sub">No one available to assign.</li>
+          }
+        </ul>
+      </fieldset>
+    } @else {
+      <p class="sub">Loading executives\u2026</p>
+    }
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    <div class="actions">
+      <button matButton type="button" mat-dialog-close>Cancel</button>
+      <button matButton="filled" type="button" [disabled]="!choice() || saving()" (click)="save()">
+        {{ saving() ? 'Assigning\u2026' : 'Assign' }}
+      </button>
+    </div>
+  `, styles: ["/* src/app/features/leads/components/dialogs/dialog.scss */\n:host {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\nh2 {\n  margin: 0 0 4px;\n  font-size: var(--text-lg);\n}\n.sub {\n  margin: 0 0 var(--space-5);\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--space-4);\n}\n.field label {\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\nselect,\ntextarea,\ninput[type=text],\ninput[type=datetime-local] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface);\n  color: var(--ink);\n  font: inherit;\n}\ntextarea {\n  min-height: 88px;\n  resize: vertical;\n}\n.error {\n  margin: 0;\n  color: var(--negative);\n  font-size: var(--text-sm);\n}\n.note {\n  margin: 0 0 var(--space-4);\n  padding: 10px 12px;\n  border-radius: var(--radius-control);\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n  font-size: var(--text-sm);\n}\n.note.warn {\n  background: var(--tint-amber);\n  color: var(--tint-amber-ink);\n}\n.actions {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--space-2);\n  margin-top: var(--space-5);\n}\n/*# sourceMappingURL=dialog.css.map */\n", "/* angular:styles/component:scss;84d3ad502271d9b3ad2fcc3dbc2ffa29df2d024e1a4f0d46160de73462bef5b2;D:/arqus_consultancy/frontend/src/app/features/leads/components/dialogs/assign-dialog.ts */\nul {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  max-height: 320px;\n  margin: 0;\n  padding: 0;\n  overflow: auto;\n  list-style: none;\n}\nlabel.opt {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 52px;\n  padding: 6px 10px;\n  border: 1px solid var(--line);\n  border-radius: var(--radius-control);\n  cursor: pointer;\n}\nlabel.opt:has(input:checked) {\n  border-color: var(--brand-deep);\n  background: var(--brand-tint);\n}\n.nm {\n  flex: 1;\n  color: var(--ink);\n  font-weight: 500;\n}\n.ct {\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.tag {\n  padding: 0 8px;\n  border-radius: 999px;\n  background: var(--tint-slate);\n  color: var(--tint-slate-ink);\n  font-size: var(--text-xs);\n  line-height: 20px;\n}\n.me {\n  margin: 0 0 var(--space-3);\n}\ninput[type=radio] {\n  width: 18px;\n  height: 18px;\n  accent-color: var(--brand-deep);\n}\n/*# sourceMappingURL=assign-dialog.css.map */\n"] }]
+  }], () => [], null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassDebugInfo(AssignDialog, { className: "AssignDialog", filePath: "src/app/features/leads/components/dialogs/assign-dialog.ts", lineNumber: 78 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fleads%2Fcomponents%2Fdialogs%2Fassign-dialog.ts%40AssignDialog";
+  function AssignDialog_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i02.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i02.\u0275\u0275replaceMetadata(AssignDialog, m.default, [i02, i12, i22, i32], [DialogHead, LeadAvatar, MatButtonModule, MatDialogModule2, Component2, ChangeDetectionStrategy2], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && AssignDialog_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && AssignDialog_HmrLoad(d.timestamp)));
+})();
+
+// src/app/features/leads/components/dialogs/whatsapp-dialog.ts
+import { ChangeDetectionStrategy as ChangeDetectionStrategy3, Component as Component3, inject as inject2, signal as signal2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatButtonModule as MatButtonModule2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import { MAT_DIALOG_DATA as MAT_DIALOG_DATA2, MatDialogModule as MatDialogModule3, MatDialogRef as MatDialogRef2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+import * as i03 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i13 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i23 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import * as i33 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+var _forTrack02 = ($index, $item) => $item.id;
+function WhatsAppDialog_For_3_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r1 = i03.\u0275\u0275getCurrentView();
+    i03.\u0275\u0275elementStart(0, "button", 9);
+    i03.\u0275\u0275listener("click", function WhatsAppDialog_For_3_Template_button_click_0_listener() {
+      const t_r2 = i03.\u0275\u0275restoreView(_r1).$implicit;
+      const ctx_r2 = i03.\u0275\u0275nextContext();
+      return i03.\u0275\u0275resetView(ctx_r2.pick(t_r2.id));
+    });
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const t_r2 = ctx.$implicit;
+    const ctx_r2 = i03.\u0275\u0275nextContext();
+    i03.\u0275\u0275attribute("aria-pressed", ctx_r2.choice() === t_r2.id);
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(t_r2.name);
+  }
+}
+function WhatsAppDialog_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "p", 4);
+    i03.\u0275\u0275text(1, "This phone number can't be used for WhatsApp. Fix it on the lead first.");
+    i03.\u0275\u0275elementEnd();
+  }
+}
+function WhatsAppDialog_Conditional_7_Template(rf, ctx) {
+  if (rf & 1) {
+    i03.\u0275\u0275elementStart(0, "p", 5);
+    i03.\u0275\u0275text(1);
+    i03.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r2 = i03.\u0275\u0275nextContext();
+    i03.\u0275\u0275advance();
+    i03.\u0275\u0275textInterpolate(ctx_r2.error());
+  }
+}
+var WhatsAppDialog = class _WhatsAppDialog {
+  data = inject2(MAT_DIALOG_DATA2);
+  ref = inject2(MatDialogRef2);
+  api = inject2(LeadsApi);
+  usable = normalizePhone(this.data.lead.phone) !== null;
+  templates = signal2(
+    [],
+    ...ngDevMode ? [{ debugName: "templates" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  choice = signal2(
+    null,
+    ...ngDevMode ? [{ debugName: "choice" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  preview = signal2(
+    "",
+    ...ngDevMode ? [{ debugName: "preview" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  sending = signal2(
+    false,
+    ...ngDevMode ? [{ debugName: "sending" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  error = signal2(
+    "",
+    ...ngDevMode ? [{ debugName: "error" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  constructor() {
+    this.api.templates().subscribe((list) => {
+      this.templates.set(list);
+      if (list.length) {
+        this.pick(list[0].id);
+      }
+    });
+  }
+  pick(id) {
+    this.choice.set(id);
+    this.api.whatsappPreview(this.data.lead.id, id).subscribe({
+      next: (res) => this.preview.set(res.text),
+      error: (err) => this.error.set(err.message)
+    });
+  }
+  open() {
+    const id = this.choice();
+    if (!id) {
+      return;
+    }
+    const tab = window.open("", "_blank");
+    this.sending.set(true);
+    this.api.whatsapp(this.data.lead.id, id).subscribe({
+      next: (res) => {
+        if (tab) {
+          tab.opener = null;
+          tab.location.href = res.url;
+        } else {
+          window.open(res.url, "_blank", "noopener");
+        }
+        this.ref.close(true);
+      },
+      error: (err) => {
+        tab?.close();
+        this.sending.set(false);
+        this.error.set(err.message);
+      }
+    });
+  }
+  static \u0275fac = function WhatsAppDialog_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _WhatsAppDialog)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i03.\u0275\u0275defineComponent({ type: _WhatsAppDialog, selectors: [["app-whatsapp-dialog"]], decls: 13, vars: 6, consts: [["subtitle", "Pick a message. It opens in WhatsApp for you to send.", 3, "title"], ["role", "group", "aria-label", "Templates", 1, "tpls"], ["type", "button", 1, "tpl"], ["aria-live", "polite", 1, "preview"], [1, "error"], ["role", "alert", 1, "error"], [1, "actions"], ["matButton", "", "type", "button", "mat-dialog-close", ""], ["matButton", "filled", "type", "button", 3, "click", "disabled"], ["type", "button", 1, "tpl", 3, "click"]], template: function WhatsAppDialog_Template(rf, ctx) {
+    if (rf & 1) {
+      i03.\u0275\u0275element(0, "app-dialog-head", 0);
+      i03.\u0275\u0275elementStart(1, "div", 1);
+      i03.\u0275\u0275repeaterCreate(2, WhatsAppDialog_For_3_Template, 2, 2, "button", 2, _forTrack02);
+      i03.\u0275\u0275elementEnd();
+      i03.\u0275\u0275elementStart(4, "p", 3);
+      i03.\u0275\u0275text(5);
+      i03.\u0275\u0275elementEnd();
+      i03.\u0275\u0275conditionalCreate(6, WhatsAppDialog_Conditional_6_Template, 2, 0, "p", 4);
+      i03.\u0275\u0275conditionalCreate(7, WhatsAppDialog_Conditional_7_Template, 2, 1, "p", 5);
+      i03.\u0275\u0275elementStart(8, "div", 6)(9, "button", 7);
+      i03.\u0275\u0275text(10, "Cancel");
+      i03.\u0275\u0275elementEnd();
+      i03.\u0275\u0275elementStart(11, "button", 8);
+      i03.\u0275\u0275listener("click", function WhatsAppDialog_Template_button_click_11_listener() {
+        return ctx.open();
+      });
+      i03.\u0275\u0275text(12, " Open WhatsApp ");
+      i03.\u0275\u0275elementEnd()();
+    }
+    if (rf & 2) {
+      i03.\u0275\u0275property("title", "WhatsApp " + ctx.data.lead.name);
+      i03.\u0275\u0275advance(2);
+      i03.\u0275\u0275repeater(ctx.templates());
+      i03.\u0275\u0275advance(3);
+      i03.\u0275\u0275textInterpolate(ctx.preview() || "Choose a template to preview the message.");
+      i03.\u0275\u0275advance();
+      i03.\u0275\u0275conditional(!ctx.usable ? 6 : -1);
+      i03.\u0275\u0275advance();
+      i03.\u0275\u0275conditional(ctx.error() ? 7 : -1);
+      i03.\u0275\u0275advance(4);
+      i03.\u0275\u0275property("disabled", !ctx.usable || !ctx.choice() || ctx.sending());
+      i03.\u0275\u0275attribute("aria-label", ctx.usable ? "Open WhatsApp for " + ctx.data.lead.name : "Open WhatsApp (phone number unusable)");
+    }
+  }, dependencies: [DialogHead, MatButtonModule2, i13.Dir, i23.MatButton, i23.MatMiniFabButton, i23.MatIconButton, i23.MatFabButton, MatDialogModule3, i33.MatDialogContainer, i33.MatDialogClose, i33.MatDialogTitle, i33.MatDialogActions, i33.MatDialogContent], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--%NS%space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\nh2[_ngcontent-%COMP%] {\n  margin: 0 0 4px;\n  font-size: var(--%NS%text-lg);\n}\n.sub[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-5);\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%]   label[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\nselect[_ngcontent-%COMP%], \ntextarea[_ngcontent-%COMP%], \ninput[type=text][_ngcontent-%COMP%], \ninput[type=datetime-local][_ngcontent-%COMP%] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface);\n  color: var(--%NS%ink);\n  font: inherit;\n}\ntextarea[_ngcontent-%COMP%] {\n  min-height: 88px;\n  resize: vertical;\n}\n.error[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%negative);\n  font-size: var(--%NS%text-sm);\n}\n.note[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-4);\n  padding: 10px 12px;\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n  font-size: var(--%NS%text-sm);\n}\n.note.warn[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-amber);\n  color: var(--%NS%tint-amber-ink);\n}\n.actions[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--%NS%space-2);\n  margin-top: var(--%NS%space-5);\n}\n/*# sourceMappingURL=dialog.css.map */", "\n.tpls[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n  margin-bottom: var(--%NS%space-4);\n}\n.tpl[_ngcontent-%COMP%] {\n  min-height: 40px;\n  padding: 0 14px;\n  border: 1px solid var(--%NS%line);\n  border-radius: var(--%NS%radius-pill);\n  background: var(--%NS%surface);\n  color: var(--%NS%ink-2);\n  font: inherit;\n  font-size: var(--%NS%text-sm);\n  cursor: pointer;\n}\n.tpl[aria-pressed=true][_ngcontent-%COMP%] {\n  border-color: var(--%NS%brand-deep);\n  background: var(--%NS%brand-tint);\n  color: var(--%NS%ink);\n  font-weight: 600;\n}\n.preview[_ngcontent-%COMP%] {\n  min-height: 96px;\n  margin: 0;\n  padding: 12px 14px;\n  border-radius: 12px 12px 12px 4px;\n  background: var(--%NS%tint-teal);\n  color: var(--%NS%tint-teal-ink);\n  white-space: pre-wrap;\n  font-size: var(--%NS%text-sm);\n}\n/*# sourceMappingURL=whatsapp-dialog.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i03.\u0275setClassMetadata(WhatsAppDialog, [{
+    type: Component3,
+    args: [{ selector: "app-whatsapp-dialog", imports: [DialogHead, MatButtonModule2, MatDialogModule3], changeDetection: ChangeDetectionStrategy3.OnPush, template: `
+    <app-dialog-head [title]="'WhatsApp ' + data.lead.name" subtitle="Pick a message. It opens in WhatsApp for you to send." />
+    <div class="tpls" role="group" aria-label="Templates">
+      @for (t of templates(); track t.id) {
+        <button type="button" class="tpl" [attr.aria-pressed]="choice() === t.id" (click)="pick(t.id)">{{ t.name }}</button>
+      }
+    </div>
+    <p class="preview" aria-live="polite">{{ preview() || 'Choose a template to preview the message.' }}</p>
+    @if (!usable) {
+      <p class="error">This phone number can't be used for WhatsApp. Fix it on the lead first.</p>
+    }
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    <div class="actions">
+      <button matButton type="button" mat-dialog-close>Cancel</button>
+      <button
+        matButton="filled"
+        type="button"
+        [disabled]="!usable || !choice() || sending()"
+        [attr.aria-label]="usable ? 'Open WhatsApp for ' + data.lead.name : 'Open WhatsApp (phone number unusable)'"
+        (click)="open()"
+      >
+        Open WhatsApp
+      </button>
+    </div>
+  `, styles: ["/* src/app/features/leads/components/dialogs/dialog.scss */\n:host {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\nh2 {\n  margin: 0 0 4px;\n  font-size: var(--text-lg);\n}\n.sub {\n  margin: 0 0 var(--space-5);\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--space-4);\n}\n.field label {\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\nselect,\ntextarea,\ninput[type=text],\ninput[type=datetime-local] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface);\n  color: var(--ink);\n  font: inherit;\n}\ntextarea {\n  min-height: 88px;\n  resize: vertical;\n}\n.error {\n  margin: 0;\n  color: var(--negative);\n  font-size: var(--text-sm);\n}\n.note {\n  margin: 0 0 var(--space-4);\n  padding: 10px 12px;\n  border-radius: var(--radius-control);\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n  font-size: var(--text-sm);\n}\n.note.warn {\n  background: var(--tint-amber);\n  color: var(--tint-amber-ink);\n}\n.actions {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--space-2);\n  margin-top: var(--space-5);\n}\n/*# sourceMappingURL=dialog.css.map */\n", "/* angular:styles/component:scss;723127b5ef1044ce29811a961bfc8108348bb2b0c32545b982e6831ff51312b4;D:/arqus_consultancy/frontend/src/app/features/leads/components/dialogs/whatsapp-dialog.ts */\n.tpls {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n  margin-bottom: var(--space-4);\n}\n.tpl {\n  min-height: 40px;\n  padding: 0 14px;\n  border: 1px solid var(--line);\n  border-radius: var(--radius-pill);\n  background: var(--surface);\n  color: var(--ink-2);\n  font: inherit;\n  font-size: var(--text-sm);\n  cursor: pointer;\n}\n.tpl[aria-pressed=true] {\n  border-color: var(--brand-deep);\n  background: var(--brand-tint);\n  color: var(--ink);\n  font-weight: 600;\n}\n.preview {\n  min-height: 96px;\n  margin: 0;\n  padding: 12px 14px;\n  border-radius: 12px 12px 12px 4px;\n  background: var(--tint-teal);\n  color: var(--tint-teal-ink);\n  white-space: pre-wrap;\n  font-size: var(--text-sm);\n}\n/*# sourceMappingURL=whatsapp-dialog.css.map */\n"] }]
+  }], () => [], null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i03.\u0275setClassDebugInfo(WhatsAppDialog, { className: "WhatsAppDialog", filePath: "src/app/features/leads/components/dialogs/whatsapp-dialog.ts", lineNumber: 60 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fleads%2Fcomponents%2Fdialogs%2Fwhatsapp-dialog.ts%40WhatsAppDialog";
+  function WhatsAppDialog_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i03.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i03.\u0275\u0275replaceMetadata(WhatsAppDialog, m.default, [i03, i13, i23, i33], [DialogHead, MatButtonModule2, MatDialogModule3, Component3, ChangeDetectionStrategy3], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && WhatsAppDialog_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && WhatsAppDialog_HmrLoad(d.timestamp)));
+})();
+
+export {
+  DialogHead,
+  AssignDialog,
+  WhatsAppDialog
+};
+//# debugId=7c2bacc2-d7fb-5a61-a76e-0a599cde61a9
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvbGVhZHMvY29tcG9uZW50cy9kaWFsb2dzL2Fzc2lnbi1kaWFsb2cudHMiLCJzcmMvYXBwL2ZlYXR1cmVzL2xlYWRzL2NvbXBvbmVudHMvZGlhbG9ncy9kaWFsb2ctaGVhZC50cyIsInNyYy9hcHAvZmVhdHVyZXMvbGVhZHMvY29tcG9uZW50cy9kaWFsb2dzL3doYXRzYXBwLWRpYWxvZy50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSwgQ29tcG9uZW50LCBjb21wdXRlZCwgaW5qZWN0LCBzaWduYWwgfSBmcm9tICdAYW5ndWxhci9jb3JlJztcbmltcG9ydCB7IE1hdEJ1dHRvbk1vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2J1dHRvbic7XG5pbXBvcnQgeyBNQVRfRElBTE9HX0RBVEEsIE1hdERpYWxvZ01vZHVsZSwgTWF0RGlhbG9nUmVmIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvZGlhbG9nJztcbmltcG9ydCB7IE9ic2VydmFibGUgfSBmcm9tICdyeGpzJztcbmltcG9ydCB7IEF1dGhTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vLi4vY29yZS9hdXRoL2F1dGguc2VydmljZSc7XG5pbXBvcnQgeyBBcGlFcnJvciB9IGZyb20gJy4uLy4uLy4uLy4uL2NvcmUvbW9kZWxzJztcbmltcG9ydCB7IEFzc2lnbmVlIH0gZnJvbSAnLi4vLi4vZGF0YS9sZWFkLm1vZGVscyc7XG5pbXBvcnQgeyBMZWFkc0FwaSB9IGZyb20gJy4uLy4uL2RhdGEvbGVhZHMtYXBpLnNlcnZpY2UnO1xuaW1wb3J0IHsgTGVhZEF2YXRhciB9IGZyb20gJy4uL2xlYWQtYml0cyc7XG5pbXBvcnQgeyBEaWFsb2dIZWFkIH0gZnJvbSAnLi9kaWFsb2ctaGVhZCc7XG5cbmV4cG9ydCBpbnRlcmZhY2UgQXNzaWduRGlhbG9nRGF0YSB7XG4gIGlkczogbnVtYmVyW107XG4gIC8qKiBcIlJhaHVsIFNoYXJtYVwiIGZvciBvbmUgbGVhZCwgXCIxMiBsZWFkc1wiIGZvciBidWxrLiAqL1xuICBsYWJlbDogc3RyaW5nO1xuICBjdXJyZW50SWQ/OiBudW1iZXIgfCBudWxsO1xufVxuXG4vKiogUGljayBhIHNhbGVzIGV4ZWN1dGl2ZSAod2l0aCB0aGVpciBvcGVuLWxlYWQgY291bnQpIGZvciBvbmUgbGVhZCBvciBhIHNlbGVjdGlvbi4gKi9cbkBDb21wb25lbnQoe1xuICBzZWxlY3RvcjogJ2FwcC1hc3NpZ24tZGlhbG9nJyxcbiAgaW1wb3J0czogW0RpYWxvZ0hlYWQsIExlYWRBdmF0YXIsIE1hdEJ1dHRvbk1vZHVsZSwgTWF0RGlhbG9nTW9kdWxlXSxcbiAgY2hhbmdlRGV0ZWN0aW9uOiBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneS5PblB1c2gsXG4gIHN0eWxlVXJsOiAnLi9kaWFsb2cuc2NzcycsXG4gIHN0eWxlczogYFxuICAgIHVsIHsgZGlzcGxheTogZmxleDsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgZ2FwOiA0cHg7IG1heC1oZWlnaHQ6IDMyMHB4OyBtYXJnaW46IDA7IHBhZGRpbmc6IDA7IG92ZXJmbG93OiBhdXRvOyBsaXN0LXN0eWxlOiBub25lOyB9XG4gICAgbGFiZWwub3B0IHtcbiAgICAgIGRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiBjZW50ZXI7IGdhcDogMTJweDsgbWluLWhlaWdodDogNTJweDsgcGFkZGluZzogNnB4IDEwcHg7XG4gICAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1saW5lKTsgYm9yZGVyLXJhZGl1czogdmFyKC0tcmFkaXVzLWNvbnRyb2wpOyBjdXJzb3I6IHBvaW50ZXI7XG4gICAgfVxuICAgIGxhYmVsLm9wdDpoYXMoaW5wdXQ6Y2hlY2tlZCkgeyBib3JkZXItY29sb3I6IHZhcigtLWJyYW5kLWRlZXApOyBiYWNrZ3JvdW5kOiB2YXIoLS1icmFuZC10aW50KTsgfVxuICAgIC5ubSB7IGZsZXg6IDE7IGNvbG9yOiB2YXIoLS1pbmspOyBmb250LXdlaWdodDogNTAwOyB9XG4gICAgLmN0IHsgY29sb3I6IHZhcigtLWluay0zKTsgZm9udC1zaXplOiB2YXIoLS10ZXh0LXNtKTsgfVxuICAgIC50YWcgeyBwYWRkaW5nOiAwIDhweDsgYm9yZGVyLXJhZGl1czogOTk5cHg7IGJhY2tncm91bmQ6IHZhcigtLXRpbnQtc2xhdGUpOyBjb2xvcjogdmFyKC0tdGludC1zbGF0ZS1pbmspOyBmb250LXNpemU6IHZhcigtLXRleHQteHMpOyBsaW5lLWhlaWdodDogMjBweDsgfVxuICAgIC5tZSB7IG1hcmdpbjogMCAwIHZhcigtLXNwYWNlLTMpOyB9XG4gICAgaW5wdXRbdHlwZT0ncmFkaW8nXSB7IHdpZHRoOiAxOHB4OyBoZWlnaHQ6IDE4cHg7IGFjY2VudC1jb2xvcjogdmFyKC0tYnJhbmQtZGVlcCk7IH1cbiAgYCxcbiAgdGVtcGxhdGU6IGBcbiAgICA8YXBwLWRpYWxvZy1oZWFkIHRpdGxlPVwiQXNzaWduIHRv4oCmXCIgW3N1YnRpdGxlXT1cImRhdGEubGFiZWxcIiAvPlxuICAgIEBpZiAoY2FuVGFrZUl0KCkpIHtcbiAgICAgIDxidXR0b24gbWF0QnV0dG9uPVwib3V0bGluZWRcIiB0eXBlPVwiYnV0dG9uXCIgY2xhc3M9XCJtZVwiIChjbGljayk9XCJjaG9pY2Uuc2V0KG1lSWQoKSk7IHNhdmUoKVwiPkFzc2lnbiB0byBtZTwvYnV0dG9uPlxuICAgIH1cbiAgICBAaWYgKGFzc2lnbmVlcygpOyBhcyBsaXN0KSB7XG4gICAgICA8ZmllbGRzZXQgc3R5bGU9XCJib3JkZXI6MDttYXJnaW46MDtwYWRkaW5nOjBcIj5cbiAgICAgICAgPGxlZ2VuZCBjbGFzcz1cInNyLW9ubHlcIj5Bc3NpZ24gdG88L2xlZ2VuZD5cbiAgICAgICAgPHVsPlxuICAgICAgICAgIEBmb3IgKGEgb2YgbGlzdDsgdHJhY2sgYS5pZCkge1xuICAgICAgICAgICAgPGxpPlxuICAgICAgICAgICAgICA8bGFiZWwgY2xhc3M9XCJvcHRcIj5cbiAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT1cInJhZGlvXCIgbmFtZT1cImFzc2lnbmVlXCIgW3ZhbHVlXT1cImEuaWRcIiBbY2hlY2tlZF09XCJjaG9pY2UoKSA9PT0gYS5pZFwiIChjaGFuZ2UpPVwiY2hvaWNlLnNldChhLmlkKVwiIC8+XG4gICAgICAgICAgICAgICAgPGFwcC1sZWFkLWF2YXRhciBbbmFtZV09XCJhLm5hbWVcIiBbc2l6ZV09XCIzMlwiIC8+XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJubVwiPnt7IGEubmFtZSB9fXt7IGEuaWQgPT09IG1lSWQoKSA/ICcgKHlvdSknIDogJycgfX08L3NwYW4+XG4gICAgICAgICAgICAgICAgQGlmIChhLnJvbGUgPT09ICdBRE1JTicpIHtcbiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzPVwidGFnXCI+QWRtaW48L3NwYW4+XG4gICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzPVwiY3RcIj57eyBhLm9wZW5fY291bnQgfX0gb3Blbjwvc3Bhbj5cbiAgICAgICAgICAgICAgPC9sYWJlbD5cbiAgICAgICAgICAgIDwvbGk+XG4gICAgICAgICAgfSBAZW1wdHkge1xuICAgICAgICAgICAgPGxpIGNsYXNzPVwic3ViXCI+Tm8gb25lIGF2YWlsYWJsZSB0byBhc3NpZ24uPC9saT5cbiAgICAgICAgICB9XG4gICAgICAgIDwvdWw+XG4gICAgICA8L2ZpZWxkc2V0PlxuICAgIH0gQGVsc2Uge1xuICAgICAgPHAgY2xhc3M9XCJzdWJcIj5Mb2FkaW5nIGV4ZWN1dGl2ZXPigKY8L3A+XG4gICAgfVxuICAgIEBpZiAoZXJyb3IoKSkge1xuICAgICAgPHAgY2xhc3M9XCJlcnJvclwiIHJvbGU9XCJhbGVydFwiPnt7IGVycm9yKCkgfX08L3A+XG4gICAgfVxuICAgIDxkaXYgY2xhc3M9XCJhY3Rpb25zXCI+XG4gICAgICA8YnV0dG9uIG1hdEJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgbWF0LWRpYWxvZy1jbG9zZT5DYW5jZWw8L2J1dHRvbj5cbiAgICAgIDxidXR0b24gbWF0QnV0dG9uPVwiZmlsbGVkXCIgdHlwZT1cImJ1dHRvblwiIFtkaXNhYmxlZF09XCIhY2hvaWNlKCkgfHwgc2F2aW5nKClcIiAoY2xpY2spPVwic2F2ZSgpXCI+XG4gICAgICAgIHt7IHNhdmluZygpID8gJ0Fzc2lnbmluZ+KApicgOiAnQXNzaWduJyB9fVxuICAgICAgPC9idXR0b24+XG4gICAgPC9kaXY+XG4gIGAsXG59KVxuZXhwb3J0IGNsYXNzIEFzc2lnbkRpYWxvZyB7XG4gIHByb3RlY3RlZCByZWFkb25seSBkYXRhID0gaW5qZWN0PEFzc2lnbkRpYWxvZ0RhdGE+KE1BVF9ESUFMT0dfREFUQSk7XG4gIHByaXZhdGUgcmVhZG9ubHkgcmVmID0gaW5qZWN0KE1hdERpYWxvZ1JlZjxBc3NpZ25EaWFsb2csIGJvb2xlYW4+KTtcbiAgcHJpdmF0ZSByZWFkb25seSBhcGkgPSBpbmplY3QoTGVhZHNBcGkpO1xuXG4gIHByb3RlY3RlZCByZWFkb25seSBhc3NpZ25lZXMgPSBzaWduYWw8QXNzaWduZWVbXSB8IG51bGw+KG51bGwpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgY2hvaWNlID0gc2lnbmFsPG51bWJlciB8IG51bGw+KHRoaXMuZGF0YS5jdXJyZW50SWQgPz8gbnVsbCk7XG4gIHByb3RlY3RlZCByZWFkb25seSBzYXZpbmcgPSBzaWduYWwoZmFsc2UpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgZXJyb3IgPSBzaWduYWwoJycpO1xuICAvKiogQW4gYWRtaW4gY2FuIHRha2UgYSBsZWFkIGFuZCB3b3JrIGl0IGVuZCB0byBlbmQuICovXG4gIHByaXZhdGUgcmVhZG9ubHkgYXV0aCA9IGluamVjdChBdXRoU2VydmljZSk7XG4gIHByb3RlY3RlZCByZWFkb25seSBtZUlkID0gY29tcHV0ZWQoKCkgPT4gdGhpcy5hdXRoLnVzZXIoKT8uaWQgPz8gbnVsbCk7XG4gIHByb3RlY3RlZCByZWFkb25seSBjYW5UYWtlSXQgPSBjb21wdXRlZChcbiAgICAoKSA9PiAhIXRoaXMuYXNzaWduZWVzKCk/LnNvbWUoKGEpID0+IGEuaWQgPT09IHRoaXMubWVJZCgpICYmIGEucm9sZSA9PT0gJ0FETUlOJyksXG4gICk7XG5cbiAgY29uc3RydWN0b3IoKSB7XG4gICAgdGhpcy5hcGkuYXNzaWduZWVzKCkuc3Vic2NyaWJlKHtcbiAgICAgIG5leHQ6IChsaXN0KSA9PiB0aGlzLmFzc2lnbmVlcy5zZXQobGlzdCksXG4gICAgICBlcnJvcjogKGVycjogQXBpRXJyb3IpID0+IHtcbiAgICAgICAgdGhpcy5hc3NpZ25lZXMuc2V0KFtdKTtcbiAgICAgICAgdGhpcy5lcnJvci5zZXQoZXJyLm1lc3NhZ2UpO1xuICAgICAgfSxcbiAgICB9KTtcbiAgfVxuXG4gIHByb3RlY3RlZCBzYXZlKCk6IHZvaWQge1xuICAgIGNvbnN0IHRvID0gdGhpcy5jaG9pY2UoKTtcbiAgICBpZiAoIXRvKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIHRoaXMuc2F2aW5nLnNldCh0cnVlKTtcbiAgICBjb25zdCByZXF1ZXN0OiBPYnNlcnZhYmxlPHVua25vd24+ID1cbiAgICAgIHRoaXMuZGF0YS5pZHMubGVuZ3RoID09PSAxID8gdGhpcy5hcGkuYXNzaWduKHRoaXMuZGF0YS5pZHNbMF0sIHRvKSA6IHRoaXMuYXBpLmJ1bGtBc3NpZ24odGhpcy5kYXRhLmlkcywgdG8pO1xuICAgIHJlcXVlc3Quc3Vic2NyaWJlKHtcbiAgICAgIG5leHQ6ICgpID0+IHRoaXMucmVmLmNsb3NlKHRydWUpLFxuICAgICAgZXJyb3I6IChlcnI6IEFwaUVycm9yKSA9PiB7XG4gICAgICAgIHRoaXMuc2F2aW5nLnNldChmYWxzZSk7XG4gICAgICAgIHRoaXMuZXJyb3Iuc2V0KGVyci5tZXNzYWdlKTtcbiAgICAgIH0sXG4gICAgfSk7XG4gIH1cbn1cbiIsImltcG9ydCB7IENoYW5nZURldGVjdGlvblN0cmF0ZWd5LCBDb21wb25lbnQsIGlucHV0IH0gZnJvbSAnQGFuZ3VsYXIvY29yZSc7XG5pbXBvcnQgeyBNYXREaWFsb2dNb2R1bGUgfSBmcm9tICdAYW5ndWxhci9tYXRlcmlhbC9kaWFsb2cnO1xuaW1wb3J0IHsgTWF0SWNvbk1vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2ljb24nO1xuXG4vKiogVGl0bGUsIG9uZSBtdXRlZCBsaW5lIGFuZCBhIGNsb3NlIChYKSBidXR0b24uIEV2ZXJ5IGxlYWRzIGRpYWxvZyBzdGFydHMgd2l0aCB0aGlzLiAqL1xuQENvbXBvbmVudCh7XG4gIHNlbGVjdG9yOiAnYXBwLWRpYWxvZy1oZWFkJyxcbiAgaW1wb3J0czogW01hdERpYWxvZ01vZHVsZSwgTWF0SWNvbk1vZHVsZV0sXG4gIGNoYW5nZURldGVjdGlvbjogQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3kuT25QdXNoLFxuICB0ZW1wbGF0ZTogYFxuICAgIDxkaXYgY2xhc3M9XCJ0XCI+XG4gICAgICA8aDIgbWF0LWRpYWxvZy10aXRsZT57eyB0aXRsZSgpIH19PC9oMj5cbiAgICAgIEBpZiAoc3VidGl0bGUoKSkge1xuICAgICAgICA8cD57eyBzdWJ0aXRsZSgpIH19PC9wPlxuICAgICAgfVxuICAgIDwvZGl2PlxuICAgIDxidXR0b24gdHlwZT1cImJ1dHRvblwiIGNsYXNzPVwieFwiIG1hdC1kaWFsb2ctY2xvc2UgYXJpYS1sYWJlbD1cIkNsb3NlXCI+XG4gICAgICA8bWF0LWljb24gYXJpYS1oaWRkZW49XCJ0cnVlXCI+Y2xvc2U8L21hdC1pY29uPlxuICAgIDwvYnV0dG9uPlxuICBgLFxuICBzdHlsZXM6IGBcbiAgICA6aG9zdCB7IGRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiBmbGV4LXN0YXJ0OyBqdXN0aWZ5LWNvbnRlbnQ6IHNwYWNlLWJldHdlZW47IGdhcDogMTJweDsgbWFyZ2luLWJvdHRvbTogdmFyKC0tc3BhY2UtNSk7IH1cbiAgICAudCB7IG1pbi13aWR0aDogMDsgfVxuICAgIGgyIHsgbWFyZ2luOiAwOyBwYWRkaW5nOiAwOyBmb250LXNpemU6IHZhcigtLXRleHQtbGcpOyBmb250LXdlaWdodDogNjAwOyB9XG4gICAgaDI6OmJlZm9yZSB7IGRpc3BsYXk6IG5vbmU7IH1cbiAgICBwIHsgbWFyZ2luOiAycHggMCAwOyBjb2xvcjogdmFyKC0taW5rLTMpOyBmb250LXNpemU6IHZhcigtLXRleHQtc20pOyBvdmVyZmxvdy13cmFwOiBhbnl3aGVyZTsgfVxuICAgIC54IHtcbiAgICAgIGRpc3BsYXk6IGdyaWQ7IHdpZHRoOiA0MHB4OyBoZWlnaHQ6IDQwcHg7IGZsZXg6IG5vbmU7IG1hcmdpbjogLTZweCAtOHB4IDAgMDsgcGxhY2UtaXRlbXM6IGNlbnRlcjtcbiAgICAgIGJvcmRlcjogMDsgYm9yZGVyLXJhZGl1czogNTAlOyBiYWNrZ3JvdW5kOiB0cmFuc3BhcmVudDsgY29sb3I6IHZhcigtLWluay0yKTsgY3Vyc29yOiBwb2ludGVyO1xuICAgIH1cbiAgICAueDpob3ZlciB7IGJhY2tncm91bmQ6IHZhcigtLXN1YnRsZSk7IGNvbG9yOiB2YXIoLS1pbmspOyB9XG4gICAgLnggbWF0LWljb24geyB3aWR0aDogMjJweDsgaGVpZ2h0OiAyMnB4OyBmb250LXNpemU6IDIycHg7IH1cbiAgYCxcbn0pXG5leHBvcnQgY2xhc3MgRGlhbG9nSGVhZCB7XG4gIHJlYWRvbmx5IHRpdGxlID0gaW5wdXQucmVxdWlyZWQ8c3RyaW5nPigpO1xuICByZWFkb25seSBzdWJ0aXRsZSA9IGlucHV0KCcnKTtcbn1cbiIsImltcG9ydCB7IENoYW5nZURldGVjdGlvblN0cmF0ZWd5LCBDb21wb25lbnQsIGluamVjdCwgc2lnbmFsIH0gZnJvbSAnQGFuZ3VsYXIvY29yZSc7XG5pbXBvcnQgeyBNYXRCdXR0b25Nb2R1bGUgfSBmcm9tICdAYW5ndWxhci9tYXRlcmlhbC9idXR0b24nO1xuaW1wb3J0IHsgTUFUX0RJQUxPR19EQVRBLCBNYXREaWFsb2dNb2R1bGUsIE1hdERpYWxvZ1JlZiB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2RpYWxvZyc7XG5pbXBvcnQgeyBBcGlFcnJvciB9IGZyb20gJy4uLy4uLy4uLy4uL2NvcmUvbW9kZWxzJztcbmltcG9ydCB7IFdoYXRzQXBwVGVtcGxhdGUgfSBmcm9tICcuLi8uLi9kYXRhL2xlYWQubW9kZWxzJztcbmltcG9ydCB7IExlYWRzQXBpIH0gZnJvbSAnLi4vLi4vZGF0YS9sZWFkcy1hcGkuc2VydmljZSc7XG5pbXBvcnQgeyBub3JtYWxpemVQaG9uZSB9IGZyb20gJy4uLy4uL3V0aWxzL3Bob25lJztcbmltcG9ydCB7IERpYWxvZ0hlYWQgfSBmcm9tICcuL2RpYWxvZy1oZWFkJztcblxuZXhwb3J0IGludGVyZmFjZSBXaGF0c0FwcERpYWxvZ0RhdGEge1xuICBsZWFkOiB7IGlkOiBudW1iZXI7IG5hbWU6IHN0cmluZzsgcGhvbmU6IHN0cmluZyB9O1xufVxuXG4vKiogQ2hvb3NlIGEgdGVtcGxhdGUsIHNlZSB0aGUgbWVzc2FnZSB0aGUgc2VydmVyIHJlbmRlcnMsIHRoZW4gb3BlbiBXaGF0c0FwcCAobG9nZ2VkIG9uIHRoZSB0aW1lbGluZSkuICovXG5AQ29tcG9uZW50KHtcbiAgc2VsZWN0b3I6ICdhcHAtd2hhdHNhcHAtZGlhbG9nJyxcbiAgaW1wb3J0czogW0RpYWxvZ0hlYWQsIE1hdEJ1dHRvbk1vZHVsZSwgTWF0RGlhbG9nTW9kdWxlXSxcbiAgY2hhbmdlRGV0ZWN0aW9uOiBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneS5PblB1c2gsXG4gIHN0eWxlVXJsOiAnLi9kaWFsb2cuc2NzcycsXG4gIHN0eWxlczogYFxuICAgIC50cGxzIHsgZGlzcGxheTogZmxleDsgZmxleC13cmFwOiB3cmFwOyBnYXA6IDhweDsgbWFyZ2luLWJvdHRvbTogdmFyKC0tc3BhY2UtNCk7IH1cbiAgICAudHBsIHtcbiAgICAgIG1pbi1oZWlnaHQ6IDQwcHg7IHBhZGRpbmc6IDAgMTRweDsgYm9yZGVyOiAxcHggc29saWQgdmFyKC0tbGluZSk7IGJvcmRlci1yYWRpdXM6IHZhcigtLXJhZGl1cy1waWxsKTtcbiAgICAgIGJhY2tncm91bmQ6IHZhcigtLXN1cmZhY2UpOyBjb2xvcjogdmFyKC0taW5rLTIpOyBmb250OiBpbmhlcml0OyBmb250LXNpemU6IHZhcigtLXRleHQtc20pOyBjdXJzb3I6IHBvaW50ZXI7XG4gICAgfVxuICAgIC50cGxbYXJpYS1wcmVzc2VkPSd0cnVlJ10geyBib3JkZXItY29sb3I6IHZhcigtLWJyYW5kLWRlZXApOyBiYWNrZ3JvdW5kOiB2YXIoLS1icmFuZC10aW50KTsgY29sb3I6IHZhcigtLWluayk7IGZvbnQtd2VpZ2h0OiA2MDA7IH1cbiAgICAucHJldmlldyB7XG4gICAgICBtaW4taGVpZ2h0OiA5NnB4OyBtYXJnaW46IDA7IHBhZGRpbmc6IDEycHggMTRweDsgYm9yZGVyLXJhZGl1czogMTJweCAxMnB4IDEycHggNHB4O1xuICAgICAgYmFja2dyb3VuZDogdmFyKC0tdGludC10ZWFsKTsgY29sb3I6IHZhcigtLXRpbnQtdGVhbC1pbmspOyB3aGl0ZS1zcGFjZTogcHJlLXdyYXA7IGZvbnQtc2l6ZTogdmFyKC0tdGV4dC1zbSk7XG4gICAgfVxuICBgLFxuICB0ZW1wbGF0ZTogYFxuICAgIDxhcHAtZGlhbG9nLWhlYWQgW3RpdGxlXT1cIidXaGF0c0FwcCAnICsgZGF0YS5sZWFkLm5hbWVcIiBzdWJ0aXRsZT1cIlBpY2sgYSBtZXNzYWdlLiBJdCBvcGVucyBpbiBXaGF0c0FwcCBmb3IgeW91IHRvIHNlbmQuXCIgLz5cbiAgICA8ZGl2IGNsYXNzPVwidHBsc1wiIHJvbGU9XCJncm91cFwiIGFyaWEtbGFiZWw9XCJUZW1wbGF0ZXNcIj5cbiAgICAgIEBmb3IgKHQgb2YgdGVtcGxhdGVzKCk7IHRyYWNrIHQuaWQpIHtcbiAgICAgICAgPGJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgY2xhc3M9XCJ0cGxcIiBbYXR0ci5hcmlhLXByZXNzZWRdPVwiY2hvaWNlKCkgPT09IHQuaWRcIiAoY2xpY2spPVwicGljayh0LmlkKVwiPnt7IHQubmFtZSB9fTwvYnV0dG9uPlxuICAgICAgfVxuICAgIDwvZGl2PlxuICAgIDxwIGNsYXNzPVwicHJldmlld1wiIGFyaWEtbGl2ZT1cInBvbGl0ZVwiPnt7IHByZXZpZXcoKSB8fCAnQ2hvb3NlIGEgdGVtcGxhdGUgdG8gcHJldmlldyB0aGUgbWVzc2FnZS4nIH19PC9wPlxuICAgIEBpZiAoIXVzYWJsZSkge1xuICAgICAgPHAgY2xhc3M9XCJlcnJvclwiPlRoaXMgcGhvbmUgbnVtYmVyIGNhbid0IGJlIHVzZWQgZm9yIFdoYXRzQXBwLiBGaXggaXQgb24gdGhlIGxlYWQgZmlyc3QuPC9wPlxuICAgIH1cbiAgICBAaWYgKGVycm9yKCkpIHtcbiAgICAgIDxwIGNsYXNzPVwiZXJyb3JcIiByb2xlPVwiYWxlcnRcIj57eyBlcnJvcigpIH19PC9wPlxuICAgIH1cbiAgICA8ZGl2IGNsYXNzPVwiYWN0aW9uc1wiPlxuICAgICAgPGJ1dHRvbiBtYXRCdXR0b24gdHlwZT1cImJ1dHRvblwiIG1hdC1kaWFsb2ctY2xvc2U+Q2FuY2VsPC9idXR0b24+XG4gICAgICA8YnV0dG9uXG4gICAgICAgIG1hdEJ1dHRvbj1cImZpbGxlZFwiXG4gICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICBbZGlzYWJsZWRdPVwiIXVzYWJsZSB8fCAhY2hvaWNlKCkgfHwgc2VuZGluZygpXCJcbiAgICAgICAgW2F0dHIuYXJpYS1sYWJlbF09XCJ1c2FibGUgPyAnT3BlbiBXaGF0c0FwcCBmb3IgJyArIGRhdGEubGVhZC5uYW1lIDogJ09wZW4gV2hhdHNBcHAgKHBob25lIG51bWJlciB1bnVzYWJsZSknXCJcbiAgICAgICAgKGNsaWNrKT1cIm9wZW4oKVwiXG4gICAgICA+XG4gICAgICAgIE9wZW4gV2hhdHNBcHBcbiAgICAgIDwvYnV0dG9uPlxuICAgIDwvZGl2PlxuICBgLFxufSlcbmV4cG9ydCBjbGFzcyBXaGF0c0FwcERpYWxvZyB7XG4gIHByb3RlY3RlZCByZWFkb25seSBkYXRhID0gaW5qZWN0PFdoYXRzQXBwRGlhbG9nRGF0YT4oTUFUX0RJQUxPR19EQVRBKTtcbiAgcHJpdmF0ZSByZWFkb25seSByZWYgPSBpbmplY3QoTWF0RGlhbG9nUmVmPFdoYXRzQXBwRGlhbG9nLCBib29sZWFuPik7XG4gIHByaXZhdGUgcmVhZG9ubHkgYXBpID0gaW5qZWN0KExlYWRzQXBpKTtcblxuICBwcm90ZWN0ZWQgcmVhZG9ubHkgdXNhYmxlID0gbm9ybWFsaXplUGhvbmUodGhpcy5kYXRhLmxlYWQucGhvbmUpICE9PSBudWxsO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgdGVtcGxhdGVzID0gc2lnbmFsPFdoYXRzQXBwVGVtcGxhdGVbXT4oW10pO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgY2hvaWNlID0gc2lnbmFsPG51bWJlciB8IG51bGw+KG51bGwpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgcHJldmlldyA9IHNpZ25hbCgnJyk7XG4gIHByb3RlY3RlZCByZWFkb25seSBzZW5kaW5nID0gc2lnbmFsKGZhbHNlKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGVycm9yID0gc2lnbmFsKCcnKTtcblxuICBjb25zdHJ1Y3RvcigpIHtcbiAgICB0aGlzLmFwaS50ZW1wbGF0ZXMoKS5zdWJzY3JpYmUoKGxpc3QpID0+IHtcbiAgICAgIHRoaXMudGVtcGxhdGVzLnNldChsaXN0KTtcbiAgICAgIGlmIChsaXN0Lmxlbmd0aCkge1xuICAgICAgICB0aGlzLnBpY2sobGlzdFswXS5pZCk7XG4gICAgICB9XG4gICAgfSk7XG4gIH1cblxuICBwcm90ZWN0ZWQgcGljayhpZDogbnVtYmVyKTogdm9pZCB7XG4gICAgdGhpcy5jaG9pY2Uuc2V0KGlkKTtcbiAgICB0aGlzLmFwaS53aGF0c2FwcFByZXZpZXcodGhpcy5kYXRhLmxlYWQuaWQsIGlkKS5zdWJzY3JpYmUoe1xuICAgICAgbmV4dDogKHJlcykgPT4gdGhpcy5wcmV2aWV3LnNldChyZXMudGV4dCksXG4gICAgICBlcnJvcjogKGVycjogQXBpRXJyb3IpID0+IHRoaXMuZXJyb3Iuc2V0KGVyci5tZXNzYWdlKSxcbiAgICB9KTtcbiAgfVxuXG4gIHByb3RlY3RlZCBvcGVuKCk6IHZvaWQge1xuICAgIGNvbnN0IGlkID0gdGhpcy5jaG9pY2UoKTtcbiAgICBpZiAoIWlkKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIC8vIE9wZW4gdGhlIHRhYiBzeW5jaHJvbm91c2x5IChwb3B1cCBibG9ja2VycyksIHRoZW4gcG9pbnQgaXQgYXQgdGhlIHNlcnZlcidzIHdhLm1lIGxpbmsuXG4gICAgY29uc3QgdGFiID0gd2luZG93Lm9wZW4oJycsICdfYmxhbmsnKTtcbiAgICB0aGlzLnNlbmRpbmcuc2V0KHRydWUpO1xuICAgIHRoaXMuYXBpLndoYXRzYXBwKHRoaXMuZGF0YS5sZWFkLmlkLCBpZCkuc3Vic2NyaWJlKHtcbiAgICAgIG5leHQ6IChyZXMpID0+IHtcbiAgICAgICAgaWYgKHRhYikge1xuICAgICAgICAgIHRhYi5vcGVuZXIgPSBudWxsO1xuICAgICAgICAgIHRhYi5sb2NhdGlvbi5ocmVmID0gcmVzLnVybDtcbiAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICB3aW5kb3cub3BlbihyZXMudXJsLCAnX2JsYW5rJywgJ25vb3BlbmVyJyk7XG4gICAgICAgIH1cbiAgICAgICAgdGhpcy5yZWYuY2xvc2UodHJ1ZSk7XG4gICAgICB9LFxuICAgICAgZXJyb3I6IChlcnI6IEFwaUVycm9yKSA9PiB7XG4gICAgICAgIHRhYj8uY2xvc2UoKTtcbiAgICAgICAgdGhpcy5zZW5kaW5nLnNldChmYWxzZSk7XG4gICAgICAgIHRoaXMuZXJyb3Iuc2V0KGVyci5tZXNzYWdlKTtcbiAgICAgIH0sXG4gICAgfSk7XG4gIH1cbn1cbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O0FBQUEsU0FBUywyQkFBQUEsMEJBQXlCLGFBQUFDLFlBQVcsVUFBVSxRQUFRLGNBQWM7QUFDN0UsU0FBUyx1QkFBdUI7QUFDaEMsU0FBUyxpQkFBaUIsbUJBQUFDLGtCQUFpQixvQkFBb0I7OztBQ0YvRCxTQUFTLHlCQUF5QixXQUFXLGFBQWE7QUFDMUQsU0FBUyx1QkFBdUI7QUFDaEMsU0FBUyxxQkFBcUI7Ozs7Ozs7QUFXdEIsSUFBQSw0QkFBQSxHQUFBLEdBQUE7QUFBRyxJQUFBLG9CQUFBLENBQUE7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QUFBLE1BQUEsNEJBQUEsQ0FBQSxJQUFBLFNBQUEsSUFBQSxFQUFBO0FBR0EsTUFBQSx3QkFBQTtBQUFBLE1BQUEsNEJBQUEsSUFBQSxNQUFBLElBQUEsSUFBQSxFQUFBO0FBUUksTUFBQSx3QkFBQSxDQUFBO0FBQUEsTUFBQSx5QkFBQSxZQUFBLENBQUEsSUFBQSxVQUFBLENBQUEsSUFBQSxPQUFBLEtBQUEsSUFBQSxRQUFBLENBQUE7OztvQkFsQ0ksWUFBWUMsa0JBQWUsU0FBQSxlQUFBLHNCQUFBLG1CQUFBLGtCQUFFQyxrQkFBZSx3QkFBQSxvQkFBQSxvQkFBQSxzQkFBQSxvQkFBQSxHQUFBLFFBQUEsQ0FBQSwweERBQUEsODNCQUFBLEVBQUEsQ0FBQTs7O2dGQTJDM0MsZ0JBQWMsQ0FBQTtVQTdDMUJDO3VCQUNXLHVCQUFxQixTQUN0QixDQUFDLFlBQVlGLGtCQUFpQkMsZ0JBQWUsR0FBQyxpQkFDdENFLHlCQUF3QixRQUFNLFVBY3JDOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztLQTBCVCxRQUFBLENBQUEsaStDQUFBLG04QkFBQSxFQUFBLENBQUE7Ozs7aUZBRVUsZ0JBQWMsRUFBQSxXQUFBLGtCQUFBLFVBQUEsZ0VBQUEsWUFBQSxHQUFBLENBQUE7QUFBQSxHQUFBOzs7Ozs7OytEQUFkLGdCQUFjLEVBQUEsU0FBQSxDQUFBQyxLQUFBQyxLQUFBQyxLQUFBQyxHQUFBLEdBQUEsQ0FBQSxZQUFBUCxrQkFBQUMsa0JBQUFDLFlBQUFDLHdCQUFBLEdBQUEsYUFBQSxFQUFBLENBQUE7RUFBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsY0FBQSx1QkFBQSxLQUFBLElBQUEsQ0FBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsZUFBQSxZQUFBLE9BQUEsWUFBQSxJQUFBLEdBQUEsNEJBQUEsQ0FBQSxNQUFBLEVBQUEsT0FBQSxNQUFBLHVCQUFBLEVBQUEsU0FBQSxDQUFBO0FBQUEsR0FBQTsiLCJuYW1lcyI6WyJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsIkNvbXBvbmVudCIsIk1hdERpYWxvZ01vZHVsZSIsIk1hdERpYWxvZ01vZHVsZSIsIkNvbXBvbmVudCIsIkNoYW5nZURldGVjdGlvblN0cmF0ZWd5IiwiaTAiLCJpMSIsImkyIiwiaTMiLCJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsIkNvbXBvbmVudCIsImluamVjdCIsInNpZ25hbCIsIk1hdEJ1dHRvbk1vZHVsZSIsIk1BVF9ESUFMT0dfREFUQSIsIk1hdERpYWxvZ01vZHVsZSIsIk1hdERpYWxvZ1JlZiIsImluamVjdCIsIk1BVF9ESUFMT0dfREFUQSIsIk1hdERpYWxvZ1JlZiIsInNpZ25hbCIsIl9mb3JUcmFjazAiLCJNYXRCdXR0b25Nb2R1bGUiLCJNYXREaWFsb2dNb2R1bGUiLCJDb21wb25lbnQiLCJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsImkwIiwiaTEiLCJpMiIsImkzIl0sImRlYnVnSWQiOiI3YzJiYWNjMi1kN2ZiLTVhNjEtYTc2ZS0wYTU5OWNkZTYxYTkifQ==

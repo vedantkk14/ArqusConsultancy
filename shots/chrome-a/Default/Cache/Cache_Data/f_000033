@@ -1,0 +1,240 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-6MMOBCQX.js");import {
+  PanelHead
+} from "/chunk-72RLLS2P.js";
+import {
+  InrCompactPipe
+} from "/chunk-QYAVNIBR.js";
+import {
+  __spreadProps,
+  __spreadValues
+} from "/chunk-VUJOFXKG.js";
+
+// src/app/features/dashboard/components/funnel-card.ts
+import { ChangeDetectionStrategy, Component, computed, input } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+var _forTrack0 = ($index, $item) => $item.status;
+function FunnelCard_Conditional_1_For_2_Conditional_12_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "span", 13);
+    i0.\u0275\u0275text(1, "Top of funnel");
+    i0.\u0275\u0275elementEnd();
+  }
+}
+function FunnelCard_Conditional_1_For_2_Conditional_13_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "span", 14)(1, "mat-icon", 4);
+    i0.\u0275\u0275text(2, "south");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275text(3);
+    i0.\u0275\u0275elementStart(4, "span", 16);
+    i0.\u0275\u0275text(5, "of previous");
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const s_r1 = i0.\u0275\u0275nextContext().$implicit;
+    i0.\u0275\u0275advance(3);
+    i0.\u0275\u0275textInterpolate1("", s_r1.conv, "% ");
+  }
+}
+function FunnelCard_Conditional_1_For_2_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "li")(1, "span", 7)(2, "strong");
+    i0.\u0275\u0275text(3);
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(4, "span", 8);
+    i0.\u0275\u0275text(5);
+    i0.\u0275\u0275pipe(6, "inrCompact");
+    i0.\u0275\u0275elementEnd()();
+    i0.\u0275\u0275elementStart(7, "span", 9)(8, "span", 10)(9, "span", 11);
+    i0.\u0275\u0275text(10);
+    i0.\u0275\u0275elementEnd()()();
+    i0.\u0275\u0275elementStart(11, "span", 12);
+    i0.\u0275\u0275conditionalCreate(12, FunnelCard_Conditional_1_For_2_Conditional_12_Template, 2, 0, "span", 13)(13, FunnelCard_Conditional_1_For_2_Conditional_13_Template, 6, 1, "span", 14);
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(14, "span", 15);
+    i0.\u0275\u0275text(15);
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const s_r1 = ctx.$implicit;
+    const \u0275$index_6_r2 = ctx.$index;
+    i0.\u0275\u0275advance(3);
+    i0.\u0275\u0275textInterpolate(s_r1.label);
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275textInterpolate(i0.\u0275\u0275pipeBind1(6, 9, s_r1.value));
+    i0.\u0275\u0275advance(3);
+    i0.\u0275\u0275classMap("bar s" + \u0275$index_6_r2);
+    i0.\u0275\u0275styleProp("width", s_r1.width, "%");
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275textInterpolate(s_r1.count);
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275conditional(\u0275$index_6_r2 === 0 ? 12 : 13);
+    i0.\u0275\u0275advance(3);
+    i0.\u0275\u0275textInterpolate1("", s_r1.count, " leads");
+  }
+}
+function FunnelCard_Conditional_1_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "ol");
+    i0.\u0275\u0275repeaterCreate(1, FunnelCard_Conditional_1_For_2_Template, 16, 11, "li", null, _forTrack0);
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(3, "div", 2)(4, "span", 3)(5, "mat-icon", 4);
+    i0.\u0275\u0275text(6, "emoji_events");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(7, "span")(8, "b", 5);
+    i0.\u0275\u0275text(9);
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275text(10, " Won");
+    i0.\u0275\u0275elementEnd()();
+    i0.\u0275\u0275elementStart(11, "span", 6)(12, "mat-icon", 4);
+    i0.\u0275\u0275text(13, "block");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(14, "span")(15, "b", 5);
+    i0.\u0275\u0275text(16);
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275text(17, " Lost");
+    i0.\u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const ctx_r2 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275repeater(ctx_r2.open());
+    i0.\u0275\u0275advance(8);
+    i0.\u0275\u0275textInterpolate(ctx_r2.won());
+    i0.\u0275\u0275advance(7);
+    i0.\u0275\u0275textInterpolate(ctx_r2.lost());
+  }
+}
+function FunnelCard_Conditional_2_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 1);
+    i0.\u0275\u0275text(1, "No data for this period");
+    i0.\u0275\u0275elementEnd();
+  }
+}
+var FunnelCard = class _FunnelCard {
+  stages = input.required(
+    ...ngDevMode ? [{ debugName: "stages" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** "View all" target; null on the report page itself. */
+  link = input(
+    "/reports/lead-funnel",
+    ...ngDevMode ? [{ debugName: "link" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  won = input(
+    0,
+    ...ngDevMode ? [{ debugName: "won" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  lost = input(
+    0,
+    ...ngDevMode ? [{ debugName: "lost" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  open = computed(
+    () => {
+      const stages = this.stages().filter((s) => s.status !== "WON" && s.status !== "LOST");
+      const max = Math.max(1, ...stages.map((s) => s.count));
+      return stages.map((s, i) => {
+        const prev = stages[i - 1]?.count ?? 0;
+        return __spreadProps(__spreadValues({}, s), { width: Math.max(16, Math.round(s.count / max * 100)), conv: prev ? Math.round(s.count / prev * 100) : 0 });
+      });
+    },
+    ...ngDevMode ? [{ debugName: "open" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  static \u0275fac = function FunnelCard_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _FunnelCard)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _FunnelCard, selectors: [["app-funnel-card"]], hostAttrs: ["role", "region", "aria-labelledby", "funnel-title", 1, "card", "panel"], inputs: { stages: [1, "stages"], link: [1, "link"], won: [1, "won"], lost: [1, "lost"] }, decls: 3, vars: 2, consts: [["title", "Lead funnel", "subtitle", "Open pipeline by stage", "headingId", "funnel-title", 3, "link"], [1, "none"], [1, "ends"], [1, "end", "won"], ["aria-hidden", "true"], [1, "num"], [1, "end", "lost"], [1, "who"], [1, "val", "num"], ["aria-hidden", "true", 1, "lane"], [1, "bar"], [1, "n", "num"], [1, "conv"], [1, "tag", "start"], [1, "tag"], [1, "sr-only"], [1, "of"]], template: function FunnelCard_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275element(0, "app-panel-head", 0);
+      i0.\u0275\u0275conditionalCreate(1, FunnelCard_Conditional_1_Template, 18, 2)(2, FunnelCard_Conditional_2_Template, 2, 0, "p", 1);
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275property("link", ctx.link());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.open().length ? 1 : 2);
+    }
+  }, dependencies: [MatIconModule, i1.MatIcon, i2.Dir, PanelHead, InrCompactPipe], styles: ['\n[_nghost-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  container-type: inline-size;\n}\nol[_ngcontent-%COMP%] {\n  display: flex;\n  flex: 1;\n  flex-direction: column;\n  gap: 14px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\nli[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) auto;\n  grid-template-areas: "who conv" "lane lane";\n  gap: 8px 12px;\n  align-items: center;\n}\n.who[_ngcontent-%COMP%] {\n  grid-area: who;\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  min-width: 0;\n}\n.who[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: var(--%NS%ink);\n  font-size: var(--%NS%text-sm);\n  font-weight: 600;\n}\n.val[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.conv[_ngcontent-%COMP%] {\n  grid-area: conv;\n}\n.lane[_ngcontent-%COMP%] {\n  grid-area: lane;\n  display: flex;\n  justify-content: center;\n  height: 40px;\n  border-radius: 12px;\n  background: var(--%NS%surface-2);\n}\n.bar[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-width: 52px;\n  height: 100%;\n  border-radius: 12px;\n  color: var(--%NS%ink);\n  animation: _ngcontent-%COMP%_grow 700ms var(--%NS%ease-out) both;\n}\n.s0[_ngcontent-%COMP%] {\n  background: var(--%NS%grad-ink);\n  color: var(--%NS%on-ink);\n}\n.s1[_ngcontent-%COMP%] {\n  background: var(--%NS%data-cyan);\n}\n.s2[_ngcontent-%COMP%] {\n  background: color-mix(in srgb, var(--%NS%data-cyan) 62%, var(--%NS%tint-cyan));\n}\n.s3[_ngcontent-%COMP%] {\n  background: color-mix(in srgb, var(--%NS%data-cyan) 38%, var(--%NS%tint-cyan));\n}\n.n[_ngcontent-%COMP%] {\n  font-size: var(--%NS%text-base);\n  font-weight: 600;\n}\n.tag[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  gap: 2px;\n  height: 24px;\n  padding: 0 10px 0 6px;\n  border-radius: var(--%NS%radius-pill);\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n  font-size: var(--%NS%text-xs);\n  font-weight: 600;\n  white-space: nowrap;\n}\n.tag[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 14px;\n  height: 14px;\n  font-size: 14px;\n}\n.tag[_ngcontent-%COMP%]   .of[_ngcontent-%COMP%] {\n  margin-left: 3px;\n  font-weight: 400;\n}\n.tag.start[_ngcontent-%COMP%] {\n  padding: 0 10px;\n  background: var(--%NS%tint-slate);\n  color: var(--%NS%tint-slate-ink);\n}\n.ends[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 10px;\n  margin-top: var(--%NS%space-5);\n}\n.end[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  min-height: 52px;\n  padding: 0 14px;\n  border-radius: var(--%NS%radius-control);\n  font-size: var(--%NS%text-sm);\n}\n.end[_ngcontent-%COMP%]   b[_ngcontent-%COMP%] {\n  margin-right: 4px;\n  font-size: var(--%NS%text-lg);\n  font-weight: 600;\n}\n.end[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n.won[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-teal);\n  color: var(--%NS%tint-teal-ink);\n}\n.lost[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-rose);\n  color: var(--%NS%tint-rose-ink);\n}\n.none[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n}\n@keyframes _ngcontent-%COMP%_grow {\n  from {\n    transform: scaleX(0.3);\n    opacity: 0;\n  }\n}\n@container (min-width: 520px) {\n  li[_ngcontent-%COMP%] {\n    grid-template-columns: 110px minmax(0, 1fr) auto;\n    grid-template-areas: "who lane conv";\n    gap: 14px;\n  }\n  li[_ngcontent-%COMP%] {\n    flex: 1 1 0;\n    align-items: stretch;\n    min-height: 44px;\n    max-height: 76px;\n  }\n  .lane[_ngcontent-%COMP%] {\n    height: auto;\n  }\n  .who[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: flex-start;\n    align-self: center;\n    gap: 0;\n  }\n  .conv[_ngcontent-%COMP%] {\n    align-self: center;\n    min-width: 150px;\n    text-align: right;\n  }\n}\n/*# sourceMappingURL=funnel-card.css.map */'] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(FunnelCard, [{
+    type: Component,
+    args: [{ selector: "app-funnel-card", imports: [InrCompactPipe, MatIconModule, PanelHead], changeDetection: ChangeDetectionStrategy.OnPush, host: { class: "card panel", role: "region", "aria-labelledby": "funnel-title" }, template: `
+    <app-panel-head title="Lead funnel" subtitle="Open pipeline by stage" [link]="link()" headingId="funnel-title" />
+    @if (open().length) {
+      <ol>
+        @for (s of open(); track s.status; let i = $index) {
+          <li>
+            <span class="who">
+              <strong>{{ s.label }}</strong>
+              <span class="val num">{{ s.value | inrCompact }}</span>
+            </span>
+            <span class="lane" aria-hidden="true">
+              <span class="bar" [class]="'bar s' + i" [style.width.%]="s.width"><span class="n num">{{ s.count }}</span></span>
+            </span>
+            <span class="conv">
+              @if (i === 0) {
+                <span class="tag start">Top of funnel</span>
+              } @else {
+                <span class="tag"><mat-icon aria-hidden="true">south</mat-icon>{{ s.conv }}% <span class="of">of previous</span></span>
+              }
+            </span>
+            <span class="sr-only">{{ s.count }} leads</span>
+          </li>
+        }
+      </ol>
+      <div class="ends">
+        <span class="end won">
+          <mat-icon aria-hidden="true">emoji_events</mat-icon>
+          <span><b class="num">{{ won() }}</b> Won</span>
+        </span>
+        <span class="end lost">
+          <mat-icon aria-hidden="true">block</mat-icon>
+          <span><b class="num">{{ lost() }}</b> Lost</span>
+        </span>
+      </div>
+    } @else {
+      <p class="none">No data for this period</p>
+    }
+  `, styles: ['/* angular:styles/component:scss;8c8bfbbc386cdb66886cb5153e3c3162418a57f10e9ec4d1cba0db2f49e96a44;D:/arqus_consultancy/frontend/src/app/features/dashboard/components/funnel-card.ts */\n:host {\n  display: flex;\n  flex-direction: column;\n  container-type: inline-size;\n}\nol {\n  display: flex;\n  flex: 1;\n  flex-direction: column;\n  gap: 14px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\nli {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) auto;\n  grid-template-areas: "who conv" "lane lane";\n  gap: 8px 12px;\n  align-items: center;\n}\n.who {\n  grid-area: who;\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  min-width: 0;\n}\n.who strong {\n  color: var(--ink);\n  font-size: var(--text-sm);\n  font-weight: 600;\n}\n.val {\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.conv {\n  grid-area: conv;\n}\n.lane {\n  grid-area: lane;\n  display: flex;\n  justify-content: center;\n  height: 40px;\n  border-radius: 12px;\n  background: var(--surface-2);\n}\n.bar {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-width: 52px;\n  height: 100%;\n  border-radius: 12px;\n  color: var(--ink);\n  animation: grow 700ms var(--ease-out) both;\n}\n.s0 {\n  background: var(--grad-ink);\n  color: var(--on-ink);\n}\n.s1 {\n  background: var(--data-cyan);\n}\n.s2 {\n  background: color-mix(in srgb, var(--data-cyan) 62%, var(--tint-cyan));\n}\n.s3 {\n  background: color-mix(in srgb, var(--data-cyan) 38%, var(--tint-cyan));\n}\n.n {\n  font-size: var(--text-base);\n  font-weight: 600;\n}\n.tag {\n  display: inline-flex;\n  align-items: center;\n  gap: 2px;\n  height: 24px;\n  padding: 0 10px 0 6px;\n  border-radius: var(--radius-pill);\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n  font-size: var(--text-xs);\n  font-weight: 600;\n  white-space: nowrap;\n}\n.tag mat-icon {\n  width: 14px;\n  height: 14px;\n  font-size: 14px;\n}\n.tag .of {\n  margin-left: 3px;\n  font-weight: 400;\n}\n.tag.start {\n  padding: 0 10px;\n  background: var(--tint-slate);\n  color: var(--tint-slate-ink);\n}\n.ends {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 10px;\n  margin-top: var(--space-5);\n}\n.end {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  min-height: 52px;\n  padding: 0 14px;\n  border-radius: var(--radius-control);\n  font-size: var(--text-sm);\n}\n.end b {\n  margin-right: 4px;\n  font-size: var(--text-lg);\n  font-weight: 600;\n}\n.end mat-icon {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n.won {\n  background: var(--tint-teal);\n  color: var(--tint-teal-ink);\n}\n.lost {\n  background: var(--tint-rose);\n  color: var(--tint-rose-ink);\n}\n.none {\n  color: var(--ink-3);\n}\n@keyframes grow {\n  from {\n    transform: scaleX(0.3);\n    opacity: 0;\n  }\n}\n@container (min-width: 520px) {\n  li {\n    grid-template-columns: 110px minmax(0, 1fr) auto;\n    grid-template-areas: "who lane conv";\n    gap: 14px;\n  }\n  li {\n    flex: 1 1 0;\n    align-items: stretch;\n    min-height: 44px;\n    max-height: 76px;\n  }\n  .lane {\n    height: auto;\n  }\n  .who {\n    flex-direction: column;\n    align-items: flex-start;\n    align-self: center;\n    gap: 0;\n  }\n  .conv {\n    align-self: center;\n    min-width: 150px;\n    text-align: right;\n  }\n}\n/*# sourceMappingURL=funnel-card.css.map */\n'] }]
+  }], null, { stages: [{ type: i0.Input, args: [{ isSignal: true, alias: "stages", required: true }] }], link: [{ type: i0.Input, args: [{ isSignal: true, alias: "link", required: false }] }], won: [{ type: i0.Input, args: [{ isSignal: true, alias: "won", required: false }] }], lost: [{ type: i0.Input, args: [{ isSignal: true, alias: "lost", required: false }] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(FunnelCard, { className: "FunnelCard", filePath: "src/app/features/dashboard/components/funnel-card.ts", lineNumber: 96 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fdashboard%2Fcomponents%2Ffunnel-card.ts%40FunnelCard";
+  function FunnelCard_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(FunnelCard, m.default, [i0, i1, i2], [MatIconModule, PanelHead, InrCompactPipe, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && FunnelCard_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && FunnelCard_HmrLoad(d.timestamp)));
+})();
+
+export {
+  FunnelCard
+};
+//# debugId=06e49d6c-984c-55be-89ef-cd4eda331737
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvZGFzaGJvYXJkL2NvbXBvbmVudHMvZnVubmVsLWNhcmQudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3ksIENvbXBvbmVudCwgY29tcHV0ZWQsIGlucHV0IH0gZnJvbSAnQGFuZ3VsYXIvY29yZSc7XG5pbXBvcnQgeyBNYXRJY29uTW9kdWxlIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvaWNvbic7XG5pbXBvcnQgeyBJbnJDb21wYWN0UGlwZSB9IGZyb20gJy4uLy4uLy4uL3NoYXJlZC9tb25leS9pbnIucGlwZSc7XG5pbXBvcnQgeyBGdW5uZWxTdGFnZSB9IGZyb20gJy4uL2Rhc2hib2FyZC5tb2RlbHMnO1xuaW1wb3J0IHsgUGFuZWxIZWFkIH0gZnJvbSAnLi9wYW5lbC1oZWFkJztcblxuLyoqXG4gKiBPcGVuIHBpcGVsaW5lIGFzIGEgZnVubmVsOiBvbmUgbGFuZSBwZXIgc3RhZ2Ugd2l0aCBhIG5hcnJvd2luZyBiYXIgKGdlb21ldHJ5IG9ubHkpLCB0aGUgc3RhZ2UgbmFtZSxcbiAqIGl0cyB2YWx1ZSAoQVBJIHN0cmluZykgYW5kIHRoZSBjb252ZXJzaW9uIGZyb20gdGhlIHByZXZpb3VzIHN0YWdlLiBXb24gYW5kIExvc3QgYXJlIHN1bW1hcnkgdGlsZXMuXG4gKi9cbkBDb21wb25lbnQoe1xuICBzZWxlY3RvcjogJ2FwcC1mdW5uZWwtY2FyZCcsXG4gIGltcG9ydHM6IFtJbnJDb21wYWN0UGlwZSwgTWF0SWNvbk1vZHVsZSwgUGFuZWxIZWFkXSxcbiAgY2hhbmdlRGV0ZWN0aW9uOiBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneS5PblB1c2gsXG4gIGhvc3Q6IHsgY2xhc3M6ICdjYXJkIHBhbmVsJywgcm9sZTogJ3JlZ2lvbicsICdhcmlhLWxhYmVsbGVkYnknOiAnZnVubmVsLXRpdGxlJyB9LFxuICB0ZW1wbGF0ZTogYFxuICAgIDxhcHAtcGFuZWwtaGVhZCB0aXRsZT1cIkxlYWQgZnVubmVsXCIgc3VidGl0bGU9XCJPcGVuIHBpcGVsaW5lIGJ5IHN0YWdlXCIgW2xpbmtdPVwibGluaygpXCIgaGVhZGluZ0lkPVwiZnVubmVsLXRpdGxlXCIgLz5cbiAgICBAaWYgKG9wZW4oKS5sZW5ndGgpIHtcbiAgICAgIDxvbD5cbiAgICAgICAgQGZvciAocyBvZiBvcGVuKCk7IHRyYWNrIHMuc3RhdHVzOyBsZXQgaSA9ICRpbmRleCkge1xuICAgICAgICAgIDxsaT5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzPVwid2hvXCI+XG4gICAgICAgICAgICAgIDxzdHJvbmc+e3sgcy5sYWJlbCB9fTwvc3Ryb25nPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cInZhbCBudW1cIj57eyBzLnZhbHVlIHwgaW5yQ29tcGFjdCB9fTwvc3Bhbj5cbiAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzPVwibGFuZVwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cImJhclwiIFtjbGFzc109XCInYmFyIHMnICsgaVwiIFtzdHlsZS53aWR0aC4lXT1cInMud2lkdGhcIj48c3BhbiBjbGFzcz1cIm4gbnVtXCI+e3sgcy5jb3VudCB9fTwvc3Bhbj48L3NwYW4+XG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8c3BhbiBjbGFzcz1cImNvbnZcIj5cbiAgICAgICAgICAgICAgQGlmIChpID09PSAwKSB7XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJ0YWcgc3RhcnRcIj5Ub3Agb2YgZnVubmVsPC9zcGFuPlxuICAgICAgICAgICAgICB9IEBlbHNlIHtcbiAgICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cInRhZ1wiPjxtYXQtaWNvbiBhcmlhLWhpZGRlbj1cInRydWVcIj5zb3V0aDwvbWF0LWljb24+e3sgcy5jb252IH19JSA8c3BhbiBjbGFzcz1cIm9mXCI+b2YgcHJldmlvdXM8L3NwYW4+PC9zcGFuPlxuICAgICAgICAgICAgICB9XG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8c3BhbiBjbGFzcz1cInNyLW9ubHlcIj57eyBzLmNvdW50IH19IGxlYWRzPC9zcGFuPlxuICAgICAgICAgIDwvbGk+XG4gICAgICAgIH1cbiAgICAgIDwvb2w+XG4gICAgICA8ZGl2IGNsYXNzPVwiZW5kc1wiPlxuICAgICAgICA8c3BhbiBjbGFzcz1cImVuZCB3b25cIj5cbiAgICAgICAgICA8bWF0LWljb24gYXJpYS1oaWRkZW49XCJ0cnVlXCI+ZW1vamlfZXZlbnRzPC9tYXQtaWNvbj5cbiAgICAgICAgICA8c3Bhbj48YiBjbGFzcz1cIm51bVwiPnt7IHdvbigpIH19PC9iPiBXb248L3NwYW4+XG4gICAgICAgIDwvc3Bhbj5cbiAgICAgICAgPHNwYW4gY2xhc3M9XCJlbmQgbG9zdFwiPlxuICAgICAgICAgIDxtYXQtaWNvbiBhcmlhLWhpZGRlbj1cInRydWVcIj5ibG9jazwvbWF0LWljb24+XG4gICAgICAgICAgPHNwYW4+PGIgY2xhc3M9XCJudW1cIj57eyBsb3N0KCkgfX08L2I+IExvc3Q8L3NwYW4+XG4gICAgICAgIDwvc3Bhbj5cbiAgICAgIDwvZGl2PlxuICAgIH0gQGVsc2Uge1xuICAgICAgPHAgY2xhc3M9XCJub25lXCI+Tm8gZGF0YSBmb3IgdGhpcyBwZXJpb2Q8L3A+XG4gICAgfVxuICBgLFxuICBzdHlsZXM6IGBcbiAgICA6aG9zdCB7IGRpc3BsYXk6IGZsZXg7IGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47IGNvbnRhaW5lci10eXBlOiBpbmxpbmUtc2l6ZTsgfVxuICAgIG9sIHsgZGlzcGxheTogZmxleDsgZmxleDogMTsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgZ2FwOiAxNHB4OyBtYXJnaW46IDA7IHBhZGRpbmc6IDA7IGxpc3Qtc3R5bGU6IG5vbmU7IH1cbiAgICBsaSB7IGRpc3BsYXk6IGdyaWQ7IGdyaWQtdGVtcGxhdGUtY29sdW1uczogbWlubWF4KDAsIDFmcikgYXV0bzsgZ3JpZC10ZW1wbGF0ZS1hcmVhczogJ3dobyBjb252JyAnbGFuZSBsYW5lJzsgZ2FwOiA4cHggMTJweDsgYWxpZ24taXRlbXM6IGNlbnRlcjsgfVxuICAgIC53aG8geyBncmlkLWFyZWE6IHdobzsgZGlzcGxheTogZmxleDsgYWxpZ24taXRlbXM6IGJhc2VsaW5lOyBnYXA6IDhweDsgbWluLXdpZHRoOiAwOyB9XG4gICAgLndobyBzdHJvbmcgeyBjb2xvcjogdmFyKC0taW5rKTsgZm9udC1zaXplOiB2YXIoLS10ZXh0LXNtKTsgZm9udC13ZWlnaHQ6IDYwMDsgfVxuICAgIC52YWwgeyBjb2xvcjogdmFyKC0taW5rLTMpOyBmb250LXNpemU6IHZhcigtLXRleHQtc20pOyB9XG4gICAgLmNvbnYgeyBncmlkLWFyZWE6IGNvbnY7IH1cbiAgICAubGFuZSB7IGdyaWQtYXJlYTogbGFuZTsgZGlzcGxheTogZmxleDsganVzdGlmeS1jb250ZW50OiBjZW50ZXI7IGhlaWdodDogNDBweDsgYm9yZGVyLXJhZGl1czogMTJweDsgYmFja2dyb3VuZDogdmFyKC0tc3VyZmFjZS0yKTsgfVxuICAgIC5iYXIge1xuICAgICAgZGlzcGxheTogZmxleDsgYWxpZ24taXRlbXM6IGNlbnRlcjsganVzdGlmeS1jb250ZW50OiBjZW50ZXI7IG1pbi13aWR0aDogNTJweDsgaGVpZ2h0OiAxMDAlOyBib3JkZXItcmFkaXVzOiAxMnB4O1xuICAgICAgY29sb3I6IHZhcigtLWluayk7IGFuaW1hdGlvbjogZ3JvdyA3MDBtcyB2YXIoLS1lYXNlLW91dCkgYm90aDtcbiAgICB9XG4gICAgLnMwIHsgYmFja2dyb3VuZDogdmFyKC0tZ3JhZC1pbmspOyBjb2xvcjogdmFyKC0tb24taW5rKTsgfVxuICAgIC5zMSB7IGJhY2tncm91bmQ6IHZhcigtLWRhdGEtY3lhbik7IH1cbiAgICAuczIgeyBiYWNrZ3JvdW5kOiBjb2xvci1taXgoaW4gc3JnYiwgdmFyKC0tZGF0YS1jeWFuKSA2MiUsIHZhcigtLXRpbnQtY3lhbikpOyB9XG4gICAgLnMzIHsgYmFja2dyb3VuZDogY29sb3ItbWl4KGluIHNyZ2IsIHZhcigtLWRhdGEtY3lhbikgMzglLCB2YXIoLS10aW50LWN5YW4pKTsgfVxuICAgIC5uIHsgZm9udC1zaXplOiB2YXIoLS10ZXh0LWJhc2UpOyBmb250LXdlaWdodDogNjAwOyB9XG4gICAgLnRhZyB7XG4gICAgICBkaXNwbGF5OiBpbmxpbmUtZmxleDsgYWxpZ24taXRlbXM6IGNlbnRlcjsgZ2FwOiAycHg7IGhlaWdodDogMjRweDsgcGFkZGluZzogMCAxMHB4IDAgNnB4OyBib3JkZXItcmFkaXVzOiB2YXIoLS1yYWRpdXMtcGlsbCk7XG4gICAgICBiYWNrZ3JvdW5kOiB2YXIoLS10aW50LWN5YW4pOyBjb2xvcjogdmFyKC0tdGludC1jeWFuLWluayk7IGZvbnQtc2l6ZTogdmFyKC0tdGV4dC14cyk7IGZvbnQtd2VpZ2h0OiA2MDA7IHdoaXRlLXNwYWNlOiBub3dyYXA7XG4gICAgfVxuICAgIC50YWcgbWF0LWljb24geyB3aWR0aDogMTRweDsgaGVpZ2h0OiAxNHB4OyBmb250LXNpemU6IDE0cHg7IH1cbiAgICAudGFnIC5vZiB7IG1hcmdpbi1sZWZ0OiAzcHg7IGZvbnQtd2VpZ2h0OiA0MDA7IH1cbiAgICAudGFnLnN0YXJ0IHsgcGFkZGluZzogMCAxMHB4OyBiYWNrZ3JvdW5kOiB2YXIoLS10aW50LXNsYXRlKTsgY29sb3I6IHZhcigtLXRpbnQtc2xhdGUtaW5rKTsgfVxuICAgIC5lbmRzIHsgZGlzcGxheTogZ3JpZDsgZ3JpZC10ZW1wbGF0ZS1jb2x1bW5zOiByZXBlYXQoMiwgbWlubWF4KDAsIDFmcikpOyBnYXA6IDEwcHg7IG1hcmdpbi10b3A6IHZhcigtLXNwYWNlLTUpOyB9XG4gICAgLmVuZCB7IGRpc3BsYXk6IGZsZXg7IGFsaWduLWl0ZW1zOiBjZW50ZXI7IGdhcDogMTBweDsgbWluLWhlaWdodDogNTJweDsgcGFkZGluZzogMCAxNHB4OyBib3JkZXItcmFkaXVzOiB2YXIoLS1yYWRpdXMtY29udHJvbCk7IGZvbnQtc2l6ZTogdmFyKC0tdGV4dC1zbSk7IH1cbiAgICAuZW5kIGIgeyBtYXJnaW4tcmlnaHQ6IDRweDsgZm9udC1zaXplOiB2YXIoLS10ZXh0LWxnKTsgZm9udC13ZWlnaHQ6IDYwMDsgfVxuICAgIC5lbmQgbWF0LWljb24geyB3aWR0aDogMjJweDsgaGVpZ2h0OiAyMnB4OyBmb250LXNpemU6IDIycHg7IH1cbiAgICAud29uIHsgYmFja2dyb3VuZDogdmFyKC0tdGludC10ZWFsKTsgY29sb3I6IHZhcigtLXRpbnQtdGVhbC1pbmspOyB9XG4gICAgLmxvc3QgeyBiYWNrZ3JvdW5kOiB2YXIoLS10aW50LXJvc2UpOyBjb2xvcjogdmFyKC0tdGludC1yb3NlLWluayk7IH1cbiAgICAubm9uZSB7IGNvbG9yOiB2YXIoLS1pbmstMyk7IH1cbiAgICBAa2V5ZnJhbWVzIGdyb3cgeyBmcm9tIHsgdHJhbnNmb3JtOiBzY2FsZVgoMC4zKTsgb3BhY2l0eTogMDsgfSB9XG4gICAgQGNvbnRhaW5lciAobWluLXdpZHRoOiA1MjBweCkge1xuICAgICAgbGkgeyBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDExMHB4IG1pbm1heCgwLCAxZnIpIGF1dG87IGdyaWQtdGVtcGxhdGUtYXJlYXM6ICd3aG8gbGFuZSBjb252JzsgZ2FwOiAxNHB4OyB9XG4gICAgICBsaSB7IGZsZXg6IDEgMSAwOyBhbGlnbi1pdGVtczogc3RyZXRjaDsgbWluLWhlaWdodDogNDRweDsgbWF4LWhlaWdodDogNzZweDsgfVxuICAgICAgLmxhbmUgeyBoZWlnaHQ6IGF1dG87IH1cbiAgICAgIC53aG8geyBmbGV4LWRpcmVjdGlvbjogY29sdW1uOyBhbGlnbi1pdGVtczogZmxleC1zdGFydDsgYWxpZ24tc2VsZjogY2VudGVyOyBnYXA6IDA7IH1cbiAgICAgIC5jb252IHsgYWxpZ24tc2VsZjogY2VudGVyOyBtaW4td2lkdGg6IDE1MHB4OyB0ZXh0LWFsaWduOiByaWdodDsgfVxuICAgIH1cbiAgYCxcbn0pXG5leHBvcnQgY2xhc3MgRnVubmVsQ2FyZCB7XG4gIHJlYWRvbmx5IHN0YWdlcyA9IGlucHV0LnJlcXVpcmVkPEZ1bm5lbFN0YWdlW10+KCk7XG4gIC8qKiBcIlZpZXcgYWxsXCIgdGFyZ2V0OyBudWxsIG9uIHRoZSByZXBvcnQgcGFnZSBpdHNlbGYuICovXG4gIHJlYWRvbmx5IGxpbmsgPSBpbnB1dDxzdHJpbmcgfCBudWxsPignL3JlcG9ydHMvbGVhZC1mdW5uZWwnKTtcbiAgcmVhZG9ubHkgd29uID0gaW5wdXQoMCk7XG4gIHJlYWRvbmx5IGxvc3QgPSBpbnB1dCgwKTtcblxuICBwcm90ZWN0ZWQgcmVhZG9ubHkgb3BlbiA9IGNvbXB1dGVkKCgpID0+IHtcbiAgICBjb25zdCBzdGFnZXMgPSB0aGlzLnN0YWdlcygpLmZpbHRlcigocykgPT4gcy5zdGF0dXMgIT09ICdXT04nICYmIHMuc3RhdHVzICE9PSAnTE9TVCcpO1xuICAgIGNvbnN0IG1heCA9IE1hdGgubWF4KDEsIC4uLnN0YWdlcy5tYXAoKHMpID0+IHMuY291bnQpKTtcbiAgICByZXR1cm4gc3RhZ2VzLm1hcCgocywgaSkgPT4ge1xuICAgICAgY29uc3QgcHJldiA9IHN0YWdlc1tpIC0gMV0/LmNvdW50ID8/IDA7XG4gICAgICByZXR1cm4geyAuLi5zLCB3aWR0aDogTWF0aC5tYXgoMTYsIE1hdGgucm91bmQoKHMuY291bnQgLyBtYXgpICogMTAwKSksIGNvbnY6IHByZXYgPyBNYXRoLnJvdW5kKChzLmNvdW50IC8gcHJldikgKiAxMDApIDogMCB9O1xuICAgIH0pO1xuICB9KTtcbn1cbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O0FBQUEsU0FBUyx5QkFBeUIsV0FBVyxVQUFVLGFBQWE7QUFDcEUsU0FBUyxxQkFBcUI7QTs7Ozs7O0FBNkJkLElBQUEsNEJBQUEsR0FBQSxRQUFBLEVBQUE7QUFBd0IsSUFBQSxvQkFBQSxHQUFBLGVBQUE7QUFBYSxJQUFBLDBCQUFBOzs7OztBQUVyQyxJQUFBLDRCQUFBLEdBQUEsUUFBQSxFQUFBLEVBQWtCLEdBQUEsWUFBQSxDQUFBO0FBQTZCLElBQUEsb0JB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QUEsR0FBQSxDQUFBLEdBQUEsTUFBQSxHQUFBLENBQUEsR0FBQSxNQUFBLEdBQUEsQ0FBQSxHQUFBLE9BQUEsS0FBQSxHQUFBLENBQUEsZUFBQSxNQUFBLEdBQUEsQ0FBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLEdBQUEsT0FBQSxNQUFBLEdBQUEsQ0FBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLEdBQUEsT0FBQSxLQUFBLEdBQUEsQ0FBQSxlQUFBLFFBQUEsR0FBQSxNQUFBLEdBQUEsQ0FBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLEdBQUEsS0FBQSxLQUFBLEdBQUEsQ0FBQSxHQUFBLE1BQUEsR0FBQSxDQUFBLEdBQUEsT0FBQSxPQUFBLEdBQUEsQ0FBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLEdBQUEsU0FBQSxHQUFBLENBQUEsR0FBQSxJQUFBLENBQUEsR0FBQSxVQUFBLFNBQUEsb0JBQUEsSUFBQSxLQUFBO0FBQUEsUUFBQSxLQUFBLEdBQUE7QUEvRW5CLE1BQUEsdUJBQUEsR0FBQSxrQkFBQSxDQUFBO0FBQ0EsTUFBQSxpQ0FBQSxHQUFBLG1DQUFBLElBQUEsQ0FBQSxFQUFxQixHQUFBLG1DQUFBLEdBQUEsR0FBQSxLQUFBLENBQUE7OztBQURpRCxNQUFBLHdCQUFBLFFBQUEsSUFBQSxLQUFBLENBQUE7QUFDdEUsTUFBQSx1QkFBQTtBQUFBLE1BQUEsMkJBQUEsSUFBQSxLQUFBLEVBQUEsU0FBQSxJQUFBLENBQUE7O29CQUx3QixlQUFhLFlBQUEsUUFBRSxXQUEvQixjQUFjLEdBQUEsUUFBQSxDQUFBLGs3SEFBQSxFQUFBLENBQUE7OzsrRUFtRmIsWUFBVSxDQUFBO1VBckZ0Qjt1QkFDVyxtQkFBaUIsU0FDbEIsQ0FBQyxnQkFBZ0IsZUFBZSxTQUFTLEdBQUMsaUJBQ2xDLHdCQUF3QixRQUFNLE1BQ3pDLEVBQUUsT0FBTyxjQUFjLE1BQU0sVUFBVSxtQkFBbUIsZUFBYyxHQUFFLFVBQ3RFOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0tBcUNULFFBQUEsQ0FBQSxvekdBQUEsRUFBQSxDQUFBOzs7O2dGQTJDVSxZQUFVLEVBQUEsV0FBQSxjQUFBLFVBQUEsd0RBQUEsWUFBQSxHQUFBLENBQUE7QUFBQSxHQUFBOzs7Ozs7OzhEQUFWLFlBQVUsRUFBQSxTQUFBLENBQUEsSUFBQSxJQUFBLEVBQUEsR0FBQSxDQUFBLGVBQUEsV0FBQSxnQkFBQSxXQUFBLHVCQUFBLEdBQUEsYUFBQSxFQUFBLENBQUE7RUFBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsY0FBQSxtQkFBQSxLQUFBLElBQUEsQ0FBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsZUFBQSxZQUFBLE9BQUEsWUFBQSxJQUFBLEdBQUEsNEJBQUEsQ0FBQSxNQUFBLEVBQUEsT0FBQSxNQUFBLG1CQUFBLEVBQUEsU0FBQSxDQUFBO0FBQUEsR0FBQTsiLCJuYW1lcyI6W10sImRlYnVnSWQiOiIwNmU0OWQ2Yy05ODRjLTU1YmUtODllZi1jZDRlZGEzMzE3MzcifQ==

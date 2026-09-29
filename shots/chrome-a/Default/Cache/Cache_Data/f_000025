@@ -1,0 +1,507 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-DF543XXF.js");import {
+  Countdown
+} from "/chunk-YFGADID2.js";
+import {
+  PasswordField
+} from "/chunk-SYSCGESP.js";
+import {
+  AuthLayout,
+  authErrorMessage,
+  retryAfter
+} from "/chunk-7WQZIFCS.js";
+import {
+  AuthService
+} from "/chunk-MYKLYJY6.js";
+import {
+  environment
+} from "/chunk-MU7PUKQW.js";
+import "/chunk-VUJOFXKG.js";
+
+// src/app/features/auth/login-page.ts
+import { ChangeDetectionStrategy, Component, afterNextRender, computed, inject, signal, viewChild } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { toSignal } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core_rxjs-interop.js?v=a85cac02";
+import { FormBuilder, ReactiveFormsModule, Validators } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import { MatButtonModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import { MatProgressSpinnerModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_progress-spinner.js?v=a85cac02";
+import { ActivatedRoute, Router, RouterLink } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_router.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import * as i3 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i4 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_progress-spinner.js?v=a85cac02";
+import * as i5 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+var _c0 = ["identifier"];
+var _forTrack0 = ($index, $item) => $item.identifier;
+function LoginPage_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 3)(1, "mat-icon", 20);
+    i0.\u0275\u0275text(2, "info");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(3, "span");
+    i0.\u0275\u0275text(4);
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    i0.\u0275\u0275advance(4);
+    i0.\u0275\u0275textInterpolate(ctx);
+  }
+}
+function LoginPage_Conditional_7_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 4)(1, "mat-icon", 20);
+    i0.\u0275\u0275text(2, "error_outline");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(3, "span");
+    i0.\u0275\u0275text(4);
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    i0.\u0275\u0275advance(4);
+    i0.\u0275\u0275textInterpolate(ctx);
+  }
+}
+function LoginPage_Conditional_14_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 9);
+    i0.\u0275\u0275text(1, "Enter your email or username.");
+    i0.\u0275\u0275elementEnd();
+  }
+}
+function LoginPage_Conditional_16_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 11);
+    i0.\u0275\u0275text(1, "Enter your password.");
+    i0.\u0275\u0275elementEnd();
+  }
+}
+function LoginPage_Conditional_26_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275element(0, "mat-spinner", 21);
+    i0.\u0275\u0275text(1, " Signing in\u2026 ");
+  }
+}
+function LoginPage_Conditional_27_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "span");
+    i0.\u0275\u0275text(1, "Sign in");
+    i0.\u0275\u0275elementStart(2, "mat-icon", 22);
+    i0.\u0275\u0275text(3, "arrow_forward");
+    i0.\u0275\u0275elementEnd()();
+  }
+}
+function LoginPage_Conditional_31_For_7_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r1 = i0.\u0275\u0275getCurrentView();
+    i0.\u0275\u0275elementStart(0, "button", 25);
+    i0.\u0275\u0275listener("click", function LoginPage_Conditional_31_For_7_Template_button_click_0_listener() {
+      const account_r2 = i0.\u0275\u0275restoreView(_r1).$implicit;
+      const ctx_r2 = i0.\u0275\u0275nextContext(2);
+      return i0.\u0275\u0275resetView(ctx_r2.useDemo(account_r2));
+    });
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const account_r2 = ctx.$implicit;
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(account_r2.label);
+  }
+}
+function LoginPage_Conditional_31_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "details", 19)(1, "summary");
+    i0.\u0275\u0275text(2, "Demo accounts ");
+    i0.\u0275\u0275elementStart(3, "span");
+    i0.\u0275\u0275text(4, "(dev only)");
+    i0.\u0275\u0275elementEnd()();
+    i0.\u0275\u0275elementStart(5, "div", 23);
+    i0.\u0275\u0275repeaterCreate(6, LoginPage_Conditional_31_For_7_Template, 2, 1, "button", 24, _forTrack0);
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r2 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance(6);
+    i0.\u0275\u0275repeater(ctx_r2.demoLogins);
+  }
+}
+var REASONS = {
+  expired: "Your session expired. Please sign in again.",
+  reset: "Password updated. Sign in with your new password."
+};
+var LoginPage = class _LoginPage {
+  auth = inject(AuthService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
+  form = inject(FormBuilder).nonNullable.group({
+    identifier: ["", Validators.required],
+    password: ["", Validators.required],
+    remember: [false]
+  });
+  submitted = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "submitted" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  pending = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "pending" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  error = signal(
+    null,
+    ...ngDevMode ? [{ debugName: "error" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  lock = new Countdown(() => {
+    this.error.set(null);
+    this.form.enable();
+  });
+  params = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
+  notice = computed(
+    () => this.error() ? null : REASONS[this.params().get("reason") ?? ""] ?? null,
+    ...ngDevMode ? [{ debugName: "notice" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  errorText = computed(
+    () => {
+      const err = this.error();
+      if (!err) {
+        return null;
+      }
+      const base = authErrorMessage(err);
+      return this.lock.running() ? `${base} Try again in ${this.lock.label()}.` : base;
+    },
+    ...ngDevMode ? [{ debugName: "errorText" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** Dev only (environment.showDemoLogins): one-click demo accounts that fill the form, never submit. */
+  showDemoLogins = environment.showDemoLogins === true;
+  demoLogins = this.showDemoLogins ? environment.demoLogins : [];
+  identifierInput = viewChild.required(
+    "identifier",
+    ...ngDevMode ? [{ debugName: "identifierInput" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  passwordField = viewChild.required(
+    PasswordField,
+    ...ngDevMode ? [{ debugName: "passwordField" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  constructor() {
+    afterNextRender(() => {
+      if (window.matchMedia?.("(pointer: fine)").matches) {
+        this.identifierInput().nativeElement.focus();
+      }
+    });
+  }
+  showError(name) {
+    const control = this.form.controls[name];
+    return control.invalid && (control.touched || this.submitted());
+  }
+  submit() {
+    if (this.pending() || this.lock.running()) {
+      return;
+    }
+    this.submitted.set(true);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.focusFirstInvalid();
+      return;
+    }
+    const { identifier, password, remember } = this.form.getRawValue();
+    this.pending.set(true);
+    this.error.set(null);
+    this.auth.login(identifier.trim(), password, remember).subscribe({
+      next: () => void this.router.navigateByUrl(this.auth.afterLoginUrl(this.params().get("returnUrl"))),
+      error: (err) => this.fail(err)
+    });
+  }
+  fail(err) {
+    this.pending.set(false);
+    this.error.set(err ?? { status: 0, code: "error", message: "", details: {} });
+    const wait = retryAfter(err);
+    if (wait) {
+      this.form.disable();
+      this.lock.start(wait);
+    } else if (err?.code === "invalid_credentials") {
+      this.form.controls.password.reset("");
+      queueMicrotask(() => this.passwordField().focus());
+    }
+  }
+  useDemo(account) {
+    if (this.lock.running()) {
+      return;
+    }
+    this.form.patchValue({ identifier: account.identifier, password: account.password });
+    this.error.set(null);
+    this.passwordField().focus();
+  }
+  focusFirstInvalid() {
+    if (this.form.controls.identifier.invalid) {
+      this.identifierInput().nativeElement.focus();
+    } else {
+      this.passwordField().focus();
+    }
+  }
+  static \u0275fac = function LoginPage_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _LoginPage)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _LoginPage, selectors: [["app-login-page"]], viewQuery: function LoginPage_Query(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275viewQuerySignal(ctx.identifierInput, _c0, 5)(ctx.passwordField, PasswordField, 5);
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275queryAdvance(2);
+    }
+  }, decls: 32, vars: 12, consts: [["identifier", ""], [1, "lede"], ["novalidate", "", 3, "ngSubmit", "formGroup"], ["role", "status", 1, "banner", "info"], ["role", "alert", 1, "banner", "error"], [1, "field"], ["for", "identifier"], [1, "control"], ["id", "identifier", "type", "text", "formControlName", "identifier", "autocomplete", "username", "autocapitalize", "none", "autocorrect", "off", "spellcheck", "false", "inputmode", "email", "enterkeyhint", "next"], ["id", "identifier-error", "aria-live", "polite", 1, "field-error"], ["inputId", "password", "label", "Password", "autocomplete", "current-password", "enterKeyHint", "go", "errorId", "password-error", 3, "control", "invalid"], ["fieldError", "", "id", "password-error", "aria-live", "polite", 1, "field-error"], [1, "row"], [1, "check"], ["type", "checkbox", "formControlName", "remember"], ["routerLink", "/forgot-password", 1, "link"], ["aria-hidden", "true", 1, "arrow-sm"], ["matButton", "filled", "type", "submit", 1, "submit", 3, "disabled"], [1, "help"], ["below", "", 1, "demo"], ["aria-hidden", "true"], ["diameter", "18", "aria-hidden", "true"], ["aria-hidden", "true", 1, "btn-arrow"], [1, "demo-chips"], ["type", "button", 1, "demo-chip"], ["type", "button", 1, "demo-chip", 3, "click"]], template: function LoginPage_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275elementStart(0, "app-auth-layout")(1, "h1");
+      i0.\u0275\u0275text(2, "Sign in");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(3, "p", 1);
+      i0.\u0275\u0275text(4, "Welcome back. Enter your details to continue.");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(5, "form", 2);
+      i0.\u0275\u0275listener("ngSubmit", function LoginPage_Template_form_ngSubmit_5_listener() {
+        return ctx.submit();
+      });
+      i0.\u0275\u0275conditionalCreate(6, LoginPage_Conditional_6_Template, 5, 1, "p", 3);
+      i0.\u0275\u0275conditionalCreate(7, LoginPage_Conditional_7_Template, 5, 1, "p", 4);
+      i0.\u0275\u0275elementStart(8, "div", 5)(9, "label", 6);
+      i0.\u0275\u0275text(10, "Email or username");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(11, "div", 7)(12, "input", 8, 0);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275conditionalCreate(14, LoginPage_Conditional_14_Template, 2, 0, "p", 9);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(15, "app-password-field", 10);
+      i0.\u0275\u0275conditionalCreate(16, LoginPage_Conditional_16_Template, 2, 0, "p", 11);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(17, "div", 12)(18, "label", 13)(19, "input", 14);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275text(20, " Remember me ");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(21, "a", 15);
+      i0.\u0275\u0275text(22, " Forgot password?");
+      i0.\u0275\u0275elementStart(23, "mat-icon", 16);
+      i0.\u0275\u0275text(24, "arrow_forward");
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275elementStart(25, "button", 17);
+      i0.\u0275\u0275conditionalCreate(26, LoginPage_Conditional_26_Template, 2, 0)(27, LoginPage_Conditional_27_Template, 4, 0, "span");
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275elementStart(28, "div", 18)(29, "p");
+      i0.\u0275\u0275text(30, "Need access? Ask your administrator to create your account.");
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275conditionalCreate(31, LoginPage_Conditional_31_Template, 8, 0, "details", 19);
+      i0.\u0275\u0275elementEnd();
+    }
+    if (rf & 2) {
+      let tmp_2_0;
+      let tmp_3_0;
+      i0.\u0275\u0275advance(5);
+      i0.\u0275\u0275property("formGroup", ctx.form);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional((tmp_2_0 = ctx.notice()) ? 6 : -1, tmp_2_0);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional((tmp_3_0 = ctx.errorText()) ? 7 : -1, tmp_3_0);
+      i0.\u0275\u0275advance(5);
+      i0.\u0275\u0275attribute("aria-invalid", ctx.showError("identifier"))("aria-describedby", ctx.showError("identifier") ? "identifier-error" : null);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275conditional(ctx.showError("identifier") ? 14 : -1);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275property("control", ctx.form.controls.password)("invalid", ctx.showError("password"));
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.showError("password") ? 16 : -1);
+      i0.\u0275\u0275advance(3);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance(6);
+      i0.\u0275\u0275property("disabled", ctx.pending() || ctx.lock.running());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.pending() ? 26 : 27);
+      i0.\u0275\u0275advance(5);
+      i0.\u0275\u0275conditional(ctx.showDemoLogins ? 31 : -1);
+    }
+  }, dependencies: [
+    AuthLayout,
+    MatButtonModule,
+    i1.Dir,
+    i2.MatButton,
+    i2.MatMiniFabButton,
+    i2.MatIconButton,
+    i2.MatFabButton,
+    MatIconModule,
+    i3.MatIcon,
+    MatProgressSpinnerModule,
+    i4.MatProgressSpinner,
+    PasswordField,
+    ReactiveFormsModule,
+    i5.\u0275NgNoValidate,
+    i5.NgSelectOption,
+    i5.\u0275NgSelectMultipleOption,
+    i5.DefaultValueAccessor,
+    i5.NumberValueAccessor,
+    i5.RangeValueAccessor,
+    i5.CheckboxControlValueAccessor,
+    i5.SelectControlValueAccessor,
+    i5.SelectMultipleControlValueAccessor,
+    i5.RadioControlValueAccessor,
+    i5.NgControlStatus,
+    i5.NgControlStatusGroup,
+    i5.RequiredValidator,
+    i5.MinLengthValidator,
+    i5.MaxLengthValidator,
+    i5.PatternValidator,
+    i5.CheckboxRequiredValidator,
+    i5.EmailValidator,
+    i5.MinValidator,
+    i5.MaxValidator,
+    i5.FormControlDirective,
+    i5.FormGroupDirective,
+    i5.FormArrayDirective,
+    i5.FormControlName,
+    i5.FormGroupName,
+    i5.FormArrayName,
+    RouterLink
+  ], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n}\nh1[_ngcontent-%COMP%] {\n  font-size: var(--%NS%text-xl);\n  text-align: center;\n}\nh1[_ngcontent-%COMP%]    + .banner[_ngcontent-%COMP%] {\n  margin: var(--%NS%space-3) 0 var(--%NS%space-5);\n}\n.banner[_ngcontent-%COMP%]    + .center[_ngcontent-%COMP%] {\n  margin-top: var(--%NS%space-2);\n}\n.lede[_ngcontent-%COMP%] {\n  margin: var(--%NS%space-1) 0 var(--%NS%space-6);\n  color: var(--%NS%ink-3);\n  text-align: center;\n}\nform[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n}\nlabel[_ngcontent-%COMP%] {\n  margin-bottom: 6px;\n  color: var(--%NS%ink);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\n.row[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--%NS%space-3);\n  flex-wrap: wrap;\n}\n.check[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--%NS%space-2);\n  min-height: 44px;\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-base);\n  cursor: pointer;\n}\n.check[_ngcontent-%COMP%]   input[_ngcontent-%COMP%] {\n  width: 18px;\n  height: 18px;\n  margin: 0;\n  accent-color: var(--%NS%ink);\n}\n.link[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  min-height: 44px;\n  color: var(--%NS%brand-deep);\n  font-size: var(--%NS%text-base);\n  font-weight: 500;\n  text-decoration: none;\n}\n.link[_ngcontent-%COMP%]:hover {\n  text-decoration: underline;\n}\n.center[_ngcontent-%COMP%] {\n  margin: 0;\n  text-align: center;\n}\n.as-button[_ngcontent-%COMP%] {\n  padding: 0;\n  border: 0;\n  background: none;\n  font: inherit;\n  cursor: pointer;\n}\n@media (min-width: 600px) {\n  .check[_ngcontent-%COMP%], \n   .link[_ngcontent-%COMP%] {\n    min-height: 32px;\n  }\n}\n/*# sourceMappingURL=auth-form.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(LoginPage, [{
+    type: Component,
+    args: [{ selector: "app-login-page", imports: [
+      AuthLayout,
+      MatButtonModule,
+      MatIconModule,
+      MatProgressSpinnerModule,
+      PasswordField,
+      ReactiveFormsModule,
+      RouterLink
+    ], changeDetection: ChangeDetectionStrategy.OnPush, template: `<app-auth-layout>
+  <h1>Sign in</h1>
+  <p class="lede">Welcome back. Enter your details to continue.</p>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (notice(); as text) {
+      <p class="banner info" role="status">
+        <mat-icon aria-hidden="true">info</mat-icon><span>{{ text }}</span>
+      </p>
+    }
+    @if (errorText(); as text) {
+      <p class="banner error" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon><span>{{ text }}</span>
+      </p>
+    }
+
+    <div class="field">
+      <label for="identifier">Email or username</label>
+      <div class="control">
+        <input
+          #identifier
+          id="identifier"
+          type="text"
+          formControlName="identifier"
+          autocomplete="username"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+          inputmode="email"
+          enterkeyhint="next"
+          [attr.aria-invalid]="showError('identifier')"
+          [attr.aria-describedby]="showError('identifier') ? 'identifier-error' : null"
+        />
+      </div>
+      @if (showError('identifier')) {
+        <p id="identifier-error" class="field-error" aria-live="polite">Enter your email or username.</p>
+      }
+    </div>
+
+    <app-password-field
+      inputId="password"
+      label="Password"
+      autocomplete="current-password"
+      enterKeyHint="go"
+      errorId="password-error"
+      [control]="form.controls.password"
+      [invalid]="showError('password')"
+    >
+      @if (showError('password')) {
+        <p fieldError id="password-error" class="field-error" aria-live="polite">Enter your password.</p>
+      }
+    </app-password-field>
+
+    <div class="row">
+      <label class="check">
+        <input type="checkbox" formControlName="remember" />
+        Remember me
+      </label>
+      <a class="link" routerLink="/forgot-password">
+        Forgot password?<mat-icon class="arrow-sm" aria-hidden="true">arrow_forward</mat-icon>
+      </a>
+    </div>
+
+    <button matButton="filled" type="submit" class="submit" [disabled]="pending() || lock.running()">
+      @if (pending()) {
+        <mat-spinner diameter="18" aria-hidden="true" />
+        Signing in\u2026
+      } @else {
+        <span>Sign in<mat-icon class="btn-arrow" aria-hidden="true">arrow_forward</mat-icon></span>
+      }
+    </button>
+  </form>
+
+  <div class="help">
+    <p>Need access? Ask your administrator to create your account.</p>
+  </div>
+
+  @if (showDemoLogins) {
+    <details below class="demo">
+      <summary>Demo accounts <span>(dev only)</span></summary>
+      <div class="demo-chips">
+        @for (account of demoLogins; track account.identifier) {
+          <button type="button" class="demo-chip" (click)="useDemo(account)">{{ account.label }}</button>
+        }
+      </div>
+    </details>
+  }
+</app-auth-layout>
+`, styles: ["/* src/app/features/auth/auth-form.scss */\n:host {\n  display: block;\n}\nh1 {\n  font-size: var(--text-xl);\n  text-align: center;\n}\nh1 + .banner {\n  margin: var(--space-3) 0 var(--space-5);\n}\n.banner + .center {\n  margin-top: var(--space-2);\n}\n.lede {\n  margin: var(--space-1) 0 var(--space-6);\n  color: var(--ink-3);\n  text-align: center;\n}\nform {\n  display: flex;\n  flex-direction: column;\n  gap: var(--space-4);\n}\n.field {\n  display: flex;\n  flex-direction: column;\n}\nlabel {\n  margin-bottom: 6px;\n  color: var(--ink);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\n.row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--space-3);\n  flex-wrap: wrap;\n}\n.check {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--space-2);\n  min-height: 44px;\n  color: var(--ink-2);\n  font-size: var(--text-base);\n  cursor: pointer;\n}\n.check input {\n  width: 18px;\n  height: 18px;\n  margin: 0;\n  accent-color: var(--ink);\n}\n.link {\n  display: inline-flex;\n  align-items: center;\n  min-height: 44px;\n  color: var(--brand-deep);\n  font-size: var(--text-base);\n  font-weight: 500;\n  text-decoration: none;\n}\n.link:hover {\n  text-decoration: underline;\n}\n.center {\n  margin: 0;\n  text-align: center;\n}\n.as-button {\n  padding: 0;\n  border: 0;\n  background: none;\n  font: inherit;\n  cursor: pointer;\n}\n@media (min-width: 600px) {\n  .check,\n  .link {\n    min-height: 32px;\n  }\n}\n/*# sourceMappingURL=auth-form.css.map */\n"] }]
+  }], () => [], { identifierInput: [{ type: i0.ViewChild, args: ["identifier", { isSignal: true }] }], passwordField: [{ type: i0.ViewChild, args: [i0.forwardRef(() => PasswordField), { isSignal: true }] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(LoginPage, { className: "LoginPage", filePath: "src/app/features/auth/login-page.ts", lineNumber: 45 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fauth%2Flogin-page.ts%40LoginPage";
+  function LoginPage_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(LoginPage, m.default, [i0, i1, i2, i3, i4, i5], [PasswordField, AuthLayout, MatButtonModule, MatIconModule, MatProgressSpinnerModule, ReactiveFormsModule, RouterLink, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && LoginPage_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && LoginPage_HmrLoad(d.timestamp)));
+})();
+export {
+  LoginPage
+};
+//# debugId=fd0d4179-f736-53ae-a0a3-777da4698cde
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvYXV0aC9sb2dpbi1wYWdlLnRzIiwic3JjL2FwcC9mZWF0dXJlcy9hdXRoL2xvZ2luLXBhZ2UuaHRtbCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQge1xuICBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSxcbiAgQ29tcG9uZW50LFxuICBFbGVtZW50UmVmLFxuICBhZnRlck5leHRSZW5kZXIsXG4gIGNvbXB1dGVkLFxuICBpbmplY3QsXG4gIHNpZ25hbCxcbiAgdmlld0NoaWxkLFxufSBmcm9tICdAYW5ndWxhci9jb3JlJztcbmltcG9ydCB7IHRvU2lnbmFsIH0gZnJvbSAnQGFuZ3VsYXIvY29yZS9yeGpzLWludGVyb3AnO1xuaW1wb3J0IHsgRm9ybUJ1aWxkZXIsIFJlYWN0aXZlRm9ybXNNb2R1bGUsIFZhbGlkYXRvcnMgfSBmcm9tICdAYW5ndWxhci9mb3Jtcyc7XG5pbXBvcnQgeyBNYXRCdXR0b25Nb2R1bGUgfSBmcm9tICdAYW5ndWxhci9tYXRlcmlhbC9idXR0b24nO1xuaW1wb3J0IHsgTWF0SWNvbk1vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2ljb24nO1xuaW1wb3J0IHsgTWF0UHJvZ3Jlc3NTcGlubmVyTW9kdWxlIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvcHJvZ3Jlc3Mtc3Bpbm5lcic7XG5pbXBvcnQgeyBBY3RpdmF0ZWRSb3V0ZSwgUm91dGVyLCBSb3V0ZXJMaW5rIH0gZnJvbSAnQGFuZ3VsYXIvcm91dGVyJztcbmltcG9ydCB7IGVudmlyb25tZW50IH0gZnJvbSAnLi4vLi4vLi4vZW52aXJvbm1lbnRzL2Vudmlyb25tZW50JztcbmltcG9ydCB7IEF1dGhTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vY29yZS9hdXRoL2F1dGguc2VydmljZSc7XG5pbXBvcnQgeyBBcGlFcnJvciB9IGZyb20gJy4uLy4uL2NvcmUvbW9kZWxzJztcbmltcG9ydCB7IGF1dGhFcnJvck1lc3NhZ2UsIHJldHJ5QWZ0ZXIgfSBmcm9tICcuL2F1dGgtbWVzc2FnZXMnO1xuaW1wb3J0IHsgQXV0aExheW91dCB9IGZyb20gJy4vYXV0aC1sYXlvdXQnO1xuaW1wb3J0IHsgQ291bnRkb3duIH0gZnJvbSAnLi9jb3VudGRvd24nO1xuaW1wb3J0IHsgUGFzc3dvcmRGaWVsZCB9IGZyb20gJy4vcGFzc3dvcmQtZmllbGQnO1xuXG5jb25zdCBSRUFTT05TOiBSZWNvcmQ8c3RyaW5nLCBzdHJpbmc+ID0ge1xuICBleHBpcmVkOiAnWW91ciBzZXNzaW9uIGV4cGlyZWQuIFBsZWFzZSBzaWduIGluIGFnYWluLicsXG4gIHJlc2V0OiAnUGFzc3dvcmQgdXBkYXRlZC4gU2lnbiBpbiB3aXRoIHlvdXIgbmV3IHBhc3N3b3JkLicsXG59O1xuXG5AQ29tcG9uZW50KHtcbiAgc2VsZWN0b3I6ICdhcHAtbG9naW4tcGFnZScsXG4gIGltcG9ydHM6IFtcbiAgICBBdXRoTGF5b3V0LFxuICAgIE1hdEJ1dHRvbk1vZHVsZSxcbiAgICBNYXRJY29uTW9kdWxlLFxuICAgIE1hdFByb2dyZXNzU3Bpbm5lck1vZHVsZSxcbiAgICBQYXNzd29yZEZpZWxkLFxuICAgIFJlYWN0aXZlRm9ybXNNb2R1bGUsXG4gICAgUm91dGVyTGluayxcbiAgXSxcbiAgY2hhbmdlRGV0ZWN0aW9uOiBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneS5PblB1c2gsXG4gIHRlbXBsYXRlVXJsOiAnLi9sb2dpbi1wYWdlLmh0bWwnLFxuICBzdHlsZVVybDogJy4vYXV0aC1mb3JtLnNjc3MnLFxufSlcbmV4cG9ydCBjbGFzcyBMb2dpblBhZ2Uge1xuICBwcml2YXRlIHJlYWRvbmx5IGF1dGggPSBpbmplY3QoQXV0aFNlcnZpY2UpO1xuICBwcml2YXRlIHJlYWRvbmx5IHJvdXRlciA9IGluamVjdChSb3V0ZXIpO1xuICBwcml2YXRlIHJlYWRvbmx5IHJvdXRlID0gaW5qZWN0KEFjdGl2YXRlZFJvdXRlKTtcblxuICBwcm90ZWN0ZWQgcmVhZG9ubHkgZm9ybSA9IGluamVjdChGb3JtQnVpbGRlcikubm9uTnVsbGFibGUuZ3JvdXAoe1xuICAgIGlkZW50aWZpZXI6IFsnJywgVmFsaWRhdG9ycy5yZXF1aXJlZF0sXG4gICAgcGFzc3dvcmQ6IFsnJywgVmFsaWRhdG9ycy5yZXF1aXJlZF0sXG4gICAgcmVtZW1iZXI6IFtmYWxzZV0sXG4gIH0pO1xuXG4gIHByb3RlY3RlZCByZWFkb25seSBzdWJtaXR0ZWQgPSBzaWduYWwoZmFsc2UpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgcGVuZGluZyA9IHNpZ25hbChmYWxzZSk7XG4gIHByaXZhdGUgcmVhZG9ubHkgZXJyb3IgPSBzaWduYWw8QXBpRXJyb3IgfCBudWxsPihudWxsKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGxvY2sgPSBuZXcgQ291bnRkb3duKCgpID0+IHtcbiAgICB0aGlzLmVycm9yLnNldChudWxsKTtcbiAgICB0aGlzLmZvcm0uZW5hYmxlKCk7XG4gIH0pO1xuXG4gIHByaXZhdGUgcmVhZG9ubHkgcGFyYW1zID0gdG9TaWduYWwodGhpcy5yb3V0ZS5xdWVyeVBhcmFtTWFwLCB7IGluaXRpYWxWYWx1ZTogdGhpcy5yb3V0ZS5zbmFwc2hvdC5xdWVyeVBhcmFtTWFwIH0pO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgbm90aWNlID0gY29tcHV0ZWQoKCkgPT4gKHRoaXMuZXJyb3IoKSA/IG51bGwgOiBSRUFTT05TW3RoaXMucGFyYW1zKCkuZ2V0KCdyZWFzb24nKSA/PyAnJ10gPz8gbnVsbCkpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgZXJyb3JUZXh0ID0gY29tcHV0ZWQoKCkgPT4ge1xuICAgIGNvbnN0IGVyciA9IHRoaXMuZXJyb3IoKTtcbiAgICBpZiAoIWVycikge1xuICAgICAgcmV0dXJuIG51bGw7XG4gICAgfVxuICAgIGNvbnN0IGJhc2UgPSBhdXRoRXJyb3JNZXNzYWdlKGVycik7XG4gICAgcmV0dXJuIHRoaXMubG9jay5ydW5uaW5nKCkgPyBgJHtiYXNlfSBUcnkgYWdhaW4gaW4gJHt0aGlzLmxvY2subGFiZWwoKX0uYCA6IGJhc2U7XG4gIH0pO1xuXG4gIC8qKiBEZXYgb25seSAoZW52aXJvbm1lbnQuc2hvd0RlbW9Mb2dpbnMpOiBvbmUtY2xpY2sgZGVtbyBhY2NvdW50cyB0aGF0IGZpbGwgdGhlIGZvcm0sIG5ldmVyIHN1Ym1pdC4gKi9cbiAgcHJvdGVjdGVkIHJlYWRvbmx5IHNob3dEZW1vTG9naW5zID0gZW52aXJvbm1lbnQuc2hvd0RlbW9Mb2dpbnMgPT09IHRydWU7XG4gIHByb3RlY3RlZCByZWFkb25seSBkZW1vTG9naW5zID0gdGhpcy5zaG93RGVtb0xvZ2lucyA/IGVudmlyb25tZW50LmRlbW9Mb2dpbnMgOiBbXTtcblxuICBwcml2YXRlIHJlYWRvbmx5IGlkZW50aWZpZXJJbnB1dCA9IHZpZXdDaGlsZC5yZXF1aXJlZDxFbGVtZW50UmVmPEhUTUxJbnB1dEVsZW1lbnQ+PignaWRlbnRpZmllcicpO1xuICBwcml2YXRlIHJlYWRvbmx5IHBhc3N3b3JkRmllbGQgPSB2aWV3Q2hpbGQucmVxdWlyZWQoUGFzc3dvcmRGaWVsZCk7XG5cbiAgY29uc3RydWN0b3IoKSB7XG4gICAgLy8gQXV0b2ZvY3VzIG9uIGRlc2t0b3Agb25seTogb24gcGhvbmVzIGl0IHdvdWxkIHBvcCB0aGUga2V5Ym9hcmQgb3ZlciB0aGUgcGFnZS5cbiAgICBhZnRlck5leHRSZW5kZXIoKCkgPT4ge1xuICAgICAgaWYgKHdpbmRvdy5tYXRjaE1lZGlhPy4oJyhwb2ludGVyOiBmaW5lKScpLm1hdGNoZXMpIHtcbiAgICAgICAgdGhpcy5pZGVudGlmaWVySW5wdXQoKS5uYXRpdmVFbGVtZW50LmZvY3VzKCk7XG4gICAgICB9XG4gICAgfSk7XG4gIH1cblxuICBwcm90ZWN0ZWQgc2hvd0Vycm9yKG5hbWU6ICdpZGVudGlmaWVyJyB8ICdwYXNzd29yZCcpOiBib29sZWFuIHtcbiAgICBjb25zdCBjb250cm9sID0gdGhpcy5mb3JtLmNvbnRyb2xzW25hbWVdO1xuICAgIHJldHVybiBjb250cm9sLmludmFsaWQgJiYgKGNvbnRyb2wudG91Y2hlZCB8fCB0aGlzLnN1Ym1pdHRlZCgpKTtcbiAgfVxuXG4gIHByb3RlY3RlZCBzdWJtaXQoKTogdm9pZCB7XG4gICAgaWYgKHRoaXMucGVuZGluZygpIHx8IHRoaXMubG9jay5ydW5uaW5nKCkpIHtcbiAgICAgIHJldHVybjsgLy8gZG91YmxlIHN1Ym1pdCwgb3Igc3RpbGwgbG9ja2VkXG4gICAgfVxuICAgIHRoaXMuc3VibWl0dGVkLnNldCh0cnVlKTtcbiAgICBpZiAodGhpcy5mb3JtLmludmFsaWQpIHtcbiAgICAgIHRoaXMuZm9ybS5tYXJrQWxsQXNUb3VjaGVkKCk7XG4gICAgICB0aGlzLmZvY3VzRmlyc3RJbnZhbGlkKCk7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIGNvbnN0IHsgaWRlbnRpZmllciwgcGFzc3dvcmQsIHJlbWVtYmVyIH0gPSB0aGlzLmZvcm0uZ2V0UmF3VmFsdWUoKTtcbiAgICB0aGlzLnBlbmRpbmcuc2V0KHRydWUpO1xuICAgIHRoaXMuZXJyb3Iuc2V0KG51bGwpO1xuICAgIHRoaXMuYXV0aC5sb2dpbihpZGVudGlmaWVyLnRyaW0oKSwgcGFzc3dvcmQsIHJlbWVtYmVyKS5zdWJzY3JpYmUoe1xuICAgICAgbmV4dDogKCkgPT4gdm9pZCB0aGlzLnJvdXRlci5uYXZpZ2F0ZUJ5VXJsKHRoaXMuYXV0aC5hZnRlckxvZ2luVXJsKHRoaXMucGFyYW1zKCkuZ2V0KCdyZXR1cm5VcmwnKSkpLFxuICAgICAgZXJyb3I6IChlcnI6IEFwaUVycm9yKSA9PiB0aGlzLmZhaWwoZXJyKSxcbiAgICB9KTtcbiAgfVxuXG4gIHByaXZhdGUgZmFpbChlcnI6IEFwaUVycm9yKTogdm9pZCB7XG4gICAgdGhpcy5wZW5kaW5nLnNldChmYWxzZSk7XG4gICAgdGhpcy5lcnJvci5zZXQoZXJyID8/IHsgc3RhdHVzOiAwLCBjb2RlOiAnZXJyb3InLCBtZXNzYWdlOiAnJywgZGV0YWlsczoge30gfSk7XG4gICAgY29uc3Qgd2FpdCA9IHJldHJ5QWZ0ZXIoZXJyKTtcbiAgICBpZiAod2FpdCkge1xuICAgICAgdGhpcy5mb3JtLmRpc2FibGUoKTtcbiAgICAgIHRoaXMubG9jay5zdGFydCh3YWl0KTtcbiAgICB9IGVsc2UgaWYgKGVycj8uY29kZSA9PT0gJ2ludmFsaWRfY3JlZGVudGlhbHMnKSB7XG4gICAgICB0aGlzLmZvcm0uY29udHJvbHMucGFzc3dvcmQucmVzZXQoJycpO1xuICAgICAgcXVldWVNaWNyb3Rhc2soKCkgPT4gdGhpcy5wYXNzd29yZEZpZWxkKCkuZm9jdXMoKSk7XG4gICAgfVxuICB9XG5cbiAgcHJvdGVjdGVkIHVzZURlbW8oYWNjb3VudDogeyBpZGVudGlmaWVyOiBzdHJpbmc7IHBhc3N3b3JkOiBzdHJpbmcgfSk6IHZvaWQge1xuICAgIGlmICh0aGlzLmxvY2sucnVubmluZygpKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIHRoaXMuZm9ybS5wYXRjaFZhbHVlKHsgaWRlbnRpZmllcjogYWNjb3VudC5pZGVudGlmaWVyLCBwYXNzd29yZDogYWNjb3VudC5wYXNzd29yZCB9KTtcbiAgICB0aGlzLmVycm9yLnNldChudWxsKTtcbiAgICB0aGlzLnBhc3N3b3JkRmllbGQoKS5mb2N1cygpO1xuICB9XG5cbiAgcHJpdmF0ZSBmb2N1c0ZpcnN0SW52YWxpZCgpOiB2b2lkIHtcbiAgICBpZiAodGhpcy5mb3JtLmNvbnRyb2xzLmlkZW50aWZpZXIuaW52YWxpZCkge1xuICAgICAgdGhpcy5pZGVudGlmaWVySW5wdXQoKS5uYXRpdmVFbGVtZW50LmZvY3VzKCk7XG4gICAgfSBlbHNlIHtcbiAgICAgIHRoaXMucGFzc3dvcmRGaWVsZCgpLmZvY3VzKCk7XG4gICAgfVxuICB9XG59XG4iLCI8YXBwLWF1dGgtbGF5b3V0PlxuICA8aDE+U2lnbiBpbjwvaDE+XG4gIDxwIGNsYXNzPVwibGVkZVwiPldlbGNvbWUgYmFjay4gRW50ZXIgeW91ciBkZXRhaWxzIHRvIGNvbnRpbnVlLjwvcD5cblxuICA8Zm9ybSBbZm9ybUdyb3VwXT1cImZvcm1cIiAobmdTdWJtaXQpPVwic3VibWl0KClcIiBub3ZhbGlkYXRlPlxuICAgIEBpZiAobm90aWNlKCk7IGFzIHRleHQpIHtcbiAgICAgIDxwIGNsYXNzPVwiYmFubmVyIGluZm9cIiByb2xlPVwic3RhdHVzXCI+XG4gICAgICAgIDxtYXQtaWNvbiBhcmlhLWhpZGRlbj1cInRydWVcIj5pbmZvPC9tYXQtaWNvbj48c3Bhbj57eyB0ZXh0IH19PC9zcGFuPlxuICAgICAgPC9wPlxuICAgIH1cbiAgICBAaWYgKGVycm9yVGV4dCgpOyBhcyB0ZXh0KSB7XG4gICAgICA8cCBjbGFzcz1cImJhbm5lciBlcnJvclwiIHJvbGU9XCJhbGVydFwiPlxuICAgICAgICA8bWF0LWljb24gYXJpYS1oaWRkZW49XCJ0cnVlXCI+ZXJyb3Jfb3V0bGluZTwvbWF0LWljb24+PHNwYW4+e3sgdGV4dCB9fTwvc3Bhbj5cbiAgICAgIDwvcD5cbiAgICB9XG5cbiAgICA8ZGl2IGNsYXNzPVwiZmllbGRcIj5cbiAgICAgIDxsYWJlbCBmb3I9XCJpZGVudGlmaWVyXCI+RW1haWwgb3IgdXNlcm5hbWU8L2xhYmVsPlxuICAgICAgPGRpdiBjbGFzcz1cImNvbnRyb2xcIj5cbiAgICAgICAgPGlucHV0XG4gICAgICAgICAgI2lkZW50aWZpZXJcbiAgICAgICAgICBpZD1cImlkZW50aWZpZXJcIlxuICAgICAgICAgIHR5cGU9XCJ0ZXh0XCJcbiAgICAgICAgICBmb3JtQ29udHJvbE5hbWU9XCJpZGVudGlmaWVyXCJcbiAgICAgICAgICBhdXRvY29tcGxldGU9XCJ1c2VybmFtZVwiXG4gICAgICAgICAgYXV0b2NhcGl0YWxpemU9XCJub25lXCJcbiAgICAgICAgICBhdXRvY29ycmVjdD1cIm9mZlwiXG4gICAgICAgICAgc3BlbGxjaGVjaz1cImZhbHNlXCJcbiAgICAgICAgICBpbnB1dG1vZGU9XCJlbWFpbFwiXG4gICAgICAgICAgZW50ZXJrZXloaW50PVwibmV4dFwiXG4gICAgICAgICAgW2F0dHIuYXJpYS1pbnZhbGlkXT1cInNob3dFcnJvcignaWRlbnRpZmllcicpXCJcbiAgICAgICAgICBbYXR0ci5hcmlhLWRlc2NyaWJlZGJ5XT1cInNob3dFcnJvcignaWRlbnRpZmllcicpID8gJ2lkZW50aWZpZXItZXJyb3InIDogbnVsbFwiXG4gICAgICAgIC8+XG4gICAgICA8L2Rpdj5cbiAgICAgIEBpZiAoc2hvd0Vycm9yKCdpZGVudGlmaWVyJykpIHtcbiAgICAgICAgPHAgaWQ9XCJpZGVudGlmaWVyLWVycm9yXCIgY2xhc3M9XCJmaWVsZC1lcnJvclwiIGFyaWEtbGl2ZT1cInBvbGl0ZVwiPkVudGVyIHlvdXIgZW1haWwgb3IgdXNlcm5hbWUuPC9wPlxuICAgICAgfVxuICAgIDwvZGl2PlxuXG4gICAgPGFwcC1wYXNzd29yZC1maWVsZFxuICAgICAgaW5wdXRJZD1cInBhc3N3b3JkXCJcbiAgICAgIGxhYmVsPVwiUGFzc3dvcmRcIlxuICAgICAgYXV0b2NvbXBsZXRlPVwiY3VycmVudC1wYXNzd29yZFwiXG4gICAgICBlbnRlcktleUhpbnQ9XCJnb1wiXG4gICAgICBlcnJvcklkPVwicGFzc3dvcmQtZXJyb3JcIlxuICAgICAgW2NvbnRyb2xdPVwiZm9ybS5jb250cm9scy5wYXNzd29yZFwiXG4gICAgICBbaW52YWxpZF09XCJzaG93RXJyb3IoJ3Bhc3N3b3JkJylcIlxuICAgID5cbiAgICAgIEBpZiAoc2hvd0Vycm9yKCdwYXNzd29yZCcpKSB7XG4gICAgICAgIDxwIGZpZWxkRXJyb3IgaWQ9XCJwYXNzd29yZC1lcnJvclwiIGNsYXNzPVwiZmllbGQtZXJyb3JcIiBhcmlhLWxpdmU9XCJwb2xpdGVcIj5FbnRlciB5b3VyIHBhc3N3b3JkLjwvcD5cbiAgICAgIH1cbiAgICA8L2FwcC1wYXNzd29yZC1maWVsZD5cblxuICAgIDxkaXYgY2xhc3M9XCJyb3dcIj5cbiAgICAgIDxsYWJlbCBjbGFzcz1cImNoZWNrXCI+XG4gICAgICAgIDxpbnB1dCB0eXBlPVwiY2hlY2tib3hcIiBmb3JtQ29udHJvbE5hbWU9XCJyZW1lbWJlclwiIC8+XG4gICAgICAgIFJlbWVtYmVyIG1lXG4gICAgICA8L2xhYmVsPlxuICAgICAgPGEgY2xhc3M9XCJsaW5rXCIgcm91dGVyTGluaz1cIi9mb3Jnb3QtcGFzc3dvcmRcIj5cbiAgICAgICAgRm9yZ290IHBhc3N3b3JkPzxtYXQtaWNvbiBjbGFzcz1cImFycm93LXNtXCIgYXJpYS1oaWRkZW49XCJ0cnVlXCI+YXJyb3dfZm9yd2FyZDwvbWF0LWljb24+XG4gICAgICA8L2E+XG4gICAgPC9kaXY+XG5cbiAgICA8YnV0dG9uIG1hdEJ1dHRvbj1cImZpbGxlZFwiIHR5cGU9XCJzdWJtaXRcIiBjbGFzcz1cInN1Ym1pdFwiIFtkaXNhYmxlZF09XCJwZW5kaW5nKCkgfHwgbG9jay5ydW5uaW5nKClcIj5cbiAgICAgIEBpZiAocGVuZGluZygpKSB7XG4gICAgICAgIDxtYXQtc3Bpbm5lciBkaWFtZXRlcj1cIjE4XCIgYXJpYS1oaWRkZW49XCJ0cnVlXCIgLz5cbiAgICAgICAgU2lnbmluZyBpbuKAplxuICAgICAgfSBAZWxzZSB7XG4gICAgICAgIDxzcGFuPlNpZ24gaW48bWF0LWljb24gY2xhc3M9XCJidG4tYXJyb3dcIiBhcmlhLWhpZGRlbj1cInRydWVcIj5hcnJvd19mb3J3YXJkPC9tYXQtaWNvbj48L3NwYW4+XG4gICAgICB9XG4gICAgPC9idXR0b24+XG4gIDwvZm9ybT5cblxuICA8ZGl2IGNsYXNzPVwiaGVscFwiPlxuICAgIDxwPk5lZWQgYWNjZXNzPyBBc2sgeW91ciBhZG1pbmlzdHJhdG9yIHRvIGNyZWF0ZSB5b3VyIGFjY291bnQuPC9wPlxuICA8L2Rpdj5cblxuICBAaWYgKHNob3dEZW1vTG9naW5zKSB7XG4gICAgPGRldGFpbHMgYmVsb3cgY2xhc3M9XCJkZW1vXCI+XG4gICAgICA8c3VtbWFyeT5EZW1vIGFjY291bnRzIDxzcGFuPihkZXYgb25seSk8L3NwYW4+PC9zdW1tYXJ5PlxuICAgICAgPGRpdiBjbGFzcz1cImRlbW8tY2hpcHNcIj5cbiAgICAgICAgQGZvciAoYWNjb3VudCBvZiBkZW1vTG9naW5zOyB0cmFjayBhY2NvdW50LmlkZW50aWZpZXIpIHtcbiAgICAgICAgICA8YnV0dG9uIHR5cGU9XCJidXR0b25cIiBjbGFzcz1cImRlbW8tY2hpcFwiIChjbGljayk9XCJ1c2VEZW1vKGFjY291bnQpXCI+e3sgYWNjb3VudC5sYWJlbCB9fTwvYnV0dG9uPlxuICAgICAgICB9XG4gICAgICA8L2Rpdj5cbiAgICA8L2RldGFpbHM+XG4gIH1cbjwvYXBwLWF1dGgtbGF5b3V0PlxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQ0UseUJBQ0EsV0FFQSxpQkFDQSxVQUNBLFFBQ0EsUUFDQSxpQkFDSztBQUNQLFNBQVMsZ0JBQWdCO0FBQ3pCLFNBQVMsYUFBYSxxQkFBcUIsa0JBQWtCO0FBQzdELFNBQVMsdUJBQXVCO0FBQ2hDLFNBQVMscUJBQXFCO0FBQzlCLFNBQVMsZ0NBQWdDO0FBQ3pDLFNBQVMsZ0JBQWdCLFFBQVEsa0JBQWtCOzs7Ozs7Ozs7OztBQ1Q3QyxJQUFBLDRCQUFBLEdBQUEsS0FBQSxDQUFBLEVBQXFDLEdBQUEsWUFBQSxFQUFBO0FBQ04sSUFBQSxvQkFBQSxHQUFBLE1BQUE7QUFBSSxJQUFBLDBCQUFBO0FBQVcsSUFBQSw0QkFBQSxHQUFBLE1BQUE7QUFBTSxJQUFBLG9CQUFBLENBQUE7QUFBVSxJQUFBLDBCQUFBLEVBQU87OztBQUFqQixJQUFBLHVCQUFBLENBQUE7QUFBQSxJQUFBLCtCQUFBLEdBQUE7Ozs7O0FBSXBELElBQUEsNEJBQUEsR0FBQSxLQUFBLENBQUEsRUFBcUMsR0FBQSxZQUFBLEVBQUE7QUFDTixJQUFBLG9CQUFBLEdBQUEsZUFBQTtBQUFhLElBQUEsMEJBQUE7QUFBVyxJQUFBLDRCQUFBLEdBQUEsTUFBQTtBQUFNLElBQUEsb0JBQUEsQ0FBQTtBQUFVLElBQUEsMEJBQUEsRUFBTzs7O0FBQWpCLElBQUEsdUJBQUEsQ0FBQTtBQUFBLElBQUEsK0JBQUEsR0FBQTs7Ozs7QUF1QjNELElBQUEsNEJBQUEsR0FBQSxLQUFBLENBQUE7QUFBZ0UsSUFBQSxvQkFBQSxHQUFBLCtCQUFBO0FBQTZCLElBQUEs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QWdCLFNBQ2pCO01BQ1A7TUFDQTtNQUNBO01BQ0E7TUFDQTtNQUNBO01BQ0E7T0FDRCxpQkFDZ0Isd0JBQXdCLFFBQU0sVUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztHQUFBLFFBQUEsQ0FBQSxnZ0RBQUEsRUFBQSxDQUFBO2lFQXNDcUMsY0FBWSxFQUFBLFVBQUEsS0FBQSxDQUFBLEVBQUEsQ0FBQSxHQUFBLGVBQUEsQ0FBQSxFQUFBLE1BQUEsY0FBQSxNQUFBLENBQUEsY0FBQSxNQUM1QyxhQUFhLEdBQUEsRUFBQSxVQUFBLEtBQUEsQ0FBQSxFQUFBLENBQUEsRUFBQSxDQUFBO0FBQUEsR0FBQTs7Z0ZBbkN0RCxXQUFTLEVBQUEsV0FBQSxhQUFBLFVBQUEsdUNBQUEsWUFBQSxHQUFBLENBQUE7QUFBQSxHQUFBOzs7Ozs7OzhEQUFULFdBQVMsRUFBQSxTQUFBLENBQUEsSUFBQSxJQUFBLElBQUEsSUFBQSxJQUFBLEVBQUEsR0FBQSxDQUFBLGVBQUEsWUFBQSxpQkFBQSxlQUFBLDBCQUFBLHFCQUFBLFlBQUEsV0FBQSx1QkFBQSxHQUFBLGFBQUEsRUFBQSxDQUFBO0VBQUE7QUFBQSxHQUFBLE9BQUEsY0FBQSxlQUFBLGNBQUEsa0JBQUEsS0FBQSxJQUFBLENBQUE7QUFBQSxHQUFBLE9BQUEsY0FBQSxlQUFBLGVBQUEsWUFBQSxPQUFBLFlBQUEsSUFBQSxHQUFBLDRCQUFBLENBQUEsTUFBQSxFQUFBLE9BQUEsTUFBQSxrQkFBQSxFQUFBLFNBQUEsQ0FBQTtBQUFBLEdBQUE7IiwibmFtZXMiOltdLCJkZWJ1Z0lkIjoiZmQwZDQxNzktZjczNi01M2FlLWEwYTMtNzc3ZGE0Njk4Y2RlIn0=

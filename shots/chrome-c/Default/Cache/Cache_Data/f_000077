@@ -1,0 +1,223 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-DBQSGHWP.js");import {
+  formatInr
+} from "/chunk-QYAVNIBR.js";
+
+// src/app/features/dashboard/components/count-up.ts
+import { DestroyRef, Directive, ElementRef, effect, inject, input, untracked } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=ee88b586";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=ee88b586";
+var DURATION_MS = 500;
+function format(value, kind) {
+  return kind === "inr" ? formatInr(value) : Number(value).toLocaleString("en-IN");
+}
+function prefersMotion() {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function" && typeof requestAnimationFrame === "function" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+var CountUp = class _CountUp {
+  appCountUp = input.required(
+    ...ngDevMode ? [{ debugName: "appCountUp" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  countFormat = input(
+    "int",
+    ...ngDevMode ? [{ debugName: "countFormat" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  el = inject(ElementRef).nativeElement;
+  frame = 0;
+  animated = false;
+  constructor() {
+    effect(() => {
+      const value = this.appCountUp();
+      const kind = this.countFormat();
+      untracked(() => this.render(value, kind));
+    });
+    inject(DestroyRef).onDestroy(() => cancelAnimationFrame?.(this.frame));
+  }
+  render(value, kind) {
+    const target = Number(value) || 0;
+    if (this.animated || target === 0 || !prefersMotion()) {
+      this.animated = true;
+      this.el.textContent = format(value, kind);
+      return;
+    }
+    this.animated = true;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / DURATION_MS);
+      const eased = 1 - Math.pow(1 - t, 3);
+      this.el.textContent = t < 1 ? format(Math.round(target * eased), kind) : format(value, kind);
+      if (t < 1) {
+        this.frame = requestAnimationFrame(tick);
+      }
+    };
+    this.el.textContent = format(0, kind);
+    this.frame = requestAnimationFrame(tick);
+  }
+  static \u0275fac = function CountUp_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _CountUp)();
+  };
+  static \u0275dir = /* @__PURE__ */ i0.\u0275\u0275defineDirective({ type: _CountUp, selectors: [["", "appCountUp", ""]], inputs: { appCountUp: [1, "appCountUp"], countFormat: [1, "countFormat"] } });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(CountUp, [{
+    type: Directive,
+    args: [{ selector: "[appCountUp]" }]
+  }], () => [], { appCountUp: [{ type: i0.Input, args: [{ isSignal: true, alias: "appCountUp", required: true }] }], countFormat: [{ type: i0.Input, args: [{ isSignal: true, alias: "countFormat", required: false }] }] });
+})();
+
+// src/app/features/dashboard/components/radial-gauge.ts
+import { ChangeDetectionStrategy, Component, computed, input as input2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=ee88b586";
+import * as i02 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=ee88b586";
+function RadialGauge_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i02.\u0275\u0275domElementStart(0, "small");
+    i02.\u0275\u0275text(1);
+    i02.\u0275\u0275domElementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i02.\u0275\u0275nextContext();
+    i02.\u0275\u0275advance();
+    i02.\u0275\u0275textInterpolate(ctx_r0.caption());
+  }
+}
+var RadialGauge = class _RadialGauge {
+  /** Percentage string from the API, e.g. "62.4". */
+  pct = input2.required(
+    ...ngDevMode ? [{ debugName: "pct" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  caption = input2(
+    "",
+    ...ngDevMode ? [{ debugName: "caption" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  size = input2(
+    88,
+    ...ngDevMode ? [{ debugName: "size" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  tone = input2(
+    "cyan",
+    ...ngDevMode ? [{ debugName: "tone" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  label = input2(
+    "",
+    ...ngDevMode ? [{ debugName: "label" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  clamped = computed(
+    () => Math.max(0, Math.min(100, Number(this.pct()) || 0)),
+    ...ngDevMode ? [{ debugName: "clamped" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  centre = computed(
+    () => `${this.pct().replace(/\.0$/, "")}%`,
+    ...ngDevMode ? [{ debugName: "centre" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  ariaLabel = computed(
+    () => `${this.centre()} ${this.label() || this.caption()}`.trim(),
+    ...ngDevMode ? [{ debugName: "ariaLabel" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  static \u0275fac = function RadialGauge_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _RadialGauge)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i02.\u0275\u0275defineComponent({ type: _RadialGauge, selectors: [["app-radial-gauge"]], hostAttrs: ["role", "img"], hostVars: 3, hostBindings: function RadialGauge_HostBindings(rf, ctx) {
+    if (rf & 2) {
+      i02.\u0275\u0275attribute("aria-label", ctx.ariaLabel());
+      i02.\u0275\u0275styleProp("--%NS%size", ctx.size(), "px");
+    }
+  }, inputs: { pct: [1, "pct"], caption: [1, "caption"], size: [1, "size"], tone: [1, "tone"], label: [1, "label"] }, decls: 7, vars: 6, consts: [["viewBox", "0 0 100 100", "aria-hidden", "true"], ["cx", "50", "cy", "50", "r", "42", "pathLength", "100", 1, "track"], ["cx", "50", "cy", "50", "r", "42", "pathLength", "100", 1, "value"], [1, "centre"]], template: function RadialGauge_Template(rf, ctx) {
+    if (rf & 1) {
+      i02.\u0275\u0275namespaceSVG();
+      i02.\u0275\u0275domElementStart(0, "svg", 0);
+      i02.\u0275\u0275domElement(1, "circle", 1)(2, "circle", 2);
+      i02.\u0275\u0275domElementEnd();
+      i02.\u0275\u0275namespaceHTML();
+      i02.\u0275\u0275domElementStart(3, "span", 3)(4, "strong");
+      i02.\u0275\u0275text(5);
+      i02.\u0275\u0275domElementEnd();
+      i02.\u0275\u0275conditionalCreate(6, RadialGauge_Conditional_6_Template, 2, 1, "small");
+      i02.\u0275\u0275domElementEnd();
+    }
+    if (rf & 2) {
+      i02.\u0275\u0275advance(2);
+      i02.\u0275\u0275classMap("value tone-" + ctx.tone());
+      i02.\u0275\u0275styleProp("stroke-dashoffset", 100 - ctx.clamped());
+      i02.\u0275\u0275advance(3);
+      i02.\u0275\u0275textInterpolate(ctx.centre());
+      i02.\u0275\u0275advance();
+      i02.\u0275\u0275conditional(ctx.caption() ? 6 : -1);
+    }
+  }, styles: ["\n[_nghost-%COMP%] {\n  position: relative;\n  display: inline-grid;\n  width: var(--%NS%size, 88px);\n  height: var(--%NS%size, 88px);\n  flex: none;\n  place-items: center;\n}\nsvg[_ngcontent-%COMP%] {\n  position: absolute;\n  inset: 0;\n  transform: rotate(-90deg);\n}\ncircle[_ngcontent-%COMP%] {\n  fill: none;\n  stroke-width: 9;\n  stroke-linecap: round;\n}\n.track[_ngcontent-%COMP%] {\n  stroke: var(--%NS%line);\n}\n.value[_ngcontent-%COMP%] {\n  stroke-dasharray: 100;\n  animation: _ngcontent-%COMP%_draw 900ms var(--%NS%ease-out) both;\n}\n.tone-cyan[_ngcontent-%COMP%] {\n  stroke: var(--%NS%brand);\n}\n.tone-teal[_ngcontent-%COMP%] {\n  stroke: var(--%NS%data-teal);\n}\n.tone-amber[_ngcontent-%COMP%] {\n  stroke: var(--%NS%data-amber);\n}\n@keyframes _ngcontent-%COMP%_draw {\n  from {\n    stroke-dashoffset: 100;\n  }\n}\n.centre[_ngcontent-%COMP%] {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  line-height: 1.1;\n}\nstrong[_ngcontent-%COMP%] {\n  color: var(--%NS%ink);\n  font-size: calc(var(--%NS%size, 88px) * 0.2);\n  font-weight: 600;\n  letter-spacing: -0.02em;\n}\nsmall[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n  font-size: 11px;\n}\n/*# sourceMappingURL=radial-gauge.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassMetadata(RadialGauge, [{
+    type: Component,
+    args: [{ selector: "app-radial-gauge", changeDetection: ChangeDetectionStrategy.OnPush, host: { role: "img", "[attr.aria-label]": "ariaLabel()", "[style.--size.px]": "size()" }, template: `
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="track" cx="50" cy="50" r="42" pathLength="100" />
+      <circle
+        class="value"
+        [class]="'value tone-' + tone()"
+        cx="50"
+        cy="50"
+        r="42"
+        pathLength="100"
+        [style.stroke-dashoffset]="100 - clamped()"
+      />
+    </svg>
+    <span class="centre">
+      <strong>{{ centre() }}</strong>
+      @if (caption()) {
+        <small>{{ caption() }}</small>
+      }
+    </span>
+  `, styles: ["/* angular:styles/component:scss;190c7285c2512caec38184c660cd4ae756571c66522c7d0c3ebe0727cf3916c0;D:/arqus_consultancy/frontend/src/app/features/dashboard/components/radial-gauge.ts */\n:host {\n  position: relative;\n  display: inline-grid;\n  width: var(--size, 88px);\n  height: var(--size, 88px);\n  flex: none;\n  place-items: center;\n}\nsvg {\n  position: absolute;\n  inset: 0;\n  transform: rotate(-90deg);\n}\ncircle {\n  fill: none;\n  stroke-width: 9;\n  stroke-linecap: round;\n}\n.track {\n  stroke: var(--line);\n}\n.value {\n  stroke-dasharray: 100;\n  animation: draw 900ms var(--ease-out) both;\n}\n.tone-cyan {\n  stroke: var(--brand);\n}\n.tone-teal {\n  stroke: var(--data-teal);\n}\n.tone-amber {\n  stroke: var(--data-amber);\n}\n@keyframes draw {\n  from {\n    stroke-dashoffset: 100;\n  }\n}\n.centre {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  line-height: 1.1;\n}\nstrong {\n  color: var(--ink);\n  font-size: calc(var(--size, 88px) * 0.2);\n  font-weight: 600;\n  letter-spacing: -0.02em;\n}\nsmall {\n  color: var(--ink-3);\n  font-size: 11px;\n}\n/*# sourceMappingURL=radial-gauge.css.map */\n"] }]
+  }], null, { pct: [{ type: i02.Input, args: [{ isSignal: true, alias: "pct", required: true }] }], caption: [{ type: i02.Input, args: [{ isSignal: true, alias: "caption", required: false }] }], size: [{ type: i02.Input, args: [{ isSignal: true, alias: "size", required: false }] }], tone: [{ type: i02.Input, args: [{ isSignal: true, alias: "tone", required: false }] }], label: [{ type: i02.Input, args: [{ isSignal: true, alias: "label", required: false }] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassDebugInfo(RadialGauge, { className: "RadialGauge", filePath: "src/app/features/dashboard/components/radial-gauge.ts", lineNumber: 91 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fdashboard%2Fcomponents%2Fradial-gauge.ts%40RadialGauge";
+  function RadialGauge_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i02.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i02.\u0275\u0275replaceMetadata(RadialGauge, m.default, [i02], [Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && RadialGauge_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && RadialGauge_HmrLoad(d.timestamp)));
+})();
+
+export {
+  CountUp,
+  RadialGauge
+};
+//# debugId=7944e2a9-e938-5c57-a74f-c08850784ebf
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvZGFzaGJvYXJkL2NvbXBvbmVudHMvY291bnQtdXAudHMiLCJzcmMvYXBwL2ZlYXR1cmVzL2Rhc2hib2FyZC9jb21wb25lbnRzL3JhZGlhbC1nYXVnZS50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBEZXN0cm95UmVmLCBEaXJlY3RpdmUsIEVsZW1lbnRSZWYsIGVmZmVjdCwgaW5qZWN0LCBpbnB1dCwgdW50cmFja2VkIH0gZnJvbSAnQGFuZ3VsYXIvY29yZSc7XG5pbXBvcnQgeyBmb3JtYXRJbnIgfSBmcm9tICcuLi8uLi8uLi9zaGFyZWQvbW9uZXkvaW5yLnBpcGUnO1xuXG5leHBvcnQgdHlwZSBDb3VudEZvcm1hdCA9ICdpbnQnIHwgJ2lucic7XG5cbmNvbnN0IERVUkFUSU9OX01TID0gNTAwO1xuXG5mdW5jdGlvbiBmb3JtYXQodmFsdWU6IHN0cmluZyB8IG51bWJlciwga2luZDogQ291bnRGb3JtYXQpOiBzdHJpbmcge1xuICByZXR1cm4ga2luZCA9PT0gJ2lucicgPyBmb3JtYXRJbnIodmFsdWUpIDogTnVtYmVyKHZhbHVlKS50b0xvY2FsZVN0cmluZygnZW4tSU4nKTtcbn1cblxuZnVuY3Rpb24gcHJlZmVyc01vdGlvbigpOiBib29sZWFuIHtcbiAgcmV0dXJuIHR5cGVvZiB3aW5kb3cgIT09ICd1bmRlZmluZWQnICYmXG4gICAgdHlwZW9mIHdpbmRvdy5tYXRjaE1lZGlhID09PSAnZnVuY3Rpb24nICYmXG4gICAgdHlwZW9mIHJlcXVlc3RBbmltYXRpb25GcmFtZSA9PT0gJ2Z1bmN0aW9uJyAmJlxuICAgICF3aW5kb3cubWF0Y2hNZWRpYSgnKHByZWZlcnMtcmVkdWNlZC1tb3Rpb246IHJlZHVjZSknKS5tYXRjaGVzO1xufVxuXG4vKipcbiAqIFdyaXRlcyBhIEtQSSB2YWx1ZSBpbnRvIGl0cyBlbGVtZW50LCBjb3VudGluZyB1cCBmcm9tIDAgb3ZlciA1MDBtcyB0aGUgZmlyc3QgdGltZSBpdCByZW5kZXJzLlxuICogTGF0ZXIgY2hhbmdlcyAoYW5vdGhlciBwZXJpb2QpIGFyZSB3cml0dGVuIHN0cmFpZ2h0IGF3YXkuIFRoZSBmaW5hbCBmcmFtZSBpcyBhbHdheXMgdGhlIGV4YWN0XG4gKiBmb3JtYXR0ZWQgdmFsdWU7IHRoZSBpbi1iZXR3ZWVuIGZyYW1lcyBhcmUgZGlzcGxheS1vbmx5IGFwcHJveGltYXRpb25zLlxuICogTm8gYW5pbWF0aW9uIHdoZW4gdGhlIHVzZXIgcHJlZmVycyByZWR1Y2VkIG1vdGlvbi5cbiAqL1xuQERpcmVjdGl2ZSh7IHNlbGVjdG9yOiAnW2FwcENvdW50VXBdJyB9KVxuZXhwb3J0IGNsYXNzIENvdW50VXAge1xuICByZWFkb25seSBhcHBDb3VudFVwID0gaW5wdXQucmVxdWlyZWQ8c3RyaW5nIHwgbnVtYmVyPigpO1xuICByZWFkb25seSBjb3VudEZvcm1hdCA9IGlucHV0PENvdW50Rm9ybWF0PignaW50Jyk7XG5cbiAgcHJpdmF0ZSByZWFkb25seSBlbCA9IGluamVjdChFbGVtZW50UmVmPEhUTUxFbGVtZW50PikubmF0aXZlRWxlbWVudCBhcyBIVE1MRWxlbWVudDtcbiAgcHJpdmF0ZSBmcmFtZSA9IDA7XG4gIHByaXZhdGUgYW5pbWF0ZWQgPSBmYWxzZTtcblxuICBjb25zdHJ1Y3RvcigpIHtcbiAgICBlZmZlY3QoKCkgPT4ge1xuICAgICAgY29uc3QgdmFsdWUgPSB0aGlzLmFwcENvdW50VXAoKTtcbiAgICAgIGNvbnN0IGtpbmQgPSB0aGlzLmNvdW50Rm9ybWF0KCk7XG4gICAgICB1bnRyYWNrZWQoKCkgPT4gdGhpcy5yZW5kZXIodmFsdWUsIGtpbmQpKTtcbiAgICB9KTtcbiAgICBpbmplY3QoRGVzdHJveVJlZikub25EZXN0cm95KCgpID0+IGNhbmNlbEFuaW1hdGlvbkZyYW1lPy4odGhpcy5mcmFtZSkpO1xuICB9XG5cbiAgcHJpdmF0ZSByZW5kZXIodmFsdWU6IHN0cmluZyB8IG51bWJlciwga2luZDogQ291bnRGb3JtYXQpOiB2b2lkIHtcbiAgICBjb25zdCB0YXJnZXQgPSBOdW1iZXIodmFsdWUpIHx8IDA7XG4gICAgaWYgKHRoaXMuYW5pbWF0ZWQgfHwgdGFyZ2V0ID09PSAwIHx8ICFwcmVmZXJzTW90aW9uKCkpIHtcbiAgICAgIHRoaXMuYW5pbWF0ZWQgPSB0cnVlO1xuICAgICAgdGhpcy5lbC50ZXh0Q29udGVudCA9IGZvcm1hdCh2YWx1ZSwga2luZCk7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIHRoaXMuYW5pbWF0ZWQgPSB0cnVlO1xuICAgIGNvbnN0IHN0YXJ0ID0gcGVyZm9ybWFuY2Uubm93KCk7XG4gICAgY29uc3QgdGljayA9IChub3c6IG51bWJlcikgPT4ge1xuICAgICAgY29uc3QgdCA9IE1hdGgubWluKDEsIChub3cgLSBzdGFydCkgLyBEVVJBVElPTl9NUyk7XG4gICAgICBjb25zdCBlYXNlZCA9IDEgLSBNYXRoLnBvdygxIC0gdCwgMyk7XG4gICAgICB0aGlzLmVsLnRleHRDb250ZW50ID0gdCA8IDEgPyBmb3JtYXQoTWF0aC5yb3VuZCh0YXJnZXQgKiBlYXNlZCksIGtpbmQpIDogZm9ybWF0KHZhbHVlLCBraW5kKTtcbiAgICAgIGlmICh0IDwgMSkge1xuICAgICAgICB0aGlzLmZyYW1lID0gcmVxdWVzdEFuaW1hdGlvbkZyYW1lKHRpY2spO1xuICAgICAgfVxuICAgIH07XG4gICAgdGhpcy5lbC50ZXh0Q29udGVudCA9IGZvcm1hdCgwLCBraW5kKTtcbiAgICB0aGlzLmZyYW1lID0gcmVxdWVzdEFuaW1hdGlvbkZyYW1lKHRpY2spO1xuICB9XG59XG4iLCJpbXBvcnQgeyBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSwgQ29tcG9uZW50LCBjb21wdXRlZCwgaW5wdXQgfSBmcm9tICdAYW5ndWxhci9jb3JlJztcblxuLyoqXG4gKiBTaW5nbGUtdmFsdWUgcHJvZ3Jlc3MgcmluZyAobm90IGEgZG9udXQgY2hhcnQpLiBgcGN0YCBpcyB0aGUgQVBJJ3MgcGVyY2VudGFnZSBzdHJpbmc7IE51bWJlcigpIGlzIHVzZWRcbiAqIGZvciB0aGUgcmluZyBnZW9tZXRyeSBvbmx5LiBUaGUgdmFsdWUgaXMgd3JpdHRlbiBpbiB0aGUgY2VudHJlLCBzbyB0aGUgcmluZyBpcyBuZXZlciB0aGUgb25seSBzaWduYWwuXG4gKiBEcmF3cyBpbiBvbmNlIChzdHJva2UtZGFzaG9mZnNldCk7IGluc3RhbnQgdW5kZXIgcmVkdWNlZCBtb3Rpb24uXG4gKi9cbkBDb21wb25lbnQoe1xuICBzZWxlY3RvcjogJ2FwcC1yYWRpYWwtZ2F1Z2UnLFxuICBjaGFuZ2VEZXRlY3Rpb246IENoYW5nZURldGVjdGlvblN0cmF0ZWd5Lk9uUHVzaCxcbiAgaG9zdDogeyByb2xlOiAnaW1nJywgJ1thdHRyLmFyaWEtbGFiZWxdJzogJ2FyaWFMYWJlbCgpJywgJ1tzdHlsZS4tLXNpemUucHhdJzogJ3NpemUoKScgfSxcbiAgdGVtcGxhdGU6IGBcbiAgICA8c3ZnIHZpZXdCb3g9XCIwIDAgMTAwIDEwMFwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPlxuICAgICAgPGNpcmNsZSBjbGFzcz1cInRyYWNrXCIgY3g9XCI1MFwiIGN5PVwiNTBcIiByPVwiNDJcIiBwYXRoTGVuZ3RoPVwiMTAwXCIgLz5cbiAgICAgIDxjaXJjbGVcbiAgICAgICAgY2xhc3M9XCJ2YWx1ZVwiXG4gICAgICAgIFtjbGFzc109XCIndmFsdWUgdG9uZS0nICsgdG9uZSgpXCJcbiAgICAgICAgY3g9XCI1MFwiXG4gICAgICAgIGN5PVwiNTBcIlxuICAgICAgICByPVwiNDJcIlxuICAgICAgICBwYXRoTGVuZ3RoPVwiMTAwXCJcbiAgICAgICAgW3N0eWxlLnN0cm9rZS1kYXNob2Zmc2V0XT1cIjEwMCAtIGNsYW1wZWQoKVwiXG4gICAgICAvPlxuICAgIDwvc3ZnPlxuICAgIDxzcGFuIGNsYXNzPVwiY2VudHJlXCI+XG4gICAgICA8c3Ryb25nPnt7IGNlbnRyZSgpIH19PC9zdHJvbmc+XG4gICAgICBAaWYgKGNhcHRpb24oKSkge1xuICAgICAgICA8c21hbGw+e3sgY2FwdGlvbigpIH19PC9zbWFsbD5cbiAgICAgIH1cbiAgICA8L3NwYW4+XG4gIGAsXG4gIHN0eWxlczogYFxuICAgIDpob3N0IHtcbiAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTtcbiAgICAgIGRpc3BsYXk6IGlubGluZS1ncmlkO1xuICAgICAgd2lkdGg6IHZhcigtLXNpemUsIDg4cHgpO1xuICAgICAgaGVpZ2h0OiB2YXIoLS1zaXplLCA4OHB4KTtcbiAgICAgIGZsZXg6IG5vbmU7XG4gICAgICBwbGFjZS1pdGVtczogY2VudGVyO1xuICAgIH1cbiAgICBzdmcge1xuICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgaW5zZXQ6IDA7XG4gICAgICB0cmFuc2Zvcm06IHJvdGF0ZSgtOTBkZWcpO1xuICAgIH1cbiAgICBjaXJjbGUge1xuICAgICAgZmlsbDogbm9uZTtcbiAgICAgIHN0cm9rZS13aWR0aDogOTtcbiAgICAgIHN0cm9rZS1saW5lY2FwOiByb3VuZDtcbiAgICB9XG4gICAgLnRyYWNrIHtcbiAgICAgIHN0cm9rZTogdmFyKC0tbGluZSk7XG4gICAgfVxuICAgIC52YWx1ZSB7XG4gICAgICBzdHJva2UtZGFzaGFycmF5OiAxMDA7XG4gICAgICBhbmltYXRpb246IGRyYXcgOTAwbXMgdmFyKC0tZWFzZS1vdXQpIGJvdGg7XG4gICAgfVxuICAgIC50b25lLWN5YW4ge1xuICAgICAgc3Ryb2tlOiB2YXIoLS1icmFuZCk7XG4gICAgfVxuICAgIC50b25lLXRlYWwge1xuICAgICAgc3Ryb2tlOiB2YXIoLS1kYXRhLXRlYWwpO1xuICAgIH1cbiAgICAudG9uZS1hbWJlciB7XG4gICAgICBzdHJva2U6IHZhcigtLWRhdGEtYW1iZXIpO1xuICAgIH1cbiAgICBAa2V5ZnJhbWVzIGRyYXcge1xuICAgICAgZnJvbSB7XG4gICAgICAgIHN0cm9rZS1kYXNob2Zmc2V0OiAxMDA7XG4gICAgICB9XG4gICAgfVxuICAgIC5jZW50cmUge1xuICAgICAgcG9zaXRpb246IHJlbGF0aXZlO1xuICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47XG4gICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuICAgICAgbGluZS1oZWlnaHQ6IDEuMTtcbiAgICB9XG4gICAgc3Ryb25nIHtcbiAgICAgIGNvbG9yOiB2YXIoLS1pbmspO1xuICAgICAgZm9udC1zaXplOiBjYWxjKHZhcigtLXNpemUsIDg4cHgpICogMC4yKTtcbiAgICAgIGZvbnQtd2VpZ2h0OiA2MDA7XG4gICAgICBsZXR0ZXItc3BhY2luZzogLTAuMDJlbTtcbiAgICB9XG4gICAgc21hbGwge1xuICAgICAgY29sb3I6IHZhcigtLWluay0zKTtcbiAgICAgIGZvbnQtc2l6ZTogMTFweDtcbiAgICB9XG4gIGAsXG59KVxuZXhwb3J0IGNsYXNzIFJhZGlhbEdhdWdlIHtcbiAgLyoqIFBlcmNlbnRhZ2Ugc3RyaW5nIGZyb20gdGhlIEFQSSwgZS5nLiBcIjYyLjRcIi4gKi9cbiAgcmVhZG9ubHkgcGN0ID0gaW5wdXQucmVxdWlyZWQ8c3RyaW5nPigpO1xuICByZWFkb25seSBjYXB0aW9uID0gaW5wdXQoJycpO1xuICByZWFkb25seSBzaXplID0gaW5wdXQoODgpO1xuICByZWFkb25seSB0b25lID0gaW5wdXQ8J2N5YW4nIHwgJ3RlYWwnIHwgJ2FtYmVyJz4oJ2N5YW4nKTtcbiAgcmVhZG9ubHkgbGFiZWwgPSBpbnB1dCgnJyk7XG5cbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGNsYW1wZWQgPSBjb21wdXRlZCgoKSA9PiBNYXRoLm1heCgwLCBNYXRoLm1pbigxMDAsIE51bWJlcih0aGlzLnBjdCgpKSB8fCAwKSkpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgY2VudHJlID0gY29tcHV0ZWQoKCkgPT4gYCR7dGhpcy5wY3QoKS5yZXBsYWNlKC9cXC4wJC8sICcnKX0lYCk7XG4gIHByb3RlY3RlZCByZWFkb25seSBhcmlhTGFiZWwgPSBjb21wdXRlZCgoKSA9PiBgJHt0aGlzLmNlbnRyZSgpfSAke3RoaXMubGFiZWwoKSB8fCB0aGlzLmNhcHRpb24oKX1gLnRyaW0oKSk7XG59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QUFHLEtBQUssT0FBTSxDQUFFLElBQUksS0FBSyxNQUFLLEtBQU0sS0FBSyxRQUFPLENBQUUsR0FBRyxLQUFJOzs7Ozs7O3FDQVY1RixjQUFXO0VBQUE7NkVBQVgsY0FBVyxXQUFBLENBQUEsQ0FBQSxrQkFBQSxDQUFBLEdBQUEsV0FBQSxDQUFBLFFBQUEsS0FBQSxHQUFBLFVBQUEsR0FBQSxjQUFBLFNBQUEseUJBQUEsSUFBQSxLQUFBO0FBQUEsUUFBQSxLQUFBLEdBQUE7OENBQVgsSUFBQSxVQUFBLENBQVc7QUFBWCxNQUFBLDBCQUFBLGNBQUEsSUFBQSxLQUFBLEdBQU0sSUFBQTs7Ozs7QUE5RWYsTUFBQSxnQ0FBQSxHQUFBLE9BQUEsQ0FBQTtBQUNFLE1BQUEsMkJBQUEsR0FBQSxVQUFBLENBQUEsRUFBZ0UsR0FBQSxVQUFBLENBQUE7QUFVbEUsTUFBQSw4QkFBQTs7QUFDQSxNQUFBLGdDQUFBLEdBQUEsUUFBQSxDQUFBLEVBQXFCLEdBQUEsUUFBQTtBQUNYLE1BQUEscUJBQUEsQ0FBQTtBQUFjLE1BQUEsOEJBQUE7QUFDdEIsTUFBQSxrQ0FBQSxHQUFBLG9DQUFBLEdBQUEsR0FBQSxPQUFBO0FBR0YsTUFBQSw4QkFBQTs7O0FBYkksTUFBQSx3QkFBQSxDQUFBO0FBQUEsTUFBQSx5QkFBQSxnQkFBQSxJQUFBLEtBQUEsQ0FBQTtBQUtBLE1BQUEsMEJBQUEscUJBQUEsTUFBQSxJQUFBLFFBQUEsQ0FBQTtBQUlNLE1BQUEsd0JBQUEsQ0FBQTtBQUFBLE1BQUEsZ0NBQUEsSUFBQSxPQUFBLENBQUE7QUFDUixNQUFBLHdCQUFBO0FBQUEsTUFBQSw0QkFBQSxJQUFBLFFBQUEsSUFBQSxJQUFBLEVBQUE7Ozs7O2dGQWdFTyxhQUFXLENBQUE7VUFuRnZCO3VCQUNXLG9CQUFrQixpQkFDWCx3QkFBd0IsUUFBTSxNQUN6QyxFQUFFLE1BQU0sT0FBTyxxQkFBcUIsZUFBZSxxQkFBcUIsU0FBUSxHQUFFLFVBQzlFOzs7Ozs7Ozs7Ozs7Ozs7Ozs7O0tBbUJULFFBQUEsQ0FBQSwycENBQUEsRUFBQSxDQUFBOzs7O2lGQTREVSxhQUFXLEVBQUEsV0FBQSxlQUFBLFVBQUEseURBQUEsWUFBQSxHQUFBLENBQUE7QUFBQSxHQUFBOzs7Ozs7OytEQUFYLGFBQVcsRUFBQSxTQUFBLENBQUFDLEdBQUEsR0FBQSxDQUFBLFdBQUEsdUJBQUEsR0FBQSxhQUFBLEVBQUEsQ0FBQTtFQUFBO0FBQUEsR0FBQSxPQUFBLGNBQUEsZUFBQSxjQUFBLG9CQUFBLEtBQUEsSUFBQSxDQUFBO0FBQUEsR0FBQSxPQUFBLGNBQUEsZUFBQSxlQUFBLFlBQUEsT0FBQSxZQUFBLElBQUEsR0FBQSw0QkFBQSxDQUFBLE1BQUEsRUFBQSxPQUFBLE1BQUEsb0JBQUEsRUFBQSxTQUFBLENBQUE7QUFBQSxHQUFBOyIsIm5hbWVzIjpbImlucHV0IiwiaTAiXSwiZGVidWdJZCI6Ijc5NDRlMmE5LWU5MzgtNWM1Ny1hNzRmLWMwODg1MDc4NGViZiJ9

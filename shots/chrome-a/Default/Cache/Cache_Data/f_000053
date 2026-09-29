@@ -1,0 +1,218 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-GMSLKYOY.js");import {
+  DialogHead
+} from "/chunk-Q36CJGRX.js";
+import {
+  ProjectsApi
+} from "/chunk-NTS2YAGV.js";
+
+// src/app/features/projects/components/dialogs/reassign-dialog.ts
+import { ChangeDetectionStrategy, Component, inject, signal } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { FormsModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import { MatButtonModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i3 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import * as i4 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+var _forTrack0 = ($index, $item) => $item.id;
+function ReassignDialog_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "option", 5);
+    i0.\u0275\u0275text(1, "No project manager (unassign)");
+    i0.\u0275\u0275elementEnd();
+  }
+}
+function ReassignDialog_Conditional_7_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "option", 5);
+    i0.\u0275\u0275text(1, "Choose a project manager");
+    i0.\u0275\u0275elementEnd();
+  }
+}
+function ReassignDialog_For_9_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "option", 6);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const m_r1 = ctx.$implicit;
+    i0.\u0275\u0275property("value", "" + m_r1.id);
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate2("", m_r1.name, " \xB7 ", m_r1.running_projects, " running");
+  }
+}
+function ReassignDialog_Conditional_10_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 7);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r1 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r1.error());
+  }
+}
+var ReassignDialog = class _ReassignDialog {
+  data = inject(MAT_DIALOG_DATA);
+  ref = inject(MatDialogRef);
+  api = inject(ProjectsApi);
+  pm = this.data.project.pm ? String(this.data.project.pm.id) : "";
+  managers = signal(
+    [],
+    ...ngDevMode ? [{ debugName: "managers" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  saving = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "saving" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  error = signal(
+    "",
+    ...ngDevMode ? [{ debugName: "error" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  constructor() {
+    this.api.managers().subscribe({
+      next: (list) => this.managers.set(list),
+      error: (err) => this.error.set(err.message)
+    });
+  }
+  changed() {
+    return this.pm !== (this.data.project.pm ? String(this.data.project.pm.id) : "");
+  }
+  submit() {
+    if (this.saving() || !this.changed()) {
+      return;
+    }
+    this.saving.set(true);
+    this.error.set("");
+    this.api.assignPm(this.data.project.id, this.pm ? Number(this.pm) : null).subscribe({
+      next: (project) => this.ref.close(project),
+      error: (err) => {
+        this.saving.set(false);
+        this.error.set(err.message);
+      }
+    });
+  }
+  static \u0275fac = function ReassignDialog_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _ReassignDialog)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _ReassignDialog, selectors: [["app-reassign-dialog"]], decls: 16, vars: 7, consts: [["headingId", "dlg-title", 3, "closed", "title", "subtitle"], ["novalidate", "", 3, "ngSubmit"], [1, "field"], ["for", "ra-pm"], ["id", "ra-pm", "name", "pm", 3, "ngModelChange", "ngModel"], ["value", ""], [3, "value"], ["role", "alert", 1, "error"], [1, "actions"], ["matButton", "", "type", "button", 3, "click"], ["matButton", "filled", "type", "submit", 3, "disabled"]], template: function ReassignDialog_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275elementStart(0, "app-dialog-head", 0);
+      i0.\u0275\u0275listener("closed", function ReassignDialog_Template_app_dialog_head_closed_0_listener() {
+        return ctx.ref.close();
+      });
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(1, "form", 1);
+      i0.\u0275\u0275listener("ngSubmit", function ReassignDialog_Template_form_ngSubmit_1_listener() {
+        return ctx.submit();
+      });
+      i0.\u0275\u0275elementStart(2, "div", 2)(3, "label", 3);
+      i0.\u0275\u0275text(4, "Project manager");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(5, "select", 4);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275twoWayListener("ngModelChange", function ReassignDialog_Template_select_ngModelChange_5_listener($event) {
+        i0.\u0275\u0275twoWayBindingSet(ctx.pm, $event) || (ctx.pm = $event);
+        return $event;
+      });
+      i0.\u0275\u0275conditionalCreate(6, ReassignDialog_Conditional_6_Template, 2, 0, "option", 5)(7, ReassignDialog_Conditional_7_Template, 2, 0, "option", 5);
+      i0.\u0275\u0275repeaterCreate(8, ReassignDialog_For_9_Template, 2, 3, "option", 6, _forTrack0);
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275conditionalCreate(10, ReassignDialog_Conditional_10_Template, 2, 1, "p", 7);
+      i0.\u0275\u0275elementStart(11, "div", 8)(12, "button", 9);
+      i0.\u0275\u0275listener("click", function ReassignDialog_Template_button_click_12_listener() {
+        return ctx.ref.close();
+      });
+      i0.\u0275\u0275text(13, "Cancel");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(14, "button", 10);
+      i0.\u0275\u0275text(15);
+      i0.\u0275\u0275elementEnd()()();
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275property("title", ctx.data.project.pm ? "Reassign project manager" : "Assign project manager")("subtitle", ctx.data.project.name);
+      i0.\u0275\u0275advance(5);
+      i0.\u0275\u0275twoWayProperty("ngModel", ctx.pm);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.data.project.pm ? 6 : 7);
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275repeater(ctx.managers());
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275conditional(ctx.error() ? 10 : -1);
+      i0.\u0275\u0275advance(4);
+      i0.\u0275\u0275property("disabled", ctx.saving() || !ctx.changed());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275textInterpolate(ctx.saving() ? "Saving\u2026" : "Save");
+    }
+  }, dependencies: [DialogHead, FormsModule, i1.\u0275NgNoValidate, i1.NgSelectOption, i1.\u0275NgSelectMultipleOption, i1.DefaultValueAccessor, i1.NumberValueAccessor, i1.RangeValueAccessor, i1.CheckboxControlValueAccessor, i1.SelectControlValueAccessor, i1.SelectMultipleControlValueAccessor, i1.RadioControlValueAccessor, i1.NgControlStatus, i1.NgControlStatusGroup, i1.RequiredValidator, i1.MinLengthValidator, i1.MaxLengthValidator, i1.PatternValidator, i1.CheckboxRequiredValidator, i1.EmailValidator, i1.MinValidator, i1.MaxValidator, i1.NgModel, i1.NgModelGroup, i1.NgForm, MatButtonModule, i2.Dir, i3.MatButton, i3.MatMiniFabButton, i3.MatIconButton, i3.MatFabButton, MatDialogModule, i4.MatDialogContainer, i4.MatDialogClose, i4.MatDialogTitle, i4.MatDialogActions, i4.MatDialogContent], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--%NS%space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.in-sheet[_nghost-%COMP%] {\n  width: auto;\n  max-height: none;\n  padding: var(--%NS%space-2) var(--%NS%space-1) calc(var(--%NS%space-4) + env(safe-area-inset-bottom));\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%]   label[_ngcontent-%COMP%], \n.field[_ngcontent-%COMP%]   .lbl[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\nselect[_ngcontent-%COMP%], \ntextarea[_ngcontent-%COMP%], \ninput[type=text][_ngcontent-%COMP%], \ninput[type=search][_ngcontent-%COMP%], \ninput[type=email][_ngcontent-%COMP%], \ninput[type=tel][_ngcontent-%COMP%], \ninput[type=number][_ngcontent-%COMP%], \ninput[type=date][_ngcontent-%COMP%] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface);\n  color: var(--%NS%ink);\n  font: inherit;\n}\nselect[_ngcontent-%COMP%]:focus-visible, \ntextarea[_ngcontent-%COMP%]:focus-visible, \ninput[_ngcontent-%COMP%]:focus-visible {\n  outline: none;\n  border-color: var(--%NS%brand-deep);\n  box-shadow: var(--%NS%field-ring);\n}\ntextarea[_ngcontent-%COMP%] {\n  min-height: 88px;\n  resize: vertical;\n}\n.hint[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.error[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%negative);\n  font-size: var(--%NS%text-sm);\n}\n.note[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-4);\n  padding: 10px 12px;\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n  font-size: var(--%NS%text-sm);\n}\n.note.warn[_ngcontent-%COMP%] {\n  background: var(--%NS%tint-amber);\n  color: var(--%NS%tint-amber-ink);\n}\n.actions[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--%NS%space-2);\n  margin-top: var(--%NS%space-5);\n}\n/*# sourceMappingURL=dialog.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(ReassignDialog, [{
+    type: Component,
+    args: [{ selector: "app-reassign-dialog", imports: [DialogHead, FormsModule, MatButtonModule, MatDialogModule], changeDetection: ChangeDetectionStrategy.OnPush, template: `
+    <app-dialog-head
+      headingId="dlg-title"
+      [title]="data.project.pm ? 'Reassign project manager' : 'Assign project manager'"
+      [subtitle]="data.project.name"
+      (closed)="ref.close()"
+    />
+    <form (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="ra-pm">Project manager</label>
+        <select id="ra-pm" name="pm" [(ngModel)]="pm">
+          @if (data.project.pm) {
+            <option value="">No project manager (unassign)</option>
+          } @else {
+            <option value="">Choose a project manager</option>
+          }
+          @for (m of managers(); track m.id) {
+            <option [value]="'' + m.id">{{ m.name }} \xB7 {{ m.running_projects }} running</option>
+          }
+        </select>
+      </div>
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <div class="actions">
+        <button matButton type="button" (click)="ref.close()">Cancel</button>
+        <button matButton="filled" type="submit" [disabled]="saving() || !changed()">{{ saving() ? 'Saving\u2026' : 'Save' }}</button>
+      </div>
+    </form>
+  `, styles: ["/* src/app/features/projects/ui/dialog.scss */\n:host {\n  display: block;\n  box-sizing: border-box;\n  width: min(480px, 100vw - 32px);\n  max-height: 90vh;\n  padding: var(--space-6);\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n:host(.in-sheet) {\n  width: auto;\n  max-height: none;\n  padding: var(--space-2) var(--space-1) calc(var(--space-4) + env(safe-area-inset-bottom));\n}\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin-bottom: var(--space-4);\n}\n.field label,\n.field .lbl {\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\nselect,\ntextarea,\ninput[type=text],\ninput[type=search],\ninput[type=email],\ninput[type=tel],\ninput[type=number],\ninput[type=date] {\n  width: 100%;\n  min-height: 44px;\n  padding: 10px 12px;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface);\n  color: var(--ink);\n  font: inherit;\n}\nselect:focus-visible,\ntextarea:focus-visible,\ninput:focus-visible {\n  outline: none;\n  border-color: var(--brand-deep);\n  box-shadow: var(--field-ring);\n}\ntextarea {\n  min-height: 88px;\n  resize: vertical;\n}\n.hint {\n  margin: 0;\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.error {\n  margin: 0;\n  color: var(--negative);\n  font-size: var(--text-sm);\n}\n.note {\n  margin: 0 0 var(--space-4);\n  padding: 10px 12px;\n  border-radius: var(--radius-control);\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n  font-size: var(--text-sm);\n}\n.note.warn {\n  background: var(--tint-amber);\n  color: var(--tint-amber-ink);\n}\n.actions {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--space-2);\n  margin-top: var(--space-5);\n}\n/*# sourceMappingURL=dialog.css.map */\n"] }]
+  }], () => [], null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(ReassignDialog, { className: "ReassignDialog", filePath: "src/app/features/projects/components/dialogs/reassign-dialog.ts", lineNumber: 51 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fprojects%2Fcomponents%2Fdialogs%2Freassign-dialog.ts%40ReassignDialog";
+  function ReassignDialog_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(ReassignDialog, m.default, [i0, i1, i2, i3, i4], [DialogHead, FormsModule, MatButtonModule, MatDialogModule, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && ReassignDialog_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && ReassignDialog_HmrLoad(d.timestamp)));
+})();
+
+export {
+  ReassignDialog
+};
+//# debugId=df231a00-04ce-5277-af39-1ce390b974a9
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvcHJvamVjdHMvY29tcG9uZW50cy9kaWFsb2dzL3JlYXNzaWduLWRpYWxvZy50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSwgQ29tcG9uZW50LCBpbmplY3QsIHNpZ25hbCB9IGZyb20gJ0Bhbmd1bGFyL2NvcmUnO1xuaW1wb3J0IHsgRm9ybXNNb2R1bGUgfSBmcm9tICdAYW5ndWxhci9mb3Jtcyc7XG5pbXBvcnQgeyBNYXRCdXR0b25Nb2R1bGUgfSBmcm9tICdAYW5ndWxhci9tYXRlcmlhbC9idXR0b24nO1xuaW1wb3J0IHsgTUFUX0RJQUxPR19EQVRBLCBNYXREaWFsb2dNb2R1bGUsIE1hdERpYWxvZ1JlZiB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2RpYWxvZyc7XG5pbXBvcnQgeyBBcGlFcnJvciB9IGZyb20gJy4uLy4uLy4uLy4uL2NvcmUvbW9kZWxzJztcbmltcG9ydCB7IE1hbmFnZXIsIFByb2plY3REZXRhaWwsIFByb2plY3RMaXN0SXRlbSB9IGZyb20gJy4uLy4uL2RhdGEvcHJvamVjdC5tb2RlbHMnO1xuaW1wb3J0IHsgUHJvamVjdHNBcGkgfSBmcm9tICcuLi8uLi9kYXRhL3Byb2plY3RzLWFwaS5zZXJ2aWNlJztcbmltcG9ydCB7IERpYWxvZ0hlYWQgfSBmcm9tICcuLi8uLi91aS9kaWFsb2ctaGVhZCc7XG5cbmV4cG9ydCBpbnRlcmZhY2UgUmVhc3NpZ25EaWFsb2dEYXRhIHtcbiAgcHJvamVjdDogUGljazxQcm9qZWN0TGlzdEl0ZW0sICdpZCcgfCAnbmFtZSc+ICYgeyBwbT86IHsgaWQ6IG51bWJlcjsgbmFtZTogc3RyaW5nIH0gfCBudWxsIH07XG59XG5cbi8qKiBBZG1pbjogZ2l2ZSBhIHByb2plY3QgYSBtYW5hZ2VyIChvciB0YWtlIGl0IGF3YXkpLiBTaG93cyBob3cgbWFueSBwcm9qZWN0cyBlYWNoIG1hbmFnZXIgaXMgcnVubmluZy4gKi9cbkBDb21wb25lbnQoe1xuICBzZWxlY3RvcjogJ2FwcC1yZWFzc2lnbi1kaWFsb2cnLFxuICBpbXBvcnRzOiBbRGlhbG9nSGVhZCwgRm9ybXNNb2R1bGUsIE1hdEJ1dHRvbk1vZHVsZSwgTWF0RGlhbG9nTW9kdWxlXSxcbiAgY2hhbmdlRGV0ZWN0aW9uOiBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneS5PblB1c2gsXG4gIHN0eWxlVXJsOiAnLi4vLi4vdWkvZGlhbG9nLnNjc3MnLFxuICB0ZW1wbGF0ZTogYFxuICAgIDxhcHAtZGlhbG9nLWhlYWRcbiAgICAgIGhlYWRpbmdJZD1cImRsZy10aXRsZVwiXG4gICAgICBbdGl0bGVdPVwiZGF0YS5wcm9qZWN0LnBtID8gJ1JlYXNzaWduIHByb2plY3QgbWFuYWdlcicgOiAnQXNzaWduIHByb2plY3QgbWFuYWdlcidcIlxuICAgICAgW3N1YnRpdGxlXT1cImRhdGEucHJvamVjdC5uYW1lXCJcbiAgICAgIChjbG9zZWQpPVwicmVmLmNsb3NlKClcIlxuICAgIC8+XG4gICAgPGZvcm0gKG5nU3VibWl0KT1cInN1Ym1pdCgpXCIgbm92YWxpZGF0ZT5cbiAgICAgIDxkaXYgY2xhc3M9XCJmaWVsZFwiPlxuICAgICAgICA8bGFiZWwgZm9yPVwicmEtcG1cIj5Qcm9qZWN0IG1hbmFnZXI8L2xhYmVsPlxuICAgICAgICA8c2VsZWN0IGlkPVwicmEtcG1cIiBuYW1lPVwicG1cIiBbKG5nTW9kZWwpXT1cInBtXCI+XG4gICAgICAgICAgQGlmIChkYXRhLnByb2plY3QucG0pIHtcbiAgICAgICAgICAgIDxvcHRpb24gdmFsdWU9XCJcIj5ObyBwcm9qZWN0IG1hbmFnZXIgKHVuYXNzaWduKTwvb3B0aW9uPlxuICAgICAgICAgIH0gQGVsc2Uge1xuICAgICAgICAgICAgPG9wdGlvbiB2YWx1ZT1cIlwiPkNob29zZSBhIHByb2plY3QgbWFuYWdlcjwvb3B0aW9uPlxuICAgICAgICAgIH1cbiAgICAgICAgICBAZm9yIChtIG9mIG1hbmFnZXJzKCk7IHRyYWNrIG0uaWQpIHtcbiAgICAgICAgICAgIDxvcHRpb24gW3ZhbHVlXT1cIicnICsgbS5pZFwiPnt7IG0ubmFtZSB9fSDCtyB7eyBtLnJ1bm5pbmdfcHJvamVjdHMgfX0gcnVubmluZzwvb3B0aW9uPlxuICAgICAgICAgIH1cbiAgICAgICAgPC9zZWxlY3Q+XG4gICAgICA8L2Rpdj5cbiAgICAgIEBpZiAoZXJyb3IoKSkge1xuICAgICAgICA8cCBjbGFzcz1cImVycm9yXCIgcm9sZT1cImFsZXJ0XCI+e3sgZXJyb3IoKSB9fTwvcD5cbiAgICAgIH1cbiAgICAgIDxkaXYgY2xhc3M9XCJhY3Rpb25zXCI+XG4gICAgICAgIDxidXR0b24gbWF0QnV0dG9uIHR5cGU9XCJidXR0b25cIiAoY2xpY2spPVwicmVmLmNsb3NlKClcIj5DYW5jZWw8L2J1dHRvbj5cbiAgICAgICAgPGJ1dHRvbiBtYXRCdXR0b249XCJmaWxsZWRcIiB0eXBlPVwic3VibWl0XCIgW2Rpc2FibGVkXT1cInNhdmluZygpIHx8ICFjaGFuZ2VkKClcIj57eyBzYXZpbmcoKSA/ICdTYXZpbmfigKYnIDogJ1NhdmUnIH19PC9idXR0b24+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Zvcm0+XG4gIGAsXG59KVxuZXhwb3J0IGNsYXNzIFJlYXNzaWduRGlhbG9nIHtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGRhdGEgPSBpbmplY3Q8UmVhc3NpZ25EaWFsb2dEYXRhPihNQVRfRElBTE9HX0RBVEEpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgcmVmID0gaW5qZWN0KE1hdERpYWxvZ1JlZjxSZWFzc2lnbkRpYWxvZywgUHJvamVjdERldGFpbD4pO1xuICBwcml2YXRlIHJlYWRvbmx5IGFwaSA9IGluamVjdChQcm9qZWN0c0FwaSk7XG5cbiAgcHJvdGVjdGVkIHBtID0gdGhpcy5kYXRhLnByb2plY3QucG0gPyBTdHJpbmcodGhpcy5kYXRhLnByb2plY3QucG0uaWQpIDogJyc7XG4gIHByb3RlY3RlZCByZWFkb25seSBtYW5hZ2VycyA9IHNpZ25hbDxNYW5hZ2VyW10+KFtdKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IHNhdmluZyA9IHNpZ25hbChmYWxzZSk7XG4gIHByb3RlY3RlZCByZWFkb25seSBlcnJvciA9IHNpZ25hbCgnJyk7XG5cbiAgY29uc3RydWN0b3IoKSB7XG4gICAgdGhpcy5hcGkubWFuYWdlcnMoKS5zdWJzY3JpYmUoe1xuICAgICAgbmV4dDogKGxpc3QpID0+IHRoaXMubWFuYWdlcnMuc2V0KGxpc3QpLFxuICAgICAgZXJyb3I6IChlcnI6IEFwaUVycm9yKSA9PiB0aGlzLmVycm9yLnNldChlcnIubWVzc2FnZSksXG4gICAgfSk7XG4gIH1cblxuICBwcm90ZWN0ZWQgY2hhbmdlZCgpOiBib29sZWFuIHtcbiAgICByZXR1cm4gdGhpcy5wbSAhPT0gKHRoaXMuZGF0YS5wcm9qZWN0LnBtID8gU3RyaW5nKHRoaXMuZGF0YS5wcm9qZWN0LnBtLmlkKSA6ICcnKTtcbiAgfVxuXG4gIHByb3RlY3RlZCBzdWJtaXQoKTogdm9pZCB7XG4gICAgaWYgKHRoaXMuc2F2aW5nKCkgfHwgIXRoaXMuY2hhbmdlZCgpKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIHRoaXMuc2F2aW5nLnNldCh0cnVlKTtcbiAgICB0aGlzLmVycm9yLnNldCgnJyk7XG4gICAgdGhpcy5hcGkuYXNzaWduUG0odGhpcy5kYXRhLnByb2plY3QuaWQsIHRoaXMucG0gPyBOdW1iZXIodGhpcy5wbSkgOiBudWxsKS5zdWJzY3JpYmUoe1xuICAgICAgbmV4dDogKHByb2plY3QpID0+IHRoaXMucmVmLmNsb3NlKHByb2plY3QpLFxuICAgICAgZXJyb3I6IChlcnI6IEFwaUVycm9yKSA9PiB7XG4gICAgICAgIHRoaXMuc2F2aW5nLnNldChmYWxzZSk7XG4gICAgICAgIHRoaXMuZXJyb3Iuc2V0KGVyci5tZXNzYWdlKTtcbiAgICAgIH0sXG4gICAgfSk7XG4gIH1cbn1cbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7QUFBQSxTQUFTLHlCQUF5QixXQUFXLFFBQVEsY0FBYztBQUNuRSxTQUFTLG1CQUFtQjtBQUM1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Ozs7QUF4Qk4sTUFBQSx3QkFBQSxTQUFBLElBQUEsS0FBQSxRQUFBLEtBQUEsNkJBQUEsd0JBQUEsRUFBaUYsWUFBQSxJQUFBLEtBQUEsUUFBQSxJQUFBO0FBT2xELE1BQUEsdUJBQUEsQ0FBQTtBQUFBLE1BQUEsOEJBQUEsV0FBQSxJQUFBLEVBQUE7QUFBQSxNQUFBLHVCQUFBO0FBQzNCLE1BQUEsdUJBQUE7QUFBQSxNQUFBLDJCQUFBLElBQUEsS0FBQSxRQUFBLEtBQUEsSUFBQSxDQUFBO0FBS0EsTUFBQSx1QkFBQSxDQUFBO0FBQUEsTUFBQSx3QkFBQSxJQUFBLFNBQUEsQ0FBVTtBQUtkLE1BQUEsdUJBQUEsQ0FBQTtBQUFBLE1BQUEsMkJBQUEsSUFBQSxNQUFBLElBQUEsS0FBQSxFQUFBO0FBSzJDLE1BQUEsdUJBQUEsQ0FBQTtBQUFBLE1BQUEsd0JBQUEsWUFBQSxJQUFBLE9BQUEsS0FBQSxDQUFBLElBQUEsUUFBQSxDQUFBO0FBQW9DLE1BQUEsdUJBQUE7QUFBQSxNQUFBLCtCQUFBLElBQUEsT0FBQSxJQUFBLGlCQUFBLE1BQUE7O29CQTdCekUsWUFBWSxhQUFXLHVCQUFBLG1CQUFBLGlDQUFBLHlCQUFBLHdCQUFBLHVCQUFBLGlDQUFBLCtCQUFBLHVDQUFBLDhCQUFBLG9CQUFBLHlCQUFBLHNCQUFBLHVCQUFBLHVCQUFBLHFCQUFBLDhCQUFBLG1CQUFBLGlCQUFBLGlCQUFBLFlBQUEsaUJBQUEsV0FBRSxpQkFBZSxRQUFBLGNBQUEscUJBQUEsa0JBQUEsaUJBQUUsaUJBQWUsdUJBQUEsbUJBQUEsbUJBQUEscUJBQUEsbUJBQUEsR0FBQSxRQUFBLENBQUEsbXhFQUFBLEVBQUEsQ0FBQTs7OytFQWtDeEQsZ0JBQWMsQ0FBQTtVQXBDMUI7dUJBQ1csdUJBQXFCLFNBQ3RCLENBQUMsWUFBWSxhQUFhLGlCQUFpQixlQUFlLEdBQUMsaUJBQ25ELHdCQUF3QixRQUFNLFVBRXJDOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztLQTZCVCxRQUFBLENBQUEsdXhEQUFBLEVBQUEsQ0FBQTs7OztnRkFFVSxnQkFBYyxFQUFBLFdBQUEsa0JBQUEsVUFBQSxtRUFBQSxZQUFBLEdBQUEsQ0FBQTtBQUFBLEdBQUE7Ozs7Ozs7OERBQWQsZ0JBQWMsRUFBQSxTQUFBLENBQUEsSUFBQSxJQUFBLElBQUEsSUFBQSxFQUFBLEdBQUEsQ0FBQSxZQUFBLGFBQUEsaUJBQUEsaUJBQUEsV0FBQSx1QkFBQSxHQUFBLGFBQUEsRUFBQSxDQUFBO0VBQUE7QUFBQSxHQUFBLE9BQUEsY0FBQSxlQUFBLGNBQUEsdUJBQUEsS0FBQSxJQUFBLENBQUE7QUFBQSxHQUFBLE9BQUEsY0FBQSxlQUFBLGVBQUEsWUFBQSxPQUFBLFlBQUEsSUFBQSxHQUFBLDRCQUFBLENBQUEsTUFBQSxFQUFBLE9BQUEsTUFBQSx1QkFBQSxFQUFBLFNBQUEsQ0FBQTtBQUFBLEdBQUE7IiwibmFtZXMiOltdLCJkZWJ1Z0lkIjoiZGYyMzFhMDAtMDRjZS01Mjc3LWFmMzktMWNlMzkwYjk3NGE5In0=

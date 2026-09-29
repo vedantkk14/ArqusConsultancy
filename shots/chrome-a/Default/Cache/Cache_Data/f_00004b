@@ -1,0 +1,952 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-Y77M6T5I.js");import {
+  FollowupPicker
+} from "/chunk-L4OHTH77.js";
+import {
+  LeadsApi
+} from "/chunk-HM4VKXQK.js";
+import {
+  LEAD_SOURCES,
+  LeadAvatar,
+  STATUS_LABELS,
+  localPart,
+  normalizePhone,
+  toBusinessInput,
+  toBusinessIso
+} from "/chunk-ADKXW33D.js";
+import {
+  AuthService
+} from "/chunk-MYKLYJY6.js";
+import {
+  __spreadProps,
+  __spreadValues
+} from "/chunk-VUJOFXKG.js";
+
+// src/app/features/leads/components/lead-form.ts
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, input, output, signal } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { toSignal } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core_rxjs-interop.js?v=a85cac02";
+import { FormBuilder, ReactiveFormsModule, Validators } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import { MatButtonModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import { RouterLink } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_router.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_button.js?v=a85cac02";
+import * as i3 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i4 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+var _c0 = (a0) => ["/leads", a0];
+var _forTrack0 = ($index, $item) => $item[0];
+var _forTrack1 = ($index, $item) => $item.id;
+function LeadForm_Conditional_16_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 9);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.errorText("name"));
+  }
+}
+function LeadForm_Conditional_24_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 14);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.errorText("phone"));
+  }
+}
+function LeadForm_Conditional_25_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 15)(1, "mat-icon", 35);
+    i0.\u0275\u0275text(2, "warning");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(3, "span");
+    i0.\u0275\u0275text(4, " This number is already lead ");
+    i0.\u0275\u0275elementStart(5, "strong");
+    i0.\u0275\u0275text(6);
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275text(7);
+    i0.\u0275\u0275elementStart(8, "a", 36);
+    i0.\u0275\u0275text(9, "Open lead");
+    i0.\u0275\u0275elementEnd()()();
+  }
+  if (rf & 2) {
+    const d_r2 = ctx;
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance(6);
+    i0.\u0275\u0275textInterpolate(d_r2.name);
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate2(" (", ctx_r0.statusLabels[d_r2.status], "", d_r2.assigned_to_name ? ", " + d_r2.assigned_to_name : "", "). ");
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275property("routerLink", i0.\u0275\u0275pureFunction1(4, _c0, d_r2.id));
+  }
+}
+function LeadForm_Conditional_32_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 20);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.errorText("email"));
+  }
+}
+function LeadForm_For_46_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "label", 25)(1, "input", 37);
+    i0.\u0275\u0275controlCreate();
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(2, "span");
+    i0.\u0275\u0275text(3);
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const s_r3 = ctx.$implicit;
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275property("value", s_r3[0]);
+    i0.\u0275\u0275control();
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275textInterpolate(s_r3[1]);
+  }
+}
+function LeadForm_Conditional_47_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "div", 6)(1, "label", 38);
+    i0.\u0275\u0275text(2, "Describe the source");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(3, "input", 39);
+    i0.\u0275\u0275controlCreate();
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    i0.\u0275\u0275advance(3);
+    i0.\u0275\u0275control();
+  }
+}
+function LeadForm_Conditional_65_For_23_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "label", 42)(1, "input", 50);
+    i0.\u0275\u0275controlCreate();
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(2, "span", 44);
+    i0.\u0275\u0275element(3, "app-lead-avatar", 51);
+    i0.\u0275\u0275elementStart(4, "span", 46);
+    i0.\u0275\u0275text(5);
+    i0.\u0275\u0275elementStart(6, "small");
+    i0.\u0275\u0275text(7);
+    i0.\u0275\u0275elementEnd()()()();
+  }
+  if (rf & 2) {
+    const a_r5 = ctx.$implicit;
+    const ctx_r0 = i0.\u0275\u0275nextContext(2);
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275property("value", "" + a_r5.id);
+    i0.\u0275\u0275control();
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275property("name", a_r5.name)("size", 36);
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275textInterpolate2(" ", a_r5.name, "", a_r5.id === ctx_r0.meId() ? " (you)" : "", " ");
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275textInterpolate2("", a_r5.role === "ADMIN" ? "Admin \xB7 " : "", "", a_r5.open_count, " open");
+  }
+}
+function LeadForm_Conditional_65_Conditional_25_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r6 = i0.\u0275\u0275getCurrentView();
+    i0.\u0275\u0275elementStart(0, "button", 52);
+    i0.\u0275\u0275listener("click", function LeadForm_Conditional_65_Conditional_25_Template_button_click_0_listener() {
+      i0.\u0275\u0275restoreView(_r6);
+      const ctx_r0 = i0.\u0275\u0275nextContext(2);
+      return i0.\u0275\u0275resetView(ctx_r0.assignToMe());
+    });
+    i0.\u0275\u0275text(1, "Assign to me");
+    i0.\u0275\u0275elementEnd();
+  }
+}
+function LeadForm_Conditional_65_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r4 = i0.\u0275\u0275getCurrentView();
+    i0.\u0275\u0275elementStart(0, "section", 31)(1, "div", 2)(2, "span", 3)(3, "mat-icon");
+    i0.\u0275\u0275text(4, "group");
+    i0.\u0275\u0275elementEnd()();
+    i0.\u0275\u0275elementStart(5, "div")(6, "h3", 40);
+    i0.\u0275\u0275text(7, "Assignment");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(8, "p");
+    i0.\u0275\u0275text(9, "Who will work this lead?");
+    i0.\u0275\u0275elementEnd()()();
+    i0.\u0275\u0275elementStart(10, "div", 23)(11, "div", 41)(12, "label", 42)(13, "input", 43);
+    i0.\u0275\u0275controlCreate();
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(14, "span", 44)(15, "span", 45)(16, "mat-icon");
+    i0.\u0275\u0275text(17, "schedule");
+    i0.\u0275\u0275elementEnd()();
+    i0.\u0275\u0275elementStart(18, "span", 46);
+    i0.\u0275\u0275text(19, "Assign later");
+    i0.\u0275\u0275elementStart(20, "small");
+    i0.\u0275\u0275text(21, "Decide when it's ready");
+    i0.\u0275\u0275elementEnd()()()();
+    i0.\u0275\u0275repeaterCreate(22, LeadForm_Conditional_65_For_23_Template, 8, 7, "label", 42, _forTrack1);
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(24, "div", 47);
+    i0.\u0275\u0275conditionalCreate(25, LeadForm_Conditional_65_Conditional_25_Template, 2, 0, "button", 48);
+    i0.\u0275\u0275elementStart(26, "button", 49);
+    i0.\u0275\u0275listener("click", function LeadForm_Conditional_65_Template_button_click_26_listener() {
+      i0.\u0275\u0275restoreView(_r4);
+      const ctx_r0 = i0.\u0275\u0275nextContext();
+      return i0.\u0275\u0275resetView(ctx_r0.autoPick());
+    });
+    i0.\u0275\u0275text(27, "Auto-pick least loaded");
+    i0.\u0275\u0275elementEnd()()()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance(13);
+    i0.\u0275\u0275control();
+    i0.\u0275\u0275advance(9);
+    i0.\u0275\u0275repeater(ctx_r0.assignees());
+    i0.\u0275\u0275advance(3);
+    i0.\u0275\u0275conditional(ctx_r0.amAssignee() ? 25 : -1);
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275property("disabled", !ctx_r0.assignees().length);
+  }
+}
+function LeadForm_Conditional_66_Conditional_12_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 55);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext(2);
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.errorText("next_followup_at"));
+  }
+}
+function LeadForm_Conditional_66_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "section", 32)(1, "div", 2)(2, "span", 3)(3, "mat-icon");
+    i0.\u0275\u0275text(4, "event");
+    i0.\u0275\u0275elementEnd()();
+    i0.\u0275\u0275elementStart(5, "div")(6, "h3", 53);
+    i0.\u0275\u0275text(7, "Follow-up");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(8, "p");
+    i0.\u0275\u0275text(9, "When to reach out next (optional).");
+    i0.\u0275\u0275elementEnd()()();
+    i0.\u0275\u0275elementStart(10, "div", 23)(11, "app-followup-picker", 54);
+    i0.\u0275\u0275controlCreate();
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275conditionalCreate(12, LeadForm_Conditional_66_Conditional_12_Template, 2, 1, "p", 55);
+    i0.\u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance(11);
+    i0.\u0275\u0275property("invalid", ctx_r0.showError("next_followup_at"));
+    i0.\u0275\u0275control();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275conditional(ctx_r0.showError("next_followup_at") ? 12 : -1);
+  }
+}
+function LeadForm_Conditional_67_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 33);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.formError());
+  }
+}
+function LeadForm_Conditional_69_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r7 = i0.\u0275\u0275getCurrentView();
+    i0.\u0275\u0275elementStart(0, "button", 56);
+    i0.\u0275\u0275listener("click", function LeadForm_Conditional_69_Template_button_click_0_listener() {
+      i0.\u0275\u0275restoreView(_r7);
+      const ctx_r0 = i0.\u0275\u0275nextContext();
+      return i0.\u0275\u0275resetView(ctx_r0.cancelled.emit());
+    });
+    i0.\u0275\u0275text(1, "Cancel");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(2, "button", 57);
+    i0.\u0275\u0275text(3);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275property("disabled", ctx_r0.saving());
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.saving() ? "Saving\u2026" : "Save changes");
+  }
+}
+function LeadForm_Conditional_70_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r8 = i0.\u0275\u0275getCurrentView();
+    i0.\u0275\u0275elementStart(0, "button", 58);
+    i0.\u0275\u0275listener("click", function LeadForm_Conditional_70_Template_button_click_0_listener() {
+      i0.\u0275\u0275restoreView(_r8);
+      const ctx_r0 = i0.\u0275\u0275nextContext();
+      return i0.\u0275\u0275resetView(ctx_r0.submit(true));
+    });
+    i0.\u0275\u0275text(1, "Save & add another");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275elementStart(2, "button", 57);
+    i0.\u0275\u0275text(3);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275property("disabled", ctx_r0.saving());
+    i0.\u0275\u0275advance(2);
+    i0.\u0275\u0275property("disabled", ctx_r0.saving());
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.saving() ? "Saving\u2026" : "Save lead");
+  }
+}
+var REQUIREMENTS_MAX = 500;
+var phoneValidator = (control) => !control.value || normalizePhone(toFullPhone(control.value)) ? null : { phone: true };
+function toFullPhone(value) {
+  const text = (value ?? "").trim();
+  return text.startsWith("+") ? text : `+91${text.replace(/\D/g, "")}`;
+}
+var FIELD_ORDER = ["name", "phone", "email", "source", "source_other", "requirements", "assigned_to", "next_followup_at"];
+var LeadForm = class _LeadForm {
+  /** Edit mode when set. */
+  lead = input(
+    null,
+    ...ngDevMode ? [{ debugName: "lead" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** Managers edit everything and assign; an exec edits only email and requirements. */
+  canAssign = input(
+    false,
+    ...ngDevMode ? [{ debugName: "canAssign" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  limited = input(
+    false,
+    ...ngDevMode ? [{ debugName: "limited" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  saved = output();
+  cancelled = output();
+  api = inject(LeadsApi);
+  host = inject(ElementRef);
+  sources = LEAD_SOURCES;
+  statusLabels = STATUS_LABELS;
+  maxReq = REQUIREMENTS_MAX;
+  assignees = signal(
+    [],
+    ...ngDevMode ? [{ debugName: "assignees" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  duplicate = signal(
+    null,
+    ...ngDevMode ? [{ debugName: "duplicate" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  saving = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "saving" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  formError = signal(
+    "",
+    ...ngDevMode ? [{ debugName: "formError" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  submitted = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "submitted" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  form = inject(FormBuilder).nonNullable.group({
+    name: ["", [Validators.required, Validators.maxLength(150)]],
+    phone: ["", [Validators.required, phoneValidator]],
+    email: ["", [Validators.email, Validators.maxLength(254)]],
+    source: ["WEBSITE"],
+    source_other: ["", Validators.maxLength(100)],
+    requirements: ["", Validators.maxLength(REQUIREMENTS_MAX)],
+    assigned_to: [""],
+    next_followup_at: [""]
+  });
+  values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+  reqLength = computed(
+    () => (this.values().requirements ?? "").length,
+    ...ngDevMode ? [{ debugName: "reqLength" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  isOther = computed(
+    () => this.values().source === "OTHER",
+    ...ngDevMode ? [{ debugName: "isOther" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  isEdit = computed(
+    () => this.lead() !== null,
+    ...ngDevMode ? [{ debugName: "isEdit" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  ngOnInit() {
+    const lead = this.lead();
+    if (lead) {
+      this.form.reset({
+        name: lead.name,
+        phone: localPart(lead.phone),
+        email: lead.email,
+        source: lead.source,
+        source_other: lead.source_other,
+        requirements: lead.requirements,
+        assigned_to: lead.assigned_to ? String(lead.assigned_to.id) : "",
+        next_followup_at: toBusinessInput(lead.next_followup_at)
+      });
+    }
+    if (this.limited()) {
+      for (const key of ["name", "phone", "source", "source_other", "assigned_to", "next_followup_at"]) {
+        this.form.controls[key].disable();
+      }
+    }
+    if (this.canAssign() && !this.isEdit()) {
+      this.api.assignees().subscribe({ next: (list) => this.assignees.set(list), error: () => void 0 });
+    }
+  }
+  get dirty() {
+    return this.form.dirty;
+  }
+  showError(key) {
+    const control = this.form.controls[key];
+    return control.invalid && (control.touched || this.submitted());
+  }
+  errorText(key) {
+    const errors = this.form.controls[key].errors ?? {};
+    if (errors["server"])
+      return errors["server"];
+    if (errors["required"])
+      return key === "name" ? "Enter the lead's name." : "Enter a mobile number.";
+    if (errors["phone"])
+      return "Enter a valid mobile number, e.g. 98765 43210.";
+    if (errors["email"])
+      return "Enter a valid email address.";
+    if (errors["maxlength"])
+      return `Keep this under ${errors["maxlength"].requiredLength} characters.`;
+    return "Check this field.";
+  }
+  /** Paste-friendly: "+91 98765-43210" or "098765 43210" become "9876543210". */
+  onPhonePaste(event) {
+    const text = event.clipboardData?.getData("text") ?? "";
+    if (!text) {
+      return;
+    }
+    event.preventDefault();
+    this.form.controls.phone.setValue(localPart(text));
+    this.form.controls.phone.markAsDirty();
+  }
+  checkDuplicate() {
+    const control = this.form.controls.phone;
+    control.markAsTouched();
+    const full = normalizePhone(toFullPhone(control.value));
+    if (!full || this.limited()) {
+      this.duplicate.set(null);
+      return;
+    }
+    this.api.checkDuplicate(full, this.lead()?.id).subscribe({
+      next: (res) => this.duplicate.set(res.existing),
+      error: () => this.duplicate.set(null)
+    });
+  }
+  auth = inject(AuthService);
+  meId = computed(
+    () => this.auth.user()?.id ?? null,
+    ...ngDevMode ? [{ debugName: "meId" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  amAssignee = computed(
+    () => this.assignees().some((a) => a.id === this.meId()),
+    ...ngDevMode ? [{ debugName: "amAssignee" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  assignToMe() {
+    this.form.controls.assigned_to.setValue(String(this.meId()));
+    this.form.controls.assigned_to.markAsDirty();
+  }
+  autoPick() {
+    const least = this.assignees().filter((a) => a.role === "SALES_EXEC").sort((a, b) => a.open_count - b.open_count || a.name.localeCompare(b.name))[0];
+    if (least) {
+      this.form.controls.assigned_to.setValue(String(least.id));
+      this.form.controls.assigned_to.markAsDirty();
+    }
+  }
+  submit(addAnother = false) {
+    this.submitted.set(true);
+    this.formError.set("");
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      this.focusFirstInvalid();
+      return;
+    }
+    const v = this.form.getRawValue();
+    const followup = v.next_followup_at ? toBusinessIso(v.next_followup_at) : null;
+    const body = this.limited() ? { email: v.email.trim(), requirements: v.requirements } : {
+      name: v.name.trim(),
+      phone: normalizePhone(toFullPhone(v.phone)) ?? v.phone,
+      email: v.email.trim(),
+      source: v.source,
+      source_other: v.source === "OTHER" ? v.source_other.trim() : "",
+      requirements: v.requirements,
+      next_followup_at: followup
+    };
+    if (this.duplicate()) {
+      body.force = true;
+    }
+    const lead = this.lead();
+    const request = lead ? this.api.update(lead.id, body) : this.api.create(__spreadProps(__spreadValues({}, body), { assigned_to: v.assigned_to ? Number(v.assigned_to) : null }));
+    this.saving.set(true);
+    request.subscribe({
+      next: (saved) => {
+        this.saving.set(false);
+        this.submitted.set(false);
+        this.duplicate.set(null);
+        this.form.markAsPristine();
+        if (addAnother) {
+          this.form.reset();
+        }
+        this.saved.emit({ lead: saved, addAnother });
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.applyServerErrors(err);
+      }
+    });
+  }
+  applyServerErrors(err) {
+    if (err.code === "duplicate_lead") {
+      this.duplicate.set(err.details["existing"] ?? null);
+      this.formError.set("This number is already a lead. Save again to add it anyway.");
+      return;
+    }
+    let mapped = false;
+    for (const [key, value] of Object.entries(err.details ?? {})) {
+      const control = this.form.get(key);
+      if (control && Array.isArray(value)) {
+        control.setErrors({ server: String(value[0]) });
+        control.markAsTouched();
+        mapped = true;
+      }
+    }
+    if (err.code === "followup_in_past") {
+      this.form.controls.next_followup_at.setErrors({ server: "The follow-up must not be in the past." });
+      mapped = true;
+    }
+    if (!mapped) {
+      this.formError.set(err.message);
+    }
+    this.focusFirstInvalid();
+  }
+  focusFirstInvalid() {
+    const key = FIELD_ORDER.find((k) => this.form.get(k)?.invalid);
+    if (key) {
+      queueMicrotask(() => this.host.nativeElement.querySelector(`[formControlName="${key}"]`)?.focus());
+    }
+  }
+  static \u0275fac = function LeadForm_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _LeadForm)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _LeadForm, selectors: [["app-lead-form"]], inputs: { lead: [1, "lead"], canAssign: [1, "canAssign"], limited: [1, "limited"] }, outputs: { saved: "saved", cancelled: "cancelled" }, decls: 71, vars: 22, consts: [["novalidate", "", 3, "ngSubmit", "formGroup"], ["aria-labelledby", "lf-h-contact", 1, "sec"], [1, "lab"], ["aria-hidden", "true", 1, "ic"], ["id", "lf-h-contact"], [1, "body", "grid"], [1, "field"], ["for", "lf-name"], ["id", "lf-name", "formControlName", "name", "autocomplete", "name", "placeholder", "e.g. Rahul Sharma"], ["id", "lf-name-err", 1, "err"], ["for", "lf-phone"], [1, "prefixed"], ["aria-hidden", "true", 1, "pre"], ["id", "lf-phone", "formControlName", "phone", "type", "tel", "inputmode", "tel", "autocomplete", "tel-national", "placeholder", "98765 43210", 3, "paste", "blur"], ["id", "lf-phone-err", 1, "err"], ["id", "lf-dup", "role", "status", 1, "dup"], [1, "field", "wide"], ["for", "lf-email"], [1, "opt"], ["id", "lf-email", "formControlName", "email", "type", "email", "autocomplete", "email", "placeholder", "name@company.com"], ["id", "lf-email-err", 1, "err"], ["aria-labelledby", "lf-h-source", 1, "sec"], ["id", "lf-h-source"], [1, "body"], ["role", "radiogroup", "aria-labelledby", "lf-h-source", 1, "chipset"], [1, "opt-chip"], ["aria-labelledby", "lf-h-req", 1, "sec"], ["id", "lf-h-req"], ["for", "lf-req", 1, "sr-only"], ["id", "lf-req", "formControlName", "requirements", "rows", "4", "placeholder", "What does the client need? (optional)", "aria-describedby", "lf-req-count"], ["id", "lf-req-count", 1, "hint"], ["aria-labelledby", "lf-h-assign", 1, "sec"], ["aria-labelledby", "lf-h-fu", 1, "sec"], ["role", "alert", 1, "form-err"], [1, "bar"], ["aria-hidden", "true"], ["target", "_blank", 3, "routerLink"], ["type", "radio", "formControlName", "source", 3, "value"], ["for", "lf-source-other"], ["id", "lf-source-other", "formControlName", "source_other", "placeholder", "e.g. Newspaper ad"], ["id", "lf-h-assign"], ["role", "radiogroup", "aria-labelledby", "lf-h-assign", 1, "people"], [1, "person"], ["type", "radio", "formControlName", "assigned_to", "value", ""], [1, "pc"], ["aria-hidden", "true", 1, "later"], [1, "nm"], [1, "tools"], ["type", "button", 1, "link"], ["type", "button", 1, "link", 3, "click", "disabled"], ["type", "radio", "formControlName", "assigned_to", 3, "value"], [3, "name", "size"], ["type", "button", 1, "link", 3, "click"], ["id", "lf-h-fu"], ["inputId", "lf-fu", "formControlName", "next_followup_at", 3, "invalid"], ["id", "lf-fu-err", 1, "err"], ["matButton", "", "type", "button", 3, "click"], ["matButton", "filled", "type", "submit", 3, "disabled"], ["matButton", "outlined", "type", "button", 3, "click", "disabled"]], template: function LeadForm_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275elementStart(0, "form", 0);
+      i0.\u0275\u0275listener("ngSubmit", function LeadForm_Template_form_ngSubmit_0_listener() {
+        return ctx.submit(false);
+      });
+      i0.\u0275\u0275elementStart(1, "section", 1)(2, "div", 2)(3, "span", 3)(4, "mat-icon");
+      i0.\u0275\u0275text(5, "person");
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275elementStart(6, "div")(7, "h3", 4);
+      i0.\u0275\u0275text(8, "Contact");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(9, "p");
+      i0.\u0275\u0275text(10, "Who should we talk to?");
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275elementStart(11, "div", 5)(12, "div", 6)(13, "label", 7);
+      i0.\u0275\u0275text(14, "Name");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(15, "input", 8);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275conditionalCreate(16, LeadForm_Conditional_16_Template, 2, 1, "p", 9);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(17, "div", 6)(18, "label", 10);
+      i0.\u0275\u0275text(19, "Mobile number");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(20, "span", 11)(21, "span", 12);
+      i0.\u0275\u0275text(22, "+91");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(23, "input", 13);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275listener("paste", function LeadForm_Template_input_paste_23_listener($event) {
+        return ctx.onPhonePaste($event);
+      })("blur", function LeadForm_Template_input_blur_23_listener() {
+        return ctx.checkDuplicate();
+      });
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275conditionalCreate(24, LeadForm_Conditional_24_Template, 2, 1, "p", 14);
+      i0.\u0275\u0275conditionalCreate(25, LeadForm_Conditional_25_Template, 10, 6, "p", 15);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(26, "div", 16)(27, "label", 17);
+      i0.\u0275\u0275text(28, "Email ");
+      i0.\u0275\u0275elementStart(29, "span", 18);
+      i0.\u0275\u0275text(30, "(optional)");
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275elementStart(31, "input", 19);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275conditionalCreate(32, LeadForm_Conditional_32_Template, 2, 1, "p", 20);
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275elementStart(33, "section", 21)(34, "div", 2)(35, "span", 3)(36, "mat-icon");
+      i0.\u0275\u0275text(37, "travel_explore");
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275elementStart(38, "div")(39, "h3", 22);
+      i0.\u0275\u0275text(40, "Source");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(41, "p");
+      i0.\u0275\u0275text(42, "Where did this lead come from?");
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275elementStart(43, "div", 23)(44, "div", 24);
+      i0.\u0275\u0275repeaterCreate(45, LeadForm_For_46_Template, 4, 2, "label", 25, _forTrack0);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275conditionalCreate(47, LeadForm_Conditional_47_Template, 4, 0, "div", 6);
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275elementStart(48, "section", 26)(49, "div", 2)(50, "span", 3)(51, "mat-icon");
+      i0.\u0275\u0275text(52, "description");
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275elementStart(53, "div")(54, "h3", 27);
+      i0.\u0275\u0275text(55, "Requirements");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(56, "p");
+      i0.\u0275\u0275text(57, "A line or two is enough.");
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275elementStart(58, "div", 23)(59, "div", 6)(60, "label", 28);
+      i0.\u0275\u0275text(61, "What does the client need?");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(62, "textarea", 29);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(63, "p", 30);
+      i0.\u0275\u0275text(64);
+      i0.\u0275\u0275elementEnd()()()();
+      i0.\u0275\u0275conditionalCreate(65, LeadForm_Conditional_65_Template, 28, 2, "section", 31);
+      i0.\u0275\u0275conditionalCreate(66, LeadForm_Conditional_66_Template, 13, 2, "section", 32);
+      i0.\u0275\u0275conditionalCreate(67, LeadForm_Conditional_67_Template, 2, 1, "p", 33);
+      i0.\u0275\u0275elementStart(68, "div", 34);
+      i0.\u0275\u0275conditionalCreate(69, LeadForm_Conditional_69_Template, 4, 2)(70, LeadForm_Conditional_70_Template, 4, 3);
+      i0.\u0275\u0275elementEnd()();
+    }
+    if (rf & 2) {
+      let tmp_10_0;
+      i0.\u0275\u0275property("formGroup", ctx.form);
+      i0.\u0275\u0275advance(15);
+      i0.\u0275\u0275attribute("aria-invalid", ctx.showError("name") || null)("aria-describedby", ctx.showError("name") ? "lf-name-err" : null);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.showError("name") ? 16 : -1);
+      i0.\u0275\u0275advance(4);
+      i0.\u0275\u0275classProp("invalid", ctx.showError("phone"));
+      i0.\u0275\u0275advance(3);
+      i0.\u0275\u0275attribute("aria-invalid", ctx.showError("phone") || null)("aria-describedby", (ctx.showError("phone") ? "lf-phone-err " : "") + (ctx.duplicate() ? "lf-dup" : "") || null);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.showError("phone") ? 24 : -1);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional((tmp_10_0 = ctx.duplicate()) ? 25 : -1, tmp_10_0);
+      i0.\u0275\u0275advance(6);
+      i0.\u0275\u0275attribute("aria-invalid", ctx.showError("email") || null)("aria-describedby", ctx.showError("email") ? "lf-email-err" : null);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.showError("email") ? 32 : -1);
+      i0.\u0275\u0275advance(13);
+      i0.\u0275\u0275repeater(ctx.sources);
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275conditional(ctx.isOther() ? 47 : -1);
+      i0.\u0275\u0275advance(15);
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275classProp("over", ctx.reqLength() > ctx.maxReq);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275textInterpolate2("", ctx.reqLength(), " / ", ctx.maxReq);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.canAssign() && !ctx.isEdit() ? 65 : -1);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(!ctx.limited() ? 66 : -1);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.formError() ? 67 : -1);
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275conditional(ctx.isEdit() ? 69 : 70);
+    }
+  }, dependencies: [FollowupPicker, LeadAvatar, MatButtonModule, i1.Dir, i2.MatButton, i2.MatMiniFabButton, i2.MatIconButton, i2.MatFabButton, MatIconModule, i3.MatIcon, ReactiveFormsModule, i4.\u0275NgNoValidate, i4.NgSelectOption, i4.\u0275NgSelectMultipleOption, i4.DefaultValueAccessor, i4.NumberValueAccessor, i4.RangeValueAccessor, i4.CheckboxControlValueAccessor, i4.SelectControlValueAccessor, i4.SelectMultipleControlValueAccessor, i4.RadioControlValueAccessor, i4.NgControlStatus, i4.NgControlStatusGroup, i4.RequiredValidator, i4.MinLengthValidator, i4.MaxLengthValidator, i4.PatternValidator, i4.CheckboxRequiredValidator, i4.EmailValidator, i4.MinValidator, i4.MaxValidator, i4.FormControlDirective, i4.FormGroupDirective, i4.FormArrayDirective, i4.FormControlName, i4.FormGroupName, i4.FormArrayName, RouterLink], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n  container-type: inline-size;\n}\n.sec[_ngcontent-%COMP%] {\n  display: grid;\n  gap: var(--%NS%space-4);\n  padding: var(--%NS%space-5) 0;\n  border-top: 1px solid var(--%NS%line);\n}\n.sec[_ngcontent-%COMP%]:first-of-type {\n  padding-top: 0;\n  border-top: 0;\n}\n.lab[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n.lab[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n  margin: 0;\n  font-size: var(--%NS%text-md);\n  font-weight: 600;\n}\n.lab[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 2px 0 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n}\n.ic[_ngcontent-%COMP%] {\n  display: grid;\n  width: 40px;\n  height: 40px;\n  flex: none;\n  place-items: center;\n  border-radius: 12px;\n  background: var(--%NS%tint-cyan);\n  color: var(--%NS%tint-cyan-ink);\n}\n.ic[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n.body[_ngcontent-%COMP%] {\n  display: flex;\n  min-width: 0;\n  flex-direction: column;\n  gap: var(--%NS%space-3);\n}\n.grid[_ngcontent-%COMP%] {\n  display: grid;\n  gap: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  min-width: 0;\n  flex-direction: column;\n  gap: 6px;\n}\n.field[_ngcontent-%COMP%]   label[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\n.opt[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n  font-weight: 400;\n}\ninput[_ngcontent-%COMP%]:not([type=radio]), \nselect[_ngcontent-%COMP%], \ntextarea[_ngcontent-%COMP%] {\n  width: 100%;\n  min-height: 48px;\n  padding: 10px 14px;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface-2);\n  color: var(--%NS%ink);\n  font: inherit;\n  transition: background-color var(--%NS%dur-fast), border-color var(--%NS%dur-fast);\n}\ninput[_ngcontent-%COMP%]:not([type=radio])::placeholder, \nselect[_ngcontent-%COMP%]::placeholder, \ntextarea[_ngcontent-%COMP%]::placeholder {\n  color: var(--%NS%ink-3);\n}\ninput[_ngcontent-%COMP%]:not([type=radio]):focus, \nselect[_ngcontent-%COMP%]:focus, \ntextarea[_ngcontent-%COMP%]:focus {\n  background: var(--%NS%surface);\n  outline: none;\n  border-color: var(--%NS%brand-deep);\n  box-shadow: var(--%NS%field-ring);\n}\ninput[_ngcontent-%COMP%]:not([type=radio])[aria-invalid=true], \nselect[aria-invalid=true][_ngcontent-%COMP%], \ntextarea[aria-invalid=true][_ngcontent-%COMP%] {\n  border-color: var(--%NS%negative);\n}\ninput[_ngcontent-%COMP%]:not([type=radio]):disabled, \nselect[_ngcontent-%COMP%]:disabled, \ntextarea[_ngcontent-%COMP%]:disabled {\n  background: var(--%NS%subtle);\n  color: var(--%NS%ink-3);\n}\ntextarea[_ngcontent-%COMP%] {\n  resize: vertical;\n}\n.prefixed[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: stretch;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface-2);\n  overflow: hidden;\n}\n.prefixed[_ngcontent-%COMP%]:focus-within {\n  background: var(--%NS%surface);\n  outline: none;\n  border-color: var(--%NS%brand-deep);\n  box-shadow: var(--%NS%field-ring);\n}\n.prefixed.invalid[_ngcontent-%COMP%] {\n  border-color: var(--%NS%negative);\n}\n.prefixed[_ngcontent-%COMP%]   .pre[_ngcontent-%COMP%] {\n  display: grid;\n  padding: 0 12px 0 14px;\n  place-items: center;\n  border-right: 1px solid var(--%NS%line);\n  color: var(--%NS%ink-2);\n  font-weight: 600;\n}\n.prefixed[_ngcontent-%COMP%]   input[_ngcontent-%COMP%]:not([type=radio]) {\n  border: 0;\n  border-radius: 0;\n  background: transparent;\n  outline: none !important;\n}\n.err[_ngcontent-%COMP%], \n.form-err[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%negative);\n  font-size: var(--%NS%text-sm);\n}\n.hint[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-xs);\n  text-align: right;\n}\n.hint.over[_ngcontent-%COMP%] {\n  color: var(--%NS%negative);\n  font-weight: 600;\n}\n.dup[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 8px;\n  margin: 2px 0 0;\n  padding: 10px 12px;\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%tint-amber);\n  color: var(--%NS%tint-amber-ink);\n  font-size: var(--%NS%text-sm);\n}\n.dup[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  flex: none;\n  width: 18px;\n  height: 18px;\n  font-size: 18px;\n}\n.dup[_ngcontent-%COMP%]   a[_ngcontent-%COMP%] {\n  color: inherit;\n  font-weight: 600;\n}\n.bar[_ngcontent-%COMP%] {\n  position: sticky;\n  bottom: calc(var(--%NS%tabbar-h, 64px) + env(safe-area-inset-bottom));\n  z-index: 3;\n  display: flex;\n  gap: var(--%NS%space-2);\n  margin: 0;\n  padding: var(--%NS%space-3);\n  border: 1px solid var(--%NS%line);\n  border-radius: var(--%NS%radius-card);\n  background: color-mix(in srgb, var(--%NS%surface) 94%, transparent);\n  box-shadow: var(--%NS%shadow-2);\n  -webkit-backdrop-filter: blur(6px);\n  backdrop-filter: blur(6px);\n}\n.bar[_ngcontent-%COMP%]    > *[_ngcontent-%COMP%] {\n  flex: 1;\n}\n@container (min-width: 480px) {\n  .grid[_ngcontent-%COMP%] {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .grid[_ngcontent-%COMP%]   .wide[_ngcontent-%COMP%] {\n    grid-column: 1/-1;\n  }\n  .people[_ngcontent-%COMP%] {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n@container (min-width: 760px) {\n  .sec[_ngcontent-%COMP%] {\n    grid-template-columns: 220px minmax(0, 1fr);\n    gap: var(--%NS%space-8);\n    padding: var(--%NS%space-6) 0;\n  }\n  .sec[_ngcontent-%COMP%]:first-of-type {\n    padding-top: 0;\n  }\n  .lab[_ngcontent-%COMP%] {\n    align-items: flex-start;\n  }\n  .bar[_ngcontent-%COMP%] {\n    position: static;\n    justify-content: flex-end;\n    margin-top: var(--%NS%space-2);\n    padding: var(--%NS%space-4) 0 0;\n    border: 0;\n    border-top: 1px solid var(--%NS%line);\n    border-radius: 0;\n    background: none;\n    box-shadow: none;\n    -webkit-backdrop-filter: none;\n    backdrop-filter: none;\n  }\n  .bar[_ngcontent-%COMP%]    > *[_ngcontent-%COMP%] {\n    flex: none;\n  }\n}\napp-edit-lead-dialog[_nghost-%COMP%]   .bar[_ngcontent-%COMP%], app-edit-lead-dialog   [_nghost-%COMP%]   .bar[_ngcontent-%COMP%] {\n  bottom: -1px;\n  justify-content: space-between;\n  margin-top: var(--%NS%space-3);\n  border: 0;\n  border-top: 1px solid var(--%NS%line);\n  border-radius: 0;\n  background: var(--%NS%surface);\n  box-shadow: none;\n}\napp-edit-lead-dialog[_nghost-%COMP%]   .bar[_ngcontent-%COMP%]    > *[_ngcontent-%COMP%], app-edit-lead-dialog   [_nghost-%COMP%]   .bar[_ngcontent-%COMP%]    > *[_ngcontent-%COMP%] {\n  flex: none;\n}\n/*# sourceMappingURL=lead-form.css.map */", "\n.chipset[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n.opt-chip[_ngcontent-%COMP%] {\n  position: relative;\n}\n.opt-chip[_ngcontent-%COMP%]   input[_ngcontent-%COMP%] {\n  position: absolute;\n  inset: 0;\n  margin: 0;\n  opacity: 0;\n  cursor: pointer;\n}\n.opt-chip[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  min-height: 40px;\n  padding: 0 16px;\n  border: 1px solid var(--%NS%line);\n  border-radius: var(--%NS%radius-pill);\n  background: var(--%NS%surface);\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  transition: background-color var(--%NS%dur-fast), border-color var(--%NS%dur-fast);\n}\n.opt-chip[_ngcontent-%COMP%]:hover   span[_ngcontent-%COMP%] {\n  border-color: var(--%NS%line-strong);\n}\n.opt-chip[_ngcontent-%COMP%]   input[_ngcontent-%COMP%]:checked    + span[_ngcontent-%COMP%] {\n  border-color: var(--%NS%ink);\n  background: var(--%NS%ink);\n  color: var(--%NS%on-ink);\n  font-weight: 600;\n}\n.opt-chip[_ngcontent-%COMP%]   input[_ngcontent-%COMP%]:focus-visible    + span[_ngcontent-%COMP%] {\n  outline: 2px solid var(--%NS%brand-deep);\n  outline-offset: 2px;\n}\n.people[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 8px;\n}\n.person[_ngcontent-%COMP%] {\n  position: relative;\n  display: block;\n}\n.person[_ngcontent-%COMP%]   input[_ngcontent-%COMP%] {\n  position: absolute;\n  inset: 0;\n  margin: 0;\n  opacity: 0;\n  cursor: pointer;\n}\n.person[_ngcontent-%COMP%]   .pc[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 56px;\n  padding: 8px 14px;\n  border: 1px solid var(--%NS%line);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface);\n  transition: background-color var(--%NS%dur-fast), border-color var(--%NS%dur-fast);\n}\n.person[_ngcontent-%COMP%]:hover   .pc[_ngcontent-%COMP%] {\n  border-color: var(--%NS%line-strong);\n}\n.person[_ngcontent-%COMP%]   input[_ngcontent-%COMP%]:checked    + .pc[_ngcontent-%COMP%] {\n  border-color: var(--%NS%brand-deep);\n  background: var(--%NS%brand-tint);\n  box-shadow: inset 0 0 0 1px var(--%NS%brand-deep);\n}\n.person[_ngcontent-%COMP%]   input[_ngcontent-%COMP%]:focus-visible    + .pc[_ngcontent-%COMP%] {\n  outline: 2px solid var(--%NS%brand-deep);\n  outline-offset: 2px;\n}\n.later[_ngcontent-%COMP%] {\n  display: grid;\n  width: 36px;\n  height: 36px;\n  flex: none;\n  place-items: center;\n  border: 1px dashed var(--%NS%line-strong);\n  border-radius: 50%;\n  color: var(--%NS%ink-3);\n}\n.later[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n.nm[_ngcontent-%COMP%] {\n  display: flex;\n  min-width: 0;\n  flex-direction: column;\n  color: var(--%NS%ink);\n  font-size: var(--%NS%text-sm);\n  font-weight: 600;\n  line-height: 1.3;\n}\n.nm[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-xs);\n  font-weight: 400;\n}\n.tools[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 4px 16px;\n}\n.link[_ngcontent-%COMP%] {\n  min-height: 36px;\n  padding: 0;\n  border: 0;\n  background: none;\n  color: var(--%NS%brand-deep);\n  font: inherit;\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n  cursor: pointer;\n}\n.link[_ngcontent-%COMP%]:hover:not(:disabled) {\n  text-decoration: underline;\n}\n.link[_ngcontent-%COMP%]:disabled {\n  color: var(--%NS%ink-3);\n  cursor: default;\n}\n/*# sourceMappingURL=lead-form-pick.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(LeadForm, [{
+    type: Component,
+    args: [{ selector: "app-lead-form", imports: [FollowupPicker, LeadAvatar, MatButtonModule, MatIconModule, ReactiveFormsModule, RouterLink], changeDetection: ChangeDetectionStrategy.OnPush, template: `<form [formGroup]="form" (ngSubmit)="submit(false)" novalidate>
+  <!-- Contact -->
+  <section class="sec" aria-labelledby="lf-h-contact">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>person</mat-icon></span>
+      <div>
+        <h3 id="lf-h-contact">Contact</h3>
+        <p>Who should we talk to?</p>
+      </div>
+    </div>
+    <div class="body grid">
+      <div class="field">
+        <label for="lf-name">Name</label>
+        <input
+          id="lf-name"
+          formControlName="name"
+          autocomplete="name"
+          placeholder="e.g. Rahul Sharma"
+          [attr.aria-invalid]="showError('name') || null"
+          [attr.aria-describedby]="showError('name') ? 'lf-name-err' : null"
+        />
+        @if (showError('name')) {
+          <p class="err" id="lf-name-err">{{ errorText('name') }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="lf-phone">Mobile number</label>
+        <span class="prefixed" [class.invalid]="showError('phone')">
+          <span class="pre" aria-hidden="true">+91</span>
+          <input
+            id="lf-phone"
+            formControlName="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel-national"
+            placeholder="98765 43210"
+            [attr.aria-invalid]="showError('phone') || null"
+            [attr.aria-describedby]="(showError('phone') ? 'lf-phone-err ' : '') + (duplicate() ? 'lf-dup' : '') || null"
+            (paste)="onPhonePaste($event)"
+            (blur)="checkDuplicate()"
+          />
+        </span>
+        @if (showError('phone')) {
+          <p class="err" id="lf-phone-err">{{ errorText('phone') }}</p>
+        }
+        @if (duplicate(); as d) {
+          <p class="dup" id="lf-dup" role="status">
+            <mat-icon aria-hidden="true">warning</mat-icon>
+            <span>
+              This number is already lead <strong>{{ d.name }}</strong>
+              ({{ statusLabels[d.status] }}{{ d.assigned_to_name ? ', ' + d.assigned_to_name : '' }}).
+              <a [routerLink]="['/leads', d.id]" target="_blank">Open lead</a>
+            </span>
+          </p>
+        }
+      </div>
+
+      <div class="field wide">
+        <label for="lf-email">Email <span class="opt">(optional)</span></label>
+        <input
+          id="lf-email"
+          formControlName="email"
+          type="email"
+          autocomplete="email"
+          placeholder="name@company.com"
+          [attr.aria-invalid]="showError('email') || null"
+          [attr.aria-describedby]="showError('email') ? 'lf-email-err' : null"
+        />
+        @if (showError('email')) {
+          <p class="err" id="lf-email-err">{{ errorText('email') }}</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Source -->
+  <section class="sec" aria-labelledby="lf-h-source">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>travel_explore</mat-icon></span>
+      <div>
+        <h3 id="lf-h-source">Source</h3>
+        <p>Where did this lead come from?</p>
+      </div>
+    </div>
+    <div class="body">
+      <div class="chipset" role="radiogroup" aria-labelledby="lf-h-source">
+        @for (s of sources; track s[0]) {
+          <label class="opt-chip">
+            <input type="radio" formControlName="source" [value]="s[0]" />
+            <span>{{ s[1] }}</span>
+          </label>
+        }
+      </div>
+      @if (isOther()) {
+        <div class="field">
+          <label for="lf-source-other">Describe the source</label>
+          <input id="lf-source-other" formControlName="source_other" placeholder="e.g. Newspaper ad" />
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Requirements -->
+  <section class="sec" aria-labelledby="lf-h-req">
+    <div class="lab">
+      <span class="ic" aria-hidden="true"><mat-icon>description</mat-icon></span>
+      <div>
+        <h3 id="lf-h-req">Requirements</h3>
+        <p>A line or two is enough.</p>
+      </div>
+    </div>
+    <div class="body">
+      <div class="field">
+        <label for="lf-req" class="sr-only">What does the client need?</label>
+        <textarea
+          id="lf-req"
+          formControlName="requirements"
+          rows="4"
+          placeholder="What does the client need? (optional)"
+          aria-describedby="lf-req-count"
+        ></textarea>
+        <p class="hint" id="lf-req-count" [class.over]="reqLength() > maxReq">{{ reqLength() }} / {{ maxReq }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Assignment -->
+  @if (canAssign() && !isEdit()) {
+    <section class="sec" aria-labelledby="lf-h-assign">
+      <div class="lab">
+        <span class="ic" aria-hidden="true"><mat-icon>group</mat-icon></span>
+        <div>
+          <h3 id="lf-h-assign">Assignment</h3>
+          <p>Who will work this lead?</p>
+        </div>
+      </div>
+      <div class="body">
+        <div class="people" role="radiogroup" aria-labelledby="lf-h-assign">
+          <label class="person">
+            <input type="radio" formControlName="assigned_to" value="" />
+            <span class="pc">
+              <span class="later" aria-hidden="true"><mat-icon>schedule</mat-icon></span>
+              <span class="nm">Assign later<small>Decide when it's ready</small></span>
+            </span>
+          </label>
+          @for (a of assignees(); track a.id) {
+            <label class="person">
+              <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+              <span class="pc">
+                <app-lead-avatar [name]="a.name" [size]="36" />
+                <span class="nm">
+                  {{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}
+                  <small>{{ a.role === 'ADMIN' ? 'Admin \xB7 ' : '' }}{{ a.open_count }} open</small>
+                </span>
+              </span>
+            </label>
+          }
+        </div>
+        <div class="tools">
+          @if (amAssignee()) {
+            <button type="button" class="link" (click)="assignToMe()">Assign to me</button>
+          }
+          <button type="button" class="link" [disabled]="!assignees().length" (click)="autoPick()">Auto-pick least loaded</button>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- Follow-up -->
+  @if (!limited()) {
+    <section class="sec" aria-labelledby="lf-h-fu">
+      <div class="lab">
+        <span class="ic" aria-hidden="true"><mat-icon>event</mat-icon></span>
+        <div>
+          <h3 id="lf-h-fu">Follow-up</h3>
+          <p>When to reach out next (optional).</p>
+        </div>
+      </div>
+      <div class="body">
+        <app-followup-picker inputId="lf-fu" formControlName="next_followup_at" [invalid]="showError('next_followup_at')" />
+        @if (showError('next_followup_at')) {
+          <p class="err" id="lf-fu-err">{{ errorText('next_followup_at') }}</p>
+        }
+      </div>
+    </section>
+  }
+
+  @if (formError()) {
+    <p class="form-err" role="alert">{{ formError() }}</p>
+  }
+
+  <div class="bar">
+    @if (isEdit()) {
+      <button matButton type="button" (click)="cancelled.emit()">Cancel</button>
+      <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving\u2026' : 'Save changes' }}</button>
+    } @else {
+      <button matButton="outlined" type="button" [disabled]="saving()" (click)="submit(true)">Save &amp; add another</button>
+      <button matButton="filled" type="submit" [disabled]="saving()">{{ saving() ? 'Saving\u2026' : 'Save lead' }}</button>
+    }
+  </div>
+</form>
+`, styles: ["/* src/app/features/leads/components/lead-form.scss */\n:host {\n  display: block;\n  container-type: inline-size;\n}\n.sec {\n  display: grid;\n  gap: var(--space-4);\n  padding: var(--space-5) 0;\n  border-top: 1px solid var(--line);\n}\n.sec:first-of-type {\n  padding-top: 0;\n  border-top: 0;\n}\n.lab {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n.lab h3 {\n  margin: 0;\n  font-size: var(--text-md);\n  font-weight: 600;\n}\n.lab p {\n  margin: 2px 0 0;\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n}\n.ic {\n  display: grid;\n  width: 40px;\n  height: 40px;\n  flex: none;\n  place-items: center;\n  border-radius: 12px;\n  background: var(--tint-cyan);\n  color: var(--tint-cyan-ink);\n}\n.ic mat-icon {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n.body {\n  display: flex;\n  min-width: 0;\n  flex-direction: column;\n  gap: var(--space-3);\n}\n.grid {\n  display: grid;\n  gap: var(--space-4);\n}\n.field {\n  display: flex;\n  min-width: 0;\n  flex-direction: column;\n  gap: 6px;\n}\n.field label {\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\n.opt {\n  color: var(--ink-3);\n  font-weight: 400;\n}\ninput:not([type=radio]),\nselect,\ntextarea {\n  width: 100%;\n  min-height: 48px;\n  padding: 10px 14px;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface-2);\n  color: var(--ink);\n  font: inherit;\n  transition: background-color var(--dur-fast), border-color var(--dur-fast);\n}\ninput:not([type=radio])::placeholder,\nselect::placeholder,\ntextarea::placeholder {\n  color: var(--ink-3);\n}\ninput:not([type=radio]):focus,\nselect:focus,\ntextarea:focus {\n  background: var(--surface);\n  outline: none;\n  border-color: var(--brand-deep);\n  box-shadow: var(--field-ring);\n}\ninput:not([type=radio])[aria-invalid=true],\nselect[aria-invalid=true],\ntextarea[aria-invalid=true] {\n  border-color: var(--negative);\n}\ninput:not([type=radio]):disabled,\nselect:disabled,\ntextarea:disabled {\n  background: var(--subtle);\n  color: var(--ink-3);\n}\ntextarea {\n  resize: vertical;\n}\n.prefixed {\n  display: flex;\n  align-items: stretch;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface-2);\n  overflow: hidden;\n}\n.prefixed:focus-within {\n  background: var(--surface);\n  outline: none;\n  border-color: var(--brand-deep);\n  box-shadow: var(--field-ring);\n}\n.prefixed.invalid {\n  border-color: var(--negative);\n}\n.prefixed .pre {\n  display: grid;\n  padding: 0 12px 0 14px;\n  place-items: center;\n  border-right: 1px solid var(--line);\n  color: var(--ink-2);\n  font-weight: 600;\n}\n.prefixed input:not([type=radio]) {\n  border: 0;\n  border-radius: 0;\n  background: transparent;\n  outline: none !important;\n}\n.err,\n.form-err {\n  margin: 0;\n  color: var(--negative);\n  font-size: var(--text-sm);\n}\n.hint {\n  margin: 0;\n  color: var(--ink-3);\n  font-size: var(--text-xs);\n  text-align: right;\n}\n.hint.over {\n  color: var(--negative);\n  font-weight: 600;\n}\n.dup {\n  display: flex;\n  gap: 8px;\n  margin: 2px 0 0;\n  padding: 10px 12px;\n  border-radius: var(--radius-control);\n  background: var(--tint-amber);\n  color: var(--tint-amber-ink);\n  font-size: var(--text-sm);\n}\n.dup mat-icon {\n  flex: none;\n  width: 18px;\n  height: 18px;\n  font-size: 18px;\n}\n.dup a {\n  color: inherit;\n  font-weight: 600;\n}\n.bar {\n  position: sticky;\n  bottom: calc(var(--tabbar-h, 64px) + env(safe-area-inset-bottom));\n  z-index: 3;\n  display: flex;\n  gap: var(--space-2);\n  margin: 0;\n  padding: var(--space-3);\n  border: 1px solid var(--line);\n  border-radius: var(--radius-card);\n  background: color-mix(in srgb, var(--surface) 94%, transparent);\n  box-shadow: var(--shadow-2);\n  -webkit-backdrop-filter: blur(6px);\n  backdrop-filter: blur(6px);\n}\n.bar > * {\n  flex: 1;\n}\n@container (min-width: 480px) {\n  .grid {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .grid .wide {\n    grid-column: 1/-1;\n  }\n  .people {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n@container (min-width: 760px) {\n  .sec {\n    grid-template-columns: 220px minmax(0, 1fr);\n    gap: var(--space-8);\n    padding: var(--space-6) 0;\n  }\n  .sec:first-of-type {\n    padding-top: 0;\n  }\n  .lab {\n    align-items: flex-start;\n  }\n  .bar {\n    position: static;\n    justify-content: flex-end;\n    margin-top: var(--space-2);\n    padding: var(--space-4) 0 0;\n    border: 0;\n    border-top: 1px solid var(--line);\n    border-radius: 0;\n    background: none;\n    box-shadow: none;\n    -webkit-backdrop-filter: none;\n    backdrop-filter: none;\n  }\n  .bar > * {\n    flex: none;\n  }\n}\n:host-context(app-edit-lead-dialog) .bar {\n  bottom: -1px;\n  justify-content: space-between;\n  margin-top: var(--space-3);\n  border: 0;\n  border-top: 1px solid var(--line);\n  border-radius: 0;\n  background: var(--surface);\n  box-shadow: none;\n}\n:host-context(app-edit-lead-dialog) .bar > * {\n  flex: none;\n}\n/*# sourceMappingURL=lead-form.css.map */\n", "/* src/app/features/leads/components/lead-form-pick.scss */\n.chipset {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n.opt-chip {\n  position: relative;\n}\n.opt-chip input {\n  position: absolute;\n  inset: 0;\n  margin: 0;\n  opacity: 0;\n  cursor: pointer;\n}\n.opt-chip span {\n  display: inline-flex;\n  align-items: center;\n  min-height: 40px;\n  padding: 0 16px;\n  border: 1px solid var(--line);\n  border-radius: var(--radius-pill);\n  background: var(--surface);\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  transition: background-color var(--dur-fast), border-color var(--dur-fast);\n}\n.opt-chip:hover span {\n  border-color: var(--line-strong);\n}\n.opt-chip input:checked + span {\n  border-color: var(--ink);\n  background: var(--ink);\n  color: var(--on-ink);\n  font-weight: 600;\n}\n.opt-chip input:focus-visible + span {\n  outline: 2px solid var(--brand-deep);\n  outline-offset: 2px;\n}\n.people {\n  display: grid;\n  gap: 8px;\n}\n.person {\n  position: relative;\n  display: block;\n}\n.person input {\n  position: absolute;\n  inset: 0;\n  margin: 0;\n  opacity: 0;\n  cursor: pointer;\n}\n.person .pc {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 56px;\n  padding: 8px 14px;\n  border: 1px solid var(--line);\n  border-radius: var(--radius-control);\n  background: var(--surface);\n  transition: background-color var(--dur-fast), border-color var(--dur-fast);\n}\n.person:hover .pc {\n  border-color: var(--line-strong);\n}\n.person input:checked + .pc {\n  border-color: var(--brand-deep);\n  background: var(--brand-tint);\n  box-shadow: inset 0 0 0 1px var(--brand-deep);\n}\n.person input:focus-visible + .pc {\n  outline: 2px solid var(--brand-deep);\n  outline-offset: 2px;\n}\n.later {\n  display: grid;\n  width: 36px;\n  height: 36px;\n  flex: none;\n  place-items: center;\n  border: 1px dashed var(--line-strong);\n  border-radius: 50%;\n  color: var(--ink-3);\n}\n.later mat-icon {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n.nm {\n  display: flex;\n  min-width: 0;\n  flex-direction: column;\n  color: var(--ink);\n  font-size: var(--text-sm);\n  font-weight: 600;\n  line-height: 1.3;\n}\n.nm small {\n  color: var(--ink-3);\n  font-size: var(--text-xs);\n  font-weight: 400;\n}\n.tools {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 4px 16px;\n}\n.link {\n  min-height: 36px;\n  padding: 0;\n  border: 0;\n  background: none;\n  color: var(--brand-deep);\n  font: inherit;\n  font-size: var(--text-sm);\n  font-weight: 500;\n  cursor: pointer;\n}\n.link:hover:not(:disabled) {\n  text-decoration: underline;\n}\n.link:disabled {\n  color: var(--ink-3);\n  cursor: default;\n}\n/*# sourceMappingURL=lead-form-pick.css.map */\n"] }]
+  }], null, { lead: [{ type: i0.Input, args: [{ isSignal: true, alias: "lead", required: false }] }], canAssign: [{ type: i0.Input, args: [{ isSignal: true, alias: "canAssign", required: false }] }], limited: [{ type: i0.Input, args: [{ isSignal: true, alias: "limited", required: false }] }], saved: [{ type: i0.Output, args: ["saved"] }], cancelled: [{ type: i0.Output, args: ["cancelled"] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(LeadForm, { className: "LeadForm", filePath: "src/app/features/leads/components/lead-form.ts", lineNumber: 60 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fleads%2Fcomponents%2Flead-form.ts%40LeadForm";
+  function LeadForm_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(LeadForm, m.default, [i0, i1, i2, i3, i4], [FollowupPicker, LeadAvatar, MatButtonModule, MatIconModule, ReactiveFormsModule, RouterLink, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && LeadForm_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && LeadForm_HmrLoad(d.timestamp)));
+})();
+
+export {
+  LeadForm
+};
+//# debugId=fde1d794-33ba-5da1-b13d-ad4de7708efe
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvbGVhZHMvY29tcG9uZW50cy9sZWFkLWZvcm0udHMiLCJzcmMvYXBwL2ZlYXR1cmVzL2xlYWRzL2NvbXBvbmVudHMvbGVhZC1mb3JtLmh0bWwiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHtcbiAgQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3ksXG4gIENvbXBvbmVudCxcbiAgT25Jbml0LFxuICBFbGVtZW50UmVmLFxuICBjb21wdXRlZCxcbiAgaW5qZWN0LFxuICBpbnB1dCxcbiAgb3V0cHV0LFxuICBzaWduYWwsXG59IGZyb20gJ0Bhbmd1bGFyL2NvcmUnO1xuaW1wb3J0IHsgdG9TaWduYWwgfSBmcm9tICdAYW5ndWxhci9jb3JlL3J4anMtaW50ZXJvcCc7XG5pbXBvcnQgeyBBYnN0cmFjdENvbnRyb2wsIEZvcm1CdWlsZGVyLCBSZWFjdGl2ZUZvcm1zTW9kdWxlLCBWYWxpZGF0aW9uRXJyb3JzLCBWYWxpZGF0b3JzIH0gZnJvbSAnQGFuZ3VsYXIvZm9ybXMnO1xuaW1wb3J0IHsgTWF0QnV0dG9uTW9kdWxlIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvYnV0dG9uJztcbmltcG9ydCB7IE1hdEljb25Nb2R1bGUgfSBmcm9tICdAYW5ndWxhci9tYXRlcmlhbC9pY29uJztcbmltcG9ydCB7IFJvdXRlckxpbmsgfSBmcm9tICdAYW5ndWxhci9yb3V0ZXInO1xuaW1wb3J0IHsgQXV0aFNlcnZpY2UgfSBmcm9tICcuLi8uLi8uLi9jb3JlL2F1dGgvYXV0aC5zZXJ2aWNlJztcbmltcG9ydCB7IEFwaUVycm9yIH0gZnJvbSAnLi4vLi4vLi4vY29yZS9tb2RlbHMnO1xuaW1wb3J0IHtcbiAgQXNzaWduZWUsXG4gIER1cGxpY2F0ZUluZm8sXG4gIExFQURfU09VUkNFUyxcbiAgTGVhZERldGFpbCxcbiAgTGVhZElucHV0LFxuICBMZWFkU291cmNlLFxuICBTVEFUVVNfTEFCRUxTLFxufSBmcm9tICcuLi9kYXRhL2xlYWQubW9kZWxzJztcbmltcG9ydCB7IExlYWRzQXBpIH0gZnJvbSAnLi4vZGF0YS9sZWFkcy1hcGkuc2VydmljZSc7XG5pbXBvcnQgeyBGb2xsb3d1cFBpY2tlciB9IGZyb20gJy4vZm9sbG93dXAtcGlja2VyJztcbmltcG9ydCB7IExlYWRBdmF0YXIgfSBmcm9tICcuL2xlYWQtYml0cyc7XG5pbXBvcnQgeyB0b0J1c2luZXNzSW5wdXQsIHRvQnVzaW5lc3NJc28gfSBmcm9tICcuLi91dGlscy9idXNpbmVzcy10aW1lJztcbmltcG9ydCB7IGxvY2FsUGFydCwgbm9ybWFsaXplUGhvbmUgfSBmcm9tICcuLi91dGlscy9waG9uZSc7XG5cbmV4cG9ydCBjb25zdCBSRVFVSVJFTUVOVFNfTUFYID0gNTAwO1xuXG5jb25zdCBwaG9uZVZhbGlkYXRvciA9IChjb250cm9sOiBBYnN0cmFjdENvbnRyb2wpOiBWYWxpZGF0aW9uRXJyb3JzIHwgbnVsbCA9PlxuICAhY29udHJvbC52YWx1ZSB8fCBub3JtYWxpemVQaG9uZSh0b0Z1bGxQaG9uZShjb250cm9sLnZhbHVlKSkgPyBudWxsIDogeyBwaG9uZTogdHJ1ZSB9O1xuXG4vKiogVGhlICs5MSBib3ggaG9sZHMgdGhlIGxvY2FsIHBhcnQ7IGEgbnVtYmVyIHR5cGVkIHdpdGggXCIrXCIgaXMgdGFrZW4gYXMgaW50ZXJuYXRpb25hbC4gKi9cbmV4cG9ydCBmdW5jdGlvbiB0b0Z1bGxQaG9uZSh2YWx1ZTogc3RyaW5nKTogc3RyaW5nIHtcbiAgY29uc3QgdGV4dCA9ICh2YWx1ZSA/PyAnJykudHJpbSgpO1xuICByZXR1cm4gdGV4dC5zdGFydHNXaXRoKCcrJykgPyB0ZXh0IDogYCs5MSR7dGV4dC5yZXBsYWNlKC9cXEQvZywgJycpfWA7XG59XG5cbmNvbnN0IEZJRUxEX09SREVSID0gWyduYW1lJywgJ3Bob25lJywgJ2VtYWlsJywgJ3NvdXJjZScsICdzb3VyY2Vfb3RoZXInLCAncmVxdWlyZW1lbnRzJywgJ2Fzc2lnbmVkX3RvJywgJ25leHRfZm9sbG93dXBfYXQnXTtcblxuZXhwb3J0IGludGVyZmFjZSBMZWFkRm9ybVNhdmVkIHtcbiAgbGVhZDogTGVhZERldGFpbDtcbiAgYWRkQW5vdGhlcjogYm9vbGVhbjtcbn1cblxuLyoqIEFkZCAvIGVkaXQgbGVhZC4gVXNlZCBieSAvbGVhZHMvbmV3IGFuZCB0aGUgXCJFZGl0IGxlYWRcIiBzaGVldCBvbiB0aGUgZGV0YWlsIHBhZ2UuICovXG5AQ29tcG9uZW50KHtcbiAgc2VsZWN0b3I6ICdhcHAtbGVhZC1mb3JtJyxcbiAgaW1wb3J0czogW0ZvbGxvd3VwUGlja2VyLCBMZWFkQXZhdGFyLCBNYXRCdXR0b25Nb2R1bGUsIE1hdEljb25Nb2R1bGUsIFJlYWN0aXZlRm9ybXNNb2R1bGUsIFJvdXRlckxpbmtdLFxuICBjaGFuZ2VEZXRlY3Rpb246IENoYW5nZURldGVjdGlvblN0cmF0ZWd5Lk9uUHVzaCxcbiAgdGVtcGxhdGVVcmw6ICcuL2xlYWQtZm9ybS5odG1sJyxcbiAgc3R5bGVVcmxzOiBbJy4vbGVhZC1mb3JtLnNjc3MnLCAnLi9sZWFkLWZvcm0tcGljay5zY3NzJ10sXG59KVxuZXhwb3J0IGNsYXNzIExlYWRGb3JtIGltcGxlbWVudHMgT25Jbml0IHtcbiAgLyoqIEVkaXQgbW9kZSB3aGVuIHNldC4gKi9cbiAgcmVhZG9ubHkgbGVhZCA9IGlucHV0PExlYWREZXRhaWwgfCBudWxsPihudWxsKTtcbiAgLyoqIE1hbmFnZXJzIGVkaXQgZXZlcnl0aGluZyBhbmQgYXNzaWduOyBhbiBleGVjIGVkaXRzIG9ubHkgZW1haWwgYW5kIHJlcXVpcmVtZW50cy4gKi9cbiAgcmVhZG9ubHkgY2FuQXNzaWduID0gaW5wdXQoZmFsc2UpO1xuICByZWFkb25seSBsaW1pdGVkID0gaW5wdXQoZmFsc2UpO1xuICByZWFkb25seSBzYXZlZCA9IG91dHB1dDxMZWFkRm9ybVNhdmVkPigpO1xuICByZWFkb25seSBjYW5jZWxsZWQgPSBvdXRwdXQ8dm9pZD4oKTtcblxuICBwcml2YXRlIHJlYWRvbmx5IGFwaSA9IGluamVjdChMZWFkc0FwaSk7XG4gIHByaXZhdGUgcmVhZG9ubHkgaG9zdCA9IGluamVjdDxFbGVtZW50UmVmPEhUTUxFbGVtZW50Pj4oRWxlbWVudFJlZik7XG5cbiAgcHJvdGVjdGVkIHJlYWRvbmx5IHNvdXJjZXMgPSBMRUFEX1NPVVJDRVM7XG4gIHByb3RlY3RlZCByZWFkb25seSBzdGF0dXNMYWJlbHMgPSBTVEFUVVNfTEFCRUxTO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgbWF4UmVxID0gUkVRVUlSRU1FTlRTX01BWDtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGFzc2lnbmVlcyA9IHNpZ25hbDxBc3NpZ25lZVtdPihbXSk7XG4gIHByb3RlY3RlZCByZWFkb25seSBkdXBsaWNhdGUgPSBzaWduYWw8RHVwbGljYXRlSW5mbyB8IG51bGw+KG51bGwpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgc2F2aW5nID0gc2lnbmFsKGZhbHNlKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGZvcm1FcnJvciA9IHNpZ25hbCgnJyk7XG4gIHByb3RlY3RlZCByZWFkb25seSBzdWJtaXR0ZWQgPSBzaWduYWwoZmFsc2UpO1xuXG4gIHByb3RlY3RlZCByZWFkb25seSBmb3JtID0gaW5qZWN0KEZvcm1CdWlsZGVyKS5ub25OdWxsYWJsZS5ncm91cCh7XG4gICAgbmFtZTogWycnLCBbVmFsaWRhdG9ycy5yZXF1aXJlZCwgVmFsaWRhdG9ycy5tYXhMZW5ndGgoMTUwKV1dLFxuICAgIHBob25lOiBbJycsIFtWYWxpZGF0b3JzLnJlcXVpcmVkLCBwaG9uZVZhbGlkYXRvcl1dLFxuICAgIGVtYWlsOiBbJycsIFtWYWxpZGF0b3JzLmVtYWlsLCBWYWxpZGF0b3JzLm1heExlbmd0aCgyNTQpXV0sXG4gICAgc291cmNlOiBbJ1dFQlNJVEUnIGFzIExlYWRTb3VyY2VdLFxuICAgIHNvdXJjZV9vdGhlcjogWycnLCBWYWxpZGF0b3JzLm1heExlbmd0aCgxMDApXSxcbiAgICByZXF1aXJlbWVudHM6IFsnJywgVmFsaWRhdG9ycy5tYXhMZW5ndGgoUkVRVUlSRU1FTlRTX01BWCldLFxuICAgIGFzc2lnbmVkX3RvOiBbJyddLFxuICAgIG5leHRfZm9sbG93dXBfYXQ6IFsnJ10sXG4gIH0pO1xuXG4gIHByaXZhdGUgcmVhZG9ubHkgdmFsdWVzID0gdG9TaWduYWwodGhpcy5mb3JtLnZhbHVlQ2hhbmdlcywgeyBpbml0aWFsVmFsdWU6IHRoaXMuZm9ybS5nZXRSYXdWYWx1ZSgpIH0pO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgcmVxTGVuZ3RoID0gY29tcHV0ZWQoKCkgPT4gKHRoaXMudmFsdWVzKCkucmVxdWlyZW1lbnRzID8/ICcnKS5sZW5ndGgpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgaXNPdGhlciA9IGNvbXB1dGVkKCgpID0+IHRoaXMudmFsdWVzKCkuc291cmNlID09PSAnT1RIRVInKTtcbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGlzRWRpdCA9IGNvbXB1dGVkKCgpID0+IHRoaXMubGVhZCgpICE9PSBudWxsKTtcblxuICBuZ09uSW5pdCgpOiB2b2lkIHtcbiAgICBjb25zdCBsZWFkID0gdGhpcy5sZWFkKCk7XG4gICAgaWYgKGxlYWQpIHtcbiAgICAgIHRoaXMuZm9ybS5yZXNldCh7XG4gICAgICAgIG5hbWU6IGxlYWQubmFtZSxcbiAgICAgICAgcGhvbmU6IGxvY2FsUGFydChsZWFkLnBob25lKSxcbiAgICAgICAgZW1haWw6IGxlYWQuZW1haWwsXG4gICAgICAgIHNvdXJjZTogbGVhZC5zb3VyY2UsXG4gICAgICAgIHNvdXJjZV9vdGhlcjogbGVhZC5zb3VyY2Vfb3RoZXIsXG4gICAgICAgIHJlcXVpcmVtZW50czogbGVhZC5yZXF1aXJlbWVudHMsXG4gICAgICAgIGFzc2lnbmVkX3RvOiBsZWFkLmFzc2lnbmVkX3RvID8gU3RyaW5nKGxlYWQuYXNzaWduZWRfdG8uaWQpIDogJycsXG4gICAgICAgIG5leHRfZm9sbG93dXBfYXQ6IHRvQnVzaW5lc3NJbnB1dChsZWFkLm5leHRfZm9sbG93dXBfYXQpLFxuICAgICAgfSk7XG4gICAgfVxuICAgIGlmICh0aGlzLmxpbWl0ZWQoKSkge1xuICAgICAgZm9yIChjb25zdCBrZXkgb2YgWyduYW1lJywgJ3Bob25lJywgJ3NvdXJjZScsICdzb3VyY2Vfb3RoZXInLCAnYXNzaWduZWRfdG8nLCAnbmV4dF9mb2xsb3d1cF9hdCddIGFzIGNvbnN0KSB7XG4gICAgICAgIHRoaXMuZm9ybS5jb250cm9sc1trZXldLmRpc2FibGUoKTtcbiAgICAgIH1cbiAgICB9XG4gICAgaWYgKHRoaXMuY2FuQXNzaWduKCkgJiYgIXRoaXMuaXNFZGl0KCkpIHtcbiAgICAgIHRoaXMuYXBpLmFzc2lnbmVlcygpLnN1YnNjcmliZSh7IG5leHQ6IChsaXN0KSA9PiB0aGlzLmFzc2lnbmVlcy5zZXQobGlzdCksIGVycm9yOiAoKSA9PiB1bmRlZmluZWQgfSk7XG4gICAgfVxuICB9XG5cbiAgZ2V0IGRpcnR5KCk6IGJvb2xlYW4ge1xuICAgIHJldHVybiB0aGlzLmZvcm0uZGlydHk7XG4gIH1cblxuICBwcm90ZWN0ZWQgc2hvd0Vycm9yKGtleToga2V5b2YgdHlwZW9mIHRoaXMuZm9ybS5jb250cm9scyk6IGJvb2xlYW4ge1xuICAgIGNvbnN0IGNvbnRyb2wgPSB0aGlzLmZvcm0uY29udHJvbHNba2V5XTtcbiAgICByZXR1cm4gY29udHJvbC5pbnZhbGlkICYmIChjb250cm9sLnRvdWNoZWQgfHwgdGhpcy5zdWJtaXR0ZWQoKSk7XG4gIH1cblxuICBwcm90ZWN0ZWQgZXJyb3JUZXh0KGtleToga2V5b2YgdHlwZW9mIHRoaXMuZm9ybS5jb250cm9scyk6IHN0cmluZyB7XG4gICAgY29uc3QgZXJyb3JzID0gdGhpcy5mb3JtLmNvbnRyb2xzW2tleV0uZXJyb3JzID8/IHt9O1xuICAgIGlmIChlcnJvcnNbJ3NlcnZlciddKSByZXR1cm4gZXJyb3JzWydzZXJ2ZXInXTtcbiAgICBpZiAoZXJyb3JzWydyZXF1aXJlZCddKSByZXR1cm4ga2V5ID09PSAnbmFtZScgPyBcIkVudGVyIHRoZSBsZWFkJ3MgbmFtZS5cIiA6ICdFbnRlciBhIG1vYmlsZSBudW1iZXIuJztcbiAgICBpZiAoZXJyb3JzWydwaG9uZSddKSByZXR1cm4gJ0VudGVyIGEgdmFsaWQgbW9iaWxlIG51bWJlciwgZS5nLiA5ODc2NSA0MzIxMC4nO1xuICAgIGlmIChlcnJvcnNbJ2VtYWlsJ10pIHJldHVybiAnRW50ZXIgYSB2YWxpZCBlbWFpbCBhZGRyZXNzLic7XG4gICAgaWYgKGVycm9yc1snbWF4bGVuZ3RoJ10pIHJldHVybiBgS2VlcCB0aGlzIHVuZGVyICR7ZXJyb3JzWydtYXhsZW5ndGgnXS5yZXF1aXJlZExlbmd0aH0gY2hhcmFjdGVycy5gO1xuICAgIHJldHVybiAnQ2hlY2sgdGhpcyBmaWVsZC4nO1xuICB9XG5cbiAgLyoqIFBhc3RlLWZyaWVuZGx5OiBcIis5MSA5ODc2NS00MzIxMFwiIG9yIFwiMDk4NzY1IDQzMjEwXCIgYmVjb21lIFwiOTg3NjU0MzIxMFwiLiAqL1xuICBwcm90ZWN0ZWQgb25QaG9uZVBhc3RlKGV2ZW50OiBDbGlwYm9hcmRFdmVudCk6IHZvaWQge1xuICAgIGNvbnN0IHRleHQgPSBldmVudC5jbGlwYm9hcmREYXRhPy5nZXREYXRhKCd0ZXh0JykgPz8gJyc7XG4gICAgaWYgKCF0ZXh0KSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIGV2ZW50LnByZXZlbnREZWZhdWx0KCk7XG4gICAgdGhpcy5mb3JtLmNvbnRyb2xzLnBob25lLnNldFZhbHVlKGxvY2FsUGFydCh0ZXh0KSk7XG4gICAgdGhpcy5mb3JtLmNvbnRyb2xzLnBob25lLm1hcmtBc0RpcnR5KCk7XG4gIH1cblxuICBwcm90ZWN0ZWQgY2hlY2tEdXBsaWNhdGUoKTogdm9pZCB7XG4gICAgY29uc3QgY29udHJvbCA9IHRoaXMuZm9ybS5jb250cm9scy5waG9uZTtcbiAgICBjb250cm9sLm1hcmtBc1RvdWNoZWQoKTtcbiAgICBjb25zdCBmdWxsID0gbm9ybWFsaXplUGhvbmUodG9GdWxsUGhvbmUoY29udHJvbC52YWx1ZSkpO1xuICAgIGlmICghZnVsbCB8fCB0aGlzLmxpbWl0ZWQoKSkge1xuICAgICAgdGhpcy5kdXBsaWNhdGUuc2V0KG51bGwpO1xuICAgICAgcmV0dXJuO1xuICAgIH1cbiAgICB0aGlzLmFwaS5jaGVja0R1cGxpY2F0ZShmdWxsLCB0aGlzLmxlYWQoKT8uaWQpLnN1YnNjcmliZSh7XG4gICAgICBuZXh0OiAocmVzKSA9PiB0aGlzLmR1cGxpY2F0ZS5zZXQocmVzLmV4aXN0aW5nKSxcbiAgICAgIGVycm9yOiAoKSA9PiB0aGlzLmR1cGxpY2F0ZS5zZXQobnVsbCksXG4gICAgfSk7XG4gIH1cblxuICBwcml2YXRlIHJlYWRvbmx5IGF1dGggPSBpbmplY3QoQXV0aFNlcnZpY2UpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgbWVJZCA9IGNvbXB1dGVkKCgpID0+IHRoaXMuYXV0aC51c2VyKCk/LmlkID8/IG51bGwpO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgYW1Bc3NpZ25lZSA9IGNvbXB1dGVkKCgpID0+IHRoaXMuYXNzaWduZWVzKCkuc29tZSgoYSkgPT4gYS5pZCA9PT0gdGhpcy5tZUlkKCkpKTtcblxuICBwcm90ZWN0ZWQgYXNzaWduVG9NZSgpOiB2b2lkIHtcbiAgICB0aGlzLmZvcm0uY29udHJvbHMuYXNzaWduZWRfdG8uc2V0VmFsdWUoU3RyaW5nKHRoaXMubWVJZCgpKSk7XG4gICAgdGhpcy5mb3JtLmNvbnRyb2xzLmFzc2lnbmVkX3RvLm1hcmtBc0RpcnR5KCk7XG4gIH1cblxuICBwcm90ZWN0ZWQgYXV0b1BpY2soKTogdm9pZCB7XG4gICAgY29uc3QgbGVhc3QgPSB0aGlzLmFzc2lnbmVlcygpXG4gICAgICAuZmlsdGVyKChhKSA9PiBhLnJvbGUgPT09ICdTQUxFU19FWEVDJylcbiAgICAgIC5zb3J0KChhLCBiKSA9PiBhLm9wZW5fY291bnQgLSBiLm9wZW5fY291bnQgfHwgYS5uYW1lLmxvY2FsZUNvbXBhcmUoYi5uYW1lKSlbMF07XG4gICAgaWYgKGxlYXN0KSB7XG4gICAgICB0aGlzLmZvcm0uY29udHJvbHMuYXNzaWduZWRfdG8uc2V0VmFsdWUoU3RyaW5nKGxlYXN0LmlkKSk7XG4gICAgICB0aGlzLmZvcm0uY29udHJvbHMuYXNzaWduZWRfdG8ubWFya0FzRGlydHkoKTtcbiAgICB9XG4gIH1cblxuICBwcm90ZWN0ZWQgc3VibWl0KGFkZEFub3RoZXIgPSBmYWxzZSk6IHZvaWQge1xuICAgIHRoaXMuc3VibWl0dGVkLnNldCh0cnVlKTtcbiAgICB0aGlzLmZvcm1FcnJvci5zZXQoJycpO1xuICAgIHRoaXMuZm9ybS5tYXJrQWxsQXNUb3VjaGVkKCk7XG4gICAgaWYgKHRoaXMuZm9ybS5pbnZhbGlkKSB7XG4gICAgICB0aGlzLmZvY3VzRmlyc3RJbnZhbGlkKCk7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIGNvbnN0IHYgPSB0aGlzLmZvcm0uZ2V0UmF3VmFsdWUoKTtcbiAgICBjb25zdCBmb2xsb3d1cCA9IHYubmV4dF9mb2xsb3d1cF9hdCA/IHRvQnVzaW5lc3NJc28odi5uZXh0X2ZvbGxvd3VwX2F0KSA6IG51bGw7XG4gICAgY29uc3QgYm9keTogUGFydGlhbDxMZWFkSW5wdXQ+ID0gdGhpcy5saW1pdGVkKClcbiAgICAgID8geyBlbWFpbDogdi5lbWFpbC50cmltKCksIHJlcXVpcmVtZW50czogdi5yZXF1aXJlbWVudHMgfVxuICAgICAgOiB7XG4gICAgICAgICAgbmFtZTogdi5uYW1lLnRyaW0oKSxcbiAgICAgICAgICBwaG9uZTogbm9ybWFsaXplUGhvbmUodG9GdWxsUGhvbmUodi5waG9uZSkpID8/IHYucGhvbmUsXG4gICAgICAgICAgZW1haWw6IHYuZW1haWwudHJpbSgpLFxuICAgICAgICAgIHNvdXJjZTogdi5zb3VyY2UsXG4gICAgICAgICAgc291cmNlX290aGVyOiB2LnNvdXJjZSA9PT0gJ09USEVSJyA/IHYuc291cmNlX290aGVyLnRyaW0oKSA6ICcnLFxuICAgICAgICAgIHJlcXVpcmVtZW50czogdi5yZXF1aXJlbWVudHMsXG4gICAgICAgICAgbmV4dF9mb2xsb3d1cF9hdDogZm9sbG93dXAsXG4gICAgICAgIH07XG4gICAgaWYgKHRoaXMuZHVwbGljYXRlKCkpIHtcbiAgICAgIGJvZHkuZm9yY2UgPSB0cnVlO1xuICAgIH1cbiAgICBjb25zdCBsZWFkID0gdGhpcy5sZWFkKCk7XG4gICAgY29uc3QgcmVxdWVzdCA9IGxlYWRcbiAgICAgID8gdGhpcy5hcGkudXBkYXRlKGxlYWQuaWQsIGJvZHkpXG4gICAgICA6IHRoaXMuYXBpLmNyZWF0ZSh7IC4uLihib2R5IGFzIExlYWRJbnB1dCksIGFzc2lnbmVkX3RvOiB2LmFzc2lnbmVkX3RvID8gTnVtYmVyKHYuYXNzaWduZWRfdG8pIDogbnVsbCB9KTtcbiAgICB0aGlzLnNhdmluZy5zZXQodHJ1ZSk7XG4gICAgcmVxdWVzdC5zdWJzY3JpYmUoe1xuICAgICAgbmV4dDogKHNhdmVkKSA9PiB7XG4gICAgICAgIHRoaXMuc2F2aW5nLnNldChmYWxzZSk7XG4gICAgICAgIHRoaXMuc3VibWl0dGVkLnNldChmYWxzZSk7XG4gICAgICAgIHRoaXMuZHVwbGljYXRlLnNldChudWxsKTtcbiAgICAgICAgdGhpcy5mb3JtLm1hcmtBc1ByaXN0aW5lKCk7XG4gICAgICAgIGlmIChhZGRBbm90aGVyKSB7XG4gICAgICAgICAgdGhpcy5mb3JtLnJlc2V0KCk7XG4gICAgICAgIH1cbiAgICAgICAgdGhpcy5zYXZlZC5lbWl0KHsgbGVhZDogc2F2ZWQsIGFkZEFub3RoZXIgfSk7XG4gICAgICB9LFxuICAgICAgZXJyb3I6IChlcnI6IEFwaUVycm9yKSA9PiB7XG4gICAgICAgIHRoaXMuc2F2aW5nLnNldChmYWxzZSk7XG4gICAgICAgIHRoaXMuYXBwbHlTZXJ2ZXJFcnJvcnMoZXJyKTtcbiAgICAgIH0sXG4gICAgfSk7XG4gIH1cblxuICBwcml2YXRlIGFwcGx5U2VydmVyRXJyb3JzKGVycjogQXBpRXJyb3IpOiB2b2lkIHtcbiAgICBpZiAoZXJyLmNvZGUgPT09ICdkdXBsaWNhdGVfbGVhZCcpIHtcbiAgICAgIHRoaXMuZHVwbGljYXRlLnNldCgoZXJyLmRldGFpbHNbJ2V4aXN0aW5nJ10gYXMgRHVwbGljYXRlSW5mbykgPz8gbnVsbCk7XG4gICAgICB0aGlzLmZvcm1FcnJvci5zZXQoJ1RoaXMgbnVtYmVyIGlzIGFscmVhZHkgYSBsZWFkLiBTYXZlIGFnYWluIHRvIGFkZCBpdCBhbnl3YXkuJyk7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIGxldCBtYXBwZWQgPSBmYWxzZTtcbiAgICBmb3IgKGNvbnN0IFtrZXksIHZhbHVlXSBvZiBPYmplY3QuZW50cmllcyhlcnIuZGV0YWlscyA/PyB7fSkpIHtcbiAgICAgIGNvbnN0IGNvbnRyb2wgPSB0aGlzLmZvcm0uZ2V0KGtleSk7XG4gICAgICBpZiAoY29udHJvbCAmJiBBcnJheS5pc0FycmF5KHZhbHVlKSkge1xuICAgICAgICBjb250cm9sLnNldEVycm9ycyh7IHNlcnZlcjogU3RyaW5nKHZhbHVlWzBdKSB9KTtcbiAgICAgICAgY29udHJvbC5tYXJrQXNUb3VjaGVkKCk7XG4gICAgICAgIG1hcHBlZCA9IHRydWU7XG4gICAgICB9XG4gICAgfVxuICAgIGlmIChlcnIuY29kZSA9PT0gJ2ZvbGxvd3VwX2luX3Bhc3QnKSB7XG4gICAgICB0aGlzLmZvcm0uY29udHJvbHMubmV4dF9mb2xsb3d1cF9hdC5zZXRFcnJvcnMoeyBzZXJ2ZXI6ICdUaGUgZm9sbG93LXVwIG11c3Qgbm90IGJlIGluIHRoZSBwYXN0LicgfSk7XG4gICAgICBtYXBwZWQgPSB0cnVlO1xuICAgIH1cbiAgICBpZiAoIW1hcHBlZCkge1xuICAgICAgdGhpcy5mb3JtRXJyb3Iuc2V0KGVyci5tZXNzYWdlKTtcbiAgICB9XG4gICAgdGhpcy5mb2N1c0ZpcnN0SW52YWxpZCgpO1xuICB9XG5cbiAgcHJpdmF0ZSBmb2N1c0ZpcnN0SW52YWxpZCgpOiB2b2lkIHtcbiAgICBjb25zdCBrZXkgPSBGSUVMRF9PUkRFUi5maW5kKChrKSA9PiB0aGlzLmZvcm0uZ2V0KGspPy5pbnZhbGlkKTtcbiAgICBpZiAoa2V5KSB7XG4gICAgICBxdWV1ZU1pY3JvdGFzaygoKSA9PiB0aGlzLmhvc3QubmF0aXZlRWxlbWVudC5xdWVyeVNlbGVjdG9yPEhUTUxFbGVtZW50PihgW2Zvcm1Db250cm9sTmFtZT1cIiR7a2V5fVwiXWApPy5mb2N1cygpKTtcbiAgICB9XG4gIH1cbn1cbiIsIjxmb3JtIFtmb3JtR3JvdXBdPVwiZm9ybVwiIChuZ1N1Ym1pdCk9XCJzdWJtaXQoZmFsc2UpXCIgbm92YWxpZGF0ZT5cbiAgPCEtLSBDb250YWN0IC0tPlxuICA8c2VjdGlvbiBjbGFzcz1cInNlY1wiIGFyaWEtbGFiZWxsZWRieT1cImxmLWgtY29udGFjdFwiPlxuICAgIDxkaXYgY2xhc3M9XCJsYWJcIj5cbiAgICAgIDxzcGFuIGNsYXNzPVwiaWNcIiBhcmlhLWhpZGRlbj1cInRydWVcIj48bWF0LWljb24+cGVyc29uPC9tYXQtaWNvbj48L3NwYW4+XG4gICAgICA8ZGl2PlxuICAgICAgICA8aDMgaWQ9XCJsZi1oLWNvbnRhY3RcIj5Db250YWN0PC9oMz5cbiAgICAgICAgPHA+V2hvIHNob3VsZCB3ZSB0YWxrIHRvPzwvcD5cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PlxuICAgIDxkaXYgY2xhc3M9XCJib2R5IGdyaWRcIj5cbiAgICAgIDxkaXYgY2xhc3M9XCJmaWVsZFwiPlxuICAgICAgICA8bGFiZWwgZm9yPVwibGYtbmFtZVwiPk5hbWU8L2xhYmVsPlxuICAgICAgICA8aW5wdXRcbiAgICAgICAgICBpZD1cImxmLW5hbWVcIlxuICAgICAgICAgIGZvcm1Db250cm9sTmFtZT1cIm5hbWVcIlxuICAgICAgICAgIGF1dG9jb21wbGV0ZT1cIm5hbWVcIlxuICAgICAgICAgIHBsYWNlaG9sZGVyPVwiZS5nLiBSYWh1bCBTaGFybWFcIlxuICAgICAgICAgIFthdHRyLmFyaWEtaW52YWxpZF09XCJzaG93RXJyb3IoJ25hbWUnKSB8fCBudWxsXCJcbiAgICAgICAgICBbYXR0ci5hcmlhLWRlc2NyaWJlZGJ5XT1cInNob3dFcnJvcignbmFtZScpID8gJ2xmLW5hbWUtZXJyJyA6IG51bGxcIlxuICAgICAgICAvPlxuICAgICAgICBAaWYgKHNob3dFcnJvcignbmFtZScpKSB7XG4gICAgICAgICAgPHAgY2xhc3M9XCJlcnJcIiBpZD1cImxmLW5hbWUtZXJyXCI+e3sgZXJyb3JUZXh0KCduYW1lJykgfX08L3A+XG4gICAgICAgIH1cbiAgICAgIDwvZGl2PlxuXG4gICAgICA8ZGl2IGNsYXNzPVwiZmllbGRcIj5cbiAgICAgICAgPGxhYmVsIGZvcj1cImxmLXBob25lXCI+TW9iaWxlIG51bWJlcjwvbGFiZWw+XG4gICAgICAgIDxzcGFuIGNsYXNzPVwicHJlZml4ZWRcIiBbY2xhc3MuaW52YWxpZF09XCJzaG93RXJyb3IoJ3Bob25lJylcIj5cbiAgICAgICAgICA8c3BhbiBjbGFzcz1cInByZVwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPis5MTwvc3Bhbj5cbiAgICAgICAgICA8aW5wdXRcbiAgICAgICAgICAgIGlkPVwibGYtcGhvbmVcIlxuICAgICAgICAgICAgZm9ybUNvbnRyb2xOYW1lPVwicGhvbmVcIlxuICAgICAgICAgICAgdHlwZT1cInRlbFwiXG4gICAgICAgICAgICBpbnB1dG1vZGU9XCJ0ZWxcIlxuICAgICAgICAgICAgYXV0b2NvbXBsZXRlPVwidGVsLW5hdGlvbmFsXCJcbiAgICAgICAgICAgIHBsYWNlaG9sZGVyPVwiOTg3NjUgNDMyMTBcIlxuICAgICAgICAgICAgW2F0dHIuYXJpYS1pbnZhbGlkXT1cInNob3dFcnJvcigncGhvbmUnKSB8fCBudWxsXCJcbiAgICAgICAgICAgIFthdHRyLmFyaWEtZGVzY3JpYmVkYnldPVwiKHNob3dFcnJvcigncGhvbmUnKSA/ICdsZi1waG9uZS1lcnIgJyA6ICcnKSArIChkdXBsaWNhdGUoKSA/ICdsZi1kdXAnIDogJycpIHx8IG51bGxcIlxuICAgICAgICAgICAgKHBhc3RlKT1cIm9uUGhvbmVQYXN0ZSgkZXZlbnQpXCJcbiAgICAgICAgICAgIChibHVyKT1cImNoZWNrRHVwbGljYXRlKClcIlxuICAgICAgICAgIC8+XG4gICAgICAgIDwvc3Bhbj5cbiAgICAgICAgQGlmIChzaG93RXJyb3IoJ3Bob25lJykpIHtcbiAgICAgICAgICA8cCBjbGFzcz1cImVyclwiIGlkPVwibGYtcGhvbmUtZXJyXCI+e3sgZXJyb3JUZXh0KCdwaG9uZScpIH19PC9wPlxuICAgICAgICB9XG4gICAgICAgIEBpZiAoZHVwbGljYXRlKCk7IGFzIGQpIHtcbiAgICAgICAgICA8cCBjbGFzcz1cImR1cFwiIGlkPVwibGYtZHVwXCIgcm9sZT1cInN0YXR1c1wiPlxuICAgICAgICAgICAgPG1hdC1pY29uIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPndhcm5pbmc8L21hdC1pY29uPlxuICAgICAgICAgICAgPHNwYW4+XG4gICAgICAgICAgICAgIFRoaXMgbnVtYmVyIGlzIGFscmVhZHkgbGVhZCA8c3Ryb25nPnt7IGQubmFtZSB9fTwvc3Ryb25nPlxuICAgICAgICAgICAgICAoe3sgc3RhdHVzTGFiZWxzW2Quc3RhdHVzXSB9fXt7IGQuYXNzaWduZWRfdG9fbmFtZSA/ICcsICcgKyBkLmFzc2lnbmVkX3RvX25hbWUgOiAnJyB9fSkuXG4gICAgICAgICAgICAgIDxhIFtyb3V0ZXJMaW5rXT1cIlsnL2xlYWRzJywgZC5pZF1cIiB0YXJnZXQ9XCJfYmxhbmtcIj5PcGVuIGxlYWQ8L2E+XG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgPC9wPlxuICAgICAgICB9XG4gICAgICA8L2Rpdj5cblxuICAgICAgPGRpdiBjbGFzcz1cImZpZWxkIHdpZGVcIj5cbiAgICAgICAgPGxhYmVsIGZvcj1cImxmLWVtYWlsXCI+RW1haWwgPHNwYW4gY2xhc3M9XCJvcHRcIj4ob3B0aW9uYWwpPC9zcGFuPjwvbGFiZWw+XG4gICAgICAgIDxpbnB1dFxuICAgICAgICAgIGlkPVwibGYtZW1haWxcIlxuICAgICAgICAgIGZvcm1Db250cm9sTmFtZT1cImVtYWlsXCJcbiAgICAgICAgICB0eXBlPVwiZW1haWxcIlxuICAgICAgICAgIGF1dG9jb21wbGV0ZT1cImVtYWlsXCJcbiAgICAgICAgICBwbGFjZWhvbGRlcj1cIm5hbWVAY29tcGFueS5jb21cIlxuICAgICAgICAgIFthdHRyLmFyaWEtaW52YWxpZF09XCJzaG93RXJyb3IoJ2VtYWlsJykgfHwgbnVsbFwiXG4gICAgICAgICAgW2F0dHIuYXJpYS1kZXNjcmliZWRieV09XCJzaG93RXJyb3IoJ2VtYWlsJykgPyAnbGYtZW1haWwtZXJyJyA6IG51bGxcIlxuICAgICAgICAvPlxuICAgICAgICBAaWYgKHNob3dFcnJvcignZW1haWwnKSkge1xuICAgICAgICAgIDxwIGNsYXNzPVwiZXJyXCIgaWQ9XCJsZi1lbWFpbC1lcnJcIj57eyBlcnJvclRleHQoJ2VtYWlsJykgfX08L3A+XG4gICAgICAgIH1cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PlxuICA8L3NlY3Rpb24+XG5cbiAgPCEtLSBTb3VyY2UgLS0+XG4gIDxzZWN0aW9uIGNsYXNzPVwic2VjXCIgYXJpYS1sYWJlbGxlZGJ5PVwibGYtaC1zb3VyY2VcIj5cbiAgICA8ZGl2IGNsYXNzPVwibGFiXCI+XG4gICAgICA8c3BhbiBjbGFzcz1cImljXCIgYXJpYS1oaWRkZW49XCJ0cnVlXCI+PG1hdC1pY29uPnRyYXZlbF9leHBsb3JlPC9tYXQtaWNvbj48L3NwYW4+XG4gICAgICA8ZGl2PlxuICAgICAgICA8aDMgaWQ9XCJsZi1oLXNvdXJjZVwiPlNvdXJjZTwvaDM+XG4gICAgICAgIDxwPldoZXJlIGRpZCB0aGlzIGxlYWQgY29tZSBmcm9tPzwvcD5cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PlxuICAgIDxkaXYgY2xhc3M9XCJib2R5XCI+XG4gICAgICA8ZGl2IGNsYXNzPVwiY2hpcHNldFwiIHJvbGU9XCJyYWRpb2dyb3VwXCIgYXJpYS1sYWJlbGxlZGJ5PVwibGYtaC1zb3VyY2VcIj5cbiAgICAgICAgQGZvciAocyBvZiBzb3VyY2VzOyB0cmFjayBzWzBdKSB7XG4gICAgICAgICAgPGxhYmVsIGNsYXNzPVwib3B0LWNoaXBcIj5cbiAgICAgICAgICAgIDxpbnB1dCB0eXBlPVwicmFkaW9cIiBmb3JtQ29udHJvbE5hbWU9XCJzb3VyY2VcIiBbdmFsdWVdPVwic1swXVwiIC8+XG4gICAgICAgICAgICA8c3Bhbj57eyBzWzFdIH19PC9zcGFuPlxuICAgICAgICAgIDwvbGFiZWw+XG4gICAgICAgIH1cbiAgICAgIDwvZGl2PlxuICAgICAgQGlmIChpc090aGVyKCkpIHtcbiAgICAgICAgPGRpdiBjbGFzcz1cImZpZWxkXCI+XG4gICAgICAgICAgPGxhYmVsIGZvcj1cImxmLXNvdXJjZS1vdGhlclwiPkRlc2NyaWJlIHRoZSBzb3VyY2U8L2xhYmVsPlxuICAgICAgICAgIDxpbnB1dCBpZD1cImxmLXNvdXJjZS1vdGhlclwiIGZvcm1Db250cm9sTmFtZT1cInNvdXJjZV9vdGhlclwiIHBsYWNlaG9sZGVyPVwiZS5nLiBOZXdzcGFwZXIgYWRcIiAvPlxuICAgICAgICA8L2Rpdj5cbiAgICAgIH1cbiAgICA8L2Rpdj5cbiAgPC9zZWN0aW9uPlxuXG4gIDwhLS0gUmVxdWlyZW1lbnRzIC0tPlxuICA8c2VjdGlvbiBjbGFzcz1cInNlY1wiIGFyaWEtbGFiZWxsZWRieT1cImxmLWgtcmVxXCI+XG4gICAgPGRpdiBjbGFzcz1cImxhYlwiPlxuICAgICAgPHNwYW4gY2xhc3M9XCJpY1wiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPjxtYXQtaWNvbj5kZXNjcmlwdGlvbjwvbWF0LWljb24+PC9zcGFuPlxuICAgICAgPGRpdj5cbiAgICAgICAgPGgzIGlkPVwibGYtaC1yZXFcIj5SZXF1aXJlbWVudHM8L2gzPlxuICAgICAgICA8cD5BIGxpbmUgb3IgdHdvIGlzIGVub3VnaC48L3A+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5cbiAgICA8ZGl2IGNsYXNzPVwiYm9keVwiPlxuICAgICAgPGRpdiBjbGFzcz1cImZpZWxkXCI+XG4gICAgICAgIDxsYWJlbCBmb3I9XCJsZi1yZXFcIiBjbGFzcz1cInNyLW9ubHlcIj5XaGF0IGRvZXMgdGhlIGNsaWVudCBuZWVkPzwvbGFiZWw+XG4gICAgICAgIDx0ZXh0YXJlYVxuICAgICAgICAgIGlkPVwibGYtcmVxXCJcbiAgICAgICAgICBmb3JtQ29udHJvbE5hbWU9XCJyZXF1aXJlbWVudHNcIlxuICAgICAgICAgIHJvd3M9XCI0XCJcbiAgICAgICAgICBwbGFjZWhvbGRlcj1cIldoYXQgZG9lcyB0aGUgY2xpZW50IG5lZWQ/IChvcHRpb25hbClcIlxuICAgICAgICAgIGFyaWEtZGVzY3JpYmVkYnk9XCJsZi1yZXEtY291bnRcIlxuICAgICAgICA+PC90ZXh0YXJlYT5cbiAgICAgICAgPHAgY2xhc3M9XCJoaW50XCIgaWQ9XCJsZi1yZXEtY291bnRcIiBbY2xhc3Mub3Zlcl09XCJyZXFMZW5ndGgoKSA+IG1heFJlcVwiPnt7IHJlcUxlbmd0aCgpIH19IC8ge3sgbWF4UmVxIH19PC9wPlxuICAgICAgPC9kaXY+XG4gICAgPC9kaXY+XG4gIDwvc2VjdGlvbj5cblxuICA8IS0tIEFzc2lnbm1lbnQgLS0+XG4gIEBpZiAoY2FuQXNzaWduKCkgJiYgIWlzRWRpdCgpKSB7XG4gICAgPHNlY3Rpb24gY2xhc3M9XCJzZWNcIiBhcmlhLWxhYmVsbGVkYnk9XCJsZi1oLWFzc2lnblwiPlxuICAgICAgPGRpdiBjbGFzcz1cImxhYlwiPlxuICAgICAgICA8c3BhbiBjbGFzcz1cImljXCIgYXJpYS1oaWRkZW49XCJ0cnVlXCI+PG1hdC1pY29uPmdyb3VwPC9tYXQtaWNvbj48L3NwYW4+XG4gICAgICAgIDxkaXY+XG4gICAgICAgICAgPGgzIGlkPVwibGYtaC1hc3NpZ25cIj5Bc3NpZ25tZW50PC9oMz5cbiAgICAgICAgICA8cD5XaG8gd2lsbCB3b3JrIHRoaXMgbGVhZD88L3A+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG4gICAgICA8ZGl2IGNsYXNzPVwiYm9keVwiPlxuICAgICAgICA8ZGl2IGNsYXNzPVwicGVvcGxlXCIgcm9sZT1cInJhZGlvZ3JvdXBcIiBhcmlhLWxhYmVsbGVkYnk9XCJsZi1oLWFzc2lnblwiPlxuICAgICAgICAgIDxsYWJlbCBjbGFzcz1cInBlcnNvblwiPlxuICAgICAgICAgICAgPGlucHV0IHR5cGU9XCJyYWRpb1wiIGZvcm1Db250cm9sTmFtZT1cImFzc2lnbmVkX3RvXCIgdmFsdWU9XCJcIiAvPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJwY1wiPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cImxhdGVyXCIgYXJpYS1oaWRkZW49XCJ0cnVlXCI+PG1hdC1pY29uPnNjaGVkdWxlPC9tYXQtaWNvbj48L3NwYW4+XG4gICAgICAgICAgICAgIDxzcGFuIGNsYXNzPVwibm1cIj5Bc3NpZ24gbGF0ZXI8c21hbGw+RGVjaWRlIHdoZW4gaXQncyByZWFkeTwvc21hbGw+PC9zcGFuPlxuICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgIDwvbGFiZWw+XG4gICAgICAgICAgQGZvciAoYSBvZiBhc3NpZ25lZXMoKTsgdHJhY2sgYS5pZCkge1xuICAgICAgICAgICAgPGxhYmVsIGNsYXNzPVwicGVyc29uXCI+XG4gICAgICAgICAgICAgIDxpbnB1dCB0eXBlPVwicmFkaW9cIiBmb3JtQ29udHJvbE5hbWU9XCJhc3NpZ25lZF90b1wiIFt2YWx1ZV09XCInJyArIGEuaWRcIiAvPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cInBjXCI+XG4gICAgICAgICAgICAgICAgPGFwcC1sZWFkLWF2YXRhciBbbmFtZV09XCJhLm5hbWVcIiBbc2l6ZV09XCIzNlwiIC8+XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9XCJubVwiPlxuICAgICAgICAgICAgICAgICAge3sgYS5uYW1lIH19e3sgYS5pZCA9PT0gbWVJZCgpID8gJyAoeW91KScgOiAnJyB9fVxuICAgICAgICAgICAgICAgICAgPHNtYWxsPnt7IGEucm9sZSA9PT0gJ0FETUlOJyA/ICdBZG1pbiDCtyAnIDogJycgfX17eyBhLm9wZW5fY291bnQgfX0gb3Blbjwvc21hbGw+XG4gICAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8L2xhYmVsPlxuICAgICAgICAgIH1cbiAgICAgICAgPC9kaXY+XG4gICAgICAgIDxkaXYgY2xhc3M9XCJ0b29sc1wiPlxuICAgICAgICAgIEBpZiAoYW1Bc3NpZ25lZSgpKSB7XG4gICAgICAgICAgICA8YnV0dG9uIHR5cGU9XCJidXR0b25cIiBjbGFzcz1cImxpbmtcIiAoY2xpY2spPVwiYXNzaWduVG9NZSgpXCI+QXNzaWduIHRvIG1lPC9idXR0b24+XG4gICAgICAgICAgfVxuICAgICAgICAgIDxidXR0b24gdHlwZT1cImJ1dHRvblwiIGNsYXNzPVwibGlua1wiIFtkaXNhYmxlZF09XCIhYXNzaWduZWVzKCkubGVuZ3RoXCIgKGNsaWNrKT1cImF1dG9QaWNrKClcIj5BdXRvLXBpY2sgbGVhc3QgbG9hZGVkPC9idXR0b24+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG4gICAgPC9zZWN0aW9uPlxuICB9XG5cbiAgPCEtLSBGb2xsb3ctdXAgLS0+XG4gIEBpZiAoIWxpbWl0ZWQoKSkge1xuICAgIDxzZWN0aW9uIGNsYXNzPVwic2VjXCIgYXJpYS1sYWJlbGxlZGJ5PVwibGYtaC1mdVwiPlxuICAgICAgPGRpdiBjbGFzcz1cImxhYlwiPlxuICAgICAgICA8c3BhbiBjbGFzcz1cImljXCIgYXJpYS1oaWRkZW49XCJ0cnVlXCI+PG1hdC1pY29uPmV2ZW50PC9tYXQtaWNvbj48L3NwYW4+XG4gICAgICAgIDxkaXY+XG4gICAgICAgICAgPGgzIGlkPVwibGYtaC1mdVwiPkZvbGxvdy11cDwvaDM+XG4gICAgICAgICAgPHA+V2hlbiB0byByZWFjaCBvdXQgbmV4dCAob3B0aW9uYWwpLjwvcD5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICAgIDxkaXYgY2xhc3M9XCJib2R5XCI+XG4gICAgICAgIDxhcHAtZm9sbG93dXAtcGlja2VyIGlucHV0SWQ9XCJsZi1mdVwiIGZvcm1Db250cm9sTmFtZT1cIm5leHRfZm9sbG93dXBfYXRcIiBbaW52YWxpZF09XCJzaG93RXJyb3IoJ25leHRfZm9sbG93dXBfYXQnKVwiIC8+XG4gICAgICAgIEBpZiAoc2hvd0Vycm9yKCduZXh0X2ZvbGxvd3VwX2F0JykpIHtcbiAgICAgICAgICA8cCBjbGFzcz1cImVyclwiIGlkPVwibGYtZnUtZXJyXCI+e3sgZXJyb3JUZXh0KCduZXh0X2ZvbGxvd3VwX2F0JykgfX08L3A+XG4gICAgICAgIH1cbiAgICAgIDwvZGl2PlxuICAgIDwvc2VjdGlvbj5cbiAgfVxuXG4gIEBpZiAoZm9ybUVycm9yKCkpIHtcbiAgICA8cCBjbGFzcz1cImZvcm0tZXJyXCIgcm9sZT1cImFsZXJ0XCI+e3sgZm9ybUVycm9yKCkgfX08L3A+XG4gIH1cblxuICA8ZGl2IGNsYXNzPVwiYmFyXCI+XG4gICAgQGlmIChpc0VkaXQoKSkge1xuICAgICAgPGJ1dHRvbiBtYXRCdXR0b24gdHlwZT1cImJ1dHRvblwiIChjbGljayk9XCJjYW5jZWxsZWQuZW1pdCgpXCI+Q2FuY2VsPC9idXR0b24+XG4gICAgICA8YnV0dG9uIG1hdEJ1dHRvbj1cImZpbGxlZFwiIHR5cGU9XCJzdWJtaXRcIiBbZGlzYWJsZWRdPVwic2F2aW5nKClcIj57eyBzYXZpbmcoKSA/ICdTYXZpbmfigKYnIDogJ1NhdmUgY2hhbmdlcycgfX08L2J1dHRvbj5cbiAgICB9IEBlbHNlIHtcbiAgICAgIDxidXR0b24gbWF0QnV0dG9uPVwib3V0bGluZWRcIiB0eXBlPVwiYnV0dG9uXCIgW2Rpc2FibGVkXT1cInNhdmluZygpXCIgKGNsaWNrKT1cInN1Ym1pdCh0cnVlKVwiPlNhdmUgJmFtcDsgYWRkIGFub3RoZXI8L2J1dHRvbj5cbiAgICAgIDxidXR0b24gbWF0QnV0dG9uPVwiZmlsbGVkXCIgdHlwZT1cInN1Ym1pdFwiIFtkaXNhYmxlZF09XCJzYXZpbmcoKVwiPnt7IHNhdmluZygpID8gJ1NhdmluZ+KApicgOiAnU2F2ZSBsZWFkJyB9fTwvYnV0dG9uPlxuICAgIH1cbiAgPC9kaXY+XG48L2Zvcm0+XG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQ0UseUJBQ0EsV0FFQSxZQUNBLFVBQ0EsUUFDQSxPQUNBLFFBQ0EsY0FDSztBQUNQLFNBQVMsZ0JBQWdCO0FBQ3pCLFNBQTBCLGFBQWEscUJBQXVDLGtCQUFrQjtBQUNoRyxTQUFTLHVCQUF1QjtBQUNoQyxTQUFTLHFCQUFxQjtBQUM5QixTQUFTLGtCQUFrQjtBOzs7Ozs7MENDd0VqQixDQUFDOzs7O0FBakVELElBQUEsNEJBQUEsR0FBQSxLQUFBLENBQUE7QUFBZ0MsSUFBQSxvQkFBQSxDQUFBO0FBQXVCLElBQUEsMEJBQUE7Ozs7QUFBdkIsSUFBQSx1QkFBQTtBQUFBLElBQUEsK0JBQUEsT0FBQSxVQUFBLE1BQUEsQ0FBQTs7Ozs7QUFzQmhDLElBQUEsNEJBQUEsR0FBQSxLQUFBLEVBQUE7QUFBaUMsSUFBQSxvQkFBQSxDQUFBO0FBQXdCLElBQUEsMEJBQUE7Ozs7QUFBeEIsSUFBQSx1QkFBQTtBQUFBLElBQUEsK0JBQUEsT0FBQSxVQUFBLE9BQUEsQ0FBQTs7Ozs7QUFHakMsSUFBQSw0QkFBQSxHQUFBLEtBQUEsRUFBQSxFQUF5QyxHQUFBLFlBQUEsRUFBQTtBQUNWLElBQUEsb0JBQUEsR0FBQSxTQUFBO0FBQU8sSUFBQSwwQkFBQTtBQUNwQyxJQUFBLDRCQUFBLEdBQUEsTUFBQTtBQUNFLElBQUEsb0JBQUEsR0FBQSwrQkFBQTtBQUE0QixJQUFBLDRCQUFBLEdBQUEsUUFBQTtBQUFRLElBQUEsb0JBQUEsQ0FBQTtBQUFZLElBQUEsMEJBQUE7QUFDaEQsSUFBQSxvQkFBQSxDQUFBO0FBQ0EsSUFBQSw0QkFBQSxHQUFBLEtBQUEsRUFBQTtBQUFtRCxJQUFBLG9CQUFBLEdBQUEsV0FBQTtBQUFTLElBQUEsMEJBQUEsRUFBSSxFQUMzRDs7Ozs7QUFIK0IsSUFBQSx1QkFBQSxDQUFBO0FBQUEsSUFBQSwrQkFBQSxLQUFBLElBQUE7QUFDcEMsSUFBQSx1QkFBQTtBQUFBLElBQUEsZ0NBQUEsTUFBQSxPQUFBLGFBQUEsS0FBQSxNQUFBLEdBQUEsSUFBQSxLQUFBLG1CQUFBLE9BQUEsS0FBQSxtQkFBQSxJQUFBLEtBQUE7QUFDRyxJQUFBLHVCQUFBO0FBQUEsSUFBQSx3QkFBQSxjQUFBLDZCQUFBLEdBQUEsS0FBQSxLQUFBLEVBQUEsQ0FBQTs7Ozs7QUFrQlAsSUFBQSw0QkFBQSxHQUFBLEtBQUEsRUFBQTtBQUFpQyxJQUFBLG9CQUFBLENBQUE7QUFBd0IsSUFBQSwwQkFBQTs7OztBQUF4QixJQUFBLHVCQUFBO0FBQUEsSUFBQSwrQkFBQSxPQUFBLFVBQUEsT0FBQSxDQUFBOzs7OztBQWtCakMsSUFBQSw0QkFBQSxHQUFBLFNBQUEsRUFBQSxFQUF3QixHQUFBLFNBQUEsRUFBQTtBQUNGLElBQUEsNkJBQUE7QUFBcEIsSUFBQSwwQkFBQTtBQUNBLElBQUEsNEJBQUEsR0FBQSxNQUFBO0FBQU0sSUFBQSxvQkFBQSxDQUFBO0FBQVUsSUFBQSwwQkFBQSxFQUFPOzs7O0FBRHNCLElBQUEsdUJBQUE7QUFBQSxJQUFBLHdCQUFBLFNBQUEsS0FBQSxDQUFBLENBQUE7QUFBekIsSUFBQSx1QkFBQTtBQUNkLElBQUEsdUJBQUEsQ0FBQTtBQUFBLElBQUEsK0JBQUEsS0FBQSxDQUFBLENBQUE7Ozs7O0FBS1YsSUFBQSw0QkFBQSxHQUFBLE9BQUEsQ0FBQSxFQUFtQixHQUFBLFNBQUEsRUFBQTtBQUNZLElBQUEsb0JBQUEsR0FBQSxxQkFBQTtBQUFtQixJQUFBLDBCQUFBO0FBQ2hELElBQUEsNEJBQUEsR0FBQSxTQUFBLEVBQUE7QUFBNEIsSUFBQSw2QkFBQTtBQUE1QixJQUFBLDBCQUFBLEVBQTZGOzs7QUFBakUsSUFBQSx1QkFBQSxDQUFBO0FBQUEsSUFBQSx1QkFBQTs7Ozs7QUFrRDFCLElBQUEsNEJBQUEsR0FBQSxTQUFBLEVBQUEsRUFBc0IsR0FBQSxTQUFBLEVBQUE7QUFDQSxJQUFBLDZCQUFBO0FBQXBCLElBQUEsMEJBQUE7QUFDQSxJQUFBLDRCQUFBLEdBQUEsUUFBQSxFQUFBO0FBQ0UsSUFBQSx1QkFBQSxHQUFBLG1CQUFBLEVBQUE7QUFDQSxJQUFBLDRCQUFBLEdBQUEsUUFBQSxFQUFBO0FBQ0UsSUFBQSxvQkFBQSxDQUFBO0FBQ0EsSUFBQSw0QkFBQSxHQUFBLE9BQUE7QUFBTyxJQUFBLG9CQUFBLENBQUE7QUFBaUUsSUFBQSwwQkFBQSxFQUFRLEVBQzNFLEVBQ0Y7Ozs7O0FBUDJDLElBQUEsdUJBQUE7QUFBQSxJQUFBLHdCQUFBLFNBQUEsS0FBQSxLQUFBLEVBQUE7QUFBOUIsSUFBQSx1QkFBQTtBQUVELElBQUEsdUJBQUEsQ0FBQTtBQUFBLElBQUEsd0JBQUEsUUFBQSxLQUFBLElBQUEsRUFBZSxRQUFBLEVBQUE7QUFFOUIsSUFBQSx1QkFBQSxDQUFBO0FBQUEsSUFBQSxnQ0FBQSxLQUFBLEtBQUEsTUFBQSxJQUFBLEtBQUEsT0FBQSxPQUFBLEtBQUEsSUFBQSxXQUFBLElBQUEsR0FBQTtBQUNPLElBQUEsdUJBQUEsQ0FBQTtBQUFBLElBQUEsZ0NBQUEsSUFBQSxLQUFBLFNBQUEsVUFBQSxnQkFBQSxJQUFBLElBQUEsS0FBQSxZQUFBLE9BQUE7Ozs7OztBQVFiLElBQUEsNEJBQUEsR0FBQSxVQUFBLEVBQUE7QUFBbUMsSUFBQSx3QkFBQSxTQUFBLFNBQUEsMEVBQUE7QUFBQSxNQUFBLDJCQUFBLEdBQUE7QUFBQSxZQUFBLFNBQUEsMkJBQUEsQ0FBQTtBQUFBLGFBQUEseUJBQVMsT0FBQSxXQUFBLENBQVk7SUFBQSxDQUFBO0FBQUUsSUFBQSxvQkFBQSxHQUFBLGNBQUE7QUFBWSxJQUFBLDBCQUFBOzs7Ozs7QUFoQzlFLElBQUEsNEJBQUEsR0FBQSxXQUFBLEVBQUEsRUFBbUQsR0FBQSxPQUFBLENBQUEsRUFDaEMsR0FBQSxRQUFBLENBQUEsRUFDcUIsR0FBQSxVQUFBO0FBQVUsSUFBQSxvQkFBQSxHQUFBLE9BQUE7QUFBSyxJQUFBLDBCQUFBLEVBQVc7QUFDOUQsSUFBQSw0QkFBQSxHQUFBLEtBQUEsRUFBSyxHQUFBLE1BQUEsRUFBQTtBQUNrQixJQUFBLG9CQUFBLEdBQUEsWUFBQTtBQUFVLElBQUEsMEJBQUE7QUFDL0IsSUFBQSw0QkFBQSxHQUFBLEdBQUE7QUFBRyxJQUFBLG9CQUFBLEdBQUEsMEJBQUE7QUFBd0IsSUFBQSwwQkFBQSxFQUFJLEVBQzNCO0FBRVIsSUFBQSw0QkFBQSxJQUFBLE9BQUEsRUFBQSxFQUFrQixJQUFBLE9BQUEsRUFBQSxFQUNvRCxJQUFBLFNBQUEsRUFBQSxFQUM1QyxJQUFBLFNBQUEsRUFBQTtBQUNBLElBQUEsNkJBQUE7QUFBcEIsSUFBQSwwQkFBQTtBQUNBLElBQUEsNEJBQUEsSUFBQSxRQUFBLEVBQUEsRUFBaUIsSUFBQSxRQUFBLEVBQUEsRUFDd0IsSUFBQSxVQUFBO0FBQVUsSUFBQSxvQkFBQSxJQUFBLFVBQUE7QUFBUSxJQUFBLDBCQUFBLEVBQVc7QUFDcEUsSUFBQSw0QkFBQSxJQUFBLFFBQUEsRUFBQTtBQUFpQixJQUFBLG9CQUFBLElBQUEsY0FBQTtBQUFZLElBQUEsNEJBQUEsSUFBQSxPQUFBO0FBQU8sSUFBQSxvQkFBQSxJQUFBLHdCQUFBO0FBQXNCLElBQUEsMEJBQUEsRUFBUSxFQUFPLEVBQ3BFO0FBRVQsSUFBQSw4QkFBQSxJQUFBLHlDQUFBLEdBQUEsR0FBQSxTQUFBLElBQUEsVUFBQTtBQVlGLElBQUEsMEJBQUE7QUFDQSxJQUFBLDRCQUFBLElBQUEsT0FBQSxFQUFBO0FBQ0UsSUFBQSxpQ0FBQSxJQUFBLGlEQUFBLEdBQUEsR0FBQSxVQUFBLEVBQUE7QUFHQSxJQUFBLDRCQUFBLElBQUEsVUFBQSxFQUFBO0FBQW9FLElBQUEsd0JBQUEsU0FBQSxTQUFBLDREQUFBO0FBQUEsTUFBQSwyQkFBQSxHQUFBO0FBQUEsWUFBQSxTQUFBLDJCQUFBO0FBQUEsYUFBQSx5QkFBUyxPQUFBLFNBQUEsQ0FBVTtJQUFBLENBQUE7QUFBRSxJQUFBLG9CQUFBLElBQUEsd0JBQUE7QUFBc0IsSUFBQSwwQkFBQSxFQUFTLEVBQ3BILEVBQ0Y7Ozs7QUF6Qm9CLElBQUEsdUJBQUEsRUFBQTtBQUFBLElBQUEsdUJBQUE7QUFNdEIsSUFBQSx1QkFBQSxDQUFBO0FBQUEsSUFBQSx3QkFBQSxPQUFBLFVBQUEsQ0FBVztBQWNYLElBQUEsdUJBQUEsQ0FBQTtBQUFBLElBQUEsMkJBQUEsT0FBQSxXQUFBLElBQUEsS0FBQSxFQUFBO0FBR21DLElBQUEsdUJBQUE7QUFBQSxJQUFBLHdCQUFBLFlBQUEsQ0FBQSxPQUFBLFVBQUEsRUFBQSxNQUFBOzs7OztBQW1CbkMsSUFBQSw0QkFBQSxHQUFBLEtBQUEsRUFBQTtBQUE4QixJQUFBLG9CQUFBLENBQUE7QUFBbUMsSUFBQSwwQkFBQTs7OztBQUFuQyxJQUFBLHVCQUFBO0FBQUEsSUFBQSwrQkFBQSxPQUFBLFVBQUEsa0JBQUEsQ0FBQTs7Ozs7QUFYcEMsSUFBQSw0QkFBQSxHQUFBLFdBQUEsRUFBQSxFQUErQyxHQUFBLE9BQUEsQ0FBQSxFQUM1QixHQUFBLFFBQUEsQ0FBQSxFQUNxQixHQUFBLFVBQUE7QUFBVSxJQUFBLG9CQUFBLEdBQUEsT0FBQTtBQUFLLElBQUEsMEJBQUEsRUFBVztBQUM5RCxJQUFBLDRCQUFBLEdBQUEsS0FBQSxFQUFLLEdBQUEsTUFBQSxFQUFBO0FBQ2MsSUFBQSxvQkFBQSxHQUFBLFdBQUE7QUFBUyxJQUFBLDBCQUFBO0FBQzFCLElBQUEsNEJBQUEsR0FBQSxHQUFBO0FBQUcsSUFBQSxvQkFBQSxHQUFBLG9DQUFBO0FBQWtDLElBQUEsMEJBQUEsRUFBSSxFQUNyQztBQUVSLElBQUEsNEJBQUEsSUFBQSxPQUFBLEVBQUEsRUFBa0IsSUFBQSx1QkFBQSxFQUFBO0FBQ3FCLElBQUEsNkJBQUE7QUFBckMsSUFBQSwwQkFBQTtBQUNBLElBQUEsaUNBQUEsSUFBQSxpREFBQSxHQUFBLEdBQUEsS0FBQSxFQUFBO0FBR0YsSUFBQSwwQkFBQSxFQUFNOzs7O0FBSm9FLElBQUEsdUJBQUEsRUFBQTtBQUFBLElBQUEsd0JBQUEsV0FBQSxPQUFBLFVBQUEsa0JBQUEsQ0FBQTtBQUFuQyxJQUFBLHVCQUFBO0FBQ3JDLElBQUEsdUJBQUE7QUFBQSxJQUFBLDJCQUFBLE9BQUEsVUFBQSxrQkFBQSxJQUFBLEtBQUEsRUFBQTs7Ozs7QUFRSixJQUFBLDRCQUFBLEdBQUEsS0FBQSxFQUFBO0FBQWlDLElBQUEsb0JBQUEsQ0FBQTtBQUFpQixJQUFBLDBCQUFBOzs7O0FBQWpCLElBQUEsdUJBQUE7QUFBQSxJQUFBLCtCQUFBLE9BQUEsVUFBQSxDQUFBOzs7Ozs7QUFLL0IsSUFBQSw0QkFBQSxHQUFBLFVBQUEsRUFBQTtBQUFnQyxJQUFBLHdCQUFBLFNBQUEsU0FBQSwyREFBQTtBQUFBLE1BQUEsMkJBQUEsR0FBQTtBQUFBLFlBQUEsU0FBQSwyQkFBQTtBQUFBLGFBQUEseUJBQVMsT0FBQSxVQUFBLEtBQUEsQ0FBZ0I7SUFBQSxDQUFBO0FBQUUsSUFBQSxvQkFBQSxHQUFBLFFBQUE7QUFBTSxJQUFBLDBCQUFBO0FBQ2pFLElBQUEsNEJBQUEsR0FBQSxVQUFBLEVBQUE7QUFBK0QsSUFBQSxvQkFBQSxDQUFBO0FBQTJDLElBQUEsMEJBQUE7Ozs7QUFBakUsSUFBQSx1QkFBQSxDQUFBO0FBQUEsSUFBQSx3QkFBQSxZQUFBLE9BQUEsT0FBQSxDQUFBO0FBQXNCLElBQUEsdUJBQUE7QUFBQSxJQUFBLCtCQUFBLE9BQUEsT0FBQSxJQUFBLGlCQUFBLGNBQUE7Ozs7OztBQUUvRCxJQUFBLDRCQUFBLEdBQUEsVUFBQSxFQUFBO0FBQWlFLElBQUEsd0JBQUEsU0FBQSxTQUFBLDJEQUFBO0FBQUEsTUFBQSwyQkFBQSxHQUFBO0FBQUEsWUFBQSxTQUFBLDJCQUFBO0FBQUEsYUFBQSx5QkFBUyxPQUFBLE9BQU8sSUFBSSxDQUFDO0lBQUEsQ0FBQTtBQUFFLElBQUEsb0JBQUEsR0FBQSxvQkFBQTtBQUFzQixJQUFBLDBCQUFBO0FBQzlHLElBQUEsNEJBQUEsR0FBQSxVQUFBLEVBQUE7QUFBK0QsSUFBQSxvQkFBQSxDQUFBO0FBQXdDLElBQUEsMEJBQUE7Ozs7QUFENUQsSUFBQSx3QkFBQSxZQUFBLE9BQUEsT0FBQSxDQUFBO0FBQ0YsSUFBQSx1QkFBQSxDQUFBO0FBQUEsSUFBQSx3QkFBQSxZQUFBLE9BQUEsT0FBQSxDQUFBO0FBQXNCLElBQUEsdUJBQUE7QUFBQSxJQUFBLCtCQUFBLE9BQUEsT0FBQSxJQUFBLGlCQUFBLFdBQUE7OztBRHJLOUQsSUFBTSxtQkFBbUI7QUFFaEMsSUFBTSxpQkFBaUIsQ0FBQyxZQUN0QixDQUFDLFFBQVEsU0FBUyxlQUFlLFlBQVksUUFBUSxLQUFLLENBQUMsSUFBSSxPQUFPLEVBQUUsT0FBTyxLQUFJO0FBRy9FLFNBQVUsWUFBWSxPQUFzQjtBQUNoRCxRQUFNLFFBQVEsU0FBUyxJQUFJLEtBQUk7QUFDL0IsU0FBTyxLQUFLLFdBQVcsR0FBRyxJQUFJLE9BQU8sTUFBTSxLQUFLLFFBQVEsT0FBTyxFQUFFLENBQUM7QUFDcEU7QUFFQSxJQUFNLGNBQWMsQ0FBQyxRQUFRLFNBQVMsU0FBUyxVQUFVLGdCQUFnQixnQkFBZ0IsZUFBZSxrQkFBa0I7QUFlcEgsSUFBTyxXQUFQLE1BQU8sVUFBMEI7O0VBRTVCLE9BQU87SUFBeUI7Ozs7Ozs7RUFFaEMsWUFBWTtJQUFNOzs7Ozs7RUFDbEIsVUFBVTtJQUFNOzs7Ozs7RUFDaEIsUUFBUSxPQUFvQjtFQUM1QixZQUFZLE9BQVc7RUFFZixNQUFNLE9BQU8sUUFBUTtFQUNyQixPQUFPLE9BQWdDLFVBQVU7RUFFL0MsVUFBVTtFQUNWLGVBQWU7RUFDZixTQUFTO0VBQ1QsWUFBWTtJQUFtQixDQUFBOzs7Ozs7RUFDL0IsWUFBWTtJQUE2Qjs7Ozs7O0VBQ3pDLFNBQVM7SUFBTzs7Ozs7O0VBQ2hCLFlBQVk7SUFBTzs7Ozs7O0VBQ25CLFlBQVk7SUFBTzs7Ozs7O0VBRW5CLE9BQU8sT0FBTyxXQUFXLEVBQUUsWUFBWSxNQUFNO0lBQzlELE1BQU0sQ0FBQyxJQUFJLENBQUMsV0FBVyxVQUFVLFdBQVcsVUFBVSxHQUFHLENBQUMsQ0FBQztJQUMzRCxPQUFPLENBQUMsSUFBSSxDQUFDLFdBQVcsVUFBVSxjQUFjLENBQUM7SUFDakQsT0FBTyxDQUFDLElBQUksQ0FBQyxXQUFXLE9BQU8sV0FBVyxVQUFVLEdBQUcsQ0FBQyxDQUFDO0lBQ3pELFFBQVEsQ0FBQyxTQUF1QjtJQUNoQyxjQUFjLENBQUMsSUFBSSxXQUFXLFVBQVUsR0FBRyxDQUFDO0lBQzVDLGNBQWMsQ0FBQyxJQUFJLFdBQVcsVUFBVSxnQkFBZ0IsQ0FBQztJQUN6RCxhQUFhLENBQUMsRUFBRTtJQUNoQixrQkFBa0IsQ0FBQyxFQUFFO0dBQ3RCO0VBRWdCLFNBQVMsU0FBUyxLQUFLLEtBQUssY0FBYyxFQUFFLGNBQWMsS0FBSyxLQUFLLFlBQVcsRUFBRSxDQUFFO0VBQ2pGLFlBQVk7SUFBUyxPQUFPLEtBQUssT0FBTSxFQUFHLGdCQUFnQixJQUFJOzs7Ozs7RUFDOUQsVUFBVTtJQUFTLE1BQU0sS0FBSyxPQUFNLEVBQUcsV0FBVzs7Ozs7O0VBQ2xELFNBQVM7SUFBUyxNQUFNLEtBQUssS0FBSSxNQUFPOzs7Ozs7RUFFM0QsV0FBZ0I7QUFDZCxVQUFNLE9BQU8sS0FBSyxLQUFJO0FBQ3RCLFFBQUksTUFBTTtBQUNSLFdBQUssS0FBSyxNQUFNO1FBQ2QsTUFBTSxLQUFLO1FBQ1gsT0FBTyxVQUFVLEtBQUssS0FBSztRQUMzQixPQUFPLEtBQUs7UUFDWixRQUFRLEtBQUs7UUFDYixjQUFjLEtBQUs7UUFDbkIsY0FBYyxLQUFLO1FBQ25CLGFBQWEsS0FBSyxjQUFjLE9BQU8sS0FBSyxZQUFZLEVBQUUsSUFBSTtRQUM5RCxrQkFBa0IsZ0JBQWdCLEtBQUssZ0JBQWdCO09BQ3hEO0lBQ0g7QUFDQSxRQUFJLEtBQUssUUFBTyxHQUFJO0FBQ2xCLGlCQUFXLE9BQU8sQ0FBQyxRQUFRLFNBQVMsVUFBVSxnQkFBZ0IsZUFBZSxrQkFBa0IsR0FBWTtBQUN6RyxhQUFLLEtBQUssU0FBUyxHQUFHLEVBQUUsUUFBTztNQUNqQztJQUNGO0FBQ0EsUUFBSSxLQUFLLFVBQVMsS0FBTSxDQUFDLEtBQUssT0FBTSxHQUFJO0FBQ3RDLFdBQUssSUFBSSxVQUFTLEVBQUcsVUFBVSxFQUFFLE1BQU0sQ0FBQyxTQUFTLEtBQUssVUFBVSxJQUFJLElBQUksR0FBRyxPQUFPLE1BQU0sT0FBUyxDQUFFO0lBQ3JHO0VBQ0Y7RUFFQSxJQUFJLFFBQWdCO0FBQ2xCLFdBQU8sS0FBSyxLQUFLO0VBQ25CO0VBRVUsVUFBVSxLQUE4QztBQUNoRSxVQUFNLFVBQVUsS0FBSyxLQUFLLFNBQVMsR0FBRztBQUN0QyxXQUFPLFFBQVEsWUFBWSxRQUFRLFdBQVcsS0FBSyxVQUFTO0VBQzlEO0VBRVUsVUFBVSxLQUE2QztBQUMvRCxVQUFNLFNBQVMsS0FBSyxLQUFLLFNBQVMsR0FBRyxFQUFFLFVBQVUsQ0FBQTtBQUNqRCxRQUFJLE9BQU8sUUFBUTtBQUFHLGFBQU8sT0FBTyxRQUFRO0FBQzVDLFFBQUksT0FBTyxVQUFVO0FBQUcsYUFBTyxRQUFRLFNBQVMsMkJBQTJCO0FBQzNFLFFBQUksT0FBTyxPQUFPO0FBQUcsYUFBTztBQUM1QixRQUFJLE9BQU8sT0FBTztBQUFHLGFBQU87QUFDNUIsUUFBSSxPQUFPLFdBQVc7QUFBRyxhQUFPLG1CQUFtQixPQUFPLFdBQVcsRUFBRSxjQUFjO0FBQ3JGLFdBQU87RUFDVDs7RUFHVSxhQUFhLE9BQTRCO0FBQ2pELFVBQU0sT0FBTyxNQUFNLGVBQWUsUUFBUSxNQUFNLEtBQUs7QUFDckQsUUFBSSxDQUFDLE1BQU07QUFDVDtJQUNGO0FBQ0EsVUFBTSxlQUFjO0FBQ3BCLFNBQUssS0FBSyxTQUFTLE1BQU0sU0FBUyxVQUFVLElBQUksQ0FBQztBQUNqRCxTQUFLLEtBQUssU0FBUyxNQUFNLFlBQVc7RUFDdEM7RUFFVSxpQkFBc0I7QUFDOUIsVUFBTSxVQUFVLEtBQUssS0FBSyxTQUFTO0FBQ25DLFlBQVEsY0FBYTtBQUNyQixVQUFNLE9BQU8sZUFBZSxZQUFZLFFBQVEsS0FBSyxDQUFDO0FBQ3RELFFBQUksQ0FBQyxRQUFRLEtBQUssUUFBTyxHQUFJO0FBQzNCLFdBQUssVUFBVSxJQUFJLElBQUk7QUFDdkI7SUFDRjtBQUNBLFNBQUssSUFBSSxlQUFlLE1BQU0sS0FBSyxLQUFJLEdBQUksRUFBRSxFQUFFLFVBQVU7TUFDdkQsTUFBTSxDQUFDLFFBQVEsS0FBSyxVQUFVLElBQUksSUFBSSxRQUFRO01BQzlDLE9BQU8sTUFBTSxLQUFLLFVBQVUsSUFBSSxJQUFJO0tBQ3JDO0VBQ0g7RUFFaUIsT0FBTyxPQUFPLFdBQVc7RUFDdkIsT0FBTztJQUFTLE1BQU0sS0FBSyxLQUFLLEtBQUksR0FBSSxNQUFNOzs7Ozs7RUFDOUMsYUFBYTtJQUFTLE1BQU0sS0FBSyxVQUFTLEVBQUcsS0FBSyxDQUFDLE1BQU0sRUFBRSxPQUFPLEtBQUssS0FBSSxDQUFFOzs7Ozs7RUFFdEYsYUFBa0I7QUFDMUIsU0FBSyxLQUFLLFNBQVMsWUFBWSxTQUFTLE9BQU8sS0FBSyxLQUFJLENBQUUsQ0FBQztBQUMzRCxTQUFLLEtBQUssU0FBUyxZQUFZLFlBQVc7RUFDNUM7RUFFVSxXQUFnQjtBQUN4QixVQUFNLFFBQVEsS0FBSyxVQUFTLEVBQ3pCLE9BQU8sQ0FBQyxNQUFNLEVBQUUsU0FBUyxZQUFZLEVBQ3JDLEtBQUssQ0FBQyxHQUFHLE1BQU0sRUFBRSxhQUFhLEVBQUUsY0FBYyxFQUFFLEtBQUssY0FBYyxFQUFFLElBQUksQ0FBQyxFQUFFLENBQUM7QUFDaEYsUUFBSSxPQUFPO0FBQ1QsV0FBSyxLQUFLLFNBQVMsWUFBWSxTQUFTLE9BQU8sTUFBTSxFQUFFLENBQUM7QUFDeEQsV0FBSyxLQUFLLFNBQVMsWUFBWSxZQUFXO0lBQzVDO0VBQ0Y7RUFFVSxPQUFPLGFBQWEsT0FBWTtBQUN4QyxTQUFLLFVBQVUsSUFBSSxJQUFJO0FBQ3ZCLFNBQUssVUFBVSxJQUFJLEVBQUU7QUFDckIsU0FBSyxLQUFLLGlCQUFnQjtBQUMxQixRQUFJLEtBQUssS0FBSyxTQUFTO0FBQ3JCLFdBQUssa0JBQWlCO0FBQ3RCO0lBQ0Y7QUFDQSxVQUFNLElBQUksS0FBSyxLQUFLLFlBQVc7QUFDL0IsVUFBTSxXQUFXLEVBQUUsbUJBQW1CLGNBQWMsRUFBRSxnQkFBZ0IsSUFBSTtBQUMxRSxVQUFNLE9BQTJCLEtBQUssUUFBTyxJQUN6QyxFQUFFLE9BQU8sRUFBRSxNQUFNLEtBQUksR0FBSSxjQUFjLEVBQUUsYUFBWSxJQUNyRDtNQUNFLE1BQU0sRUFBRSxLQUFLLEtBQUk7TUFDakIsT0FBTyxlQUFlLFlBQVksRUFBRSxLQUFLLENBQUMsS0FBSyxFQUFFO01BQ2pELE9BQU8sRUFBRSxNQUFNLEtBQUk7TUFDbkIsUUFBUSxFQUFFO01BQ1YsY0FBYyxFQUFFLFdBQVcsVUFBVSxFQUFFLGFBQWEsS0FBSSxJQUFLO01BQzdELGNBQWMsRUFBRTtNQUNoQixrQkFBa0I7O0FBRXhCLFFBQUksS0FBSyxVQUFTLEdBQUk7QUFDcEIsV0FBSyxRQUFRO0lBQ2Y7QUFDQSxVQUFNLE9BQU8sS0FBSyxLQUFJO0FBQ3RCLFVBQU0sVUFBVSxPQUNaLEtBQUssSUFBSSxPQUFPLEtBQUssSUFBSSxJQUFJLElBQzdCLEtBQUssSUFBSSxPQUFPLGlDQUFNLE9BQU4sRUFBMEIsYUFBYSxFQUFFLGNBQWMsT0FBTyxFQUFFLFdBQVcsSUFBSSxLQUFJLEVBQUU7QUFDekcsU0FBSyxPQUFPLElBQUksSUFBSTtBQUNwQixZQUFRLFVBQVU7TUFDaEIsTUFBTSxDQUFDLFVBQVM7QUFDZCxhQUFLLE9BQU8sSUFBSSxLQUFLO0FBQ3JCLGFBQUssVUFBVSxJQUFJLEtBQUs7QUFDeEIsYUFBSyxVQUFVLElBQUksSUFBSTtBQUN2QixhQUFLLEtBQUssZUFBYztBQUN4QixZQUFJLFlBQVk7QUFDZCxlQUFLLEtBQUssTUFBSztRQUNqQjtBQUNBLGFBQUssTUFBTSxLQUFLLEVBQUUsTUFBTSxPQUFPLFdBQVUsQ0FBRTtNQUM3QztNQUNBLE9BQU8sQ0FBQyxRQUFpQjtBQUN2QixhQUFLLE9BQU8sSUFBSSxLQUFLO0FBQ3JCLGFBQUssa0JBQWtCLEdBQUc7TUFDNUI7S0FDRDtFQUNIO0VBRVEsa0JBQWtCLEtBQW9CO0FBQzVDLFFBQUksSUFBSSxTQUFTLGtCQUFrQjtBQUNqQyxXQUFLLFVBQVUsSUFBSyxJQUFJLFFBQVEsVUFBVSxLQUF1QixJQUFJO0FBQ3JFLFdBQUssVUFBVSxJQUFJLDZEQUE2RDtBQUNoRjtJQUNGO0FBQ0EsUUFBSSxTQUFTO0FBQ2IsZUFBVyxDQUFDLEtBQUssS0FBSyxLQUFLLE9BQU8sUUFBUSxJQUFJLFdBQVcsQ0FBQSxDQUFFLEdBQUc7QUFDNUQsWUFBTSxVQUFVLEtBQUssS0FBSyxJQUFJLEdBQUc7QUFDakMsVUFBSSxXQUFXLE1BQU0sUUFBUSxLQUFLLEdBQUc7QUFDbkMsZ0JBQVEsVUFBVSxFQUFFLFFBQVEsT0FBTyxNQUFNLENBQUMsQ0FBQyxFQUFDLENBQUU7QUFDOUMsZ0JBQVEsY0FBYTtBQUNyQixpQkFBUztNQUNYO0lBQ0Y7QUFDQSxRQUFJLElBQUksU0FBUyxvQkFBb0I7QUFDbkMsV0FBSyxLQUFLLFNBQVMsaUJBQWlCLFVBQVUsRUFBRSxRQUFRLHlDQUF3QyxDQUFFO0FBQ2xHLGVBQVM7SUFDWDtBQUNBLFFBQUksQ0FBQyxRQUFRO0FBQ1gsV0FBSyxVQUFVLElBQUksSUFBSSxPQUFPO0lBQ2hDO0FBQ0EsU0FBSyxrQkFBaUI7RUFDeEI7RUFFUSxvQkFBeUI7QUFDL0IsVUFBTSxNQUFNLFlBQVksS0FBSyxDQUFDLE1BQU0sS0FBSyxLQUFLLElBQUksQ0FBQyxHQUFHLE9BQU87QUFDN0QsUUFBSSxLQUFLO0FBQ1AscUJBQWUsTUFBTSxLQUFLLEtBQUssY0FBYyxjQUEyQixxQkFBcUIsR0FBRyxJQUFJLEdBQUcsTUFBSyxDQUFFO0lBQ2hIO0VBQ0Y7O3FDQXpNVyxXQUFRO0VBQUE7NEVBQVIsV0FBUSxXQUFBLENBQUEsQ0FBQSxlQUFBLENBQUEsR0FBQSxRQUFBLEVBQUEsTUFBQSxDQUFBLEdBQUEsTUFBQSxHQUFBLFdBQUEsQ0FBQSxHQUFBLFdBQUEsR0FBQSxTQUFBLENBQUEsR0FBQSxTQUFBLEVBQUEsR0FBQSxTQUFBLEVBQUEsT0FBQSxTQUFBLFdBQUEsWUFBQSxHQUFBLE9BQUEsSUFBQSxNQUFBLElBQUEsUUFBQSxDQUFBLENBQUEsY0FBQSxJQUFBLEdBQUEsWUFBQSxXQUFBLEdBQUEsQ0FBQSxtQkFBQSxnQkFBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLEdBQUEsS0FBQSxHQUFBLENBQUEsZUFBQSxRQUFBLEdBQUEsSUFBQSxHQUFBLENBQUEsTUFBQSxjQUFBLEdBQUEsQ0FBQSxHQUFBLFFBQUEsTUFBQSxHQUFBLENBQUEsR0FBQSxPQUFBLEdBQUEsQ0FBQSxPQUFBLFNBQUEsR0FBQSxDQUFBLE1BQUEsV0FBQSxtQkFBQSxRQUFBLGdCQUFBLFFBQUEsZUFBQSxtQkFBQSxHQUFBLENBQUEsTUFBQSxlQUFBLEdBQUEsS0FBQSxHQUFBLENBQUEsT0FBQSxVQUFBLEdBQUEsQ0FBQSxHQUFBLFVBQUEsR0FBQSxDQUFBLGVBQUEsUUFBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLE1BQUEsWUFBQSxtQkFBQSxTQUFBLFFBQUEsT0FBQSxhQUFBLE9BQUEsZ0JBQUEsZ0JBQUEsZUFBQSxlQUFBLEdBQUEsU0FBQSxNQUFBLEdBQUEsQ0FBQSxNQUFBLGdCQUFBLEdBQUEsS0FBQSxHQUFBLENBQUEsTUFBQSxVQUFBLFFBQUEsVUFBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLEdBQUEsU0FBQSxNQUFBLEdBQUEsQ0FBQSxPQUFBLFVBQUEsR0FBQSxDQUFBLEdBQUEsS0FBQSxHQUFBLENBQUEsTUFBQSxZQUFBLG1CQUFBLFNBQUEsUUFBQSxTQUFBLGdCQUFBLFNBQUEsZUFBQSxrQkFBQSxHQUFBLENBQUEsTUFBQSxnQkFBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLG1CQUFBLGVBQUEsR0FBQSxLQUFBLEdBQUEsQ0FBQSxNQUFBLGFBQUEsR0FBQSxDQUFBLEdBQUEsTUFBQSxHQUFBLENBQUEsUUFBQSxjQUFBLG1CQUFBLGVBQUEsR0FBQSxTQUFBLEdBQUEsQ0FBQSxHQUFBLFVBQUEsR0FBQSxDQUFBLG1CQUFBLFlBQUEsR0FBQSxLQUFBLEdBQUEsQ0FBQSxNQUFBLFVBQUEsR0FBQSxDQUFBLE9BQUEsVUFBQSxHQUFBLFNBQUEsR0FBQSxDQUFBLE1BQUEsVUFBQSxtQkFBQSxnQkFBQSxRQUFBLEtBQUEsZUFBQSx5Q0FBQSxvQkFBQSxjQUFBLEdBQUEsQ0FBQSxNQUFBLGdCQUFBLEdBQUEsTUFBQSxHQUFBLENBQUEsbUJBQUEsZUFBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLG1CQUFBLFdBQUEsR0FBQSxLQUFBLEdBQUEsQ0FBQSxRQUFBLFNBQUEsR0FBQSxVQUFBLEdBQUEsQ0FBQSxHQUFBLEtBQUEsR0FBQSxDQUFBLGVBQUEsTUFBQSxHQUFBLENBQUEsVUFBQSxVQUFBLEdBQUEsWUFBQSxHQUFBLENBQUEsUUFB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QUEsTUFBQSwyQkFBQSxJQUFBLE9BQUEsSUFBQSxLQUFBLEVBQUE7O29CRDNJUSxnQkFBZ0IsWUFBWSxpQkFBZSxRQUFBLGNBQUEscUJBQUEsa0JBQUEsaUJBQUUsZUFBYSxZQUFFLHFCQUFtQix1QkFBQSxtQkFBQSxpQ0FBQSx5QkFBQSx3QkFBQSx1QkFBQSxpQ0FBQSwrQkFBQSx1Q0FBQSw4QkFBQSxvQkFBQSx5QkFBQSxzQkFBQSx1QkFBQSx1QkFBQSxxQkFBQSw4QkFBQSxtQkFBQSxpQkFBQSxpQkFBQSx5QkFBQSx1QkFBQSx1QkFBQSxvQkFBQSxrQkFBQSxrQkFBRSxVQUFVLEdBQUEsUUFBQSxDQUFBLDBtTkFBQSxpK0dBQUEsRUFBQSxDQUFBOzs7K0VBSzFGLFVBQVEsQ0FBQTtVQVBwQjt1QkFDVyxpQkFBZSxTQUNoQixDQUFDLGdCQUFnQixZQUFZLGlCQUFpQixlQUFlLHFCQUFxQixVQUFVLEdBQUMsaUJBQ3JGLHdCQUF3QixRQUFNLFVBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7R0FBQSxRQUFBLENBQUEsK2hLQUFBLDRxRkFBQSxFQUFBLENBQUE7Ozs7Z0ZBSXBDLFVBQVEsRUFBQSxXQUFBLFlBQUEsVUFBQSxrREFBQSxZQUFBLEdBQUEsQ0FBQTtBQUFBLEdBQUE7Ozs7Ozs7OERBQVIsVUFBUSxFQUFBLFNBQUEsQ0FBQSxJQUFBLElBQUEsSUFBQSxJQUFBLEVBQUEsR0FBQSxDQUFBLGdCQUFBLFlBQUEsaUJBQUEsZUFBQSxxQkFBQSxZQUFBLFdBQUEsdUJBQUEsR0FBQSxhQUFBLEVBQUEsQ0FBQTtFQUFBO0FBQUEsR0FBQSxPQUFBLGNBQUEsZUFBQSxjQUFBLGlCQUFBLEtBQUEsSUFBQSxDQUFBO0FBQUEsR0FBQSxPQUFBLGNBQUEsZUFBQSxlQUFBLFlBQUEsT0FBQSxZQUFBLElBQUEsR0FBQSw0QkFBQSxDQUFBLE1BQUEsRUFBQSxPQUFBLE1BQUEsaUJBQUEsRUFBQSxTQUFBLENBQUE7QUFBQSxHQUFBOyIsIm5hbWVzIjpbXSwiZGVidWdJZCI6ImZkZTFkNzk0LTMzYmEtNWRhMS1iMTNkLWFkNGRlNzcwOGVmZSJ9

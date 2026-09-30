@@ -64,6 +64,7 @@ export const routes: Routes = [
       featureRoute('communication', () =>
         import('./features/communication/communication.routes').then((m) => m.COMMUNICATION_ROUTES),
       ),
+      featureRoute('leaves', () => import('./features/leaves/leaves.routes').then((m) => m.LEAVES_ROUTES)),
       featureRoute('settings', () =>
         import('./features/settings/settings.routes').then((m) => m.SETTINGS_ROUTES),
       ),

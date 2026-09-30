@@ -17,11 +17,15 @@ from apps.core.permissions import ADMIN, HasRole
 
 from . import importer, integrations, selectors, services
 from .filters import SUMMARY_SKIP, apply_filters, apply_ordering
-from .models import Interaction, WhatsAppTemplate
+from .models import CallScript, EmailTemplate, Interaction, MessageLog, WhatsAppTemplate
 from .serializers import (
     AssigneeSerializer,
     AssignSerializer,
     BulkAssignSerializer,
+    CallLogSerializer,
+    CallScriptSerializer,
+    EmailSerializer,
+    EmailTemplateSerializer,
     FinalizeSerializer,
     InteractionCreateSerializer,
     InteractionSerializer,
@@ -30,6 +34,7 @@ from .serializers import (
     LeadListSerializer,
     LeadManagerUpdateSerializer,
     LeadWriteSerializer,
+    MessageLogSerializer,
     StatusChangeSerializer,
     WhatsAppSerializer,
     WhatsAppTemplateSerializer,
@@ -184,6 +189,23 @@ class LeadViewSet(viewsets.GenericViewSet):
         templates = WhatsAppTemplate.objects.filter(is_active=True)
         return Response(WhatsAppTemplateSerializer(templates, many=True).data)
 
+    @action(detail=False, methods=["get"], url_path="email-templates")
+    def email_templates(self, request):
+        templates = EmailTemplate.objects.filter(is_active=True)
+        return Response(EmailTemplateSerializer(templates, many=True).data)
+
+    @action(detail=False, methods=["get"], url_path="call-scripts")
+    def call_scripts(self, request):
+        scripts = CallScript.objects.filter(is_active=True)
+        return Response(CallScriptSerializer(scripts, many=True).data)
+
+    @action(detail=False, methods=["get"])
+    def messages(self, request):
+        """Cross-lead chat history (WhatsApp + Email), newest first. Visible to every Communication role."""
+        qs = MessageLog.objects.select_related("lead", "created_by", "template", "email_template")
+        page = self.paginate_queryset(qs)
+        return self.get_paginated_response(MessageLogSerializer(page, many=True).data)
+
     @action(detail=False, methods=["get"])
     def export(self, request):
         self._require_manager()
@@ -291,6 +313,33 @@ class LeadViewSet(viewsets.GenericViewSet):
         if request.method == "GET":
             return Response(services.whatsapp_preview(lead, template, request.user))
         return Response(services.whatsapp(lead, template, request.user))
+
+    @action(detail=True, methods=["get", "post"])
+    def email(self, request, pk=None):
+        """GET ?template_id= previews the email; POST logs it and returns the mailto: link."""
+        lead = self.get_object()
+        source = request.query_params if request.method == "GET" else request.data
+        serializer = EmailSerializer(data=source)
+        serializer.is_valid(raise_exception=True)
+        template = get_object_or_404(
+            EmailTemplate, pk=serializer.validated_data["template_id"], is_active=True
+        )
+        if request.method == "GET":
+            return Response(services.email_preview(lead, template, request.user))
+        return Response(services.email(lead, template, request.user))
+
+    @action(detail=True, methods=["post"])
+    def call(self, request, pk=None):
+        """Log a call, optionally noting which script was used as a reference."""
+        lead = self.get_object()
+        serializer = CallLogSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        script = None
+        if data.get("script_id"):
+            script = get_object_or_404(CallScript, pk=data["script_id"], is_active=True)
+        interaction = services.log_call(lead, request.user, script=script, notes=data.get("notes", ""))
+        return Response(InteractionSerializer(interaction).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
     def finalize(self, request, pk=None):

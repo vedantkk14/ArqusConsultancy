@@ -18,7 +18,9 @@ import { InrPipe } from '../../../shared/money/inr.pipe';
 import { PanelHead } from '../../dashboard/components/panel-head';
 import { ActivityComposer } from '../components/activity-composer';
 import { AssignDialog, AssignDialogData } from '../components/dialogs/assign-dialog';
+import { CallDialog, CallDialogData } from '../components/dialogs/call-dialog';
 import { EditLeadDialog, EditLeadDialogData } from '../components/dialogs/edit-lead-dialog';
+import { EmailDialog, EmailDialogData } from '../components/dialogs/email-dialog';
 import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finalize-dialog';
 import { StatusDialog, StatusDialogData } from '../components/dialogs/status-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../components/dialogs/whatsapp-dialog';
@@ -136,6 +138,20 @@ export class LeadDetailPage {
       .open<WhatsAppDialog, WhatsAppDialogData, boolean>(WhatsAppDialog, { data: { lead } })
       .afterClosed()
       .subscribe((sent) => sent && this.refresh());
+  }
+
+  protected openEmail(lead: LeadDetail): void {
+    this.dialog
+      .open<EmailDialog, EmailDialogData, boolean>(EmailDialog, { data: { lead } })
+      .afterClosed()
+      .subscribe((sent) => sent && this.refresh());
+  }
+
+  protected openCall(lead: LeadDetail): void {
+    this.dialog
+      .open<CallDialog, CallDialogData, boolean>(CallDialog, { data: { lead } })
+      .afterClosed()
+      .subscribe((logged) => logged && this.refresh());
   }
 
   protected logActivity(): void {

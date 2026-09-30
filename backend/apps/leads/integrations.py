@@ -121,3 +121,21 @@ class WaMeProvider(WhatsAppProvider):
 
 
 whatsapp_provider: WhatsAppProvider = WaMeProvider()
+
+
+# ---- Email ----------
+
+
+class EmailProvider:
+    """Turns a rendered email into something the user can act on. Swap for real sending later."""
+
+    def open_url(self, address: str, subject: str, text: str) -> str:
+        raise NotImplementedError
+
+
+class MailtoProvider(EmailProvider):
+    def open_url(self, address: str, subject: str, text: str) -> str:
+        return f"mailto:{address}?subject={quote(subject, safe='')}&body={quote(text, safe='')}"
+
+
+email_provider: EmailProvider = MailtoProvider()

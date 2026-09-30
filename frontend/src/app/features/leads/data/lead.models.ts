@@ -120,6 +120,33 @@ export interface WhatsAppTemplate {
   body: string;
 }
 
+export interface EmailTemplate {
+  id: number;
+  name: string;
+  subject: string;
+  body: string;
+}
+
+export interface CallScript {
+  id: number;
+  name: string;
+  body: string;
+}
+
+export type MessageChannel = 'WHATSAPP' | 'EMAIL';
+
+export interface MessageLogEntry {
+  id: number;
+  lead: { id: number; name: string; phone: string };
+  channel: MessageChannel;
+  template_name: string;
+  subject: string;
+  rendered_text: string;
+  status: 'OPENED' | 'SENT' | 'FAILED';
+  created_by: Person | null;
+  created_at: string;
+}
+
 export interface DuplicateInfo {
   id: number;
   name: string;

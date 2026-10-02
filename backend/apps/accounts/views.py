@@ -102,14 +102,16 @@ class LedgerViewSet(GenericViewSet):
         """Finalized ledgers with a balance, for the record-payment select."""
         qs = self.get_queryset().filter(selectors.has_balance_q())
         if q := (request.query_params.get("q") or "").strip():
-            qs = qs.filter(Q(lead__name__icontains=q) | Q(lead__phone__contains=q))
-        rows = qs.order_by("lead__name", "id")[:10]
+            qs = qs.filter(
+                Q(opportunity__lead__name__icontains=q) | Q(opportunity__lead__phone__contains=q)
+            )
+        rows = qs.order_by("opportunity__lead__name", "id")[:10]
         return Response(
             [
                 {
                     "id": r.pk,
-                    "client": r.lead.name,
-                    "phone": r.lead.phone,
+                    "client": r.opportunity.lead.name,
+                    "phone": r.opportunity.lead.phone,
                     "total": selectors.money_str(r.total_amount),
                     "outstanding": selectors.money_str(r.outstanding),
                 }
@@ -152,17 +154,28 @@ class LedgerViewSet(GenericViewSet):
     def retrieve(self, request, pk=None):
         return Response(self._detail(pk))
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], permission_classes=[HasRole(*rules.FINALIZE_ROLES)])
     def finalize(self, request, pk=None):
-        ledger = self._ledger(pk)
+        """Admin and Sales Manager. A Sales Manager gets only the finalization back, no figures."""
+        ledger = get_object_or_404(selectors.ledgers_to_finalize_for(request.user), pk=pk)
         serializer = FinalizeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        services.finalize_ledger(
-            ledger.lead,
+        ledger = services.finalize_ledger(
+            ledger.opportunity,
             serializer.validated_data["amount"],
             request.user,
             serializer.validated_data.get("note", ""),
         )
+        if request.user.role not in rules.ACCOUNTS_ROLES:
+            return Response(
+                {
+                    "id": ledger.pk,
+                    "opportunity": ledger.opportunity_id,
+                    "finalized": True,
+                    "total": selectors.money_str(ledger.total_amount),
+                    "finalized_at": ledger.finalized_at.isoformat(),
+                }
+            )
         return Response(self._detail(pk))
 
     @action(detail=True, methods=["post"], url_path="revise-total")
@@ -330,7 +343,7 @@ class PaymentViewSet(GenericViewSet):
         def rows():
             for p in qs.iterator(chunk_size=500):
                 yield [
-                    receipt_number(p), p.received_on.isoformat(), p.ledger.lead.name, selectors.money_str(p.amount),
+                    receipt_number(p), p.received_on.isoformat(), p.ledger.opportunity.lead.name, selectors.money_str(p.amount),
                     p.get_mode_display(), p.reference, p.recorded_by.display_name if p.recorded_by else "",
                     "Yes" if p.proof else "No", "Void" if p.is_void else "Active", p.void_reason or p.note,
                 ]  # fmt: skip

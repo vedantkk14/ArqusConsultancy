@@ -1,0 +1,258 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-SYSCGESP.js");// src/app/features/auth/password-field.ts
+import { ChangeDetectionStrategy, Component, computed, input, signal, viewChild } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { ReactiveFormsModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+import * as i3 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+var _c0 = ["input"];
+var _c1 = [[["", "fieldError", ""]]];
+var _c2 = ["[fieldError]"];
+function PasswordField_Conditional_4_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "mat-icon", 4);
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.icon());
+  }
+}
+function PasswordField_Conditional_10_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p", 8)(1, "mat-icon", 7);
+    i0.\u0275\u0275text(2, "keyboard_capslock");
+    i0.\u0275\u0275elementEnd();
+    i0.\u0275\u0275text(3, "Caps Lock is on ");
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275property("id", ctx_r0.inputId() + "-caps");
+  }
+}
+var PasswordField = class _PasswordField {
+  control = input.required(
+    ...ngDevMode ? [{ debugName: "control" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  inputId = input.required(
+    ...ngDevMode ? [{ debugName: "inputId" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  label = input.required(
+    ...ngDevMode ? [{ debugName: "label" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  autocomplete = input(
+    "current-password",
+    ...ngDevMode ? [{ debugName: "autocomplete" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  enterKeyHint = input(
+    "go",
+    ...ngDevMode ? [{ debugName: "enterKeyHint" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  invalid = input(
+    false,
+    ...ngDevMode ? [{ debugName: "invalid" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** Optional leading Material icon, e.g. "lock". */
+  icon = input(
+    null,
+    ...ngDevMode ? [{ debugName: "icon" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** Ids of error/help elements that describe this field. */
+  errorId = input(
+    null,
+    ...ngDevMode ? [{ debugName: "errorId" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  visible = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "visible" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  capsLock = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "capsLock" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  inputRef = viewChild.required(
+    "input",
+    ...ngDevMode ? [{ debugName: "inputRef" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  describedBy = computed(
+    () => [this.invalid() ? this.errorId() : null, this.capsLock() ? `${this.inputId()}-caps` : null].filter(Boolean).join(" ") || null,
+    ...ngDevMode ? [{ debugName: "describedBy" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  focus() {
+    this.inputRef().nativeElement.focus();
+  }
+  checkCaps(event) {
+    if (typeof event.getModifierState === "function") {
+      this.capsLock.set(event.getModifierState("CapsLock"));
+    }
+  }
+  static \u0275fac = function PasswordField_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _PasswordField)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _PasswordField, selectors: [["app-password-field"]], viewQuery: function PasswordField_Query(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275viewQuerySignal(ctx.inputRef, _c0, 5);
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275queryAdvance();
+    }
+  }, inputs: { control: [1, "control"], inputId: [1, "inputId"], label: [1, "label"], autocomplete: [1, "autocomplete"], enterKeyHint: [1, "enterKeyHint"], invalid: [1, "invalid"], icon: [1, "icon"], errorId: [1, "errorId"] }, ngContentSelectors: _c2, decls: 12, vars: 19, consts: [["input", ""], [1, "field"], [3, "for"], [1, "control"], ["aria-hidden", "true", 1, "lead"], ["autocapitalize", "none", "autocorrect", "off", "spellcheck", "false", 3, "keydown", "keyup", "blur", "id", "type", "formControl"], ["type", "button", 1, "toggle", 3, "click"], ["aria-hidden", "true"], [1, "hint", 3, "id"]], template: function PasswordField_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275projectionDef(_c1);
+      i0.\u0275\u0275elementStart(0, "div", 1)(1, "label", 2);
+      i0.\u0275\u0275text(2);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(3, "div", 3);
+      i0.\u0275\u0275conditionalCreate(4, PasswordField_Conditional_4_Template, 2, 1, "mat-icon", 4);
+      i0.\u0275\u0275elementStart(5, "input", 5, 0);
+      i0.\u0275\u0275controlCreate();
+      i0.\u0275\u0275listener("keydown", function PasswordField_Template_input_keydown_5_listener($event) {
+        return ctx.checkCaps($event);
+      })("keyup", function PasswordField_Template_input_keyup_5_listener($event) {
+        return ctx.checkCaps($event);
+      })("blur", function PasswordField_Template_input_blur_5_listener() {
+        return ctx.capsLock.set(false);
+      });
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(7, "button", 6);
+      i0.\u0275\u0275listener("click", function PasswordField_Template_button_click_7_listener() {
+        return ctx.visible.set(!ctx.visible());
+      });
+      i0.\u0275\u0275elementStart(8, "mat-icon", 7);
+      i0.\u0275\u0275text(9);
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275conditionalCreate(10, PasswordField_Conditional_10_Template, 4, 1, "p", 8);
+      i0.\u0275\u0275projection(11);
+      i0.\u0275\u0275elementEnd();
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275property("for", ctx.inputId());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275textInterpolate(ctx.label());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275classProp("invalid", ctx.invalid())("has-icon", !!ctx.icon());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.icon() ? 4 : -1);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275property("id", ctx.inputId())("type", ctx.visible() ? "text" : "password")("formControl", ctx.control());
+      i0.\u0275\u0275attribute("autocomplete", ctx.autocomplete())("enterkeyhint", ctx.enterKeyHint())("aria-invalid", ctx.invalid())("aria-describedby", ctx.describedBy());
+      i0.\u0275\u0275control();
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275attribute("aria-pressed", ctx.visible())("aria-label", ctx.visible() ? "Hide password" : "Show password")("aria-controls", ctx.inputId());
+      i0.\u0275\u0275advance(2);
+      i0.\u0275\u0275textInterpolate(ctx.visible() ? "visibility_off" : "visibility");
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.capsLock() ? 10 : -1);
+    }
+  }, dependencies: [MatIconModule, i1.MatIcon, i2.Dir, ReactiveFormsModule, i3.\u0275NgNoValidate, i3.NgSelectOption, i3.\u0275NgSelectMultipleOption, i3.DefaultValueAccessor, i3.NumberValueAccessor, i3.RangeValueAccessor, i3.CheckboxControlValueAccessor, i3.SelectControlValueAccessor, i3.SelectMultipleControlValueAccessor, i3.RadioControlValueAccessor, i3.NgControlStatus, i3.NgControlStatusGroup, i3.RequiredValidator, i3.MinLengthValidator, i3.MaxLengthValidator, i3.PatternValidator, i3.CheckboxRequiredValidator, i3.EmailValidator, i3.MinValidator, i3.MaxValidator, i3.FormControlDirective, i3.FormGroupDirective, i3.FormArrayDirective, i3.FormControlName, i3.FormGroupName, i3.FormArrayName], styles: ["\n[_nghost-%COMP%] {\n  display: block;\n}\nh1[_ngcontent-%COMP%] {\n  font-size: var(--%NS%text-xl);\n  text-align: center;\n}\nh1[_ngcontent-%COMP%]    + .banner[_ngcontent-%COMP%] {\n  margin: var(--%NS%space-3) 0 var(--%NS%space-5);\n}\n.banner[_ngcontent-%COMP%]    + .center[_ngcontent-%COMP%] {\n  margin-top: var(--%NS%space-2);\n}\n.lede[_ngcontent-%COMP%] {\n  margin: var(--%NS%space-1) 0 var(--%NS%space-6);\n  color: var(--%NS%ink-3);\n  text-align: center;\n}\nform[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: var(--%NS%space-4);\n}\n.field[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n}\nlabel[_ngcontent-%COMP%] {\n  margin-bottom: 6px;\n  color: var(--%NS%ink);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n}\n.row[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--%NS%space-3);\n  flex-wrap: wrap;\n}\n.check[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--%NS%space-2);\n  min-height: 44px;\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-base);\n  cursor: pointer;\n}\n.check[_ngcontent-%COMP%]   input[_ngcontent-%COMP%] {\n  width: 18px;\n  height: 18px;\n  margin: 0;\n  accent-color: var(--%NS%ink);\n}\n.link[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  min-height: 44px;\n  color: var(--%NS%brand-deep);\n  font-size: var(--%NS%text-base);\n  font-weight: 500;\n  text-decoration: none;\n}\n.link[_ngcontent-%COMP%]:hover {\n  text-decoration: underline;\n}\n.center[_ngcontent-%COMP%] {\n  margin: 0;\n  text-align: center;\n}\n.as-button[_ngcontent-%COMP%] {\n  padding: 0;\n  border: 0;\n  background: none;\n  font: inherit;\n  cursor: pointer;\n}\n@media (min-width: 600px) {\n  .check[_ngcontent-%COMP%], \n   .link[_ngcontent-%COMP%] {\n    min-height: 32px;\n  }\n}\n/*# sourceMappingURL=auth-form.css.map */", "\n.control[_ngcontent-%COMP%] {\n  position: relative;\n}\n.control[_ngcontent-%COMP%]   input[_ngcontent-%COMP%] {\n  padding-right: 48px;\n}\n.toggle[_ngcontent-%COMP%] {\n  position: absolute;\n  top: 50%;\n  right: 2px;\n  display: grid;\n  place-items: center;\n  width: 40px;\n  height: 40px;\n  padding: 0;\n  border: 0;\n  border-radius: var(--%NS%radius-sm);\n  background: transparent;\n  color: var(--%NS%ink-3);\n  transform: translateY(-50%);\n  cursor: pointer;\n}\n.toggle[_ngcontent-%COMP%]:hover {\n  color: var(--%NS%ink);\n}\n.toggle[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n.hint[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  margin: 6px 0 0;\n  color: var(--%NS%warning);\n  font-size: var(--%NS%text-sm);\n}\n.hint[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 16px;\n  height: 16px;\n  font-size: 16px;\n}\n/*# sourceMappingURL=password-field.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(PasswordField, [{
+    type: Component,
+    args: [{ selector: "app-password-field", imports: [MatIconModule, ReactiveFormsModule], changeDetection: ChangeDetectionStrategy.OnPush, template: `
+    <div class="field">
+      <label [for]="inputId()">{{ label() }}</label>
+      <div class="control" [class.invalid]="invalid()" [class.has-icon]="!!icon()">
+        @if (icon()) {
+          <mat-icon class="lead" aria-hidden="true">{{ icon() }}</mat-icon>
+        }
+        <input
+          #input
+          [id]="inputId()"
+          [type]="visible() ? 'text' : 'password'"
+          [formControl]="control()"
+          [attr.autocomplete]="autocomplete()"
+          [attr.enterkeyhint]="enterKeyHint()"
+          [attr.aria-invalid]="invalid()"
+          [attr.aria-describedby]="describedBy()"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+          (keydown)="checkCaps($event)"
+          (keyup)="checkCaps($event)"
+          (blur)="capsLock.set(false)"
+        />
+        <button
+          type="button"
+          class="toggle"
+          [attr.aria-pressed]="visible()"
+          [attr.aria-label]="visible() ? 'Hide password' : 'Show password'"
+          [attr.aria-controls]="inputId()"
+          (click)="visible.set(!visible())"
+        >
+          <mat-icon aria-hidden="true">{{ visible() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+      @if (capsLock()) {
+        <p class="hint" [id]="inputId() + '-caps'">
+          <mat-icon aria-hidden="true">keyboard_capslock</mat-icon>Caps Lock is on
+        </p>
+      }
+      <ng-content select="[fieldError]" />
+    </div>
+  `, styles: ["/* src/app/features/auth/auth-form.scss */\n:host {\n  display: block;\n}\nh1 {\n  font-size: var(--text-xl);\n  text-align: center;\n}\nh1 + .banner {\n  margin: var(--space-3) 0 var(--space-5);\n}\n.banner + .center {\n  margin-top: var(--space-2);\n}\n.lede {\n  margin: var(--space-1) 0 var(--space-6);\n  color: var(--ink-3);\n  text-align: center;\n}\nform {\n  display: flex;\n  flex-direction: column;\n  gap: var(--space-4);\n}\n.field {\n  display: flex;\n  flex-direction: column;\n}\nlabel {\n  margin-bottom: 6px;\n  color: var(--ink);\n  font-size: var(--text-sm);\n  font-weight: 500;\n}\n.row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: var(--space-3);\n  flex-wrap: wrap;\n}\n.check {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--space-2);\n  min-height: 44px;\n  color: var(--ink-2);\n  font-size: var(--text-base);\n  cursor: pointer;\n}\n.check input {\n  width: 18px;\n  height: 18px;\n  margin: 0;\n  accent-color: var(--ink);\n}\n.link {\n  display: inline-flex;\n  align-items: center;\n  min-height: 44px;\n  color: var(--brand-deep);\n  font-size: var(--text-base);\n  font-weight: 500;\n  text-decoration: none;\n}\n.link:hover {\n  text-decoration: underline;\n}\n.center {\n  margin: 0;\n  text-align: center;\n}\n.as-button {\n  padding: 0;\n  border: 0;\n  background: none;\n  font: inherit;\n  cursor: pointer;\n}\n@media (min-width: 600px) {\n  .check,\n  .link {\n    min-height: 32px;\n  }\n}\n/*# sourceMappingURL=auth-form.css.map */\n", "/* angular:styles/component:scss;708530826caa45748ee0b9aca89096b41b43760f8efed818fa119e92a5113579;D:/arqus_consultancy/frontend/src/app/features/auth/password-field.ts */\n.control {\n  position: relative;\n}\n.control input {\n  padding-right: 48px;\n}\n.toggle {\n  position: absolute;\n  top: 50%;\n  right: 2px;\n  display: grid;\n  place-items: center;\n  width: 40px;\n  height: 40px;\n  padding: 0;\n  border: 0;\n  border-radius: var(--radius-sm);\n  background: transparent;\n  color: var(--ink-3);\n  transform: translateY(-50%);\n  cursor: pointer;\n}\n.toggle:hover {\n  color: var(--ink);\n}\n.toggle mat-icon {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n.hint {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  margin: 6px 0 0;\n  color: var(--warning);\n  font-size: var(--text-sm);\n}\n.hint mat-icon {\n  width: 16px;\n  height: 16px;\n  font-size: 16px;\n}\n/*# sourceMappingURL=password-field.css.map */\n"] }]
+  }], null, { control: [{ type: i0.Input, args: [{ isSignal: true, alias: "control", required: true }] }], inputId: [{ type: i0.Input, args: [{ isSignal: true, alias: "inputId", required: true }] }], label: [{ type: i0.Input, args: [{ isSignal: true, alias: "label", required: true }] }], autocomplete: [{ type: i0.Input, args: [{ isSignal: true, alias: "autocomplete", required: false }] }], enterKeyHint: [{ type: i0.Input, args: [{ isSignal: true, alias: "enterKeyHint", required: false }] }], invalid: [{ type: i0.Input, args: [{ isSignal: true, alias: "invalid", required: false }] }], icon: [{ type: i0.Input, args: [{ isSignal: true, alias: "icon", required: false }] }], errorId: [{ type: i0.Input, args: [{ isSignal: true, alias: "errorId", required: false }] }], inputRef: [{ type: i0.ViewChild, args: ["input", { isSignal: true }] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(PasswordField, { className: "PasswordField", filePath: "src/app/features/auth/password-field.ts", lineNumber: 102 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fauth%2Fpassword-field.ts%40PasswordField";
+  function PasswordField_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(PasswordField, m.default, [i0, i1, i2, i3], [MatIconModule, ReactiveFormsModule, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && PasswordField_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && PasswordField_HmrLoad(d.timestamp)));
+})();
+
+export {
+  PasswordField
+};
+//# debugId=23891b82-a4cd-5a80-808a-24586df76049
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvYXV0aC9wYXNzd29yZC1maWVsZC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSwgQ29tcG9uZW50LCBFbGVtZW50UmVmLCBjb21wdXRlZCwgaW5wdXQsIHNpZ25hbCwgdmlld0NoaWxkIH0gZnJvbSAnQGFuZ3VsYXIvY29yZSc7XG5pbXBvcnQgeyBGb3JtQ29udHJvbCwgUmVhY3RpdmVGb3Jtc01vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL2Zvcm1zJztcbmltcG9ydCB7IE1hdEljb25Nb2R1bGUgfSBmcm9tICdAYW5ndWxhci9tYXRlcmlhbC9pY29uJztcblxuLyoqXG4gKiBMYWJlbCArIHBhc3N3b3JkIGlucHV0ICsgc2hvdy9oaWRlIHRvZ2dsZSArIENhcHMgTG9jayBoaW50ICsgZXJyb3Igc2xvdCAocHJvamVjdCBgW2ZpZWxkRXJyb3JdYCkuXG4gKiBVc2VkIGJ5IGxvZ2luLCByZXNldCwgY2hhbmdlIHBhc3N3b3JkLlxuICovXG5AQ29tcG9uZW50KHtcbiAgc2VsZWN0b3I6ICdhcHAtcGFzc3dvcmQtZmllbGQnLFxuICBpbXBvcnRzOiBbTWF0SWNvbk1vZHVsZSwgUmVhY3RpdmVGb3Jtc01vZHVsZV0sXG4gIGNoYW5nZURldGVjdGlvbjogQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3kuT25QdXNoLFxuICB0ZW1wbGF0ZTogYFxuICAgIDxkaXYgY2xhc3M9XCJmaWVsZFwiPlxuICAgICAgPGxhYmVsIFtmb3JdPVwiaW5wdXRJZCgpXCI+e3sgbGFiZWwoKSB9fTwvbGFiZWw+XG4gICAgICA8ZGl2IGNsYXNzPVwiY29udHJvbFwiIFtjbGFzcy5pbnZhbGlkXT1cImludmFsaWQoKVwiIFtjbGFzcy5oYXMtaWNvbl09XCIhIWljb24oKVwiPlxuICAgICAgICBAaWYgKGljb24oKSkge1xuICAgICAgICAgIDxtYXQtaWNvbiBjbGFzcz1cImxlYWRcIiBhcmlhLWhpZGRlbj1cInRydWVcIj57eyBpY29uKCkgfX08L21hdC1pY29uPlxuICAgICAgICB9XG4gICAgICAgIDxpbnB1dFxuICAgICAgICAgICNpbnB1dFxuICAgICAgICAgIFtpZF09XCJpbnB1dElkKClcIlxuICAgICAgICAgIFt0eXBlXT1cInZpc2libGUoKSA/ICd0ZXh0JyA6ICdwYXNzd29yZCdcIlxuICAgICAgICAgIFtmb3JtQ29udHJvbF09XCJjb250cm9sKClcIlxuICAgICAgICAgIFthdHRyLmF1dG9jb21wbGV0ZV09XCJhdXRvY29tcGxldGUoKVwiXG4gICAgICAgICAgW2F0dHIuZW50ZXJrZXloaW50XT1cImVudGVyS2V5SGludCgpXCJcbiAgICAgICAgICBbYXR0ci5hcmlhLWludmFsaWRdPVwiaW52YWxpZCgpXCJcbiAgICAgICAgICBbYXR0ci5hcmlhLWRlc2NyaWJlZGJ5XT1cImRlc2NyaWJlZEJ5KClcIlxuICAgICAgICAgIGF1dG9jYXBpdGFsaXplPVwibm9uZVwiXG4gICAgICAgICAgYXV0b2NvcnJlY3Q9XCJvZmZcIlxuICAgICAgICAgIHNwZWxsY2hlY2s9XCJmYWxzZVwiXG4gICAgICAgICAgKGtleWRvd24pPVwiY2hlY2tDYXBzKCRldmVudClcIlxuICAgICAgICAgIChrZXl1cCk9XCJjaGVja0NhcHMoJGV2ZW50KVwiXG4gICAgICAgICAgKGJsdXIpPVwiY2Fwc0xvY2suc2V0KGZhbHNlKVwiXG4gICAgICAgIC8+XG4gICAgICAgIDxidXR0b25cbiAgICAgICAgICB0eXBlPVwiYnV0dG9uXCJcbiAgICAgICAgICBjbGFzcz1cInRvZ2dsZVwiXG4gICAgICAgICAgW2F0dHIuYXJpYS1wcmVzc2VkXT1cInZpc2libGUoKVwiXG4gICAgICAgICAgW2F0dHIuYXJpYS1sYWJlbF09XCJ2aXNpYmxlKCkgPyAnSGlkZSBwYXNzd29yZCcgOiAnU2hvdyBwYXNzd29yZCdcIlxuICAgICAgICAgIFthdHRyLmFyaWEtY29udHJvbHNdPVwiaW5wdXRJZCgpXCJcbiAgICAgICAgICAoY2xpY2spPVwidmlzaWJsZS5zZXQoIXZpc2libGUoKSlcIlxuICAgICAgICA+XG4gICAgICAgICAgPG1hdC1pY29uIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPnt7IHZpc2libGUoKSA/ICd2aXNpYmlsaXR5X29mZicgOiAndmlzaWJpbGl0eScgfX08L21hdC1pY29uPlxuICAgICAgICA8L2J1dHRvbj5cbiAgICAgIDwvZGl2PlxuICAgICAgQGlmIChjYXBzTG9jaygpKSB7XG4gICAgICAgIDxwIGNsYXNzPVwiaGludFwiIFtpZF09XCJpbnB1dElkKCkgKyAnLWNhcHMnXCI+XG4gICAgICAgICAgPG1hdC1pY29uIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPmtleWJvYXJkX2NhcHNsb2NrPC9tYXQtaWNvbj5DYXBzIExvY2sgaXMgb25cbiAgICAgICAgPC9wPlxuICAgICAgfVxuICAgICAgPG5nLWNvbnRlbnQgc2VsZWN0PVwiW2ZpZWxkRXJyb3JdXCIgLz5cbiAgICA8L2Rpdj5cbiAgYCxcbiAgc3R5bGVVcmw6ICcuL2F1dGgtZm9ybS5zY3NzJyxcbiAgc3R5bGVzOiBgXG4gICAgLmNvbnRyb2wge1xuICAgICAgcG9zaXRpb246IHJlbGF0aXZlO1xuICAgIH1cbiAgICAuY29udHJvbCBpbnB1dCB7XG4gICAgICBwYWRkaW5nLXJpZ2h0OiA0OHB4O1xuICAgIH1cbiAgICAudG9nZ2xlIHtcbiAgICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICAgIHRvcDogNTAlO1xuICAgICAgcmlnaHQ6IDJweDtcbiAgICAgIGRpc3BsYXk6IGdyaWQ7XG4gICAgICBwbGFjZS1pdGVtczogY2VudGVyO1xuICAgICAgd2lkdGg6IDQwcHg7XG4gICAgICBoZWlnaHQ6IDQwcHg7XG4gICAgICBwYWRkaW5nOiAwO1xuICAgICAgYm9yZGVyOiAwO1xuICAgICAgYm9yZGVyLXJhZGl1czogdmFyKC0tcmFkaXVzLXNtKTtcbiAgICAgIGJhY2tncm91bmQ6IHRyYW5zcGFyZW50O1xuICAgICAgY29sb3I6IHZhcigtLWluay0zKTtcbiAgICAgIHRyYW5zZm9ybTogdHJhbnNsYXRlWSgtNTAlKTtcbiAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICB9XG4gICAgLnRvZ2dsZTpob3ZlciB7XG4gICAgICBjb2xvcjogdmFyKC0taW5rKTtcbiAgICB9XG4gICAgLnRvZ2dsZSBtYXQtaWNvbiB7XG4gICAgICB3aWR0aDogMjBweDtcbiAgICAgIGhlaWdodDogMjBweDtcbiAgICAgIGZvbnQtc2l6ZTogMjBweDtcbiAgICB9XG4gICAgLmhpbnQge1xuICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gICAgICBnYXA6IDRweDtcbiAgICAgIG1hcmdpbjogNnB4IDAgMDtcbiAgICAgIGNvbG9yOiB2YXIoLS13YXJuaW5nKTtcbiAgICAgIGZvbnQtc2l6ZTogdmFyKC0tdGV4dC1zbSk7XG4gICAgfVxuICAgIC5oaW50IG1hdC1pY29uIHtcbiAgICAgIHdpZHRoOiAxNnB4O1xuICAgICAgaGVpZ2h0OiAxNnB4O1xuICAgICAgZm9udC1zaXplOiAxNnB4O1xuICAgIH1cbiAgYCxcbn0pXG5leHBvcnQgY2xhc3MgUGFzc3dvcmRGaWVsZCB7XG4gIHJlYWRvbmx5IGNvbnRyb2wgPSBpbnB1dC5yZXF1aXJlZDxGb3JtQ29udHJvbDxzdHJpbmc+PigpO1xuICByZWFkb25seSBpbnB1dElkID0gaW5wdXQucmVxdWlyZWQ8c3RyaW5nPigpO1xuICByZWFkb25seSBsYWJlbCA9IGlucHV0LnJlcXVpcmVkPHN0cmluZz4oKTtcbiAgcmVhZG9ubHkgYXV0b2NvbXBsZXRlID0gaW5wdXQ8J2N1cnJlbnQtcGFzc3dvcmQnIHwgJ25ldy1wYXNzd29yZCc+KCdjdXJyZW50LXBhc3N3b3JkJyk7XG4gIHJlYWRvbmx5IGVudGVyS2V5SGludCA9IGlucHV0PCdnbycgfCAnbmV4dCcgfCAnZG9uZSc+KCdnbycpO1xuICByZWFkb25seSBpbnZhbGlkID0gaW5wdXQoZmFsc2UpO1xuICAvKiogT3B0aW9uYWwgbGVhZGluZyBNYXRlcmlhbCBpY29uLCBlLmcuIFwibG9ja1wiLiAqL1xuICByZWFkb25seSBpY29uID0gaW5wdXQ8c3RyaW5nIHwgbnVsbD4obnVsbCk7XG4gIC8qKiBJZHMgb2YgZXJyb3IvaGVscCBlbGVtZW50cyB0aGF0IGRlc2NyaWJlIHRoaXMgZmllbGQuICovXG4gIHJlYWRvbmx5IGVycm9ySWQgPSBpbnB1dDxzdHJpbmcgfCBudWxsPihudWxsKTtcblxuICBwcm90ZWN0ZWQgcmVhZG9ubHkgdmlzaWJsZSA9IHNpZ25hbChmYWxzZSk7XG4gIHByb3RlY3RlZCByZWFkb25seSBjYXBzTG9jayA9IHNpZ25hbChmYWxzZSk7XG4gIHByaXZhdGUgcmVhZG9ubHkgaW5wdXRSZWYgPSB2aWV3Q2hpbGQucmVxdWlyZWQ8RWxlbWVudFJlZjxIVE1MSW5wdXRFbGVtZW50Pj4oJ2lucHV0Jyk7XG5cbiAgcHJvdGVjdGVkIHJlYWRvbmx5IGRlc2NyaWJlZEJ5ID0gY29tcHV0ZWQoXG4gICAgKCkgPT5cbiAgICAgIFt0aGlzLmludmFsaWQoKSA/IHRoaXMuZXJyb3JJZCgpIDogbnVsbCwgdGhpcy5jYXBzTG9jaygpID8gYCR7dGhpcy5pbnB1dElkKCl9LWNhcHNgIDogbnVsbF1cbiAgICAgICAgLmZpbHRlcihCb29sZWFuKVxuICAgICAgICAuam9pbignICcpIHx8IG51bGwsXG4gICk7XG5cbiAgZm9jdXMoKTogdm9pZCB7XG4gICAgdGhpcy5pbnB1dFJlZigpLm5hdGl2ZUVsZW1lbnQuZm9jdXMoKTtcbiAgfVxuXG4gIHByb3RlY3RlZCBjaGVja0NhcHMoZXZlbnQ6IEtleWJvYXJkRXZlbnQpOiB2b2lkIHtcbiAgICBpZiAodHlwZW9mIGV2ZW50LmdldE1vZGlmaWVyU3RhdGUgPT09ICdmdW5jdGlvbicpIHtcbiAgICAgIHRoaXMuY2Fwc0xvY2suc2V0KGV2ZW50LmdldE1vZGlmaWVyU3RhdGUoJ0NhcHNMb2NrJykpO1xuICAgIH1cbiAgfVxufVxuIl0sIm1hcHBpbmdzIjoiO0FBQUEsU0FBUyx5QkFBeUIsV0FBdUIsVUFBVSxPQUFPLFFBQVEsaUJBQWlCO0FB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QUFBLFVBQUEsS0FBQSxDQUFBLEVBQUEsQ0FBQSxFQUFBLENBQUE7QUFBQSxHQUFBOztnRkFkekUsZUFBYSxFQUFBLFdBQUEsaUJBQUEsVUFBQSwyQ0FBQSxZQUFBLElBQUEsQ0FBQTtBQUFBLEdBQUE7Ozs7Ozs7OERBQWIsZUFBYSxFQUFBLFNBQUEsQ0FBQSxJQUFBLElBQUEsSUFBQSxFQUFBLEdBQUEsQ0FBQSxlQUFBLHFCQUFBLFdBQUEsdUJBQUEsR0FBQSxhQUFBLEVBQUEsQ0FBQTtFQUFBO0FBQUEsR0FBQSxPQUFBLGNBQUEsZUFBQSxjQUFBLHNCQUFBLEtBQUEsSUFBQSxDQUFBO0FBQUEsR0FBQSxPQUFBLGNBQUEsZUFBQSxlQUFBLFlBQUEsT0FBQSxZQUFBLElBQUEsR0FBQSw0QkFBQSxDQUFBLE1BQUEsRUFBQSxPQUFBLE1BQUEsc0JBQUEsRUFBQSxTQUFBLENBQUE7QUFBQSxHQUFBOyIsIm5hbWVzIjpbXSwiZGVidWdJZCI6IjIzODkxYjgyLWE0Y2QtNWE4MC04MDhhLTI0NTg2ZGY3NjA0OSJ9

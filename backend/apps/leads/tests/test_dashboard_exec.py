@@ -168,7 +168,7 @@ class TestUpcomingTimezone:
             assigned_to=exec_a, status=LeadStatus.CONTACTED, next_followup_at=followup_utc
         )
 
-        leads_qs = exec_a.assigned_leads.all()
+        leads_qs = exec_a.assigned_opportunities.select_related("lead")
         days = _upcoming(leads_qs, now)
 
         assert len(days) == 1
@@ -178,11 +178,9 @@ class TestUpcomingTimezone:
     def test_just_before_midnight_ist_is_still_today_in_ist(self, exec_a, make_lead):
         now = datetime(2026, 9, 25, 10, 0, tzinfo=UTC)  # 15:30 IST on the 25th
         followup_utc = datetime(2026, 9, 25, 18, 25, tzinfo=UTC)  # 23:55 IST, still today
-        make_lead(
-            assigned_to=exec_a, status=LeadStatus.CONTACTED, next_followup_at=followup_utc
-        )
+        make_lead(assigned_to=exec_a, status=LeadStatus.CONTACTED, next_followup_at=followup_utc)
 
-        leads_qs = exec_a.assigned_leads.all()
+        leads_qs = exec_a.assigned_opportunities.select_related("lead")
         days = _upcoming(leads_qs, now)
 
         # "Upcoming" starts strictly after the end of today (IST) - 23:55 IST today is due_today,

@@ -51,8 +51,14 @@ TEMPLATES: dict[str, tuple[str, str]] = {
         "Leave request",
         "{employee_name} requested leave from {start_date} to {end_date}.",
     ),
-    "leave_approved": ("Leave approved", "Your leave from {start_date} to {end_date} was approved."),
-    "leave_rejected": ("Leave rejected", "Your leave from {start_date} to {end_date} was rejected."),
+    "leave_approved": (
+        "Leave approved",
+        "Your leave from {start_date} to {end_date} was approved.",
+    ),
+    "leave_rejected": (
+        "Leave rejected",
+        "Your leave from {start_date} to {end_date} was rejected.",
+    ),
 }
 MONEY_KEYS = {"proposed_amount", "amount", "total_amount"}
 

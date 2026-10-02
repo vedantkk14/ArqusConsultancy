@@ -8,7 +8,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from apps.leads.models import Lead
+from apps.leads.models import Lead, Opportunity
+from apps.leads.testing import make_deal
 from apps.reports import report_services as rs
 from apps.users.tests.conftest import *  # noqa: F401,F403
 
@@ -31,7 +32,7 @@ def client(user=None):
 
 def lead(owner, status="NEW", amount=None, source="WEBSITE", **extra):
     fields = {"won_at": timezone.now()} if status == "WON" else {}
-    return Lead.objects.create(
+    return make_deal(
         name=f"L-{Lead.objects.count()}",
         phone="+919876543210",
         assigned_to=owner,
@@ -79,8 +80,8 @@ def test_sales_aggregates_per_exec_with_running_projects(team):
     admin, eva, raj = team
     first = lead(eva, "WON", "1000.00")
     second = lead(eva, "WON", "500.50")
-    Project.objects.create(name="Running", client_name="A", lead=first)
-    Project.objects.create(name="Done", client_name="B", lead=second, status="COMPLETED")
+    Project.objects.create(name="Running", client_name="A", opportunity=first)
+    Project.objects.create(name="Done", client_name="B", opportunity=second, status="COMPLETED")
     lead(eva, "LOST")
     lead(eva, "NEW")
     lead(raj, "WON", "200.00")
@@ -115,7 +116,7 @@ def test_sales_won_value_follows_revised_total_with_initial_and_additional(team)
 def test_sales_period_filters_and_custom(team):
     admin, eva, _ = team
     old = lead(eva, "WON", "100.00")
-    Lead.objects.filter(pk=old.pk).update(
+    Opportunity.objects.filter(pk=old.pk).update(
         created_at=timezone.now() - timedelta(days=400), won_at=timezone.now() - timedelta(days=400)
     )
     lead(eva, "WON", "50.00")

@@ -124,7 +124,7 @@ describe('LedgerDetailPage', () => {
     const link = without.el.querySelector(
       '[aria-labelledby="proj-title"] a[href^="/projects/convert"]',
     );
-    expect(link?.getAttribute('href')).toContain('lead=101');
+    expect(link?.getAttribute('href')).toContain('opportunity=');  // the exact deal, not the lead's latest
     expect(text(without.el.querySelector('[aria-labelledby="proj-title"]'))).toContain(
       'No project yet.',
     );

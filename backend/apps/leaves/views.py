@@ -15,6 +15,7 @@ from .serializers import (
     LeaveCreateSerializer,
     LeaveDecisionSerializer,
     LeaveRequestSerializer,
+    PersonSerializer,
 )
 
 
@@ -24,7 +25,12 @@ class LeaveRequestViewSet(viewsets.GenericViewSet):
     serializer_class = LeaveRequestSerializer
 
     def get_queryset(self):
-        return selectors.requests_for(self.request.user)
+        qs = selectors.requests_for(self.request.user)
+        user_id = self.request.query_params.get("user_id")
+        if user_id:
+            if self.request.user.role == ADMIN or str(self.request.user.id) == str(user_id):
+                qs = qs.filter(user_id=user_id)
+        return qs
 
     def list(self, request):
         page = self.paginate_queryset(self.get_queryset())
@@ -50,14 +56,18 @@ class LeaveRequestViewSet(viewsets.GenericViewSet):
             if request.user.role != ADMIN and str(request.user.id) != str(user_id):
                 raise PermissionDenied()
             target = get_object_or_404(get_user_model(), pk=user_id)
-        return Response(selectors.summary_for(target))
+        data = selectors.summary_for(target)
+        data["user"] = PersonSerializer(target).data
+        return Response(data)
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
         leave = self.get_object()
         serializer = LeaveDecisionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        services.decide(leave, request.user, approve=True, note=serializer.validated_data.get("note", ""))
+        services.decide(
+            leave, request.user, approve=True, note=serializer.validated_data.get("note", "")
+        )
         return Response(LeaveRequestSerializer(leave).data)
 
     @action(detail=True, methods=["post"])
@@ -65,7 +75,9 @@ class LeaveRequestViewSet(viewsets.GenericViewSet):
         leave = self.get_object()
         serializer = LeaveDecisionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        services.decide(leave, request.user, approve=False, note=serializer.validated_data.get("note", ""))
+        services.decide(
+            leave, request.user, approve=False, note=serializer.validated_data.get("note", "")
+        )
         return Response(LeaveRequestSerializer(leave).data)
 
 

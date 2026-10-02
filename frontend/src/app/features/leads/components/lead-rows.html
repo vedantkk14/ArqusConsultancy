@@ -19,6 +19,24 @@
       @if (canAssign()) {
         <button mat-menu-item type="button" (click)="emit('assign', lead)"><mat-icon>person_add</mat-icon>Assign…</button>
       }
+      @if (canStartDeal()) {
+        @if (isOpen(lead.status)) {
+          <!-- Looks disabled but stays clickable: it opens the deal that is still open. -->
+          <button
+            mat-menu-item
+            type="button"
+            class="is-off"
+            [matTooltip]="dealOpenTip"
+            matTooltipPosition="left"
+            [attr.aria-description]="dealOpenTip + '. Opens that deal.'"
+            (click)="emit('new-deal', lead)"
+          >
+            <mat-icon>add_business</mat-icon>New project
+          </button>
+        } @else {
+          <button mat-menu-item type="button" (click)="emit('new-deal', lead)"><mat-icon>add_business</mat-icon>New project</button>
+        }
+      }
       @if (mode() === 'overdue') {
         @for (o of snoozeOptions(); track o.label) {
           <button mat-menu-item type="button" (click)="action.emit({ kind: 'snooze', lead, at: o.at })">
@@ -70,6 +88,7 @@
             <th>Assigned</th>
             <th class="r">Proposed value</th>
             @if (canFinalize() || canSeeFinal()) {
+              <th class="r">Finalized value</th>
               <th>Finalization</th>
             }
           } @else if (mode() === 'lost') {
@@ -119,7 +138,12 @@
                 <span class="who">
                   <app-lead-avatar [name]="lead.name" />
                   <span class="who-t">
-                    <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                    <span class="nm">
+                      <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                      @if (lead.deals_count > 1) {
+                        <span class="deals num">{{ lead.deals_count }} deals</span>
+                      }
+                    </span>
                     <span class="ph num">{{ formatPhone(lead.phone) }}</span>
                   </span>
                 </span>
@@ -129,6 +153,7 @@
                 <td>{{ lead.assigned_to?.name ?? 'Unassigned' }}</td>
                 <td class="r num">{{ lead.proposed_amount | inr }}</td>
                 @if (canFinalize() || canSeeFinal()) {
+                  <td class="r num">{{ lead.final_amount ? (lead.final_amount | inr) : '—' }}</td>
                   <td><ng-container *ngTemplateOutlet="finState; context: { $implicit: lead }" /></td>
                 }
               } @else if (mode() === 'lost') {
@@ -179,7 +204,12 @@
               }
               <app-lead-avatar [name]="lead.name" [size]="40" />
               <span class="who-t">
-                <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                <span class="nm">
+                  <a class="stretch" [routerLink]="['/leads', lead.id]">{{ lead.name }}</a>
+                  @if (lead.deals_count > 1) {
+                    <span class="deals num">{{ lead.deals_count }} deals</span>
+                  }
+                </span>
                 <span class="ph num">{{ formatPhone(lead.phone) }}</span>
               </span>
             </span>
@@ -192,7 +222,10 @@
           <span class="lc-meta">
             @if (mode() === 'won') {
               <span>Won {{ wonOn(lead) }} · {{ lead.assigned_to?.name ?? 'Unassigned' }}</span>
-              <strong class="num">{{ lead.proposed_amount | inr }}</strong>
+              <span class="num">Proposed {{ lead.proposed_amount | inr }}</span>
+              @if (lead.final_amount) {
+                <strong class="num">Final {{ lead.final_amount | inr }}</strong>
+              }
             } @else if (mode() === 'lost') {
               <span>{{ reasonLabel(lead.lost_reason) }} · {{ lead.assigned_to?.name ?? 'Unassigned' }}</span>
               @if (lead.proposed_amount) {

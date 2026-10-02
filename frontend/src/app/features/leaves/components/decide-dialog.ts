@@ -25,7 +25,7 @@ export interface DecideDialogData {
     .hist strong { color: var(--ink); }
   `,
   template: `
-    <app-dialog-head [title]="'Review ' + data.leave.user.name + '\\'s request'" [subtitle]="data.leave.start_date + ' to ' + data.leave.end_date + ' (' + data.leave.days + ' day(s))'" />
+    <app-dialog-head [title]="dialogTitle" [subtitle]="data.leave.start_date + ' to ' + data.leave.end_date + ' (' + data.leave.days + ' day(s))'" />
     <div class="req">
       <p><strong>Reason:</strong> {{ data.leave.reason }}</p>
     </div>
@@ -60,6 +60,7 @@ export class DecideDialog {
   protected readonly saving = signal(false);
   protected readonly error = signal('');
   protected readonly summary = signal<LeaveSummary | null>(null);
+  protected readonly dialogTitle = `Review ${this.data.leave.user.name}'s request`;
 
   constructor() {
     this.api.summary(this.data.leave.user.id).subscribe((s) => this.summary.set(s));

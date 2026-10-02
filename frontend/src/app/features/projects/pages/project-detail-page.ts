@@ -29,6 +29,8 @@ import { ErrorState } from '../../../shared/error-state/error-state';
 import { InrPipe } from '../../../shared/money/inr.pipe';
 import { AddExpenseForm } from '../components/add-expense-form';
 import { BudgetPanel } from '../components/budget-panel';
+import { AmountDialogData, ReviseTotalDialog } from '../../accounts/components/dialogs/amount-dialogs';
+import { LedgerDetail } from '../../accounts/data/account.models';
 import { CompleteDialog, CompleteDialogData } from '../components/dialogs/complete-dialog';
 import { ReasonDialog, ReasonDialogData } from '../components/dialogs/reason-dialog';
 import { ReassignDialog, ReassignDialogData } from '../components/dialogs/reassign-dialog';
@@ -104,6 +106,8 @@ export class ProjectDetailPage {
   protected readonly timelineTick = signal(0);
 
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  /** Read-only, never any money: no budget or finance panel and no expense amounts. */
+  protected readonly isSalesManager = computed(() => this.auth.role() === Role.SalesManager);
   protected readonly wide = toSignal(
     inject(BreakpointObserver)
       .observe('(min-width: 768px)')
@@ -204,6 +208,29 @@ export class ProjectDetailPage {
       this.timelineTick.update((n) => n + 1);
       this.loadExpenses(1);
     }
+  }
+
+  // ---- Finance ----------------------------------------------------------------------------------------
+
+  protected reviseTotal(project: ProjectDetail): void {
+    const f = project.finance;
+    if (!f?.finalized || !f.ledger_id) {
+      return;
+    }
+    this.dialog
+      .open<ReviseTotalDialog, AmountDialogData, LedgerDetail>(
+        ReviseTotalDialog,
+        dialogConfig({
+          ledger: { id: f.ledger_id, client: project.client_name, total: f.total_amount, received: f.received ?? '0.00' },
+        }),
+      )
+      .afterClosed()
+      .subscribe((ledger) => {
+        if (ledger) {
+          this.snack.open('Total revised.', undefined, { duration: 3000 });
+          this.refresh();
+        }
+      });
   }
 
   // ---- Expense form ---------------------------------------------------------------------------------

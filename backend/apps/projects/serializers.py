@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from apps.core.permissions import ADMIN
+from apps.core.permissions import ADMIN, SALES_MANAGER
 
 from . import rules, selectors
 from .models import Expense, ExpenseCategory, Project, ProjectEvent
@@ -56,6 +56,7 @@ class ProjectPMSerializer(serializers.ModelSerializer):
 
     pm_name = serializers.SerializerMethodField()
     spent = serializers.SerializerMethodField()
+    project_no = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -70,6 +71,7 @@ class ProjectPMSerializer(serializers.ModelSerializer):
             "created_at",
             "pm_name",
             "spent",
+            "project_no",
         )
 
     def get_pm_name(self, obj):
@@ -77,6 +79,10 @@ class ProjectPMSerializer(serializers.ModelSerializer):
 
     def get_spent(self, obj):
         return selectors.money_str(obj.spent)
+
+    def get_project_no(self, obj):
+        """This client's Nth project (#1, #2, ...), null when the client has only one."""
+        return selectors.project_no(obj)
 
 
 class ProjectPMDetailSerializer(ProjectPMSerializer):
@@ -126,7 +132,8 @@ class ProjectAdminSerializer(ProjectPMSerializer):
 
 class ProjectAdminDetailSerializer(ProjectAdminSerializer):
     allowed_actions = serializers.SerializerMethodField()
-    lead_id = serializers.IntegerField(read_only=True)
+    lead_id = serializers.SerializerMethodField()
+    opportunity_id = serializers.IntegerField(read_only=True)
     finance = serializers.SerializerMethodField()
 
     class Meta(ProjectAdminSerializer.Meta):
@@ -134,19 +141,24 @@ class ProjectAdminDetailSerializer(ProjectAdminSerializer):
             "scope",
             "allowed_actions",
             "lead_id",
+            "opportunity_id",
             "finance",
         )
 
     def get_allowed_actions(self, obj):
         return selectors.allowed_actions(self.context["request"].user, obj)
 
+    def get_lead_id(self, obj):
+        return obj.opportunity.lead_id if obj.opportunity_id else None
+
     def get_finance(self, obj):
         from . import integrations
 
-        raw = integrations.finance_for(obj.lead)
+        raw = integrations.finance_for(obj.opportunity)
         if raw is None:
             return None
         return {
+            "ledger_id": raw.get("ledger_id"),
             "total_amount": selectors.money_str(raw["total_amount"]),
             "received": None if raw["received"] is None else selectors.money_str(raw["received"]),
             "outstanding": (
@@ -157,14 +169,127 @@ class ProjectAdminDetailSerializer(ProjectAdminSerializer):
         }
 
 
+# ---- Sales Manager (read-only, never any money) ----------
+
+#: Never in a Sales Manager project response, at any depth, not even as null (see the leak test).
+SALES_MANAGER_HIDDEN = (
+    "sanctioned_budget",
+    "total_budget",
+    "spent",
+    "remaining",
+    "usage_pct",
+    "live_margin",
+    "planned_margin",
+    "finance",
+    "amount",
+)
+
+
+class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
+    """An expense for the Sales Manager: date, category, vendor and receipt - never the amount."""
+
+    category_label = serializers.CharField(source="get_category_display", read_only=True)
+    has_receipt = serializers.SerializerMethodField()
+    logged_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Expense
+        fields = (
+            "id",
+            "project",
+            "category",
+            "category_label",
+            "spent_on",
+            "vendor",
+            "description",
+            "has_receipt",
+            "receipt_kind",
+            "is_void",
+            "logged_by",
+            "created_at",
+        )
+
+    def get_has_receipt(self, obj):
+        return bool(obj.receipt)
+
+    def get_logged_by(self, obj):
+        return _user_ref(obj.logged_by)
+
+
+class SalesManagerProjectSerializer(serializers.ModelSerializer):
+    """Project for the Sales Manager: name, client, status, PM and dates. No budget, spent,
+    remaining, usage or margin - the fields are simply not here (not null)."""
+
+    pm_name = serializers.SerializerMethodField()
+    lead_id = serializers.SerializerMethodField()
+    project_no = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = (
+            "id",
+            "name",
+            "client_name",
+            "lead_id",
+            "status",
+            "start_date",
+            "expected_end_date",
+            "completed_at",
+            "created_at",
+            "pm_name",
+            "project_no",
+        )
+
+    def get_pm_name(self, obj):
+        return obj.pm.display_name if obj.pm else None
+
+    def get_project_no(self, obj):
+        return selectors.project_no(obj)
+
+    def get_lead_id(self, obj):
+        """The client's lead, so the project links back to their lead profile."""
+        return obj.opportunity.lead_id if obj.opportunity_id else None
+
+
+class SalesManagerProjectDetailSerializer(SalesManagerProjectSerializer):
+    RECENT_EXPENSES = 50
+
+    allowed_actions = serializers.SerializerMethodField()
+    expenses = serializers.SerializerMethodField()
+
+    class Meta(SalesManagerProjectSerializer.Meta):
+        fields = SalesManagerProjectSerializer.Meta.fields + (
+            "scope",
+            "allowed_actions",
+            "expenses",
+        )
+
+    def get_allowed_actions(self, obj):
+        return []  # read-only: no convert, budget, PM, complete/reopen or expense actions
+
+    def get_expenses(self, obj):
+        rows = obj.expenses.select_related("logged_by").order_by("-spent_on", "-id")
+        return ExpenseSalesManagerSerializer(rows[: self.RECENT_EXPENSES], many=True).data
+
+
 def project_serializer(user, detail: bool = False):
     if user.role == ADMIN:
         return ProjectAdminDetailSerializer if detail else ProjectAdminSerializer
+    if user.role == SALES_MANAGER:
+        return SalesManagerProjectDetailSerializer if detail else SalesManagerProjectSerializer
     return ProjectPMDetailSerializer if detail else ProjectPMSerializer
+
+
+def event_data_for(user, data: dict) -> dict:
+    """Timeline event payloads carry amounts (expense, spent): stripped for the Sales Manager."""
+    if user.role != SALES_MANAGER:
+        return data
+    return {k: v for k, v in (data or {}).items() if k not in ("amount", "spent", "old", "new")}
 
 
 class EventSerializer(serializers.ModelSerializer):
     actor_name = serializers.SerializerMethodField()
+    data = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectEvent
@@ -172,6 +297,10 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_actor_name(self, obj):
         return obj.actor.display_name if obj.actor else None
+
+    def get_data(self, obj):
+        request = self.context.get("request")
+        return event_data_for(request.user, obj.data) if request else obj.data
 
 
 # ---- Expenses (output) ----------
@@ -221,14 +350,14 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
 
 def expense_serializer(user):
-    return ExpenseSerializer
+    return ExpenseSalesManagerSerializer if user.role == SALES_MANAGER else ExpenseSerializer
 
 
 # ---- Input ----------
 
 
 class ConvertSerializer(serializers.Serializer):
-    lead = serializers.IntegerField(min_value=1)
+    opportunity = serializers.IntegerField(min_value=1)
     name = serializers.CharField(max_length=200)
     pm = serializers.IntegerField(required=False, allow_null=True)
     start_date = serializers.DateField(required=False, allow_null=True)

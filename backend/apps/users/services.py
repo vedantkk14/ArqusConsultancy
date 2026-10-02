@@ -388,12 +388,12 @@ def assignments_overview(include_pms: bool = True) -> dict:
 
     lead_counts: dict = {}
     leads_ok = False
-    lead_model = _model("leads", "Lead")
+    lead_model = _model("leads", "Opportunity")  # open deals, one per lead at most
     if lead_model is not None:
         try:
             rows = (
                 lead_model.objects.exclude(status__in=("WON", "LOST"))
-                .filter(assigned_to__in=[u.pk for u in execs])
+                .filter(assigned_to__in=[u.pk for u in execs], lead__is_deleted=False)
                 .values("assigned_to")
                 .annotate(
                     open=Count("id"),

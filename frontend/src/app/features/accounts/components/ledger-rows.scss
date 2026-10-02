@@ -180,3 +180,6 @@ tbody tr {
 @media (min-width: 1000px) { .c-rec { display: table-cell; } }
 @media (min-width: 1200px) { .c-bar { display: table-cell; } }
 @media (min-width: 1560px) { .c-last, .c-exec { display: table-cell; } }
+
+// "#2" before a returning client's name.
+.cno { margin-right: 4px; color: var(--ink-3); font-weight: 500; }

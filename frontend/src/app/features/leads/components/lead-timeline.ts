@@ -54,7 +54,7 @@ const SYSTEM = new Set(['STATUS_CHANGE', 'ASSIGNMENT', 'AMOUNT_CHANGE']);
           </li>
         } @empty {
           @if (!loading()) {
-            <li class="none">No activity yet. Log the first call above.</li>
+            <li class="none">{{ opportunityId() ? 'No activity on this deal.' : 'No activity yet. Log the first call above.' }}</li>
           }
         }
         @if (loading()) {
@@ -99,6 +99,8 @@ const SYSTEM = new Set(['STATUS_CHANGE', 'ASSIGNMENT', 'AMOUNT_CHANGE']);
 })
 export class LeadTimeline {
   readonly leadId = input.required<number>();
+  /** One deal's timeline; without it, the lead's current deal. */
+  readonly opportunityId = input<number | null>(null);
   /** Bump to reload from the newest entry. */
   readonly refresh = input(0);
 
@@ -114,6 +116,7 @@ export class LeadTimeline {
   constructor() {
     effect(() => {
       this.leadId();
+      this.opportunityId();
       this.refresh();
       untracked(() => this.load(1));
     });
@@ -134,7 +137,11 @@ export class LeadTimeline {
   load(page: number): void {
     this.loading.set(true);
     this.error.set(false);
-    this.api.interactions(this.leadId(), page).subscribe({
+    const deal = this.opportunityId();
+    const request = deal
+      ? this.api.opportunityInteractions(this.leadId(), deal, page)
+      : this.api.interactions(this.leadId(), page);
+    request.subscribe({
       next: (res) => {
         this.page = page;
         this.items.update((items) => (page === 1 ? res.results : [...items, ...res.results]));

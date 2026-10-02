@@ -6,6 +6,8 @@ from .models import Holiday, LeaveRequest
 class PersonSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField(source="display_name")
+    role = serializers.CharField()
+    designation = serializers.CharField(source="get_role_display", read_only=True)
 
 
 class HolidaySerializer(serializers.ModelSerializer):

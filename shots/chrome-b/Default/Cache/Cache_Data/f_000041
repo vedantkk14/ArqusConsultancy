@@ -1,0 +1,288 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-W5BIOPHW.js");import {
+  groupIndian
+} from "/chunk-QYAVNIBR.js";
+import {
+  __spreadValues
+} from "/chunk-VUJOFXKG.js";
+
+// src/app/features/accounts/ui/open.ts
+var DIALOG_TITLE_ID = "dlg-title";
+function dialogConfig(data, extra = {}) {
+  return __spreadValues({ data, ariaLabelledBy: DIALOG_TITLE_ID, autoFocus: "first-tabbable" }, extra);
+}
+function fieldError(err, field) {
+  const value = err.details?.[field];
+  return Array.isArray(value) ? String(value[0] ?? "") : typeof value === "string" ? value : "";
+}
+
+// src/app/features/accounts/ui/dialog-head.ts
+import { ChangeDetectionStrategy, Component, input, output } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+function DialogHead_Conditional_3_Template(rf, ctx) {
+  if (rf & 1) {
+    i0.\u0275\u0275elementStart(0, "p");
+    i0.\u0275\u0275text(1);
+    i0.\u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = i0.\u0275\u0275nextContext();
+    i0.\u0275\u0275advance();
+    i0.\u0275\u0275textInterpolate(ctx_r0.subtitle());
+  }
+}
+var DialogHead = class _DialogHead {
+  title = input.required(
+    ...ngDevMode ? [{ debugName: "title" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  subtitle = input(
+    "",
+    ...ngDevMode ? [{ debugName: "subtitle" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  headingId = input(
+    null,
+    ...ngDevMode ? [{ debugName: "headingId" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  /** The parent closes the dialog or sheet it lives in. */
+  closed = output();
+  static \u0275fac = function DialogHead_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _DialogHead)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _DialogHead, selectors: [["app-dialog-head"]], inputs: { title: [1, "title"], subtitle: [1, "subtitle"], headingId: [1, "headingId"] }, outputs: { closed: "closed" }, decls: 7, vars: 4, consts: [[1, "t"], [3, "id"], ["type", "button", 1, "x", 3, "click"], ["aria-hidden", "true"]], template: function DialogHead_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275elementStart(0, "div", 0)(1, "h2", 1);
+      i0.\u0275\u0275text(2);
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275conditionalCreate(3, DialogHead_Conditional_3_Template, 2, 1, "p");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(4, "button", 2);
+      i0.\u0275\u0275listener("click", function DialogHead_Template_button_click_4_listener() {
+        return ctx.closed.emit();
+      });
+      i0.\u0275\u0275elementStart(5, "mat-icon", 3);
+      i0.\u0275\u0275text(6, "close");
+      i0.\u0275\u0275elementEnd()();
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275property("id", ctx.headingId());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275textInterpolate(ctx.title());
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275conditional(ctx.subtitle() ? 3 : -1);
+      i0.\u0275\u0275advance();
+      i0.\u0275\u0275attribute("aria-label", "Close " + ctx.title());
+    }
+  }, dependencies: [MatIconModule, i1.MatIcon, i2.Dir], styles: ["\n[_nghost-%COMP%] {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: var(--%NS%space-5);\n}\n.t[_ngcontent-%COMP%] {\n  min-width: 0;\n}\nh2[_ngcontent-%COMP%] {\n  margin: 0;\n  padding: 0;\n  font-size: var(--%NS%text-lg);\n  font-weight: 600;\n}\np[_ngcontent-%COMP%] {\n  margin: 2px 0 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-sm);\n  overflow-wrap: anywhere;\n}\n.x[_ngcontent-%COMP%] {\n  display: grid;\n  width: 40px;\n  height: 40px;\n  flex: none;\n  margin: -6px -8px 0 0;\n  place-items: center;\n  border: 0;\n  border-radius: 50%;\n  background: transparent;\n  color: var(--%NS%ink-2);\n  cursor: pointer;\n}\n.x[_ngcontent-%COMP%]:hover {\n  background: var(--%NS%subtle);\n  color: var(--%NS%ink);\n}\n.x[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n/*# sourceMappingURL=dialog-head.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(DialogHead, [{
+    type: Component,
+    args: [{ selector: "app-dialog-head", imports: [MatIconModule], changeDetection: ChangeDetectionStrategy.OnPush, template: `
+    <div class="t">
+      <h2 [id]="headingId()">{{ title() }}</h2>
+      @if (subtitle()) {
+        <p>{{ subtitle() }}</p>
+      }
+    </div>
+    <button type="button" class="x" [attr.aria-label]="'Close ' + title()" (click)="closed.emit()">
+      <mat-icon aria-hidden="true">close</mat-icon>
+    </button>
+  `, styles: ["/* angular:styles/component:scss;2902478408c61a85ab5432f74d2691f48060cd46033b2c426c6d827d2dc259a3;D:/arqus_consultancy/frontend/src/app/features/accounts/ui/dialog-head.ts */\n:host {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: var(--space-5);\n}\n.t {\n  min-width: 0;\n}\nh2 {\n  margin: 0;\n  padding: 0;\n  font-size: var(--text-lg);\n  font-weight: 600;\n}\np {\n  margin: 2px 0 0;\n  color: var(--ink-3);\n  font-size: var(--text-sm);\n  overflow-wrap: anywhere;\n}\n.x {\n  display: grid;\n  width: 40px;\n  height: 40px;\n  flex: none;\n  margin: -6px -8px 0 0;\n  place-items: center;\n  border: 0;\n  border-radius: 50%;\n  background: transparent;\n  color: var(--ink-2);\n  cursor: pointer;\n}\n.x:hover {\n  background: var(--subtle);\n  color: var(--ink);\n}\n.x mat-icon {\n  width: 22px;\n  height: 22px;\n  font-size: 22px;\n}\n/*# sourceMappingURL=dialog-head.css.map */\n"] }]
+  }], null, { title: [{ type: i0.Input, args: [{ isSignal: true, alias: "title", required: true }] }], subtitle: [{ type: i0.Input, args: [{ isSignal: true, alias: "subtitle", required: false }] }], headingId: [{ type: i0.Input, args: [{ isSignal: true, alias: "headingId", required: false }] }], closed: [{ type: i0.Output, args: ["closed"] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(DialogHead, { className: "DialogHead", filePath: "src/app/features/accounts/ui/dialog-head.ts", lineNumber: 33 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Faccounts%2Fui%2Fdialog-head.ts%40DialogHead";
+  function DialogHead_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(DialogHead, m.default, [i0, i1, i2], [MatIconModule, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && DialogHead_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && DialogHead_HmrLoad(d.timestamp)));
+})();
+
+// src/app/features/accounts/ui/money-input.ts
+import { ChangeDetectionStrategy as ChangeDetectionStrategy2, Component as Component2, forwardRef, input as input2, signal, viewChild } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { NG_VALUE_ACCESSOR } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_forms.js?v=a85cac02";
+import * as i02 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+var _c0 = ["box"];
+var MONEY_MAX_WHOLE_DIGITS = 10;
+function parseMoneyInput(text) {
+  const cleaned = (text ?? "").replace(/[^\d.]/g, "");
+  const [wholeRaw = "", ...rest] = cleaned.split(".");
+  const hasDot = cleaned.includes(".");
+  const whole = wholeRaw.replace(/^0+(?=\d)/, "").slice(0, MONEY_MAX_WHOLE_DIGITS);
+  const frac = rest.join("").slice(0, 2);
+  const value = whole || hasDot ? `${whole || "0"}${hasDot ? "." + frac : ""}` : "";
+  const display = value ? `${groupIndian(whole || "0")}${hasDot ? "." + frac : ""}` : "";
+  return { value, display };
+}
+function isPositiveMoney(value) {
+  return /[1-9]/.test(value ?? "");
+}
+var MoneyInput = class _MoneyInput {
+  inputId = input2(
+    "",
+    ...ngDevMode ? [{ debugName: "inputId" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  describedBy = input2(
+    null,
+    ...ngDevMode ? [{ debugName: "describedBy" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  invalid = input2(
+    false,
+    ...ngDevMode ? [{ debugName: "invalid" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  display = signal(
+    "",
+    ...ngDevMode ? [{ debugName: "display" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  disabled = signal(
+    false,
+    ...ngDevMode ? [{ debugName: "disabled" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  box = viewChild.required(
+    "box",
+    ...ngDevMode ? [{ debugName: "box" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  onChange = () => void 0;
+  touched = () => void 0;
+  writeValue(value) {
+    this.display.set(parseMoneyInput(value ?? "").display);
+  }
+  registerOnChange(fn) {
+    this.onChange = fn;
+  }
+  registerOnTouched(fn) {
+    this.touched = fn;
+  }
+  setDisabledState(disabled) {
+    this.disabled.set(disabled);
+  }
+  focus() {
+    this.box().nativeElement.focus();
+  }
+  onInput(text) {
+    const { value, display } = parseMoneyInput(text);
+    this.display.set(display);
+    this.box().nativeElement.value = display;
+    this.onChange(value);
+  }
+  static \u0275fac = function MoneyInput_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MoneyInput)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i02.\u0275\u0275defineComponent({ type: _MoneyInput, selectors: [["app-money-input"]], viewQuery: function MoneyInput_Query(rf, ctx) {
+    if (rf & 1) {
+      i02.\u0275\u0275viewQuerySignal(ctx.box, _c0, 5);
+    }
+    if (rf & 2) {
+      i02.\u0275\u0275queryAdvance();
+    }
+  }, inputs: { inputId: [1, "inputId"], describedBy: [1, "describedBy"], invalid: [1, "invalid"] }, features: [i02.\u0275\u0275ProvidersFeature([{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => _MoneyInput), multi: true }])], decls: 5, vars: 7, consts: [["box", ""], [1, "wrap"], ["aria-hidden", "true", 1, "prefix"], ["type", "text", "inputmode", "decimal", "autocomplete", "off", 3, "input", "blur", "id", "value", "disabled"]], template: function MoneyInput_Template(rf, ctx) {
+    if (rf & 1) {
+      const _r1 = i02.\u0275\u0275getCurrentView();
+      i02.\u0275\u0275domElementStart(0, "span", 1)(1, "span", 2);
+      i02.\u0275\u0275text(2, "\u20B9");
+      i02.\u0275\u0275domElementEnd();
+      i02.\u0275\u0275domElementStart(3, "input", 3, 0);
+      i02.\u0275\u0275domListener("input", function MoneyInput_Template_input_input_3_listener() {
+        i02.\u0275\u0275restoreView(_r1);
+        const box_r2 = i02.\u0275\u0275reference(4);
+        return i02.\u0275\u0275resetView(ctx.onInput(box_r2.value));
+      })("blur", function MoneyInput_Template_input_blur_3_listener() {
+        return ctx.touched();
+      });
+      i02.\u0275\u0275domElementEnd()();
+    }
+    if (rf & 2) {
+      i02.\u0275\u0275classProp("invalid", ctx.invalid());
+      i02.\u0275\u0275advance(3);
+      i02.\u0275\u0275domProperty("id", ctx.inputId())("value", ctx.display())("disabled", ctx.disabled());
+      i02.\u0275\u0275attribute("aria-describedby", ctx.describedBy())("aria-invalid", ctx.invalid() || null);
+    }
+  }, styles: ["\n.wrap[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  height: 44px;\n  border: 1px solid var(--%NS%line-strong);\n  border-radius: var(--%NS%radius-control);\n  background: var(--%NS%surface);\n}\n.wrap[_ngcontent-%COMP%]:focus-within {\n  outline: none;\n  border-color: var(--%NS%brand-deep);\n  box-shadow: var(--%NS%field-ring);\n}\n.wrap.invalid[_ngcontent-%COMP%] {\n  border-color: var(--%NS%negative);\n}\n.prefix[_ngcontent-%COMP%] {\n  padding: 0 4px 0 12px;\n  color: var(--%NS%ink-3);\n  font-weight: 500;\n}\ninput[_ngcontent-%COMP%] {\n  flex: 1;\n  min-width: 0;\n  height: 100%;\n  padding: 0 12px 0 2px;\n  border: 0;\n  background: transparent;\n  color: var(--%NS%ink);\n  font: inherit;\n  font-variant-numeric: tabular-nums;\n  outline: none;\n}\n/*# sourceMappingURL=money-input.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassMetadata(MoneyInput, [{
+    type: Component2,
+    args: [{ selector: "app-money-input", changeDetection: ChangeDetectionStrategy2.OnPush, providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MoneyInput), multi: true }], template: `
+    <span class="wrap" [class.invalid]="invalid()">
+      <span class="prefix" aria-hidden="true">\u20B9</span>
+      <input
+        #box
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        [id]="inputId()"
+        [attr.aria-describedby]="describedBy()"
+        [attr.aria-invalid]="invalid() || null"
+        [value]="display()"
+        [disabled]="disabled()"
+        (input)="onInput(box.value)"
+        (blur)="touched()"
+      />
+    </span>
+  `, styles: ["/* angular:styles/component:scss;b5a41a55639960a5c1e31dde20b9784e659e3c85ae5fedd1cc54c77e5858bbf2;D:/arqus_consultancy/frontend/src/app/features/accounts/ui/money-input.ts */\n.wrap {\n  display: flex;\n  align-items: center;\n  height: 44px;\n  border: 1px solid var(--line-strong);\n  border-radius: var(--radius-control);\n  background: var(--surface);\n}\n.wrap:focus-within {\n  outline: none;\n  border-color: var(--brand-deep);\n  box-shadow: var(--field-ring);\n}\n.wrap.invalid {\n  border-color: var(--negative);\n}\n.prefix {\n  padding: 0 4px 0 12px;\n  color: var(--ink-3);\n  font-weight: 500;\n}\ninput {\n  flex: 1;\n  min-width: 0;\n  height: 100%;\n  padding: 0 12px 0 2px;\n  border: 0;\n  background: transparent;\n  color: var(--ink);\n  font: inherit;\n  font-variant-numeric: tabular-nums;\n  outline: none;\n}\n/*# sourceMappingURL=money-input.css.map */\n"] }]
+  }], null, { inputId: [{ type: i02.Input, args: [{ isSignal: true, alias: "inputId", required: false }] }], describedBy: [{ type: i02.Input, args: [{ isSignal: true, alias: "describedBy", required: false }] }], invalid: [{ type: i02.Input, args: [{ isSignal: true, alias: "invalid", required: false }] }], box: [{ type: i02.ViewChild, args: ["box", { isSignal: true }] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassDebugInfo(MoneyInput, { className: "MoneyInput", filePath: "src/app/features/accounts/ui/money-input.ts", lineNumber: 76 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Faccounts%2Fui%2Fmoney-input.ts%40MoneyInput";
+  function MoneyInput_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i02.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i02.\u0275\u0275replaceMetadata(MoneyInput, m.default, [i02], [NG_VALUE_ACCESSOR, forwardRef, Component2, ChangeDetectionStrategy2], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && MoneyInput_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && MoneyInput_HmrLoad(d.timestamp)));
+})();
+
+export {
+  DialogHead,
+  isPositiveMoney,
+  MoneyInput,
+  DIALOG_TITLE_ID,
+  dialogConfig,
+  fieldError
+};
+//# debugId=3d28e1ec-af2f-5abd-8dbd-b06a444fdfa7
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvYWNjb3VudHMvdWkvb3Blbi50cyIsInNyYy9hcHAvZmVhdHVyZXMvYWNjb3VudHMvdWkvZGlhbG9nLWhlYWQudHMiLCJzcmMvYXBwL2ZlYXR1cmVzL2FjY291bnRzL3VpL21vbmV5LWlucHV0LnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IE1hdERpYWxvZ0NvbmZpZyB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2RpYWxvZyc7XG5pbXBvcnQgeyBBcGlFcnJvciB9IGZyb20gJy4uLy4uLy4uL2NvcmUvbW9kZWxzJztcblxuLyoqIEV2ZXJ5IGRpYWxvZyBoZWFkIHVzZXMgdGhpcyBpZCwgc28gTWF0ZXJpYWwgY2FuIG5hbWUgdGhlIGRpYWxvZyBmcm9tIGl0cyB2aXNpYmxlIHRpdGxlLiAqL1xuZXhwb3J0IGNvbnN0IERJQUxPR19USVRMRV9JRCA9ICdkbGctdGl0bGUnO1xuXG5leHBvcnQgZnVuY3Rpb24gZGlhbG9nQ29uZmlnPEQ+KGRhdGE6IEQsIGV4dHJhOiBQYXJ0aWFsPE1hdERpYWxvZ0NvbmZpZzxEPj4gPSB7fSk6IE1hdERpYWxvZ0NvbmZpZzxEPiB7XG4gIHJldHVybiB7IGRhdGEsIGFyaWFMYWJlbGxlZEJ5OiBESUFMT0dfVElUTEVfSUQsIGF1dG9Gb2N1czogJ2ZpcnN0LXRhYmJhYmxlJywgLi4uZXh0cmEgfTtcbn1cblxuLyoqIEZpcnN0IG1lc3NhZ2Ugb2YgYSBmaWVsZCBlcnJvciBmcm9tIHRoZSBBUEkncyBgZGV0YWlsc2AsIGUuZy4gZGV0YWlscy5yZWFzb24gPSBbXCJSZXF1aXJlZC5cIl0uICovXG5leHBvcnQgZnVuY3Rpb24gZmllbGRFcnJvcihlcnI6IEFwaUVycm9yLCBmaWVsZDogc3RyaW5nKTogc3RyaW5nIHtcbiAgY29uc3QgdmFsdWUgPSBlcnIuZGV0YWlscz8uW2ZpZWxkXTtcbiAgcmV0dXJuIEFycmF5LmlzQXJyYXkodmFsdWUpID8gU3RyaW5nKHZhbHVlWzBdID8/ICcnKSA6IHR5cGVvZiB2YWx1ZSA9PT0gJ3N0cmluZycgPyB2YWx1ZSA6ICcnO1xufVxuIiwiaW1wb3J0IHsgQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3ksIENvbXBvbmVudCwgaW5wdXQsIG91dHB1dCB9IGZyb20gJ0Bhbmd1bGFyL2NvcmUnO1xuaW1wb3J0IHsgTWF0SWNvbk1vZHVsZSB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2ljb24nO1xuXG4vKiogVGl0bGUsIG9uZSBtdXRlZCBsaW5lIGFuZCBhIGNsb3NlIChYKSBidXR0b24uIEV2ZXJ5IGRpYWxvZyBhbmQgc2hlZXQgaGVyZSBzdGFydHMgd2l0aCB0aGlzLiAqL1xuQENvbXBvbmVudCh7XG4gIHNlbGVjdG9yOiAnYXBwLWRpYWxvZy1oZWFkJyxcbiAgaW1wb3J0czogW01hdEljb25Nb2R1bGVdLFxuICBjaGFuZ2VEZXRlY3Rpb246IENoYW5nZURldGVjdGlvblN0cmF0ZWd5Lk9uUHVzaCxcbiAgdGVtcGxhdGU6IGBcbiAgICA8ZGl2IGNsYXNzPVwidFwiPlxuICAgICAgPGgyIFtpZF09XCJoZWFkaW5nSWQoKVwiPnt7IHRpdGxlKCkgfX08L2gyPlxuICAgICAgQGlmIChzdWJ0aXRsZSgpKSB7XG4gICAgICAgIDxwPnt7IHN1YnRpdGxlKCkgfX08L3A+XG4gICAgICB9XG4gICAgPC9kaXY+XG4gICAgPGJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgY2xhc3M9XCJ4XCIgW2F0dHIuYXJpYS1sYWJlbF09XCInQ2xvc2UgJyArIHRpdGxlKClcIiAoY2xpY2spPVwiY2xvc2VkLmVtaXQoKVwiPlxuICAgICAgPG1hdC1pY29uIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPmNsb3NlPC9tYXQtaWNvbj5cbiAgICA8L2J1dHRvbj5cbiAgYCxcbiAgc3R5bGVzOiBgXG4gICAgOmhvc3QgeyBkaXNwbGF5OiBmbGV4OyBhbGlnbi1pdGVtczogZmxleC1zdGFydDsganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuOyBnYXA6IDEycHg7IG1hcmdpbi1ib3R0b206IHZhcigtLXNwYWNlLTUpOyB9XG4gICAgLnQgeyBtaW4td2lkdGg6IDA7IH1cbiAgICBoMiB7IG1hcmdpbjogMDsgcGFkZGluZzogMDsgZm9udC1zaXplOiB2YXIoLS10ZXh0LWxnKTsgZm9udC13ZWlnaHQ6IDYwMDsgfVxuICAgIHAgeyBtYXJnaW46IDJweCAwIDA7IGNvbG9yOiB2YXIoLS1pbmstMyk7IGZvbnQtc2l6ZTogdmFyKC0tdGV4dC1zbSk7IG92ZXJmbG93LXdyYXA6IGFueXdoZXJlOyB9XG4gICAgLngge1xuICAgICAgZGlzcGxheTogZ3JpZDsgd2lkdGg6IDQwcHg7IGhlaWdodDogNDBweDsgZmxleDogbm9uZTsgbWFyZ2luOiAtNnB4IC04cHggMCAwOyBwbGFjZS1pdGVtczogY2VudGVyO1xuICAgICAgYm9yZGVyOiAwOyBib3JkZXItcmFkaXVzOiA1MCU7IGJhY2tncm91bmQ6IHRyYW5zcGFyZW50OyBjb2xvcjogdmFyKC0taW5rLTIpOyBjdXJzb3I6IHBvaW50ZXI7XG4gICAgfVxuICAgIC54OmhvdmVyIHsgYmFja2dyb3VuZDogdmFyKC0tc3VidGxlKTsgY29sb3I6IHZhcigtLWluayk7IH1cbiAgICAueCBtYXQtaWNvbiB7IHdpZHRoOiAyMnB4OyBoZWlnaHQ6IDIycHg7IGZvbnQtc2l6ZTogMjJweDsgfVxuICBgLFxufSlcbmV4cG9ydCBjbGFzcyBEaWFsb2dIZWFkIHtcbiAgcmVhZG9ubHkgdGl0bGUgPSBpbnB1dC5yZXF1aXJlZDxzdHJpbmc+KCk7XG4gIHJlYWRvbmx5IHN1YnRpdGxlID0gaW5wdXQoJycpO1xuICByZWFkb25seSBoZWFkaW5nSWQgPSBpbnB1dDxzdHJpbmcgfCBudWxsPihudWxsKTtcbiAgLyoqIFRoZSBwYXJlbnQgY2xvc2VzIHRoZSBkaWFsb2cgb3Igc2hlZXQgaXQgbGl2ZXMgaW4uICovXG4gIHJlYWRvbmx5IGNsb3NlZCA9IG91dHB1dDx2b2lkPigpO1xufVxuIiwiaW1wb3J0IHsgQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3ksIENvbXBvbmVudCwgRWxlbWVudFJlZiwgZm9yd2FyZFJlZiwgaW5wdXQsIHNpZ25hbCwgdmlld0NoaWxkIH0gZnJvbSAnQGFuZ3VsYXIvY29yZSc7XG5pbXBvcnQgeyBDb250cm9sVmFsdWVBY2Nlc3NvciwgTkdfVkFMVUVfQUNDRVNTT1IgfSBmcm9tICdAYW5ndWxhci9mb3Jtcyc7XG5pbXBvcnQgeyBncm91cEluZGlhbiB9IGZyb20gJy4uLy4uLy4uL3NoYXJlZC9tb25leS9pbnIucGlwZSc7XG5cbmV4cG9ydCBjb25zdCBNT05FWV9NQVhfV0hPTEVfRElHSVRTID0gMTA7IC8vIERlY2ltYWxGaWVsZCgxMiwgMik6IDEwICsgMiA9IDEyIGRpZ2l0c1xuXG4vKipcbiAqIFRleHQgdHlwZWQgaW50byBhIOKCuSBmaWVsZCAtPiB0aGUgQVBJIHN0cmluZyBhbmQgdGhlIGdyb3VwZWQgZGlzcGxheS4gUHVyZSBzdHJpbmcgd29yaywgbm8gZmxvYXRzOlxuICogXCIxMjM0NTY3LjVcIiAtPiB7IHZhbHVlOiBcIjEyMzQ1NjcuNVwiLCBkaXNwbGF5OiBcIjEyLDM0LDU2Ny41XCIgfS4gRXh0cmEgZGlnaXRzIGFyZSBkcm9wcGVkLlxuICovXG5leHBvcnQgZnVuY3Rpb24gcGFyc2VNb25leUlucHV0KHRleHQ6IHN0cmluZyk6IHsgdmFsdWU6IHN0cmluZzsgZGlzcGxheTogc3RyaW5nIH0ge1xuICBjb25zdCBjbGVhbmVkID0gKHRleHQgPz8gJycpLnJlcGxhY2UoL1teXFxkLl0vZywgJycpO1xuICBjb25zdCBbd2hvbGVSYXcgPSAnJywgLi4ucmVzdF0gPSBjbGVhbmVkLnNwbGl0KCcuJyk7XG4gIGNvbnN0IGhhc0RvdCA9IGNsZWFuZWQuaW5jbHVkZXMoJy4nKTtcbiAgY29uc3Qgd2hvbGUgPSB3aG9sZVJhdy5yZXBsYWNlKC9eMCsoPz1cXGQpLywgJycpLnNsaWNlKDAsIE1PTkVZX01BWF9XSE9MRV9ESUdJVFMpO1xuICBjb25zdCBmcmFjID0gcmVzdC5qb2luKCcnKS5zbGljZSgwLCAyKTtcbiAgY29uc3QgdmFsdWUgPSB3aG9sZSB8fCBoYXNEb3QgPyBgJHt3aG9sZSB8fCAnMCd9JHtoYXNEb3QgPyAnLicgKyBmcmFjIDogJyd9YCA6ICcnO1xuICBjb25zdCBkaXNwbGF5ID0gdmFsdWUgPyBgJHtncm91cEluZGlhbih3aG9sZSB8fCAnMCcpfSR7aGFzRG90ID8gJy4nICsgZnJhYyA6ICcnfWAgOiAnJztcbiAgcmV0dXJuIHsgdmFsdWUsIGRpc3BsYXkgfTtcbn1cblxuLyoqIFRydWUgZm9yIGEgcG9zaXRpdmUgYW1vdW50IChcIjBcIiwgXCIwLjAwXCIgYW5kIFwiXCIgYXJlIG5vdCkuICovXG5leHBvcnQgZnVuY3Rpb24gaXNQb3NpdGl2ZU1vbmV5KHZhbHVlOiBzdHJpbmcgfCBudWxsIHwgdW5kZWZpbmVkKTogYm9vbGVhbiB7XG4gIHJldHVybiAvWzEtOV0vLnRlc3QodmFsdWUgPz8gJycpO1xufVxuXG4vKiog4oK5IGFtb3VudCBmaWVsZDogSW5kaWFuIGRpZ2l0IGdyb3VwaW5nIHdoaWxlIHR5cGluZywgc3RyaW5nIHZhbHVlLCBhdCBtb3N0IDEyIGRpZ2l0cy4gKi9cbkBDb21wb25lbnQoe1xuICBzZWxlY3RvcjogJ2FwcC1tb25leS1pbnB1dCcsXG4gIGNoYW5nZURldGVjdGlvbjogQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3kuT25QdXNoLFxuICBwcm92aWRlcnM6IFt7IHByb3ZpZGU6IE5HX1ZBTFVFX0FDQ0VTU09SLCB1c2VFeGlzdGluZzogZm9yd2FyZFJlZigoKSA9PiBNb25leUlucHV0KSwgbXVsdGk6IHRydWUgfV0sXG4gIHRlbXBsYXRlOiBgXG4gICAgPHNwYW4gY2xhc3M9XCJ3cmFwXCIgW2NsYXNzLmludmFsaWRdPVwiaW52YWxpZCgpXCI+XG4gICAgICA8c3BhbiBjbGFzcz1cInByZWZpeFwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPuKCuTwvc3Bhbj5cbiAgICAgIDxpbnB1dFxuICAgICAgICAjYm94XG4gICAgICAgIHR5cGU9XCJ0ZXh0XCJcbiAgICAgICAgaW5wdXRtb2RlPVwiZGVjaW1hbFwiXG4gICAgICAgIGF1dG9jb21wbGV0ZT1cIm9mZlwiXG4gICAgICAgIFtpZF09XCJpbnB1dElkKClcIlxuICAgICAgICBbYXR0ci5hcmlhLWRlc2NyaWJlZGJ5XT1cImRlc2NyaWJlZEJ5KClcIlxuICAgICAgICBbYXR0ci5hcmlhLWludmFsaWRdPVwiaW52YWxpZCgpIHx8IG51bGxcIlxuICAgICAgICBbdmFsdWVdPVwiZGlzcGxheSgpXCJcbiAgICAgICAgW2Rpc2FibGVkXT1cImRpc2FibGVkKClcIlxuICAgICAgICAoaW5wdXQpPVwib25JbnB1dChib3gudmFsdWUpXCJcbiAgICAgICAgKGJsdXIpPVwidG91Y2hlZCgpXCJcbiAgICAgIC8+XG4gICAgPC9zcGFuPlxuICBgLFxuICBzdHlsZXM6IGBcbiAgICAud3JhcCB7XG4gICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgICAgIGhlaWdodDogNDRweDtcbiAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWxpbmUtc3Ryb25nKTtcbiAgICAgIGJvcmRlci1yYWRpdXM6IHZhcigtLXJhZGl1cy1jb250cm9sKTtcbiAgICAgIGJhY2tncm91bmQ6IHZhcigtLXN1cmZhY2UpO1xuICAgIH1cbiAgICAud3JhcDpmb2N1cy13aXRoaW4geyBvdXRsaW5lOiBub25lOyBib3JkZXItY29sb3I6IHZhcigtLWJyYW5kLWRlZXApOyBib3gtc2hhZG93OiB2YXIoLS1maWVsZC1yaW5nKTsgfVxuICAgIC53cmFwLmludmFsaWQgeyBib3JkZXItY29sb3I6IHZhcigtLW5lZ2F0aXZlKTsgfVxuICAgIC5wcmVmaXggeyBwYWRkaW5nOiAwIDRweCAwIDEycHg7IGNvbG9yOiB2YXIoLS1pbmstMyk7IGZvbnQtd2VpZ2h0OiA1MDA7IH1cbiAgICBpbnB1dCB7XG4gICAgICBmbGV4OiAxO1xuICAgICAgbWluLXdpZHRoOiAwO1xuICAgICAgaGVpZ2h0OiAxMDAlO1xuICAgICAgcGFkZGluZzogMCAxMnB4IDAgMnB4O1xuICAgICAgYm9yZGVyOiAwO1xuICAgICAgYmFja2dyb3VuZDogdHJhbnNwYXJlbnQ7XG4gICAgICBjb2xvcjogdmFyKC0taW5rKTtcbiAgICAgIGZvbnQ6IGluaGVyaXQ7XG4gICAgICBmb250LXZhcmlhbnQtbnVtZXJpYzogdGFidWxhci1udW1zO1xuICAgICAgb3V0bGluZTogbm9uZTtcbiAgICB9XG4gIGAsXG59KVxuZXhwb3J0IGNsYXNzIE1vbmV5SW5wdXQgaW1wbGVtZW50cyBDb250cm9sVmFsdWVBY2Nlc3NvciB7XG4gIHJlYWRvbmx5IGlucHV0SWQgPSBpbnB1dDxzdHJpbmc+KCcnKTtcbiAgcmVhZG9ubHkgZGVzY3JpYmVkQnkgPSBpbnB1dDxzdHJpbmcgfCBudWxsPihudWxsKTtcbiAgcmVhZG9ubHkgaW52YWxpZCA9IGlucHV0KGZhbHNlKTtcblxuICBwcm90ZWN0ZWQgcmVhZG9ubHkgZGlzcGxheSA9IHNpZ25hbCgnJyk7XG4gIHByb3RlY3RlZCByZWFkb25seSBkaXNhYmxlZCA9IHNpZ25hbChmYWxzZSk7XG4gIHByaXZhdGUgcmVhZG9ubHkgYm94ID0gdmlld0NoaWxkLnJlcXVpcmVkPEVsZW1lbnRSZWY8SFRNTElucHV0RWxlbWVudD4+KCdib3gnKTtcbiAgcHJpdmF0ZSBvbkNoYW5nZTogKHZhbHVlOiBzdHJpbmcpID0+IHZvaWQgPSAoKSA9PiB1bmRlZmluZWQ7XG4gIHByb3RlY3RlZCB0b3VjaGVkOiAoKSA9PiB2b2lkID0gKCkgPT4gdW5kZWZpbmVkO1xuXG4gIHdyaXRlVmFsdWUodmFsdWU6IHN0cmluZyB8IG51bGwpOiB2b2lkIHtcbiAgICB0aGlzLmRpc3BsYXkuc2V0KHBhcnNlTW9uZXlJbnB1dCh2YWx1ZSA/PyAnJykuZGlzcGxheSk7XG4gIH1cblxuICByZWdpc3Rlck9uQ2hhbmdlKGZuOiAodmFsdWU6IHN0cmluZykgPT4gdm9pZCk6IHZvaWQge1xuICAgIHRoaXMub25DaGFuZ2UgPSBmbjtcbiAgfVxuXG4gIHJlZ2lzdGVyT25Ub3VjaGVkKGZuOiAoKSA9PiB2b2lkKTogdm9pZCB7XG4gICAgdGhpcy50b3VjaGVkID0gZm47XG4gIH1cblxuICBzZXREaXNhYmxlZFN0YXRlKGRpc2FibGVkOiBib29sZWFuKTogdm9pZCB7XG4gICAgdGhpcy5kaXNhYmxlZC5zZXQoZGlzYWJsZWQpO1xuICB9XG5cbiAgZm9jdXMoKTogdm9pZCB7XG4gICAgdGhpcy5ib3goKS5uYXRpdmVFbGVtZW50LmZvY3VzKCk7XG4gIH1cblxuICBwcm90ZWN0ZWQgb25JbnB1dCh0ZXh0OiBzdHJpbmcpOiB2b2lkIHtcbiAgICBjb25zdCB7IHZhbHVlLCBkaXNwbGF5IH0gPSBwYXJzZU1vbmV5SW5wdXQodGV4dCk7XG4gICAgdGhpcy5kaXNwbGF5LnNldChkaXNwbGF5KTtcbiAgICB0aGlzLmJveCgpLm5hdGl2ZUVsZW1lbnQudmFsdWUgPSBkaXNwbGF5OyAvLyBrZWVwIHRoZSBmaWVsZCBpbiBzdGVwIGV2ZW4gd2hlbiB0aGUgdGV4dCBpcyB1bmNoYW5nZWRcbiAgICB0aGlzLm9uQ2hhbmdlKHZhbHVlKTtcbiAgfVxufVxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7OztBQUlPLElBQU0sa0JBQWtCO0FBRXhCLFNBQVMsYUFBZ0IsTUFBUyxRQUFxQyxDQUFDLEdBQXVCO0FBQ3BHLFNBQU8saUJBQUUsTUFBTSxnQkFBZ0IsaUJBQWlCLFdBQVcsb0JBQXFCO0FBQ2xGO0FBR08sU0FBUyxXQUFXLEtBQWUsT0FBdUI7QUFDL0QsUUFBTSxRQUFRLElBQUksVUFBVSxLQUFLO0FBQ2pDLFNBQU8sTUFBTSxRQUFRLEtBQUssSUFBSSxPQUFPLE1BQU0sQ0FBQyxLQUFLLEVBQUUsSUFBSSxPQUFPLFVBQVUsV0FBVyxRQUFRO0FBQzdGOzs7QUNkQSxTQUFTLHlCQUF5QixXQUFXLE9BQU8sY0FBYztBQUNsRSxTQUFTLHFCQUFxQjs7Ozs7O0FBV3RCLElBQUEsNEJBQUEsR0FBQSxHQUFBO0FBQUcsSUFBQSxvQkFBQSxDQUFBO0FBQWdCLElBQUEsMEJBQUE7Ozs7QUFBaEIsSUFBQSx1QkFBQTtBQUFBLElBQUEsK0JBQUEsT0FBQSxTQUFBLENBQUE7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RHRCQzt1QkFDVyxtQkFBaUIsaUJBQ1ZDLHlCQUF3QixRQUFNLFdBQ3BDLENBQUMsRUFBRSxTQUFTLG1CQUFtQixhQUFhLFdBQVcsTUFBSyxVQUFXLEdBQUcsT0FBTyxLQUFJLENBQUUsR0FBQyxVQUN6Rjs7Ozs7Ozs7Ozs7Ozs7Ozs7S0FpQlQsUUFBQSxDQUFBLGszQkFBQSxFQUFBLENBQUE7dVZBa0N1RSxPQUFLLEVBQUEsVUFBQSxLQUFBLENBQUEsRUFBQSxDQUFBLEVBQUEsQ0FBQTtBQUFBLEdBQUE7O2lGQVBsRSxZQUFVLEVBQUEsV0FBQSxjQUFBLFVBQUEsK0NBQUEsWUFBQSxHQUFBLENBQUE7QUFBQSxHQUFBOzs7Ozs7OytEQUFWLFlBQVUsRUFBQSxTQUFBLENBQUFDLEdBQUEsR0FBQSxDQUFBLG1CQUFBLFlBQUFGLFlBQUFDLHdCQUFBLEdBQUEsYUFBQSxFQUFBLENBQUE7RUFBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsY0FBQSxtQkFBQSxLQUFBLElBQUEsQ0FBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsZUFBQSxZQUFBLE9BQUEsWUFBQSxJQUFBLEdBQUEsNEJBQUEsQ0FBQSxNQUFBLEVBQUEsT0FBQSxNQUFBLG1CQUFBLEVBQUEsU0FBQSxDQUFBO0FBQUEsR0FBQTsiLCJuYW1lcyI6WyJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsIkNvbXBvbmVudCIsImlucHV0IiwiaW5wdXQiLCJDb21wb25lbnQiLCJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsImkwIl0sImRlYnVnSWQiOiIzZDI4ZTFlYy1hZjJmLTVhYmQtOGRiZC1iMDZhNDQ0ZmRmYTcifQ==

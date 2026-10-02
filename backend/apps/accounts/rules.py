@@ -2,6 +2,9 @@
 """Business rules for accounts. Change a number here, nowhere else."""
 
 ACCOUNTS_ROLES = {"ADMIN"}
+# Finalizing a won deal (the first close) is also the Sales Manager's. Revising the total afterwards
+# (a correction), payments, voids and every other accounts screen stay ACCOUNTS_ROLES only.
+FINALIZE_ROLES = {"ADMIN", "SALES_MANAGER"}
 PAYMENT_REQUIRES_FINALIZED = True
 BLOCK_OVERPAYMENT = True
 PAYMENT_BACKDATE_DAYS = 90

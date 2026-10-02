@@ -1,0 +1,17 @@
+// Details: one block per deal, the current one first-class.
+.deal-d {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+.deal-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 var(--space-2);
+}
+.proj-link { color: var(--brand-deep); font-weight: 500; }
+.muted { color: var(--ink-3); font-size: var(--text-sm); }
+
+
+.deal-next a, .deal-next button { margin-top: 2px; }

@@ -3,14 +3,15 @@ import { Observable, Subject, catchError, map, of, switchMap } from 'rxjs';
 import { QueryParams } from '../../../core/api/api.service';
 import { ApiError } from '../../../core/models';
 import { LeadsApi } from './leads-api.service';
-import { EMPTY_FILTERS, LeadFilters, LeadListItem, LeadSummary, ListMode } from './lead.models';
+import { DEFAULT_ORDERING, EMPTY_FILTERS, LeadFilters, LeadListItem, LeadSummary, ListMode } from './lead.models';
 
 export const PAGE_SIZE = 20;
 
 /** Fixed query parts per page mode (the user's filters come on top). */
 export const MODE_PRESETS: Record<ListMode, { params: QueryParams; ordering: string }> = {
-  all: { params: { open: 'true' }, ordering: '-created_at' },
-  overdue: { params: { followup: 'overdue' }, ordering: '-days_overdue' },
+  // Every status by default (won and lost included), most recently active first.
+  all: { params: {}, ordering: DEFAULT_ORDERING },
+  overdue: { params: { followup: 'overdue' }, ordering: DEFAULT_ORDERING },
   won: { params: { status: 'WON' }, ordering: '-won_at' },
   lost: { params: { status: 'LOST' }, ordering: '-last_activity_at' },
 };

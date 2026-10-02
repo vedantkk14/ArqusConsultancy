@@ -8,6 +8,7 @@ import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { Skeleton } from '../../../shared/skeleton/skeleton';
 import { ActivityCard } from '../components/activity-card';
+import { HolidayCard } from '../components/holiday-card';
 import { RecentActivity } from '../dashboard.models';
 import { LayoutService } from '../../../layout/layout.service';
 import { ExecQueueSection } from './components/exec-queue-section';
@@ -45,6 +46,7 @@ const ACTION_VERB: Record<string, string> = {
     ErrorState,
     ExecQueueSection,
     FollowUpNowCard,
+    HolidayCard,
     MatIconModule,
     MatTooltipModule,
     MyPipelineCard,

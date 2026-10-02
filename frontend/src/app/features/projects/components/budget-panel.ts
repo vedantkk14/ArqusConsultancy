@@ -1,6 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { InrPipe, formatInr } from '../../../shared/money/inr.pipe';
 import { ProjectListItem } from '../data/project.models';
 import { BudgetBar } from '../ui/bits';
@@ -12,7 +10,7 @@ import { PanelHead } from '../ui/panel-head';
  */
 @Component({
   selector: 'app-budget-panel',
-  imports: [BudgetBar, InrPipe, MatButtonModule, MatIconModule, PanelHead],
+  imports: [BudgetBar, InrPipe, PanelHead],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'card panel rise-in',
@@ -21,19 +19,7 @@ import { PanelHead } from '../ui/panel-head';
     'aria-labelledby': 'budget-title',
   },
   template: `
-    <app-panel-head title="Budget" [subtitle]="leftText()" headingId="budget-title">
-      <button
-        matButton="outlined"
-        type="button"
-        class="xl"
-        [disabled]="exporting()"
-        [attr.aria-label]="'Download the expenses of ' + project().name + ' as an Excel file'"
-        (click)="exportExcel.emit()"
-      >
-        <mat-icon aria-hidden="true">table_view</mat-icon
-        >{{ exporting() ? 'Preparing…' : 'Export to Excel' }}
-      </button>
-    </app-panel-head>
+    <app-panel-head title="Budget" [subtitle]="leftText()" headingId="budget-title" />
     @if (hasTotal()) {
       <app-budget-bar
         [usagePct]="project().usage_pct ?? '0'"
@@ -100,11 +86,6 @@ import { PanelHead } from '../ui/panel-head';
       font-size: var(--text-sm);
       font-weight: 500;
     }
-    .xl mat-icon {
-      width: 18px;
-      height: 18px;
-      font-size: 18px;
-    }
     @media (max-width: 480px) {
       .figs {
         grid-template-columns: 1fr 1fr;
@@ -117,8 +98,6 @@ import { PanelHead } from '../ui/panel-head';
 })
 export class BudgetPanel {
   readonly project = input.required<ProjectListItem>();
-  readonly exporting = input(false);
-  readonly exportExcel = output<void>();
 
   protected readonly hasTotal = computed(() => !!this.project().total_budget);
 

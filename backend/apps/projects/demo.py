@@ -67,15 +67,15 @@ def _ensure_won_leads(admin):
         phone = f"+9196{i:08d}"
         if lead_model.all_objects.filter(phone=phone).exists():
             continue
-        lead_model.objects.create(
-            name=name,
-            phone=phone,
+        lead = lead_model.objects.create(
+            name=name, phone=phone, source="REFERRAL", created_by=admin, assigned_to=None
+        )
+        integrations.add_opportunity(
+            lead,
+            by=admin,
             status="WON",
-            source="REFERRAL",
             proposed_amount=amount,
             won_at=timezone.now() - timedelta(days=12 + i * 5),
-            created_by=admin,
-            assigned_to=None,
         )
 
 
@@ -102,18 +102,23 @@ def seed_projects(command, users) -> None:
     pms = {1: pm1, 2: pm2, None: None}
 
     _ensure_won_leads(admin)
-    leads = list(integrations.lead_model().objects.filter(status="WON").order_by("id")[: len(PLAN)])
+    deals = list(
+        integrations.opportunity_model()
+        .objects.filter(status="WON")
+        .select_related("lead")
+        .order_by("id")[: len(PLAN)]
+    )
     rnd = random.Random(7)
     now = timezone.now()
     made = 0
-    for lead, (pm_key, usage, status, count) in zip(leads, PLAN, strict=False):
-        if Project.objects.filter(lead=lead).exists():
+    for deal, (pm_key, usage, status, count) in zip(deals, PLAN, strict=False):
+        if Project.objects.filter(opportunity=deal).exists():
             continue
-        total = lead.proposed_amount or Decimal("400000")
+        total = deal.proposed_amount or Decimal("400000")
         base = (Decimal(total) * SPEND_BASE_PCT).quantize(Decimal("1"))
         project = services.convert(
-            lead.pk,
-            name=f"{lead.name}: ground works",
+            deal.pk,
+            name=f"{deal.lead.name}: ground works",
             pm_id=pms[pm_key].pk if pms[pm_key] else None,
             start_date=(now - timedelta(days=80)).date(),
             expected_end_date=(now + timedelta(days=40)).date(),
@@ -212,15 +217,19 @@ def seed_pm_flow(command, users, pm_username: str = "project_manager") -> None:
             name=client,
             phone=phone,
             email=f"{client.split()[0].lower()}@example.in",
-            status="WON",
             source="REFERRAL",
-            proposed_amount=total,
-            won_at=now - timedelta(days=30 + i),
             created_by=admin,
             assigned_to=None,
         )
+        deal = integrations.add_opportunity(
+            lead,
+            by=admin,
+            status="WON",
+            proposed_amount=total,
+            won_at=now - timedelta(days=30 + i),
+        )
         Ledger.objects.create(
-            lead=lead,
+            opportunity=deal,
             total_amount=total,
             finalized_at=now - timedelta(days=28),
             finalized_on=selectors.business_today(),
@@ -228,7 +237,7 @@ def seed_pm_flow(command, users, pm_username: str = "project_manager") -> None:
         )
         base = (Decimal(total) * SPEND_BASE_PCT).quantize(Decimal("1"))
         project = services.convert(
-            lead.pk,
+            deal.pk,
             name=name,
             pm_id=pm.pk,
             start_date=(now - timedelta(days=25)).date(),

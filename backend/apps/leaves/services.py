@@ -43,7 +43,11 @@ def decide(leave: LeaveRequest, by, *, approve: bool, note: str = "") -> LeaveRe
     notify(
         leave.user,
         "leave_approved" if approve else "leave_rejected",
-        {"start_date": leave.start_date.isoformat(), "end_date": leave.end_date.isoformat(), "note": note},
+        {
+            "start_date": leave.start_date.isoformat(),
+            "end_date": leave.end_date.isoformat(),
+            "note": note,
+        },
     )
     return leave
 

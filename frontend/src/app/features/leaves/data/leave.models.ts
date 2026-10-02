@@ -2,9 +2,13 @@
 
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
+import { Role } from '../../../core/models';
+
 export interface Person {
   id: number;
   name: string;
+  role?: Role;
+  designation?: string;
 }
 
 export interface Holiday {
@@ -30,6 +34,7 @@ export interface LeaveRequestItem {
 export interface LeaveSummary {
   this_month: number;
   this_year: number;
+  user?: Person;
 }
 
 export interface NewLeaveRequest {

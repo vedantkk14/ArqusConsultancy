@@ -99,6 +99,13 @@ tbody tr {
   color: var(--ink-3);
   font-size: var(--text-xs);
 }
+
+// Marks the client's 2nd+ project so same-named rows stay tellable apart.
+.deal-no {
+  margin-right: 4px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
 .neg {
   color: var(--negative);
   font-weight: 600;
@@ -193,3 +200,21 @@ tbody tr {
     display: table-cell;
   }
 }
+
+// A returning client's completed project, shown under their running one.
+tr.past td { background: var(--subtle); }
+tr.past .stretch { color: var(--ink-2); }
+li.past { background: var(--subtle); }
+// Rows of the same client read as one block: no divider between them.
+tr:has(+ tr.cont) td { border-bottom-color: transparent; }
+.done-tag {
+  margin-left: 6px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  background: var(--tint-slate);
+  color: var(--tint-slate-ink);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 18px;
+}
+

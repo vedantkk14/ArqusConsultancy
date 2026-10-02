@@ -53,8 +53,13 @@ def receipt_path(instance, filename: str) -> str:
 class Project(TimeStampedModel):
     name = models.CharField(max_length=200)
     client_name = models.CharField(max_length=150)  # copied from the lead when converted
-    lead = models.OneToOneField(
-        "leads.Lead", on_delete=models.PROTECT, related_name="project", null=True, blank=True
+    # The won deal this project delivers (a lead can have several deals, each its own project).
+    opportunity = models.OneToOneField(
+        "leads.Opportunity",
+        on_delete=models.PROTECT,
+        related_name="project",
+        null=True,
+        blank=True,
     )
     pm = models.ForeignKey(
         settings.AUTH_USER_MODEL,

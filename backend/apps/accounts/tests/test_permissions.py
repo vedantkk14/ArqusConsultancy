@@ -1,5 +1,9 @@
 # ruff: noqa: E501
-"""Everything in Accounts is ADMIN only: 401 anonymous, 403 for every other role, bodies without amounts."""
+"""Everything in Accounts is ADMIN only: 401 anonymous, 403 for every other role, bodies without amounts.
+
+The one exception: SALES_MANAGER may finalize a won deal (POST /ledgers/{id}/finalize); revise-total,
+payments, void and everything else stay 403 for them.
+"""
 
 import re
 
@@ -57,6 +61,8 @@ def test_every_other_role_gets_403_everywhere_with_no_amounts_in_the_body(
 ):
     user = request.getfixturevalue(role)
     for method, url, body in endpoints(world):
+        if role == "sales_manager" and url.endswith("/finalize"):
+            continue  # the Sales Manager's one accounts action (tested below)
         res = call(client_for(user), method, url, body)
         assert res.status_code == 403, (role, method, url)
         text = res.content.decode() if hasattr(res, "content") and not res.streaming else ""
@@ -78,6 +84,38 @@ def test_nothing_changed_after_the_forbidden_writes(client_for, sales_manager, w
     )
 
 
+def test_sales_manager_finalizes_but_nothing_else(client_for, sales_manager, make_ledger, notes):
+    from apps.accounts.models import Ledger
+
+    open_ledger = make_ledger(finalize=False)
+    c = client_for(sales_manager)
+    res = c.post(f"{LEDGERS}/{open_ledger.pk}/finalize", {"amount": "90000"}, format="json")
+    assert res.status_code == 200, res.content
+    body = res.json()
+    assert body["finalized"] is True and body["total"] == "90000.00"
+    assert not {"received", "outstanding", "payments", "project", "state"} & set(body)
+    assert Ledger.objects.get(pk=open_ledger.pk).finalized_by_id == sales_manager.pk
+    assert [k for _, k, _ in notes] == ["deal_finalized"]  # the exec is told, as for an admin
+    again = c.post(f"{LEDGERS}/{open_ledger.pk}/finalize", {"amount": "1"}, format="json")
+    assert again.status_code == 409
+    forbidden = [
+        ("post", f"{LEDGERS}/{open_ledger.pk}/revise-total", {"amount": "95000", "reason": "r"}),
+        ("post", f"{LEDGERS}/{open_ledger.pk}/payments", "form"),
+        ("get", f"{LEDGERS}/{open_ledger.pk}/payments", None),
+        ("get", f"{LEDGERS}/{open_ledger.pk}", None),
+    ]
+    for method, url, payload in forbidden:
+        assert call(c, method, url, payload).status_code == 403, url
+    assert Ledger.objects.get(pk=open_ledger.pk).total_amount == 90000
+
+
+def test_sales_manager_cannot_void(client_for, sales_manager, world):
+    res = client_for(sales_manager).post(
+        f"{PAYMENTS}/{world['payment'].pk}/void", {"reason": "r"}, format="json"
+    )
+    assert res.status_code == 403
+
+
 def test_admin_can_use_every_read_endpoint(client_for, admin, world):
     for method, url, body in endpoints(world):
         if method == "get" and not url.endswith("/proof"):
@@ -93,7 +131,7 @@ def test_unknown_ids_are_404_for_the_admin(client_for, admin):
 
 def test_leads_exec_screens_carry_no_ledger_data(client_for, sales_exec, ledger, make_payment):
     make_payment(ledger, "12345.67")
-    res = client_for(sales_exec).get(f"/api/v1/leads/{ledger.lead_id}")
+    res = client_for(sales_exec).get(f"/api/v1/leads/{ledger.opportunity.lead_id}")
     assert res.status_code == 200
     text = res.content.decode()
     for needle in ("received", "outstanding", "12345.67", "ledger", "payment"):

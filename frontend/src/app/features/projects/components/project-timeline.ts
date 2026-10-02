@@ -27,6 +27,8 @@ const META: Record<EventType, { icon: string; tint: string }> = {
 
 const str = (v: unknown): string => (typeof v === 'string' ? v : '');
 const money = (v: unknown): string => formatInr(str(v), 'paise');
+/** " ₹1,200.00" or nothing: a Sales Manager's events carry no amounts. */
+const sum = (v: unknown): string => (v === undefined || v === null || v === '' ? '' : ` ${money(v)}`);
 
 /** One sentence per event, from the data stored with it. No lead or finance data is ever in here. */
 export function describeEvent(event: ProjectEvent): string {
@@ -41,13 +43,15 @@ export function describeEvent(event: ProjectEvent): string {
           : `${str(d['pm'])} assigned as manager.`
         : `${str(d['previous_pm'])} removed as manager.`;
     case 'EXPENSE_ADDED':
-      return `Added ${money(d['amount'])} (${categoryWord(d['category'])}).`;
+      return `Added${sum(d['amount']) || ' an expense'} (${categoryWord(d['category'])}).`;
     case 'EXPENSE_EDITED':
-      return `Edited an expense: now ${money(d['amount'])} (${categoryWord(d['category'])}).`;
+      return d['amount'] === undefined
+        ? `Edited an expense (${categoryWord(d['category'])}).`
+        : `Edited an expense: now ${money(d['amount'])} (${categoryWord(d['category'])}).`;
     case 'EXPENSE_VOIDED':
-      return `Voided ${money(d['amount'])} (${categoryWord(d['category'])}). Reason: ${str(d['reason'])}`;
+      return `Voided${sum(d['amount']) || ' an expense'} (${categoryWord(d['category'])}). Reason: ${str(d['reason'])}`;
     case 'COMPLETED':
-      return `Project completed. ${money(d['spent'])} spent in total.`;
+      return d['spent'] === undefined ? 'Project completed.' : `Project completed. ${money(d['spent'])} spent in total.`;
     case 'REOPENED':
       return `Project reopened. Reason: ${str(d['reason'])}`;
     default:

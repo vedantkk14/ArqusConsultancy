@@ -66,6 +66,26 @@ export function makeDetail(id: number, patch: Partial<ProjectDetail> = {}): Proj
   };
 }
 
+/** A project as a Sales Manager sees it: no money at all (no spent, budget, finance). */
+export function makeSmProject(id: number, patch: Partial<ProjectListItem> = {}): ProjectListItem {
+  const project = makePmProject(id, patch);
+  delete project.spent;
+  return { ...project, lead_id: 9 };
+}
+
+export function makeSmDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
+  const detail = makePmDetail(id, { allowed_actions: [], ...patch });
+  delete detail.spent;
+  return { ...detail, lead_id: 9 };
+}
+
+/** An expense as a Sales Manager sees it: no amount. */
+export function makeSmExpense(id: number): Expense {
+  const expense = { ...makeExpense(id) } as Partial<Expense>;
+  delete expense.amount;
+  return expense as Expense;
+}
+
 export function makePmDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
   const detail = makeDetail(id, { allowed_actions: ['add_expense', 'complete'], ...patch });
   delete detail.pm;
@@ -113,6 +133,8 @@ export const SUMMARY: ProjectSummary = {
 };
 
 export const CONVERTIBLE: ConvertibleLead = {
+  opportunity: 90,
+  sequence_no: 1,
   lead: 9,
   name: 'Kolhapur Kabaddi League',
   exec_name: 'Eva Exec',
@@ -133,7 +155,7 @@ export class FakeProjectsApi {
     count: 1,
     results: [CONVERTIBLE],
   });
-  convertibleCalls: (number | undefined)[] = [];
+  convertibleCalls: ({ opportunity?: number; lead?: number } | undefined)[] = [];
   convertResult: Observable<ProjectDetail> = of(makeDetail(1));
   converts: unknown[] = [];
   managersList: Manager[] = [
@@ -164,8 +186,8 @@ export class FakeProjectsApi {
   managers() {
     return of(this.managersList);
   }
-  convertible(lead?: number) {
-    this.convertibleCalls.push(lead);
+  convertible(lookup?: { opportunity?: number; lead?: number }) {
+    this.convertibleCalls.push(lookup);
     return this.convertible$;
   }
   convert(body: unknown) {

@@ -54,16 +54,20 @@ def _user(user) -> dict | None:
 
 
 def ledger_row(ledger, today=None) -> dict:
-    """One ledger from a with_figures() queryset (needs lead and lead.assigned_to selected)."""
+    """One ledger from a with_figures() queryset (needs opportunity, its lead and assignee selected)."""
     today = today or selectors.business_today()
     finalized = ledger.finalized_at is not None
     state = selectors.ledger_state(ledger.total_amount, ledger.received, finalized)
+    deal = ledger.opportunity
     return {
         "id": ledger.pk,
-        "lead": ledger.lead_id,
-        "client": ledger.lead.name,
-        "phone": ledger.lead.phone,
-        "exec_name": ledger.lead.assigned_to.display_name if ledger.lead.assigned_to else None,
+        "lead": deal.lead_id,
+        "opportunity": deal.pk,
+        "sequence_no": deal.sequence_no,
+        "client": deal.lead.name,
+        "client_no": selectors.ledger_no(ledger),
+        "phone": deal.lead.phone,
+        "exec_name": deal.assigned_to.display_name if deal.assigned_to else None,
         "state": state,
         "state_label": LedgerState(state).label,
         "finalized": finalized,
@@ -97,7 +101,7 @@ def project_block(ledger) -> dict | None:
     except (LookupError, ImportError):
         return None
     project = project_selectors.budget_usage_qs(
-        model.objects.filter(lead_id=ledger.lead_id)
+        model.objects.filter(opportunity_id=ledger.opportunity_id)
     ).first()
     if project is None:
         return None
@@ -115,7 +119,8 @@ def project_block(ledger) -> dict | None:
 
 def ledger_detail(ledger) -> dict:
     row = ledger_row(ledger)
-    lead = ledger.lead
+    deal = ledger.opportunity
+    lead = deal.lead
     return {
         **row,
         "lead_block": {
@@ -124,14 +129,16 @@ def ledger_detail(ledger) -> dict:
             "phone": lead.phone,
             "email": lead.email,
             "exec_name": row["exec_name"],
-            "status": lead.status,
+            "status": deal.status,
+            "opportunity_id": deal.pk,
+            "sequence_no": deal.sequence_no,
         },
         "project": project_block(ledger),
         "finalized_at": ledger.finalized_at.isoformat() if ledger.finalized_at else None,
         "finalized_by": _user(ledger.finalized_by),
         "finalize_note": ledger.finalize_note,
-        "proposed_amount": selectors.money_str(lead.proposed_amount)
-        if lead.proposed_amount is not None
+        "proposed_amount": selectors.money_str(deal.proposed_amount)
+        if deal.proposed_amount is not None
         else None,
         "allowed_actions": allowed_actions(ledger),
     }
@@ -154,7 +161,7 @@ def payment_row(payment, with_balance=False) -> dict:
     row = {
         "id": payment.pk,
         "ledger": payment.ledger_id,
-        "client": payment.ledger.lead.name,
+        "client": payment.ledger.opportunity.lead.name,
         "receipt_no": receipt_number(payment),
         "amount": selectors.money_str(payment.amount),
         "mode": payment.mode,
@@ -174,7 +181,7 @@ def payment_row(payment, with_balance=False) -> dict:
         balance = selectors.balance_after(payment)
         row["balance_after"] = None if balance is None else selectors.money_str(balance)
         row["amount_in_words"] = to_indian_words(payment.amount)
-        row["client_phone"] = payment.ledger.lead.phone
+        row["client_phone"] = payment.ledger.opportunity.lead.phone
         row["company"] = rules.COMPANY_NAME
     return row
 

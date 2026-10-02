@@ -21,6 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   Assignee,
   LEAD_SOURCES,
+  DEFAULT_ORDERING,
   LEAD_STATUSES,
   LeadFilters,
   LeadStatus,
@@ -29,7 +30,7 @@ import {
   ORDERINGS,
   STATUS_LABELS,
 } from '../data/lead.models';
-import { activeFilterCount } from '../data/leads-list.store';
+import { MODE_PRESETS, activeFilterCount } from '../data/leads-list.store';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
@@ -51,8 +52,11 @@ export class LeadFiltersBar {
   readonly changed = output<Partial<LeadFilters>>();
   readonly cleared = output<void>();
 
-  /** All leads shows open leads only: Won and Lost have their own pages. */
-  protected readonly statuses = LEAD_STATUSES.filter((s) => s !== 'WON' && s !== 'LOST');
+  /** All leads shows every status, won and lost included. */
+  protected readonly statuses = LEAD_STATUSES;
+  /** All leads sorts by "Most recent" unless another order is picked. */
+  /** Every mode has a preset ordering (most recent); the select shows its label, never "Default order". */
+  protected readonly defaultOrdering = computed(() => MODE_PRESETS[this.mode()]?.ordering ?? DEFAULT_ORDERING);
   protected readonly labels = STATUS_LABELS;
   protected readonly sources = LEAD_SOURCES;
   protected readonly orderings = ORDERINGS;
@@ -63,7 +67,7 @@ export class LeadFiltersBar {
     Object.entries(this.filters()).some(([key, value]) => key !== 'ordering' && value !== ''),
   );
   protected readonly total = computed(
-    () => this.summary()?.by_status.filter((s) => s.status !== 'WON' && s.status !== 'LOST').reduce((sum, s) => sum + s.count, 0) ?? null,
+    () => this.summary()?.by_status.reduce((sum, s) => sum + s.count, 0) ?? null,
   );
 
   private readonly sheet = inject(MatBottomSheet);

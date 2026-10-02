@@ -6,7 +6,11 @@
 
 <ng-template #acts let-e>
   <span class="acts">
-    @if (e.has_receipt) {
+    @if (e.has_receipt && !showAmount()) {
+      <span class="ib" role="img" aria-label="Receipt attached">
+        <mat-icon aria-hidden="true">{{ e.receipt_kind === 'pdf' ? 'picture_as_pdf' : 'image' }}</mat-icon>
+      </span>
+    } @else if (e.has_receipt) {
       <button
         type="button"
         class="ib"
@@ -53,7 +57,9 @@
             <th>Project</th>
             <th class="c-by">Logged by</th>
           }
-          <th class="r">Amount</th>
+          @if (showAmount()) {
+            <th class="r">Amount</th>
+          }
           <th class="r"><span class="sr-only">Actions</span></th>
         </tr>
       </thead>
@@ -104,7 +110,9 @@
                   }
                 </td>
               }
-              <td class="r num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</td>
+              @if (showAmount()) {
+                <td class="r num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</td>
+              }
               <td class="r">
                 <ng-container *ngTemplateOutlet="acts; context: { $implicit: e }" />
               </td>
@@ -128,7 +136,9 @@
         <li class="card lc rise-in" [style.--i]="i % 10" [class.is-void]="e.is_void">
           <span class="lc-top">
             <span [class]="'cat t-' + tint(e.category)">{{ e.category_label }}</span>
-            <strong class="num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</strong>
+            @if (showAmount()) {
+              <strong class="num" [class.strike]="e.is_void">{{ e.amount | inr: 'paise' }}</strong>
+            }
           </span>
           <span class="det-t"
             >{{ e.vendor || e.description || '—'

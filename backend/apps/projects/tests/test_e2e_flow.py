@@ -63,7 +63,8 @@ def test_the_whole_deal_flow(client_for, admin, pm1, sales_manager, sales_exec, 
     pm_scan()
 
     # 2. Not won yet: it cannot be converted.
-    early = admin_api.post(BASE, {"lead": lead_id, "name": "Too early"}, format="json")
+    opp_id = created.json()["current_opportunity_id"]
+    early = admin_api.post(BASE, {"opportunity": opp_id, "name": "Too early"}, format="json")
     assert early.status_code == 400 and early.json()["error"]["code"] == "not_won"
 
     # 3. Won. (Finalizing needs Dev C's accounts module: skipped while the adapter is missing.)
@@ -86,13 +87,14 @@ def test_the_whole_deal_flow(client_for, admin, pm1, sales_manager, sales_exec, 
 
     # 4. Converted and a PM assigned. No budget is entered: the deal total is the admin's budget.
     converted = admin_api.post(
-        BASE, {"lead": lead_id, "name": "Turf ground", "pm": pm1.pk}, format="json"
+        BASE, {"opportunity": opp_id, "name": "Turf ground", "pm": pm1.pk}, format="json"
     )
     assert converted.status_code == 201, converted.content
     pid = converted.json()["id"]
     assert (pm1.pk, "project_assigned") in [(u, k) for u, k, _ in notes]
     assert (
-        admin_api.post(BASE, {"lead": lead_id, "name": "Again"}, format="json").status_code == 409
+        admin_api.post(BASE, {"opportunity": opp_id, "name": "Again"}, format="json").status_code
+        == 409
     )
     assert "total_budget" not in pm_api.get(f"{BASE}/{pid}").json()
     assert admin_api.get(f"{BASE}/{pid}").json()["total_budget"] == "1000000.00"

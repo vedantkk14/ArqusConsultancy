@@ -13,7 +13,7 @@ from .models import LedgerState, PaymentMode
 TRUE = {"1", "true", "yes"}
 
 LEDGER_ORDERINGS = {
-    "client": [F("lead__name").asc()],
+    "client": [F("opportunity__lead__name").asc()],
     "-outstanding": [F("outstanding").desc()],
     "outstanding": [F("outstanding").asc()],
     "-total": [F("total_amount").desc()],
@@ -58,10 +58,10 @@ def apply_ledger_filters(qs: QuerySet, params, skip: tuple[str, ...] = ()) -> Qu
                 cond |= selectors.state_q(state)
             qs = qs.filter(cond)
     if q := (get("q") or "").strip():
-        cond = Q(lead__name__icontains=q) | Q(lead__email__icontains=q)
+        cond = Q(opportunity__lead__name__icontains=q) | Q(opportunity__lead__email__icontains=q)
         digits = re.sub(r"\D", "", q)
         if len(digits) >= 3:
-            cond |= Q(lead__phone__contains=digits)
+            cond |= Q(opportunity__lead__phone__contains=digits)
         qs = qs.filter(cond)
     if "overdue" not in skip and _flag(params, "overdue"):
         qs = qs.filter(selectors.overdue_q())
@@ -94,7 +94,9 @@ def apply_payment_filters(qs: QuerySet, params) -> QuerySet:
             qs = qs.filter(mode__in=wanted)
     if q := (get("q") or "").strip():
         qs = qs.filter(
-            Q(reference__icontains=q) | Q(ledger__lead__name__icontains=q) | Q(note__icontains=q)
+            Q(reference__icontains=q)
+            | Q(ledger__opportunity__lead__name__icontains=q)
+            | Q(note__icontains=q)
         )
     if day := parse_date(get("date_from") or ""):
         qs = qs.filter(received_on__gte=day)

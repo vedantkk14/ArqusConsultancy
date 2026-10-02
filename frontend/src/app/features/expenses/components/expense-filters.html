@@ -22,7 +22,7 @@
   <label class="sort">
     <span class="sr-only">Sort by</span>
     <select class="ctl" (change)="set('ordering', $any($event.target).value)">
-      <option value="" [selected]="!filters().ordering">Default order</option>
+      <option value="" [selected]="!filters().ordering">Most recent</option>
       @for (o of orderings; track o.value) {
         <option [value]="o.value" [selected]="filters().ordering === o.value">{{ o.label }}</option>
       }

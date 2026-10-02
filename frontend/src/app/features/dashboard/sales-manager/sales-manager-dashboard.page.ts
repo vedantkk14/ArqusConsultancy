@@ -13,6 +13,7 @@ import { InrCompactPipe } from '../../../shared/money/inr.pipe';
 import { Skeleton } from '../../../shared/skeleton/skeleton';
 import { ActivityCard } from '../components/activity-card';
 import { CountUp } from '../components/count-up';
+import { HolidayCard } from '../components/holiday-card';
 import { PeriodSwitcher } from '../components/period-switcher';
 import { RadialGauge } from '../components/radial-gauge';
 import { RecentActivity } from '../dashboard.models';
@@ -49,6 +50,7 @@ const ACTION_VERB: Record<string, string> = {
     ByExecutiveList,
     CountUp,
     ErrorState,
+    HolidayCard,
     InrCompactPipe,
     MatIconModule,
     MatTooltipModule,

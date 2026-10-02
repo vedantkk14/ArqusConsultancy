@@ -1,11 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ApiError } from '../../../core/models';
 import { DialogHead } from '../../leads/components/dialogs/dialog-head';
 import { Holiday } from '../data/leave.models';
 import { LeavesApi } from '../data/leaves-api.service';
+
+export interface HolidayDialogData {
+  date?: string;
+}
 
 /** Admin only: add a day to the standard holiday calendar. */
 @Component({
@@ -36,9 +40,10 @@ import { LeavesApi } from '../data/leaves-api.service';
 })
 export class HolidayDialog {
   private readonly ref = inject(MatDialogRef<HolidayDialog, Holiday>);
+  private readonly data = inject<HolidayDialogData>(MAT_DIALOG_DATA, { optional: true });
   private readonly api = inject(LeavesApi);
 
-  protected date = '';
+  protected date = this.data?.date ?? '';
   protected name = '';
   protected readonly saving = signal(false);
   protected readonly error = signal('');

@@ -34,7 +34,11 @@ export const AGING_BUCKETS: readonly AgingBucket[] = ['0-30', '31-60', '61-90', 
 export interface LedgerRow {
   id: number;
   lead: number;
+  /** The won deal this ledger belongs to (a client can have several). */
+  opportunity: number;
   client: string;
+  /** #N among the client's won deals (oldest = 1); null when the client has only one. */
+  client_no?: number | null;
   phone: string;
   exec_name: string | null;
   state: LedgerState;
@@ -97,6 +101,7 @@ export interface LedgerSummary {
 export interface LedgerOption {
   id: number;
   client: string;
+  client_no?: number | null;
   phone: string;
   total: string;
   outstanding: string;
@@ -125,7 +130,6 @@ export const EMPTY_FILTERS: LedgerFilters = {
 export const LEDGER_ORDERINGS = [
   { value: '-outstanding', label: 'Highest balance' },
   { value: '-days_since', label: 'Waiting longest' },
-  { value: '-created_at', label: 'Newest' },
   { value: 'client', label: 'Client A to Z' },
   { value: '-total', label: 'Highest total' },
   { value: '-last_payment_on', label: 'Last paid' },
@@ -207,7 +211,7 @@ export interface LedgerEvent {
 }
 
 export interface Statement {
-  client: { name: string; phone: string; email: string };
+  client: { name: string; no?: number | null; phone: string; email: string };
   ledger: number;
   finalized: boolean;
   period: { from: string | null; to: string | null };

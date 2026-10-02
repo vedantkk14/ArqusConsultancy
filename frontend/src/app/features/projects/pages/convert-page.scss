@@ -126,3 +126,8 @@ tbody tr { transition: background-color var(--dur-fast); &:hover { background: v
     box-shadow: none;
   }
 }
+
+.deal-no {
+  color: var(--ink-3);
+  font-weight: 500;
+}

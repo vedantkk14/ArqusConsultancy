@@ -12,10 +12,12 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db.models import (
+    Count,
     DateField,
     DecimalField,
     ExpressionWrapper,
     F,
+    IntegerField,
     Max,
     OuterRef,
     Q,
@@ -101,13 +103,26 @@ def bucket_for(days: int) -> str:
 def ledgers_for(user) -> QuerySet:
     """Every ledger query starts here. Only an Admin ever sees ledgers."""
     if user.role in rules.ACCOUNTS_ROLES:
-        return Ledger.objects.select_related("lead", "lead__assigned_to")
+        return Ledger.objects.select_related(
+            "opportunity", "opportunity__lead", "opportunity__assigned_to"
+        )
+    return Ledger.objects.none()
+
+
+def ledgers_to_finalize_for(user) -> QuerySet:
+    """Ledgers `user` may finalize (FINALIZE_ROLES): the only accounts write a Sales Manager has."""
+    if user.role in rules.FINALIZE_ROLES:
+        return Ledger.objects.select_related(
+            "opportunity", "opportunity__lead", "opportunity__assigned_to"
+        )
     return Ledger.objects.none()
 
 
 def payments_for(user) -> QuerySet:
     if user.role in rules.ACCOUNTS_ROLES:
-        return Payment.objects.select_related("ledger", "ledger__lead", "recorded_by")
+        return Payment.objects.select_related(
+            "ledger", "ledger__opportunity", "ledger__opportunity__lead", "recorded_by"
+        )
     return Payment.objects.none()
 
 
@@ -131,7 +146,35 @@ def with_figures(qs: QuerySet | None = None) -> QuerySet:
     ).annotate(
         outstanding=ExpressionWrapper(F("total_amount") - F("received"), output_field=MONEY),
         aging_base=Coalesce("last_payment_on", "finalized_on", output_field=DateField()),
+        **_client_numbers(),
     )
+
+
+def _client_numbers() -> dict:
+    """`client_ledgers`: how many ledgers (won deals) the client has; `ledger_no`: this one's place
+    among them, oldest = 1. Lists show "#2 Badagu Textiles" once a client has more than one."""
+    same = Ledger.objects.filter(opportunity__lead=OuterRef("opportunity__lead")).order_by()
+    count = same.values("opportunity__lead").annotate(c=Count("pk")).values("c")
+    up_to_me = (
+        same.filter(
+            Q(created_at__lt=OuterRef("created_at"))
+            | Q(created_at=OuterRef("created_at"), pk__lte=OuterRef("pk"))
+        )
+        .values("opportunity__lead")
+        .annotate(c=Count("pk"))
+        .values("c")
+    )
+    return {
+        "client_ledgers": Coalesce(Subquery(count, output_field=IntegerField()), Value(1)),
+        "ledger_no": Coalesce(Subquery(up_to_me, output_field=IntegerField()), Value(1)),
+    }
+
+
+def ledger_no(ledger) -> int | None:
+    """`#N` only when the client has more than one ledger."""
+    if (getattr(ledger, "client_ledgers", None) or 1) <= 1:
+        return None
+    return getattr(ledger, "ledger_no", None)
 
 
 def state_q(state: str) -> Q:
@@ -214,7 +257,13 @@ def summary(qs: QuerySet) -> dict:
     counts = {s.value: 0 for s in LedgerState}
     aging_rows, overdue_rows = [], []
     for ledger_id, name, total, rec, out, base, finalized_at in qs.order_by().values_list(
-        "id", "lead__name", "total_amount", "received", "outstanding", "aging_base", "finalized_at"
+        "id",
+        "opportunity__lead__name",
+        "total_amount",
+        "received",
+        "outstanding",
+        "aging_base",
+        "finalized_at",
     ):
         finalized = finalized_at is not None
         counts[ledger_state(total, rec, finalized)] += 1

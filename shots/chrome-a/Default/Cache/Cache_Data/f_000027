@@ -1,0 +1,252 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-7WQZIFCS.js");// src/app/features/auth/auth-messages.ts
+var AUTH_MESSAGES = {
+  invalid_credentials: "Incorrect email or password.",
+  account_disabled: "This account is disabled. Contact your administrator.",
+  account_locked: "Too many failed attempts.",
+  too_many_requests: "Too many attempts from this device.",
+  network_error: "Can't reach the server. Check your connection and try again.",
+  reset_link_invalid: "This reset link is invalid or has expired.",
+  fallback: "Something went wrong. Please try again."
+};
+function retryAfter(err) {
+  if (err.code !== "account_locked" && err.code !== "too_many_requests") {
+    return null;
+  }
+  const seconds = Number(err.details?.["retry_after"]);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : 60;
+}
+function authErrorMessage(err) {
+  const code = err?.code ?? "";
+  return AUTH_MESSAGES[code] ?? AUTH_MESSAGES.fallback;
+}
+function fieldError(err, field) {
+  const messages = err?.details?.[field];
+  return Array.isArray(messages) && messages.length ? String(messages[0]) : null;
+}
+
+// src/app/features/auth/auth-layout.ts
+import { ChangeDetectionStrategy as ChangeDetectionStrategy2, Component as Component2 } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+
+// src/app/features/auth/auth-brand.ts
+import { ChangeDetectionStrategy, Component } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+
+// src/app/features/auth/pointer-tilt.ts
+import { DestroyRef, Directive, ElementRef, NgZone, afterNextRender, inject } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+var PointerTilt = class _PointerTilt {
+  constructor() {
+    const host = inject(ElementRef).nativeElement;
+    const zone = inject(NgZone);
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const media = (q) => window.matchMedia?.(q).matches ?? false;
+      if (!media("(pointer: fine)") || media("(prefers-reduced-motion: reduce)")) {
+        return;
+      }
+      let frame = 0;
+      const onMove = (e) => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          host.style.setProperty("--px", (e.clientX / window.innerWidth * 2 - 1).toFixed(3));
+          host.style.setProperty("--py", (e.clientY / window.innerHeight * 2 - 1).toFixed(3));
+        });
+      };
+      zone.runOutsideAngular(() => window.addEventListener("pointermove", onMove, { passive: true }));
+      destroyRef.onDestroy(() => {
+        cancelAnimationFrame(frame);
+        window.removeEventListener("pointermove", onMove);
+      });
+    });
+  }
+  static \u0275fac = function PointerTilt_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _PointerTilt)();
+  };
+  static \u0275dir = /* @__PURE__ */ i0.\u0275\u0275defineDirective({ type: _PointerTilt, selectors: [["", "appPointerTilt", ""]] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(PointerTilt, [{
+    type: Directive,
+    args: [{ selector: "[appPointerTilt]" }]
+  }], () => [], null);
+})();
+
+// src/app/features/auth/auth-brand.ts
+import * as i02 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+var AuthBrand = class _AuthBrand {
+  static \u0275fac = function AuthBrand_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _AuthBrand)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i02.\u0275\u0275defineComponent({ type: _AuthBrand, selectors: [["app-auth-brand"]], decls: 28, vars: 0, consts: [["aria-hidden", "true", 1, "bg"], [1, "orb", "orb-a"], [1, "orb", "orb-b"], [1, "dots"], ["appPointerTilt", "", "aria-hidden", "true", 1, "stage"], ["viewBox", "0 0 520 300", "fill", "none", 1, "rings"], ["cx", "260", "cy", "150", "rx", "250", "ry", "92", 1, "ring", "r1"], ["cx", "260", "cy", "150", "rx", "190", "ry", "70", 1, "ring", "r2"], ["cx", "260", "cy", "150", "rx", "130", "ry", "48", 1, "ring", "r3"], [1, "disc"], ["src", "brand/arqus-emblem.png", "alt", "", "width", "104", "height", "52"], [1, "chip", "c1"], [1, "chip", "c2"], [1, "chip", "c3"], [1, "copy"], [1, "headline"], [1, "sub"]], template: function AuthBrand_Template(rf, ctx) {
+    if (rf & 1) {
+      i02.\u0275\u0275elementStart(0, "div", 0);
+      i02.\u0275\u0275element(1, "span", 1)(2, "span", 2)(3, "span", 3);
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(4, "div", 4);
+      i02.\u0275\u0275namespaceSVG();
+      i02.\u0275\u0275elementStart(5, "svg", 5);
+      i02.\u0275\u0275element(6, "ellipse", 6)(7, "ellipse", 7)(8, "ellipse", 8);
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275namespaceHTML();
+      i02.\u0275\u0275elementStart(9, "div", 9);
+      i02.\u0275\u0275element(10, "img", 10);
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(11, "span", 11)(12, "mat-icon");
+      i02.\u0275\u0275text(13, "contacts");
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275text(14, "Track every lead");
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(15, "span", 12)(16, "mat-icon");
+      i02.\u0275\u0275text(17, "savings");
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275text(18, "Control project budgets");
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(19, "span", 13)(20, "mat-icon");
+      i02.\u0275\u0275text(21, "payments");
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275text(22, "Collect payments faster");
+      i02.\u0275\u0275elementEnd()();
+      i02.\u0275\u0275elementStart(23, "div", 14)(24, "p", 15);
+      i02.\u0275\u0275text(25, "Idealize. Innovate. Achieve.");
+      i02.\u0275\u0275elementEnd();
+      i02.\u0275\u0275elementStart(26, "p", 16);
+      i02.\u0275\u0275text(27, "One place for your leads, projects and accounts.");
+      i02.\u0275\u0275elementEnd()();
+    }
+  }, dependencies: [MatIconModule, i1.MatIcon, i2.Dir, PointerTilt], styles: ["\n[_nghost-%COMP%] {\n  position: relative;\n  display: flex;\n  height: 220px;\n  padding-bottom: 40px;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  overflow: hidden;\n  background: var(--%NS%grad-ink);\n  color: var(--%NS%on-ink);\n  isolation: isolate;\n}\n.bg[_ngcontent-%COMP%] {\n  position: absolute;\n  inset: 0;\n  z-index: -1;\n}\n.orb[_ngcontent-%COMP%] {\n  position: absolute;\n  border-radius: 50%;\n  filter: blur(40px);\n  will-change: transform;\n}\n.orb-a[_ngcontent-%COMP%] {\n  top: -30%;\n  right: -10%;\n  width: 60%;\n  aspect-ratio: 1;\n  background:\n    radial-gradient(\n      circle,\n      rgba(50, 197, 243, 0.45),\n      transparent 65%);\n  animation: _ngcontent-%COMP%_drift-a 24s ease-in-out infinite alternate;\n}\n.orb-b[_ngcontent-%COMP%] {\n  bottom: -35%;\n  left: -15%;\n  width: 55%;\n  aspect-ratio: 1;\n  background:\n    radial-gradient(\n      circle,\n      rgba(50, 197, 243, 0.25),\n      transparent 65%);\n  animation: _ngcontent-%COMP%_drift-b 30s ease-in-out infinite alternate;\n}\n.dots[_ngcontent-%COMP%] {\n  position: absolute;\n  inset: 0;\n  opacity: 0.06;\n  background-image:\n    radial-gradient(\n      circle,\n      #fff 1px,\n      transparent 1.2px);\n  background-size: 18px 18px;\n}\n@keyframes _ngcontent-%COMP%_drift-a {\n  to {\n    transform: translate(-12%, 14%) scale(1.1);\n  }\n}\n@keyframes _ngcontent-%COMP%_drift-b {\n  to {\n    transform: translate(14%, -10%) scale(1.15);\n  }\n}\n.stage[_ngcontent-%COMP%] {\n  --%NS%px: 0;\n  --%NS%py: 0;\n  position: relative;\n  display: grid;\n  width: min(340px, 90%);\n  place-items: center;\n  perspective: 900px;\n}\n.rings[_ngcontent-%COMP%] {\n  grid-area: 1/1;\n  width: 100%;\n  height: auto;\n  overflow: visible;\n}\n.ring[_ngcontent-%COMP%] {\n  stroke: var(--%NS%brand);\n  stroke-width: 1.5;\n  transition: transform 300ms var(--%NS%ease-out);\n}\n.r1[_ngcontent-%COMP%] {\n  opacity: 0.15;\n  transform: translate(calc(var(--%NS%px) * 6px), calc(var(--%NS%py) * 4px));\n}\n.r2[_ngcontent-%COMP%] {\n  opacity: 0.22;\n  transform: translate(calc(var(--%NS%px) * 12px), calc(var(--%NS%py) * 8px));\n}\n.r3[_ngcontent-%COMP%] {\n  opacity: 0.3;\n  transform: translate(calc(var(--%NS%px) * 18px), calc(var(--%NS%py) * 12px));\n}\n.disc[_ngcontent-%COMP%] {\n  grid-area: 1/1;\n  display: grid;\n  width: 96px;\n  aspect-ratio: 1;\n  place-items: center;\n  border-radius: 50%;\n  background: rgba(255, 255, 255, 0.94);\n  box-shadow:\n    inset 0 2px 0 rgb(255, 255, 255),\n    inset 0 -6px 14px rgba(11, 13, 15, 0.08),\n    0 0 0 8px rgba(50, 197, 243, 0.12),\n    0 0 48px 8px rgba(50, 197, 243, 0.35),\n    0 18px 40px rgba(0, 0, 0, 0.35);\n  animation: _ngcontent-%COMP%_float 6s ease-in-out infinite;\n  perspective: 600px;\n}\n.disc[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 84%;\n  height: auto;\n  transform: rotateX(calc(var(--%NS%py) * -8deg)) rotateY(calc(var(--%NS%px) * 8deg));\n  transition: transform 300ms var(--%NS%ease-out);\n}\n@keyframes _ngcontent-%COMP%_float {\n  50% {\n    transform: translateY(-8px);\n  }\n}\n.chip[_ngcontent-%COMP%], \n.copy[_ngcontent-%COMP%] {\n  display: none;\n}\n@media (min-width: 1024px) {\n  [_nghost-%COMP%] {\n    position: sticky;\n    top: 0;\n    height: 100dvh;\n    gap: var(--%NS%space-10);\n    padding: var(--%NS%space-10);\n  }\n  .stage[_ngcontent-%COMP%] {\n    width: min(520px, 90%);\n  }\n  .disc[_ngcontent-%COMP%] {\n    width: 148px;\n  }\n  .chip[_ngcontent-%COMP%] {\n    position: absolute;\n    display: inline-flex;\n    align-items: center;\n    gap: 6px;\n    padding: 8px 12px;\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    border-radius: var(--%NS%radius-pill);\n    background: rgba(255, 255, 255, 0.1);\n    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);\n    backdrop-filter: blur(8px);\n    -webkit-backdrop-filter: blur(8px);\n    color: var(--%NS%on-ink);\n    font-size: var(--%NS%text-sm);\n    font-weight: 500;\n    white-space: nowrap;\n    transition: transform 300ms var(--%NS%ease-out);\n    animation: _ngcontent-%COMP%_float 7s ease-in-out infinite;\n  }\n  .chip[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n    width: 16px;\n    height: 16px;\n    font-size: 16px;\n    color: var(--%NS%brand);\n  }\n  .c1[_ngcontent-%COMP%] {\n    top: 2%;\n    left: 0;\n    translate: calc(var(--%NS%px) * 22px) calc(var(--%NS%py) * 14px);\n  }\n  .c2[_ngcontent-%COMP%] {\n    top: 42%;\n    right: -6%;\n    translate: calc(var(--%NS%px) * 30px) calc(var(--%NS%py) * 20px);\n    animation-delay: -2s;\n  }\n  .c3[_ngcontent-%COMP%] {\n    bottom: 0;\n    left: 8%;\n    translate: calc(var(--%NS%px) * 14px) calc(var(--%NS%py) * 10px);\n    animation-delay: -4s;\n  }\n  .copy[_ngcontent-%COMP%] {\n    display: block;\n    max-width: 36rem;\n    text-align: center;\n  }\n  .headline[_ngcontent-%COMP%] {\n    margin: 0;\n    color: var(--%NS%on-ink);\n    font-size: 40px;\n    font-weight: 600;\n    letter-spacing: -0.03em;\n    line-height: 1.1;\n  }\n  .sub[_ngcontent-%COMP%] {\n    margin: var(--%NS%space-3) 0 0;\n    color: rgba(255, 255, 255, 0.78);\n    font-size: var(--%NS%text-md);\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .orb[_ngcontent-%COMP%], \n   .disc[_ngcontent-%COMP%], \n   .chip[_ngcontent-%COMP%] {\n    animation: none;\n  }\n}\n/*# sourceMappingURL=auth-brand.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassMetadata(AuthBrand, [{
+    type: Component,
+    args: [{ selector: "app-auth-brand", imports: [MatIconModule, PointerTilt], changeDetection: ChangeDetectionStrategy.OnPush, template: `
+    <div class="bg" aria-hidden="true">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+      <span class="dots"></span>
+    </div>
+
+    <div class="stage" appPointerTilt aria-hidden="true">
+      <svg class="rings" viewBox="0 0 520 300" fill="none">
+        <ellipse class="ring r1" cx="260" cy="150" rx="250" ry="92" />
+        <ellipse class="ring r2" cx="260" cy="150" rx="190" ry="70" />
+        <ellipse class="ring r3" cx="260" cy="150" rx="130" ry="48" />
+      </svg>
+      <div class="disc">
+        <img src="brand/arqus-emblem.png" alt="" width="104" height="52" />
+      </div>
+      <span class="chip c1"><mat-icon>contacts</mat-icon>Track every lead</span>
+      <span class="chip c2"><mat-icon>savings</mat-icon>Control project budgets</span>
+      <span class="chip c3"><mat-icon>payments</mat-icon>Collect payments faster</span>
+    </div>
+
+    <div class="copy">
+      <p class="headline">Idealize. Innovate. Achieve.</p>
+      <p class="sub">One place for your leads, projects and accounts.</p>
+    </div>
+  `, styles: ["/* src/app/features/auth/auth-brand.scss */\n:host {\n  position: relative;\n  display: flex;\n  height: 220px;\n  padding-bottom: 40px;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  overflow: hidden;\n  background: var(--grad-ink);\n  color: var(--on-ink);\n  isolation: isolate;\n}\n.bg {\n  position: absolute;\n  inset: 0;\n  z-index: -1;\n}\n.orb {\n  position: absolute;\n  border-radius: 50%;\n  filter: blur(40px);\n  will-change: transform;\n}\n.orb-a {\n  top: -30%;\n  right: -10%;\n  width: 60%;\n  aspect-ratio: 1;\n  background:\n    radial-gradient(\n      circle,\n      rgba(50, 197, 243, 0.45),\n      transparent 65%);\n  animation: drift-a 24s ease-in-out infinite alternate;\n}\n.orb-b {\n  bottom: -35%;\n  left: -15%;\n  width: 55%;\n  aspect-ratio: 1;\n  background:\n    radial-gradient(\n      circle,\n      rgba(50, 197, 243, 0.25),\n      transparent 65%);\n  animation: drift-b 30s ease-in-out infinite alternate;\n}\n.dots {\n  position: absolute;\n  inset: 0;\n  opacity: 0.06;\n  background-image:\n    radial-gradient(\n      circle,\n      #fff 1px,\n      transparent 1.2px);\n  background-size: 18px 18px;\n}\n@keyframes drift-a {\n  to {\n    transform: translate(-12%, 14%) scale(1.1);\n  }\n}\n@keyframes drift-b {\n  to {\n    transform: translate(14%, -10%) scale(1.15);\n  }\n}\n.stage {\n  --px: 0;\n  --py: 0;\n  position: relative;\n  display: grid;\n  width: min(340px, 90%);\n  place-items: center;\n  perspective: 900px;\n}\n.rings {\n  grid-area: 1/1;\n  width: 100%;\n  height: auto;\n  overflow: visible;\n}\n.ring {\n  stroke: var(--brand);\n  stroke-width: 1.5;\n  transition: transform 300ms var(--ease-out);\n}\n.r1 {\n  opacity: 0.15;\n  transform: translate(calc(var(--px) * 6px), calc(var(--py) * 4px));\n}\n.r2 {\n  opacity: 0.22;\n  transform: translate(calc(var(--px) * 12px), calc(var(--py) * 8px));\n}\n.r3 {\n  opacity: 0.3;\n  transform: translate(calc(var(--px) * 18px), calc(var(--py) * 12px));\n}\n.disc {\n  grid-area: 1/1;\n  display: grid;\n  width: 96px;\n  aspect-ratio: 1;\n  place-items: center;\n  border-radius: 50%;\n  background: rgba(255, 255, 255, 0.94);\n  box-shadow:\n    inset 0 2px 0 rgb(255, 255, 255),\n    inset 0 -6px 14px rgba(11, 13, 15, 0.08),\n    0 0 0 8px rgba(50, 197, 243, 0.12),\n    0 0 48px 8px rgba(50, 197, 243, 0.35),\n    0 18px 40px rgba(0, 0, 0, 0.35);\n  animation: float 6s ease-in-out infinite;\n  perspective: 600px;\n}\n.disc img {\n  width: 84%;\n  height: auto;\n  transform: rotateX(calc(var(--py) * -8deg)) rotateY(calc(var(--px) * 8deg));\n  transition: transform 300ms var(--ease-out);\n}\n@keyframes float {\n  50% {\n    transform: translateY(-8px);\n  }\n}\n.chip,\n.copy {\n  display: none;\n}\n@media (min-width: 1024px) {\n  :host {\n    position: sticky;\n    top: 0;\n    height: 100dvh;\n    gap: var(--space-10);\n    padding: var(--space-10);\n  }\n  .stage {\n    width: min(520px, 90%);\n  }\n  .disc {\n    width: 148px;\n  }\n  .chip {\n    position: absolute;\n    display: inline-flex;\n    align-items: center;\n    gap: 6px;\n    padding: 8px 12px;\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    border-radius: var(--radius-pill);\n    background: rgba(255, 255, 255, 0.1);\n    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);\n    backdrop-filter: blur(8px);\n    -webkit-backdrop-filter: blur(8px);\n    color: var(--on-ink);\n    font-size: var(--text-sm);\n    font-weight: 500;\n    white-space: nowrap;\n    transition: transform 300ms var(--ease-out);\n    animation: float 7s ease-in-out infinite;\n  }\n  .chip mat-icon {\n    width: 16px;\n    height: 16px;\n    font-size: 16px;\n    color: var(--brand);\n  }\n  .c1 {\n    top: 2%;\n    left: 0;\n    translate: calc(var(--px) * 22px) calc(var(--py) * 14px);\n  }\n  .c2 {\n    top: 42%;\n    right: -6%;\n    translate: calc(var(--px) * 30px) calc(var(--py) * 20px);\n    animation-delay: -2s;\n  }\n  .c3 {\n    bottom: 0;\n    left: 8%;\n    translate: calc(var(--px) * 14px) calc(var(--py) * 10px);\n    animation-delay: -4s;\n  }\n  .copy {\n    display: block;\n    max-width: 36rem;\n    text-align: center;\n  }\n  .headline {\n    margin: 0;\n    color: var(--on-ink);\n    font-size: 40px;\n    font-weight: 600;\n    letter-spacing: -0.03em;\n    line-height: 1.1;\n  }\n  .sub {\n    margin: var(--space-3) 0 0;\n    color: rgba(255, 255, 255, 0.78);\n    font-size: var(--text-md);\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .orb,\n  .disc,\n  .chip {\n    animation: none;\n  }\n}\n/*# sourceMappingURL=auth-brand.css.map */\n"] }]
+  }], null, null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i02.\u0275setClassDebugInfo(AuthBrand, { className: "AuthBrand", filePath: "src/app/features/auth/auth-brand.ts", lineNumber: 42 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fauth%2Fauth-brand.ts%40AuthBrand";
+  function AuthBrand_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i02.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i02.\u0275\u0275replaceMetadata(AuthBrand, m.default, [i02, i1, i2], [MatIconModule, PointerTilt, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && AuthBrand_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && AuthBrand_HmrLoad(d.timestamp)));
+})();
+
+// src/app/features/auth/auth-layout.ts
+import * as i03 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+var _c0 = ["*", [["", "below", ""]]];
+var _c1 = ["*", "[below]"];
+var AuthLayout = class _AuthLayout {
+  /** On touch devices the keyboard can cover the field: bring it into view once the keyboard is up. */
+  revealFocused(event) {
+    const target = event.target;
+    if (!target?.matches("input") || !window.matchMedia?.("(pointer: coarse)").matches) {
+      return;
+    }
+    setTimeout(() => target.scrollIntoView({ block: "center", behavior: "auto" }), 300);
+  }
+  static \u0275fac = function AuthLayout_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _AuthLayout)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i03.\u0275\u0275defineComponent({ type: _AuthLayout, selectors: [["app-auth-layout"]], hostBindings: function AuthLayout_HostBindings(rf, ctx) {
+    if (rf & 1) {
+      i03.\u0275\u0275listener("focusin", function AuthLayout_focusin_HostBindingHandler($event) {
+        return ctx.revealFocused($event);
+      });
+    }
+  }, ngContentSelectors: _c1, decls: 11, vars: 0, consts: [[1, "auth"], [1, "brand"], [1, "side"], [1, "card-wrap", "rise-in"], [1, "card-x"], ["src", "brand/arqus-logo.png", "alt", "ARQUS Sports Consultancy", "width", "132", "height", "78", 1, "logo"], [1, "body"], [1, "foot"]], template: function AuthLayout_Template(rf, ctx) {
+    if (rf & 1) {
+      i03.\u0275\u0275projectionDef(_c0);
+      i03.\u0275\u0275elementStart(0, "main", 0);
+      i03.\u0275\u0275element(1, "app-auth-brand", 1);
+      i03.\u0275\u0275elementStart(2, "section", 2)(3, "div", 3)(4, "div", 4);
+      i03.\u0275\u0275element(5, "img", 5);
+      i03.\u0275\u0275elementStart(6, "div", 6);
+      i03.\u0275\u0275projection(7);
+      i03.\u0275\u0275elementEnd()()();
+      i03.\u0275\u0275projection(8, 1);
+      i03.\u0275\u0275elementStart(9, "p", 7);
+      i03.\u0275\u0275text(10, "\xA9 ARQUS Sports Consultancy");
+      i03.\u0275\u0275elementEnd()()();
+    }
+  }, dependencies: [AuthBrand], styles: ["\n.auth[_ngcontent-%COMP%] {\n  min-height: 100dvh;\n  background: var(--%NS%paper);\n}\n.side[_ngcontent-%COMP%] {\n  position: relative;\n  z-index: 1;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: var(--%NS%space-4);\n  margin-top: -40px;\n  padding: 0 16px var(--%NS%space-6);\n}\n.card-wrap[_ngcontent-%COMP%] {\n  width: 100%;\n  max-width: 420px;\n}\n.card-x[_ngcontent-%COMP%] {\n  padding: var(--%NS%space-8) 0 0;\n  border: 1px solid var(--%NS%line);\n  border-radius: var(--%NS%radius-card);\n  background: var(--%NS%surface);\n  box-shadow: var(--%NS%shadow-1);\n}\n.logo[_ngcontent-%COMP%] {\n  display: block;\n  width: 132px;\n  height: auto;\n  margin: 0 auto var(--%NS%space-2);\n}\n.body[_ngcontent-%COMP%] {\n  padding: var(--%NS%space-2) var(--%NS%space-6) var(--%NS%space-6);\n}\n.foot[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%ink-3);\n  font-size: var(--%NS%text-xs);\n}\n@media (min-width: 1024px) {\n  .auth[_ngcontent-%COMP%] {\n    display: grid;\n    grid-template-columns: 55fr 45fr;\n  }\n  .side[_ngcontent-%COMP%] {\n    justify-content: center;\n    margin: 0;\n    padding: var(--%NS%space-10) var(--%NS%space-8);\n  }\n  .body[_ngcontent-%COMP%] {\n    padding: var(--%NS%space-2) var(--%NS%space-8) var(--%NS%space-8);\n  }\n}\n/*# sourceMappingURL=auth-card.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i03.\u0275setClassMetadata(AuthLayout, [{
+    type: Component2,
+    args: [{ selector: "app-auth-layout", imports: [AuthBrand], changeDetection: ChangeDetectionStrategy2.OnPush, host: { "(focusin)": "revealFocused($event)" }, template: `
+    <main class="auth">
+      <app-auth-brand class="brand" />
+      <section class="side">
+        <div class="card-wrap rise-in">
+          <div class="card-x">
+            <img class="logo" src="brand/arqus-logo.png" alt="ARQUS Sports Consultancy" width="132" height="78" />
+            <div class="body">
+              <ng-content />
+            </div>
+          </div>
+        </div>
+        <ng-content select="[below]" />
+        <p class="foot">\xA9 ARQUS Sports Consultancy</p>
+      </section>
+    </main>
+  `, styles: ["/* src/app/features/auth/auth-card.scss */\n.auth {\n  min-height: 100dvh;\n  background: var(--paper);\n}\n.side {\n  position: relative;\n  z-index: 1;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: var(--space-4);\n  margin-top: -40px;\n  padding: 0 16px var(--space-6);\n}\n.card-wrap {\n  width: 100%;\n  max-width: 420px;\n}\n.card-x {\n  padding: var(--space-8) 0 0;\n  border: 1px solid var(--line);\n  border-radius: var(--radius-card);\n  background: var(--surface);\n  box-shadow: var(--shadow-1);\n}\n.logo {\n  display: block;\n  width: 132px;\n  height: auto;\n  margin: 0 auto var(--space-2);\n}\n.body {\n  padding: var(--space-2) var(--space-6) var(--space-6);\n}\n.foot {\n  margin: 0;\n  color: var(--ink-3);\n  font-size: var(--text-xs);\n}\n@media (min-width: 1024px) {\n  .auth {\n    display: grid;\n    grid-template-columns: 55fr 45fr;\n  }\n  .side {\n    justify-content: center;\n    margin: 0;\n    padding: var(--space-10) var(--space-8);\n  }\n  .body {\n    padding: var(--space-2) var(--space-8) var(--space-8);\n  }\n}\n/*# sourceMappingURL=auth-card.css.map */\n"] }]
+  }], null, null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i03.\u0275setClassDebugInfo(AuthLayout, { className: "AuthLayout", filePath: "src/app/features/auth/auth-layout.ts", lineNumber: 34 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fauth%2Fauth-layout.ts%40AuthLayout";
+  function AuthLayout_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i03.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i03.\u0275\u0275replaceMetadata(AuthLayout, m.default, [i03], [AuthBrand, Component2, ChangeDetectionStrategy2], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && AuthLayout_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && AuthLayout_HmrLoad(d.timestamp)));
+})();
+
+export {
+  AUTH_MESSAGES,
+  retryAfter,
+  authErrorMessage,
+  fieldError,
+  AuthLayout
+};
+//# debugId=5d3001ee-9d01-5011-8685-aa368863438f
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvYXV0aC9hdXRoLW1lc3NhZ2VzLnRzIiwic3JjL2FwcC9mZWF0dXJlcy9hdXRoL2F1dGgtbGF5b3V0LnRzIiwic3JjL2FwcC9mZWF0dXJlcy9hdXRoL2F1dGgtYnJhbmQudHMiLCJzcmMvYXBwL2ZlYXR1cmVzL2F1dGgvcG9pbnRlci10aWx0LnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IEFwaUVycm9yIH0gZnJvbSAnLi4vLi4vY29yZS9tb2RlbHMnO1xuXG4vKiogVXNlci1mYWNpbmcgdGV4dCBmb3IgYXV0aCBBUEkgZXJyb3JzLiBOZXZlciBzaG93cyByYXcgc2VydmVyIG1lc3NhZ2VzLiAqL1xuZXhwb3J0IGNvbnN0IEFVVEhfTUVTU0FHRVMgPSB7XG4gIGludmFsaWRfY3JlZGVudGlhbHM6ICdJbmNvcnJlY3QgZW1haWwgb3IgcGFzc3dvcmQuJyxcbiAgYWNjb3VudF9kaXNhYmxlZDogJ1RoaXMgYWNjb3VudCBpcyBkaXNhYmxlZC4gQ29udGFjdCB5b3VyIGFkbWluaXN0cmF0b3IuJyxcbiAgYWNjb3VudF9sb2NrZWQ6ICdUb28gbWFueSBmYWlsZWQgYXR0ZW1wdHMuJyxcbiAgdG9vX21hbnlfcmVxdWVzdHM6ICdUb28gbWFueSBhdHRlbXB0cyBmcm9tIHRoaXMgZGV2aWNlLicsXG4gIG5ldHdvcmtfZXJyb3I6IFwiQ2FuJ3QgcmVhY2ggdGhlIHNlcnZlci4gQ2hlY2sgeW91ciBjb25uZWN0aW9uIGFuZCB0cnkgYWdhaW4uXCIsXG4gIHJlc2V0X2xpbmtfaW52YWxpZDogJ1RoaXMgcmVzZXQgbGluayBpcyBpbnZhbGlkIG9yIGhhcyBleHBpcmVkLicsXG4gIGZhbGxiYWNrOiAnU29tZXRoaW5nIHdlbnQgd3JvbmcuIFBsZWFzZSB0cnkgYWdhaW4uJyxcbn0gYXMgY29uc3Q7XG5cbi8qKiBDb2RlcyB0aGF0IGNvbWUgd2l0aCBgZGV0YWlscy5yZXRyeV9hZnRlcmAgYW5kIGxvY2sgdGhlIGZvcm0gdW50aWwgaXQgcGFzc2VzLiAqL1xuZXhwb3J0IGZ1bmN0aW9uIHJldHJ5QWZ0ZXIoZXJyOiBBcGlFcnJvcik6IG51bWJlciB8IG51bGwge1xuICBpZiAoZXJyLmNvZGUgIT09ICdhY2NvdW50X2xvY2tlZCcgJiYgZXJyLmNvZGUgIT09ICd0b29fbWFueV9yZXF1ZXN0cycpIHtcbiAgICByZXR1cm4gbnVsbDtcbiAgfVxuICBjb25zdCBzZWNvbmRzID0gTnVtYmVyKGVyci5kZXRhaWxzPy5bJ3JldHJ5X2FmdGVyJ10pO1xuICByZXR1cm4gTnVtYmVyLmlzRmluaXRlKHNlY29uZHMpICYmIHNlY29uZHMgPiAwID8gc2Vjb25kcyA6IDYwO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gYXV0aEVycm9yTWVzc2FnZShlcnI6IEFwaUVycm9yIHwgbnVsbCB8IHVuZGVmaW5lZCk6IHN0cmluZyB7XG4gIGNvbnN0IGNvZGUgPSBlcnI/LmNvZGUgPz8gJyc7XG4gIHJldHVybiAoQVVUSF9NRVNTQUdFUyBhcyBSZWNvcmQ8c3RyaW5nLCBzdHJpbmc+KVtjb2RlXSA/PyBBVVRIX01FU1NBR0VTLmZhbGxiYWNrO1xufVxuXG4vKiogRmlyc3QgbWVzc2FnZSBmb3IgYGZpZWxkYCBpbiBhIHZhbGlkYXRpb25fZXJyb3IncyBkZXRhaWxzLCBpZiBhbnkuICovXG5leHBvcnQgZnVuY3Rpb24gZmllbGRFcnJvcihlcnI6IEFwaUVycm9yIHwgbnVsbCB8IHVuZGVmaW5lZCwgZmllbGQ6IHN0cmluZyk6IHN0cmluZyB8IG51bGwge1xuICBjb25zdCBtZXNzYWdlcyA9IGVycj8uZGV0YWlscz8uW2ZpZWxkXTtcbiAgcmV0dXJuIEFycmF5LmlzQXJyYXkobWVzc2FnZXMpICYmIG1lc3NhZ2VzLmxlbmd0aCA/IFN0cmluZyhtZXNzYWdlc1swXSkgOiBudWxsO1xufVxuIiwiaW1wb3J0IHsgQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3ksIENvbXBvbmVudCB9IGZyb20gJ0Bhbmd1bGFyL2NvcmUnO1xuaW1wb3J0IHsgQXV0aEJyYW5kIH0gZnJvbSAnLi9hdXRoLWJyYW5kJztcblxuLyoqXG4gKiBTaGFyZWQgZnJhbWUgZm9yIGV2ZXJ5IGF1dGggcGFnZS4gUGhvbmVzOiBhIDIyMHB4IGRhcmsgYnJhbmQgaGVhZGVyIHdpdGggdGhlIGZvcm0gY2FyZCBvdmVybGFwcGluZyBpdC5cbiAqIEZyb20gMTAyNHB4OiBicmFuZCBwYW5lbCAoNTUlKSArIGZvcm0gcGFuZWwgKDQ1JSkuIE5vIGZpeGVkIGhlaWdodHMgb24gdGhlIGZvcm0gc2lkZSwgc28gdGhlIHBhZ2Ugc2Nyb2xsc1xuICogd2l0aCB0aGUgb24tc2NyZWVuIGtleWJvYXJkIG9wZW4sIGFuZCBhIGZvY3VzZWQgZmllbGQgaXMgc2Nyb2xsZWQgaW50byB2aWV3IG9uIHRvdWNoIGRldmljZXMuXG4gKiBQcm9qZWN0IGBbYmVsb3ddYCBjb250ZW50IChlLmcuIGRldiBkZW1vIGxvZ2lucykgdG8gcGxhY2UgaXQgdW5kZXIgdGhlIGNhcmQuXG4gKi9cbkBDb21wb25lbnQoe1xuICBzZWxlY3RvcjogJ2FwcC1hdXRoLWxheW91dCcsXG4gIGltcG9ydHM6IFtBdXRoQnJhbmRdLFxuICBjaGFuZ2VEZXRlY3Rpb246IENoYW5nZURldGVjdGlvblN0cmF0ZWd5Lk9uUHVzaCxcbiAgaG9zdDogeyAnKGZvY3VzaW4pJzogJ3JldmVhbEZvY3VzZWQoJGV2ZW50KScgfSxcbiAgc3R5bGVVcmw6ICcuL2F1dGgtY2FyZC5zY3NzJyxcbiAgdGVtcGxhdGU6IGBcbiAgICA8bWFpbiBjbGFzcz1cImF1dGhcIj5cbiAgICAgIDxhcHAtYXV0aC1icmFuZCBjbGFzcz1cImJyYW5kXCIgLz5cbiAgICAgIDxzZWN0aW9uIGNsYXNzPVwic2lkZVwiPlxuICAgICAgICA8ZGl2IGNsYXNzPVwiY2FyZC13cmFwIHJpc2UtaW5cIj5cbiAgICAgICAgICA8ZGl2IGNsYXNzPVwiY2FyZC14XCI+XG4gICAgICAgICAgICA8aW1nIGNsYXNzPVwibG9nb1wiIHNyYz1cImJyYW5kL2FycXVzLWxvZ28ucG5nXCIgYWx0PVwiQVJRVVMgU3BvcnRzIENvbnN1bHRhbmN5XCIgd2lkdGg9XCIxMzJcIiBoZWlnaHQ9XCI3OFwiIC8+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzPVwiYm9keVwiPlxuICAgICAgICAgICAgICA8bmctY29udGVudCAvPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuICAgICAgICA8bmctY29udGVudCBzZWxlY3Q9XCJbYmVsb3ddXCIgLz5cbiAgICAgICAgPHAgY2xhc3M9XCJmb290XCI+wqkgQVJRVVMgU3BvcnRzIENvbnN1bHRhbmN5PC9wPlxuICAgICAgPC9zZWN0aW9uPlxuICAgIDwvbWFpbj5cbiAgYCxcbn0pXG5leHBvcnQgY2xhc3MgQXV0aExheW91dCB7XG4gIC8qKiBPbiB0b3VjaCBkZXZpY2VzIHRoZSBrZXlib2FyZCBjYW4gY292ZXIgdGhlIGZpZWxkOiBicmluZyBpdCBpbnRvIHZpZXcgb25jZSB0aGUga2V5Ym9hcmQgaXMgdXAuICovXG4gIHByb3RlY3RlZCByZXZlYWxGb2N1c2VkKGV2ZW50OiBGb2N1c0V2ZW50KTogdm9pZCB7XG4gICAgY29uc3QgdGFyZ2V0ID0gZXZlbnQudGFyZ2V0IGFzIEhUTUxFbGVtZW50IHwgbnVsbDtcbiAgICBpZiAoIXRhcmdldD8ubWF0Y2hlcygnaW5wdXQnKSB8fCAhd2luZG93Lm1hdGNoTWVkaWE/LignKHBvaW50ZXI6IGNvYXJzZSknKS5tYXRjaGVzKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIHNldFRpbWVvdXQoKCkgPT4gdGFyZ2V0LnNjcm9sbEludG9WaWV3KHsgYmxvY2s6ICdjZW50ZXInLCBiZWhhdmlvcjogJ2F1dG8nIH0pLCAzMDApO1xuICB9XG59XG4iLCJpbXBvcnQgeyBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSwgQ29tcG9uZW50IH0gZnJvbSAnQGFuZ3VsYXIvY29yZSc7XG5pbXBvcnQgeyBNYXRJY29uTW9kdWxlIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvaWNvbic7XG5pbXBvcnQgeyBQb2ludGVyVGlsdCB9IGZyb20gJy4vcG9pbnRlci10aWx0JztcblxuLyoqXG4gKiBEYXJrIGJyYW5kIHBhbmVsIG9mIHRoZSBhdXRoIHBhZ2VzOiBpbmsgZ3JhZGllbnQsIGRyaWZ0aW5nIGN5YW4gb3JicywgZG90IGdyaWQsIHN0YWRpdW0gcmluZ3Mgd2l0aFxuICogcG9pbnRlciBwYXJhbGxheCwgdGhlIGVtYmxlbSBvbiBhIGZsb2F0aW5nIHdoaXRlIGRpc2MgKHRoZSBlbWJsZW0gaXMgYmxhY2ssIHNvIGl0IG9ubHkgc2l0cyBvbiB3aGl0ZSksXG4gKiB0aGUgdGFnbGluZSBhbmQgdGhyZWUgZ2xhc3MgY2hpcHMuIERlY29yYXRpdmUgYXBhcnQgZnJvbSB0aGUgaGVhZGxpbmUuIFB1cmUgQ1NTL1NWRy5cbiAqL1xuQENvbXBvbmVudCh7XG4gIHNlbGVjdG9yOiAnYXBwLWF1dGgtYnJhbmQnLFxuICBpbXBvcnRzOiBbTWF0SWNvbk1vZHVsZSwgUG9pbnRlclRpbHRdLFxuICBjaGFuZ2VEZXRlY3Rpb246IENoYW5nZURldGVjdGlvblN0cmF0ZWd5Lk9uUHVzaCxcbiAgc3R5bGVVcmw6ICcuL2F1dGgtYnJhbmQuc2NzcycsXG4gIHRlbXBsYXRlOiBgXG4gICAgPGRpdiBjbGFzcz1cImJnXCIgYXJpYS1oaWRkZW49XCJ0cnVlXCI+XG4gICAgICA8c3BhbiBjbGFzcz1cIm9yYiBvcmItYVwiPjwvc3Bhbj5cbiAgICAgIDxzcGFuIGNsYXNzPVwib3JiIG9yYi1iXCI+PC9zcGFuPlxuICAgICAgPHNwYW4gY2xhc3M9XCJkb3RzXCI+PC9zcGFuPlxuICAgIDwvZGl2PlxuXG4gICAgPGRpdiBjbGFzcz1cInN0YWdlXCIgYXBwUG9pbnRlclRpbHQgYXJpYS1oaWRkZW49XCJ0cnVlXCI+XG4gICAgICA8c3ZnIGNsYXNzPVwicmluZ3NcIiB2aWV3Qm94PVwiMCAwIDUyMCAzMDBcIiBmaWxsPVwibm9uZVwiPlxuICAgICAgICA8ZWxsaXBzZSBjbGFzcz1cInJpbmcgcjFcIiBjeD1cIjI2MFwiIGN5PVwiMTUwXCIgcng9XCIyNTBcIiByeT1cIjkyXCIgLz5cbiAgICAgICAgPGVsbGlwc2UgY2xhc3M9XCJyaW5nIHIyXCIgY3g9XCIyNjBcIiBjeT1cIjE1MFwiIHJ4PVwiMTkwXCIgcnk9XCI3MFwiIC8+XG4gICAgICAgIDxlbGxpcHNlIGNsYXNzPVwicmluZyByM1wiIGN4PVwiMjYwXCIgY3k9XCIxNTBcIiByeD1cIjEzMFwiIHJ5PVwiNDhcIiAvPlxuICAgICAgPC9zdmc+XG4gICAgICA8ZGl2IGNsYXNzPVwiZGlzY1wiPlxuICAgICAgICA8aW1nIHNyYz1cImJyYW5kL2FycXVzLWVtYmxlbS5wbmdcIiBhbHQ9XCJcIiB3aWR0aD1cIjEwNFwiIGhlaWdodD1cIjUyXCIgLz5cbiAgICAgIDwvZGl2PlxuICAgICAgPHNwYW4gY2xhc3M9XCJjaGlwIGMxXCI+PG1hdC1pY29uPmNvbnRhY3RzPC9tYXQtaWNvbj5UcmFjayBldmVyeSBsZWFkPC9zcGFuPlxuICAgICAgPHNwYW4gY2xhc3M9XCJjaGlwIGMyXCI+PG1hdC1pY29uPnNhdmluZ3M8L21hdC1pY29uPkNvbnRyb2wgcHJvamVjdCBidWRnZXRzPC9zcGFuPlxuICAgICAgPHNwYW4gY2xhc3M9XCJjaGlwIGMzXCI+PG1hdC1pY29uPnBheW1lbnRzPC9tYXQtaWNvbj5Db2xsZWN0IHBheW1lbnRzIGZhc3Rlcjwvc3Bhbj5cbiAgICA8L2Rpdj5cblxuICAgIDxkaXYgY2xhc3M9XCJjb3B5XCI+XG4gICAgICA8cCBjbGFzcz1cImhlYWRsaW5lXCI+SWRlYWxpemUuIElubm92YXRlLiBBY2hpZXZlLjwvcD5cbiAgICAgIDxwIGNsYXNzPVwic3ViXCI+T25lIHBsYWNlIGZvciB5b3VyIGxlYWRzLCBwcm9qZWN0cyBhbmQgYWNjb3VudHMuPC9wPlxuICAgIDwvZGl2PlxuICBgLFxufSlcbmV4cG9ydCBjbGFzcyBBdXRoQnJhbmQge31cbiIsImltcG9ydCB7IERlc3Ryb3lSZWYsIERpcmVjdGl2ZSwgRWxlbWVudFJlZiwgTmdab25lLCBhZnRlck5leHRSZW5kZXIsIGluamVjdCB9IGZyb20gJ0Bhbmd1bGFyL2NvcmUnO1xuXG4vKipcbiAqIFdyaXRlcyB0aGUgcG9pbnRlciBwb3NpdGlvbiAoLTEuLjEgb24gZWFjaCBheGlzLCByZWxhdGl2ZSB0byB0aGUgdmlld3BvcnQgY2VudHJlKSBpbnRvIGAtLXB4YCBhbmQgYC0tcHlgXG4gKiBvbiB0aGUgaG9zdCwgc28gQ1NTIGNhbiB0aWx0IGFuZCBwYXJhbGxheCBpdHMgY2hpbGRyZW4uIERlc2t0b3Agb25seTogbm90aGluZyBoYXBwZW5zIG9uIHRvdWNoIHNjcmVlbnNcbiAqIG9yIHdoZW4gdGhlIHVzZXIgcHJlZmVycyByZWR1Y2VkIG1vdGlvbi4gT25lIHJBRiBwZXIgZnJhbWUgYXQgbW9zdCwgb3V0c2lkZSBBbmd1bGFyJ3Mgem9uZS5cbiAqL1xuQERpcmVjdGl2ZSh7IHNlbGVjdG9yOiAnW2FwcFBvaW50ZXJUaWx0XScgfSlcbmV4cG9ydCBjbGFzcyBQb2ludGVyVGlsdCB7XG4gIGNvbnN0cnVjdG9yKCkge1xuICAgIGNvbnN0IGhvc3QgPSBpbmplY3QoRWxlbWVudFJlZjxIVE1MRWxlbWVudD4pLm5hdGl2ZUVsZW1lbnQgYXMgSFRNTEVsZW1lbnQ7XG4gICAgY29uc3Qgem9uZSA9IGluamVjdChOZ1pvbmUpO1xuICAgIGNvbnN0IGRlc3Ryb3lSZWYgPSBpbmplY3QoRGVzdHJveVJlZik7XG5cbiAgICBhZnRlck5leHRSZW5kZXIoKCkgPT4ge1xuICAgICAgY29uc3QgbWVkaWEgPSAocTogc3RyaW5nKSA9PiB3aW5kb3cubWF0Y2hNZWRpYT8uKHEpLm1hdGNoZXMgPz8gZmFsc2U7XG4gICAgICBpZiAoIW1lZGlhKCcocG9pbnRlcjogZmluZSknKSB8fCBtZWRpYSgnKHByZWZlcnMtcmVkdWNlZC1tb3Rpb246IHJlZHVjZSknKSkge1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG4gICAgICBsZXQgZnJhbWUgPSAwO1xuICAgICAgY29uc3Qgb25Nb3ZlID0gKGU6IFBvaW50ZXJFdmVudCkgPT4ge1xuICAgICAgICBjYW5jZWxBbmltYXRpb25GcmFtZShmcmFtZSk7XG4gICAgICAgIGZyYW1lID0gcmVxdWVzdEFuaW1hdGlvbkZyYW1lKCgpID0+IHtcbiAgICAgICAgICBob3N0LnN0eWxlLnNldFByb3BlcnR5KCctLXB4JywgKChlLmNsaWVudFggLyB3aW5kb3cuaW5uZXJXaWR0aCkgKiAyIC0gMSkudG9GaXhlZCgzKSk7XG4gICAgICAgICAgaG9zdC5zdHlsZS5zZXRQcm9wZXJ0eSgnLS1weScsICgoZS5jbGllbnRZIC8gd2luZG93LmlubmVySGVpZ2h0KSAqIDIgLSAxKS50b0ZpeGVkKDMpKTtcbiAgICAgICAgfSk7XG4gICAgICB9O1xuICAgICAgem9uZS5ydW5PdXRzaWRlQW5ndWxhcigoKSA9PiB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigncG9pbnRlcm1vdmUnLCBvbk1vdmUsIHsgcGFzc2l2ZTogdHJ1ZSB9KSk7XG4gICAgICBkZXN0cm95UmVmLm9uRGVzdHJveSgoKSA9PiB7XG4gICAgICAgIGNhbmNlbEFuaW1hdGlvbkZyYW1lKGZyYW1lKTtcbiAgICAgICAgd2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoJ3BvaW50ZXJtb3ZlJywgb25Nb3ZlKTtcbiAgICAgIH0pO1xuICAgIH0pO1xuICB9XG59XG4iXSwibWFwcGluZ3MiOiI7QUFHTyxJQUFNLGdCQUFnQjtBQUFBLEVBQzNCLHFCQUFxQjtBQUFBLEVBQ3JCLGtCQUFrQjtBQUFBLEVBQ2xCLGdCQUFnQjtBQUFBLEVBQ2hCLG1CQUFtQjtBQUFBLEVBQ25CLGVBQWU7QUFBQSxFQUNmLG9CQUFvQjtBQUFBLEVBQ3BCLFVBQVU7QUFDWjtBQUdPLFNBQVMsV0FBVyxLQUE4QjtBQUN2RCxNQUFJLElBQUksU0FBUyxvQkFBb0IsSUFBSSxTQUFTLHFCQUFxQjtBQUNyRSxXQUFPO0FBQUEsRUFDVDtBQUNBLFFBQU0sVUFBVSxPQUFPLElBQUksVUFBVSxhQUFhLENBQUM7QUFDbkQsU0FBTyxPQUFPLFNBQVMsT0FBTyxLQUFLLFVBQVUsSUFBSSxVQUFVO0FBQzdEO0FB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OzZFQUFWLGFBQVUsV0FBQSxDQUFBLENBQUEsaUJBQUEsQ0FBQSxHQUFBLGNBQUEsU0FBQSx3QkFBQSxJQUFBLEtBQUE7QUFBQSxRQUFBLEtBQUEsR0FBQTtBQUFWLE1BQUEseUJBQUEsV0FBQSxTQUFBLHNDQUFBLFFBQUE7QUFBQSxlQUFBLElBQUEsY0FBQSxNQUFBO01BQ0wsQ0FBQTs7Ozs7QUFsQkosTUFBQSw2QkFBQSxHQUFBLFFBQUEsQ0FBQTtBQUNFLE1BQUEsd0JBQUEsR0FBQSxrQkFBQSxDQUFBO0FBQ0EsTUFBQSw2QkFBQSxHQUFBLFdBQUEsQ0FBQSxFQUFzQixHQUFBLE9BQUEsQ0FBQSxFQUNXLEdBQUEsT0FBQSxDQUFBO0FBRTNCLE1BQUEsd0JBQUEsR0FBQSxPQUFBLENBQUE7QUFDQSxNQUFBLDZCQUFBLEdBQUEsT0FBQSxDQUFBO0FBQ0UsTUFBQSwyQkFBQSxDQUFBO0FBQ0YsTUFBQSwyQkFBQSxFQUFNLEVBQ0Y7QUFFUixNQUFBLDJCQUFBLEdBQUEsQ0FBQTtBQUNBLE1BQUEsNkJBQUEsR0FBQSxLQUFBLENBQUE7QUFBZ0IsTUFBQSxxQkFBQSxJQUFBLCtCQUFBO0FBQTBCLE1BQUEsMkJBQUEsRUFBSSxFQUN0Qzs7b0JBbEJKLFNBQVMsR0FBQSxRQUFBLENBQUEsdTBDQUFBLEVBQUEsQ0FBQTs7O2dGQXNCUixZQUFVLENBQUE7VUF4QnRCQzt1QkFDVyxtQkFBaUIsU0FDbEIsQ0FBQyxTQUFTLEdBQUMsaUJBQ0hDLHlCQUF3QixRQUFNLE1BQ3pDLEVBQUUsYUFBYSx3QkFBdUIsR0FBRSxVQUVwQzs7Ozs7Ozs7Ozs7Ozs7OztLQWdCVCxRQUFBLENBQUEseW1DQUFBLEVBQUEsQ0FBQTs7OztpRkFFVSxZQUFVLEVBQUEsV0FBQSxjQUFBLFVBQUEsd0NBQUEsWUFBQSxHQUFBLENBQUE7QUFBQSxHQUFBOzs7Ozs7OytEQUFWLFlBQVUsRUFBQSxTQUFBLENBQUFDLEdBQUEsR0FBQSxDQUFBLFdBQUFGLFlBQUFDLHdCQUFBLEdBQUEsYUFBQSxFQUFBLENBQUE7RUFBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsY0FBQSxtQkFBQSxLQUFBLElBQUEsQ0FBQTtBQUFBLEdBQUEsT0FBQSxjQUFBLGVBQUEsZUFBQSxZQUFBLE9BQUEsWUFBQSxJQUFBLEdBQUEsNEJBQUEsQ0FBQSxNQUFBLEVBQUEsT0FBQSxNQUFBLG1CQUFBLEVBQUEsU0FBQSxDQUFBO0FBQUEsR0FBQTsiLCJuYW1lcyI6WyJDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSIsIkNvbXBvbmVudCIsImkwIiwiQ29tcG9uZW50IiwiQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3kiLCJpMCJdLCJkZWJ1Z0lkIjoiNWQzMDAxZWUtOWQwMS01MDExLTg2ODUtYWEzNjg4NjM0MzhmIn0=

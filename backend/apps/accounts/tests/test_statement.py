@@ -43,7 +43,7 @@ def keys(payload, path="$"):
 def deal(admin, make_ledger, make_payment):
     """A ledger with a linked project (with an expense) and three payments plus one void."""
     ledger = make_ledger()
-    project = Project.objects.create(name="Turf", client_name="C", lead=ledger.lead)
+    project = Project.objects.create(name="Turf", client_name="C", opportunity=ledger.opportunity)
     Expense.objects.create(
         project=project,
         amount=Decimal("12345.67"),
@@ -71,7 +71,7 @@ def test_statement_lists_active_payments_with_a_running_balance(client_for, admi
         and s["rows"][2]["particulars"] == "Cash"
     )
     assert s["credit_total"] == "60000.00" and s["closing_balance"] == "40000.00"
-    assert s["client"]["name"] == deal.lead.name and s["finalized"] is True
+    assert s["client"]["name"] == deal.opportunity.lead.name and s["finalized"] is True
 
 
 def test_statement_period_carries_an_opening_balance(client_for, admin, deal):

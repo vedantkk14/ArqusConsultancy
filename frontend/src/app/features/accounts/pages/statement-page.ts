@@ -77,15 +77,20 @@ export class StatementPage {
   protected searchClients(q: string): void {
     this.search.set(q);
     this.api
-      .ledgers({ q: q.trim(), finalized: 'true', page_size: 20, ordering: 'client' })
+      .ledgers({ q: q.trim(), finalized: 'true', page_size: 20, ordering: '-created_at' })
       .subscribe({
         next: (res) => this.options.set(res.results),
         error: () => this.options.set([]),
       });
   }
 
+  /** "#2 Badagu Textiles" once a client has more than one deal, else just the name. */
+  protected label(client: string, no?: number | null): string {
+    return no ? `#${no} ${client}` : client;
+  }
+
   protected pick(row: LedgerRow): void {
-    this.search.set(row.client);
+    this.search.set(this.label(row.client, row.client_no));
     this.navigate({ ledger: String(row.id) });
   }
 
@@ -118,7 +123,7 @@ export class StatementPage {
       next: (s) => {
         this.statement.set(s);
         if (!this.search()) {
-          this.search.set(s.client.name);
+          this.search.set(this.label(s.client.name, s.client.no));
         }
         this.loading.set(false);
       },

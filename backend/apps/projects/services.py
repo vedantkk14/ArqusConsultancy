@@ -38,7 +38,9 @@ def _payload(project, **extra) -> dict:
 
 
 def _lock(project_id) -> Project:
-    return Project.objects.select_for_update().select_related("pm", "lead").get(pk=project_id)
+    return (
+        Project.objects.select_for_update().select_related("pm", "opportunity").get(pk=project_id)
+    )
 
 
 def _check_pm(pm_id):
@@ -60,24 +62,24 @@ def _check_dates(start, end):
 
 
 @transaction.atomic
-def convert(lead_id, *, name, pm_id, start_date, expected_end_date, scope, by) -> Project:
-    lead = integrations.lock_lead(lead_id)
-    if lead is None:
-        raise ValidationError({"lead": ["This lead does not exist."]})
-    existing = Project.objects.filter(lead=lead).first()
+def convert(opportunity_id, *, name, pm_id, start_date, expected_end_date, scope, by) -> Project:
+    deal = integrations.lock_opportunity(opportunity_id)
+    if deal is None:
+        raise ValidationError({"opportunity": ["This deal does not exist."]})
+    existing = Project.objects.filter(opportunity=deal).first()
     if existing:
         raise ProjectExists(project_id=existing.pk)
-    if lead.status != "WON":
+    if deal.status != "WON":
         raise NotWon()
-    if integrations.finalization_problem(lead):
+    if integrations.finalization_problem(deal):
         raise NotFinalized()
     _check_dates(start_date, expected_end_date)
     pm = _check_pm(pm_id) if pm_id else None
 
     project = Project.objects.create(
         name=name,
-        client_name=lead.name,
-        lead=lead,
+        client_name=deal.lead.name,
+        opportunity=deal,
         pm=pm,
         start_date=start_date,
         expected_end_date=expected_end_date,

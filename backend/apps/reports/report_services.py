@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Count, DecimalField, Q, Sum
+from django.db.models import Count, DecimalField, F, Q, Sum
 from django.db.models.functions import Coalesce
 
 from .services import (
@@ -91,7 +91,7 @@ _MONEY = DecimalField(max_digits=14, decimal_places=2)
 
 
 def won_amount_exprs(with_ledger: bool) -> tuple:
-    """(current deal value, initially agreed value) of a lead, as SQL expressions.
+    """(current deal value, initially agreed value) of a deal (leads.Opportunity), as SQL.
 
     A won deal is worth its ledger total, which includes every revision; the initial value is the
     amount first finalized. Without a ledger (or before accounts exists) both are the proposal.
@@ -114,14 +114,14 @@ def build_sales(period: ReportPeriod) -> dict:
     snapshot, not period-bound).
     """
     User = get_user_model()  # noqa: N806
-    Lead = _model("leads", "Lead")  # noqa: N806
+    Lead = _model("leads", "Opportunity")  # noqa: N806 - one row per deal
     Project = _model("projects", "Project")  # noqa: N806
     current, initial = won_amount_exprs(_model("accounts", "Ledger") is not None)
     execs = list(User.objects.filter(role="SALES_EXEC").order_by("first_name", "id"))  # 1
     stats: dict[int, dict] = {}
     if Lead is not None:
         rows = (  # 2: one grouped query for every exec
-            Lead.objects.filter(assigned_to__isnull=False)
+            Lead.objects.filter(assigned_to__isnull=False, lead__is_deleted=False)
             .values("assigned_to")
             .annotate(
                 worked=Count("id", filter=period.q("created_at")),
@@ -135,9 +135,9 @@ def build_sales(period: ReportPeriod) -> dict:
     running: dict[int, int] = {}
     if Project is not None:
         running = dict(  # 3: one grouped query for every exec
-            Project.objects.filter(status="RUNNING", lead__assigned_to__isnull=False)
+            Project.objects.filter(status="RUNNING", opportunity__assigned_to__isnull=False)
             .order_by()
-            .values_list("lead__assigned_to")
+            .values_list("opportunity__assigned_to")
             .annotate(n=Count("id"))
         )
 
@@ -238,7 +238,7 @@ def build_financial(period: ReportPeriod, today: date) -> dict:
         finalized = acc.with_figures(ledger.objects.filter(finalized_at__isnull=False))
         rows = list(
             finalized.filter(acc.has_balance_q()).values_list(
-                "lead__name", "outstanding", "aging_base"
+                "opportunity__lead__name", "outstanding", "aging_base"
             )
         )
         outstanding = sum((Decimal(o) for _, o, _b in rows), ZERO)
@@ -298,17 +298,17 @@ def build_project_margin(period: ReportPeriod) -> dict:
         if ledger is not None:
             from apps.accounts import selectors as acc
 
-            lead_ids = [p.lead_id for p in projects if p.lead_id]
+            deal_ids = [p.opportunity_id for p in projects if p.opportunity_id]
             for row in acc.with_figures(
-                ledger.objects.filter(lead_id__in=lead_ids, finalized_at__isnull=False)
-            ).values("lead_id", "total_amount", "initial_amount", "received"):
-                finance[row["lead_id"]] = {
+                ledger.objects.filter(opportunity_id__in=deal_ids, finalized_at__isnull=False)
+            ).values("opportunity_id", "total_amount", "initial_amount", "received"):
+                finance[row["opportunity_id"]] = {
                     "total_amount": row["total_amount"],
                     "initial_amount": row["initial_amount"] or row["total_amount"],
                     "received": row["received"],
                 }
         for p in projects:
-            fin = finance.get(p.lead_id)
+            fin = finance.get(p.opportunity_id)
             total = fin["total_amount"] if fin else None
             margins = prj.project_margins(fin, p.spent)
             initial_budget = fin["initial_amount"] if fin else None
@@ -341,7 +341,7 @@ def build_project_margin(period: ReportPeriod) -> dict:
 
 
 def build_lead_funnel(period: ReportPeriod) -> dict:
-    Lead = _model("leads", "Lead")  # noqa: N806
+    Lead = _model("leads", "Opportunity")  # noqa: N806 - the funnel counts deals
     stages = [
         {
             "status": s,
@@ -356,7 +356,7 @@ def build_lead_funnel(period: ReportPeriod) -> dict:
     lost = {"count": 0, "value": money(ZERO)}
     sources: list[dict] = []
     if Lead is not None:
-        in_period = Lead.objects.filter(period.q("created_at"))
+        in_period = Lead.objects.filter(period.q("created_at"), lead__is_deleted=False)
         by_status = {  # 1
             r["status"]: r
             for r in in_period.values("status").annotate(n=Count("id"), v=Sum("proposed_amount"))
@@ -380,9 +380,15 @@ def build_lead_funnel(period: ReportPeriod) -> dict:
             stage["reached"] = running
         for prev, stage in zip(stages, stages[1:], strict=False):
             stage["conversion_pct"] = pct(stage["reached"], prev["reached"])
-        source_labels = dict(Lead._meta.get_field("source").choices)
-        rows = in_period.values("source").annotate(  # 2
-            leads=Count("id"), won=Count("id", filter=Q(status="WON")), value=Sum("proposed_amount")
+        source_labels = dict(_model("leads", "Lead")._meta.get_field("source").choices)
+        rows = (  # 2
+            in_period.values(source=F("lead__source"))
+            .order_by()
+            .annotate(
+                leads=Count("id"),
+                won=Count("id", filter=Q(status="WON")),
+                value=Sum("proposed_amount"),
+            )
         )
         sources = sorted(
             (

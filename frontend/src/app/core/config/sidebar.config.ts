@@ -64,20 +64,21 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     label: 'Projects',
     icon: 'assignment',
     route: '/projects',
-    roles: [Admin, ProjectManager],
+    // Sales Manager: read-only lists and detail, never any money (budget, spent, margin, amounts).
+    roles: [Admin, ProjectManager, SalesManager],
     children: [
       { label: 'Convert Won Lead', icon: 'transform', route: '/projects/convert', roles: [Admin] },
       {
         label: 'Running',
         icon: 'play_circle',
         route: '/projects/running',
-        roles: [Admin, ProjectManager],
+        roles: [Admin, ProjectManager, SalesManager],
       },
       {
         label: 'Completed',
         icon: 'check_circle',
         route: '/projects/completed',
-        roles: [Admin, ProjectManager],
+        roles: [Admin, ProjectManager, SalesManager],
       },
     ],
   },

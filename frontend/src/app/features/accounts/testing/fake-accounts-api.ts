@@ -21,6 +21,7 @@ export function makeRow(id: number, patch: Partial<LedgerRow> = {}): LedgerRow {
   return {
     id,
     lead: id + 100,
+    opportunity: id + 200,
     client: `Client ${id}`,
     phone: `+9198000000${String(id).padStart(2, '0')}`,
     exec_name: 'Eva Exec',

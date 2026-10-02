@@ -34,10 +34,15 @@ export interface ProjectListItem {
   completed_at: string | null;
   created_at: string;
   pm_name: string | null;
+  /** #N among the client's projects (oldest = 1); null when the client has only one. */
+  project_no?: number | null;
   /** Admin only. */
   pm?: Person | null;
   /** Expenses so far (non-void). */
-  spent: string;
+  /** Admin and PM only (a Sales Manager never gets it). */
+  spent?: string;
+  /** Admin and Sales Manager: the client's lead, for the link to their profile. */
+  lead_id?: number | null;
   /** Admin only: the finalized deal total. Null until the deal is finalized. */
   total_budget?: string | null;
   /** Admin only: total budget minus expenses so far (negative when overspent). */
@@ -50,6 +55,8 @@ export interface ProjectListItem {
 
 /** Admin only: ledger figures from accounts. Null until accounts can answer. */
 export interface Finance {
+  /** Admin only: lets the Finance panel offer Revise total. */
+  ledger_id?: number | null;
   total_amount: string;
   received: string | null;
   outstanding: string | null;
@@ -60,15 +67,16 @@ export interface Finance {
 export interface ProjectDetail extends ProjectListItem {
   scope: string;
   allowed_actions: ProjectAction[];
-  /** Admin only. */
-  lead_id?: number | null;
+  /** Admin only: the won deal this project delivers. */
+  opportunity_id?: number | null;
   finance?: Finance | null;
 }
 
 export interface ProjectSummary {
   running: number;
   completed: number;
-  spent_total: string;
+  /** Admin and PM only. */
+  spent_total?: string;
   /** Admin only: budget states against the deal total. */
   ok?: number;
   warn?: number;
@@ -77,7 +85,11 @@ export interface ProjectSummary {
   budget_total?: string;
 }
 
+/** A won deal (opportunity) that can become a project, with its client's name. */
 export interface ConvertibleLead {
+  opportunity: number;
+  /** "Deal #2" for repeat business with the same client. */
+  sequence_no: number;
   lead: number;
   name: string;
   exec_name: string | null;
@@ -89,7 +101,7 @@ export interface ConvertibleLead {
 }
 
 export interface ConvertInput {
-  lead: number;
+  opportunity: number;
   name: string;
   pm: number | null;
   start_date: string | null;
@@ -133,7 +145,6 @@ export const EMPTY_FILTERS: ProjectFilters = {
 export const ORDERINGS = [
   { value: '-spent', label: 'Highest spend' },
   { value: 'expected_end_date', label: 'Due soonest' },
-  { value: '-created_at', label: 'Newest' },
   { value: 'name', label: 'Name A to Z' },
 ] as const;
 

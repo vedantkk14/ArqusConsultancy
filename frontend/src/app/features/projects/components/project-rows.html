@@ -29,7 +29,9 @@
             <th class="c-bar">Budget used</th>
             <th class="r">Total budget</th>
           }
-          <th class="r">{{ showBudget() ? 'Spent' : 'Expenses so far' }}</th>
+          @if (showSpent()) {
+            <th class="r">{{ showBudget() ? 'Spent' : 'Expenses so far' }}</th>
+          }
           @if (showBudget()) {
             <th class="r">Remaining</th>
           }
@@ -51,12 +53,18 @@
             </tr>
           }
         } @else {
-          @for (p of rows(); track p.id) {
-            <tr>
+          @for (p of rows(); track p.id; let i = $index) {
+            <tr [class.past]="isPast(p)" [class.cont]="continues(i)">
               <td>
                 <span class="who-t">
-                  <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
-                  <span class="ph">{{ p.client_name }}</span>
+                  <a class="stretch" [routerLink]="['/projects', p.id]">
+                    @if (p.project_no) { <span class="deal-no">#{{ p.project_no }}</span> }
+                    {{ p.name }}
+                  </a>
+                  <span class="ph">
+                    {{ p.client_name }}
+                    @if (isPast(p)) { <span class="done-tag">Completed</span> }
+                  </span>
                 </span>
               </td>
               <td><ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" /></td>
@@ -70,7 +78,9 @@
                 </td>
                 <td class="r num">{{ p.total_budget ? (p.total_budget | inrCompact) : '—' }}</td>
               }
-              <td class="r num">{{ p.spent | inrCompact }}</td>
+              @if (showSpent()) {
+                <td class="r num">{{ p.spent | inrCompact }}</td>
+              }
               @if (showBudget()) {
                 <td class="r num" [class.neg]="p.state === 'over'">
                   {{ p.remaining ? (p.remaining | inrCompact) : '—' }}
@@ -100,11 +110,17 @@
       }
     } @else {
       @for (p of rows(); track p.id; let i = $index) {
-        <li class="card lc rise-in" [style.--i]="i % 10">
+        <li class="card lc rise-in" [class.past]="isPast(p)" [style.--i]="i % 10">
           <span class="lc-top">
             <span class="who-t">
-              <a class="stretch" [routerLink]="['/projects', p.id]">{{ p.name }}</a>
-              <span class="ph">{{ p.client_name }}</span>
+              <a class="stretch" [routerLink]="['/projects', p.id]">
+                @if (p.project_no) { <span class="deal-no">#{{ p.project_no }}</span> }
+                {{ p.name }}
+              </a>
+              <span class="ph">
+                {{ p.client_name }}
+                @if (isPast(p)) { <span class="done-tag">Completed</span> }
+              </span>
             </span>
           </span>
           @if (showBudget()) {
@@ -129,7 +145,7 @@
                 }}</strong></span
               >
             </span>
-          } @else {
+          } @else if (showSpent()) {
             <span class="lc-fig">
               <span
                 ><span class="lbl">Expenses so far</span

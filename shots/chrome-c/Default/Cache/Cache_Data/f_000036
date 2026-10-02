@@ -1,0 +1,176 @@
+import { injectQuery as __vite__injectQuery } from "/@vite/client";import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/chunk-LPXXM5SC.js");import {
+  LeadForm
+} from "/chunk-C7MLYK22.js";
+import {
+  ConfirmDialog
+} from "/chunk-DOPRVTYA.js";
+import {
+  AuthService
+} from "/chunk-MYKLYJY6.js";
+
+// src/app/features/leads/pages/lead-new-page.ts
+import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import { MatDialog } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_dialog.js?v=a85cac02";
+import { MatIconModule } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import { MatSnackBar } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_snack-bar.js?v=a85cac02";
+import { Router, RouterLink } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_router.js?v=a85cac02";
+import { map } from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/rxjs.js?v=a85cac02";
+import * as i0 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_core.js?v=a85cac02";
+import * as i1 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_material_icon.js?v=a85cac02";
+import * as i2 from "/@fs/D:/arqus_consultancy/frontend/.angular/cache/22.1.8/frontend/vite/deps/@angular_cdk_bidi.js?v=a85cac02";
+var unsavedChangesGuard = (component) => {
+  if (!component.hasUnsavedChanges()) {
+    return true;
+  }
+  return inject(MatDialog).open(ConfirmDialog, {
+    data: {
+      title: "Discard this lead?",
+      message: "You have changes that haven't been saved.",
+      confirmText: "Discard",
+      cancelText: "Keep editing"
+    }
+  }).afterClosed().pipe(map((ok) => ok === true));
+};
+var LeadNewPage = class _LeadNewPage {
+  router = inject(Router);
+  snack = inject(MatSnackBar);
+  auth = inject(AuthService);
+  form = viewChild.required(
+    LeadForm,
+    ...ngDevMode ? [{ debugName: "form" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  canAssign = computed(
+    () => ["ADMIN" /* Admin */, "SALES_MANAGER" /* SalesManager */].includes(this.auth.role()),
+    ...ngDevMode ? [{ debugName: "canAssign" }] : (
+      /* istanbul ignore next */
+      []
+    )
+  );
+  hasUnsavedChanges() {
+    return this.form().dirty;
+  }
+  onSaved({ lead, addAnother }) {
+    const ref = this.snack.open(`${lead.name} saved.`, "View lead", { duration: 6e3 });
+    ref.onAction().subscribe(() => void this.router.navigate(["/leads", lead.id]));
+    if (!addAnother) {
+      void this.router.navigate(["/leads", lead.id]);
+    }
+  }
+  static \u0275fac = function LeadNewPage_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _LeadNewPage)();
+  };
+  static \u0275cmp = /* @__PURE__ */ i0.\u0275\u0275defineComponent({ type: _LeadNewPage, selectors: [["app-lead-new-page"]], viewQuery: function LeadNewPage_Query(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275viewQuerySignal(ctx.form, LeadForm, 5);
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275queryAdvance();
+    }
+  }, decls: 37, vars: 1, consts: [["routerLink", "/leads/all", 1, "back"], ["aria-hidden", "true"], [1, "layout"], ["aria-labelledby", "new-lead-title", 1, "main", "rise-in"], [1, "intro"], ["aria-hidden", "true", 1, "badge"], ["id", "new-lead-title"], [1, "card", "form-card"], [3, "saved", "canAssign"], ["aria-label", "Tips", 1, "tips", "card"]], template: function LeadNewPage_Template(rf, ctx) {
+    if (rf & 1) {
+      i0.\u0275\u0275elementStart(0, "a", 0)(1, "mat-icon", 1);
+      i0.\u0275\u0275text(2, "arrow_back");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275text(3, "All leads");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(4, "div", 2)(5, "section", 3)(6, "header", 4)(7, "span", 5)(8, "mat-icon");
+      i0.\u0275\u0275text(9, "person_add");
+      i0.\u0275\u0275elementEnd()();
+      i0.\u0275\u0275elementStart(10, "div")(11, "h2", 6);
+      i0.\u0275\u0275text(12, "New lead");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(13, "p");
+      i0.\u0275\u0275text(14, "Only name and mobile number are required. The rest can wait.");
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275elementStart(15, "div", 7)(16, "app-lead-form", 8);
+      i0.\u0275\u0275listener("saved", function LeadNewPage_Template_app_lead_form_saved_16_listener($event) {
+        return ctx.onSaved($event);
+      });
+      i0.\u0275\u0275elementEnd()()();
+      i0.\u0275\u0275elementStart(17, "aside", 9)(18, "h2");
+      i0.\u0275\u0275text(19, "Good to know");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(20, "ul")(21, "li")(22, "mat-icon", 1);
+      i0.\u0275\u0275text(23, "content_paste");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275text(24, "Paste a number in any format; we tidy it to +91.");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(25, "li")(26, "mat-icon", 1);
+      i0.\u0275\u0275text(27, "warning");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275text(28, "You'll be warned if the number already belongs to a lead.");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(29, "li")(30, "mat-icon", 1);
+      i0.\u0275\u0275text(31, "person_add");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275text(32, "Assign to an executive, to yourself, or decide later.");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275elementStart(33, "li")(34, "mat-icon", 1);
+      i0.\u0275\u0275text(35, "schedule");
+      i0.\u0275\u0275elementEnd();
+      i0.\u0275\u0275text(36, "Follow-ups are in IST and show up in Overdue once missed.");
+      i0.\u0275\u0275elementEnd()()()();
+    }
+    if (rf & 2) {
+      i0.\u0275\u0275advance(16);
+      i0.\u0275\u0275property("canAssign", ctx.canAssign());
+    }
+  }, dependencies: [LeadForm, MatIconModule, i1.MatIcon, i2.Dir, RouterLink], styles: ["\n[_nghost-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: var(--%NS%space-3);\n}\n.back[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  align-self: flex-start;\n  gap: 6px;\n  min-height: 44px;\n  margin-left: -8px;\n  padding: 0 12px 0 8px;\n  border-radius: var(--%NS%radius-pill);\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  font-weight: 500;\n  text-decoration: none;\n}\n.back[_ngcontent-%COMP%]:hover {\n  background: var(--%NS%subtle);\n  color: var(--%NS%ink);\n}\n.back[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n[_nghost-%COMP%] {\n  display: block;\n  container-type: inline-size;\n  max-width: 1180px;\n}\n.layout[_ngcontent-%COMP%] {\n  display: grid;\n  gap: var(--%NS%space-5);\n  align-items: start;\n}\n.intro[_ngcontent-%COMP%] {\n  position: relative;\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  overflow: hidden;\n  margin-bottom: var(--%NS%space-4);\n  padding: var(--%NS%space-5);\n  border-radius: var(--%NS%radius-card);\n  background:\n    radial-gradient(\n      60% 120% at 100% 0%,\n      color-mix(in srgb, var(--%NS%data-cyan) 30%, transparent),\n      transparent 70%),\n    var(--%NS%grad-ink);\n  color: var(--%NS%on-ink);\n}\n.badge[_ngcontent-%COMP%] {\n  display: grid;\n  width: 48px;\n  height: 48px;\n  flex: none;\n  place-items: center;\n  border-radius: 14px;\n  background: rgba(255, 255, 255, 0.12);\n}\n.badge[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  width: 26px;\n  height: 26px;\n  font-size: 26px;\n}\n.intro[_ngcontent-%COMP%]   h2[_ngcontent-%COMP%] {\n  margin: 0;\n  color: var(--%NS%on-ink);\n  font-size: var(--%NS%text-lg);\n}\n.intro[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 2px 0 0;\n  color: rgba(255, 255, 255, 0.8);\n  font-size: var(--%NS%text-sm);\n}\n.form-card[_ngcontent-%COMP%] {\n  padding: var(--%NS%space-5);\n}\n.tips[_ngcontent-%COMP%] {\n  display: none;\n  padding: var(--%NS%space-5);\n}\n.tips[_ngcontent-%COMP%]   h2[_ngcontent-%COMP%] {\n  margin: 0 0 var(--%NS%space-3);\n  font-size: var(--%NS%text-md);\n}\n.tips[_ngcontent-%COMP%]   ul[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.tips[_ngcontent-%COMP%]   li[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 10px;\n  color: var(--%NS%ink-2);\n  font-size: var(--%NS%text-sm);\n  line-height: 1.45;\n}\n.tips[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  flex: none;\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n  color: var(--%NS%brand-deep);\n}\n@container (min-width: 900px) {\n  .layout[_ngcontent-%COMP%] {\n    grid-template-columns: minmax(0, 1fr) 280px;\n  }\n  .tips[_ngcontent-%COMP%] {\n    display: block;\n  }\n  .form-card[_ngcontent-%COMP%] {\n    padding: var(--%NS%space-6);\n  }\n}\n/*# sourceMappingURL=lead-new-page.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassMetadata(LeadNewPage, [{
+    type: Component,
+    args: [{ selector: "app-lead-new-page", imports: [LeadForm, MatIconModule, RouterLink], changeDetection: ChangeDetectionStrategy.OnPush, template: `
+    <a class="back" routerLink="/leads/all"><mat-icon aria-hidden="true">arrow_back</mat-icon>All leads</a>
+    <div class="layout">
+      <section class="main rise-in" aria-labelledby="new-lead-title">
+        <header class="intro">
+          <span class="badge" aria-hidden="true"><mat-icon>person_add</mat-icon></span>
+          <div>
+            <h2 id="new-lead-title">New lead</h2>
+            <p>Only name and mobile number are required. The rest can wait.</p>
+          </div>
+        </header>
+        <div class="card form-card">
+          <app-lead-form [canAssign]="canAssign()" (saved)="onSaved($event)" />
+        </div>
+      </section>
+      <aside class="tips card" aria-label="Tips">
+        <h2>Good to know</h2>
+        <ul>
+          <li><mat-icon aria-hidden="true">content_paste</mat-icon>Paste a number in any format; we tidy it to +91.</li>
+          <li><mat-icon aria-hidden="true">warning</mat-icon>You'll be warned if the number already belongs to a lead.</li>
+          <li><mat-icon aria-hidden="true">person_add</mat-icon>Assign to an executive, to yourself, or decide later.</li>
+          <li><mat-icon aria-hidden="true">schedule</mat-icon>Follow-ups are in IST and show up in Overdue once missed.</li>
+        </ul>
+      </aside>
+    </div>
+  `, styles: ["/* angular:styles/component:scss;02a5b9306047cbc66ae721748aee67f1178379f1850c4dc733e25c5c2c60382c;D:/arqus_consultancy/frontend/src/app/features/leads/pages/lead-new-page.ts */\n:host {\n  display: flex;\n  flex-direction: column;\n  gap: var(--space-3);\n}\n.back {\n  display: inline-flex;\n  align-items: center;\n  align-self: flex-start;\n  gap: 6px;\n  min-height: 44px;\n  margin-left: -8px;\n  padding: 0 12px 0 8px;\n  border-radius: var(--radius-pill);\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  font-weight: 500;\n  text-decoration: none;\n}\n.back:hover {\n  background: var(--subtle);\n  color: var(--ink);\n}\n.back mat-icon {\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n}\n:host {\n  display: block;\n  container-type: inline-size;\n  max-width: 1180px;\n}\n.layout {\n  display: grid;\n  gap: var(--space-5);\n  align-items: start;\n}\n.intro {\n  position: relative;\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  overflow: hidden;\n  margin-bottom: var(--space-4);\n  padding: var(--space-5);\n  border-radius: var(--radius-card);\n  background:\n    radial-gradient(\n      60% 120% at 100% 0%,\n      color-mix(in srgb, var(--data-cyan) 30%, transparent),\n      transparent 70%),\n    var(--grad-ink);\n  color: var(--on-ink);\n}\n.badge {\n  display: grid;\n  width: 48px;\n  height: 48px;\n  flex: none;\n  place-items: center;\n  border-radius: 14px;\n  background: rgba(255, 255, 255, 0.12);\n}\n.badge mat-icon {\n  width: 26px;\n  height: 26px;\n  font-size: 26px;\n}\n.intro h2 {\n  margin: 0;\n  color: var(--on-ink);\n  font-size: var(--text-lg);\n}\n.intro p {\n  margin: 2px 0 0;\n  color: rgba(255, 255, 255, 0.8);\n  font-size: var(--text-sm);\n}\n.form-card {\n  padding: var(--space-5);\n}\n.tips {\n  display: none;\n  padding: var(--space-5);\n}\n.tips h2 {\n  margin: 0 0 var(--space-3);\n  font-size: var(--text-md);\n}\n.tips ul {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.tips li {\n  display: flex;\n  gap: 10px;\n  color: var(--ink-2);\n  font-size: var(--text-sm);\n  line-height: 1.45;\n}\n.tips mat-icon {\n  flex: none;\n  width: 20px;\n  height: 20px;\n  font-size: 20px;\n  color: var(--brand-deep);\n}\n@container (min-width: 900px) {\n  .layout {\n    grid-template-columns: minmax(0, 1fr) 280px;\n  }\n  .tips {\n    display: block;\n  }\n  .form-card {\n    padding: var(--space-6);\n  }\n}\n/*# sourceMappingURL=lead-new-page.css.map */\n"] }]
+  }], null, { form: [{ type: i0.ViewChild, args: [i0.forwardRef(() => LeadForm), { isSignal: true }] }] });
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && i0.\u0275setClassDebugInfo(LeadNewPage, { className: "LeadNewPage", filePath: "src/app/features/leads/pages/lead-new-page.ts", lineNumber: 98 });
+})();
+(() => {
+  const id = "src%2Fapp%2Ffeatures%2Fleads%2Fpages%2Flead-new-page.ts%40LeadNewPage";
+  function LeadNewPage_HmrLoad(t) {
+    import(
+      /* @vite-ignore */
+      __vite__injectQuery(i0.\u0275\u0275getReplaceMetadataURL(id, t, import.meta.url), 'import')
+    ).then((m) => m.default && i0.\u0275\u0275replaceMetadata(LeadNewPage, m.default, [i0, i1, i2], [LeadForm, MatIconModule, RouterLink, Component, ChangeDetectionStrategy], import.meta, id));
+  }
+  (typeof ngDevMode === "undefined" || ngDevMode) && LeadNewPage_HmrLoad(Date.now());
+  (typeof ngDevMode === "undefined" || ngDevMode) && (import.meta.hot && import.meta.hot.on("angular:component-update", (d) => d.id === id && LeadNewPage_HmrLoad(d.timestamp)));
+})();
+
+export {
+  unsavedChangesGuard,
+  LeadNewPage
+};
+//# debugId=a2366462-f092-5cc7-ad28-194ed65db32b
+
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9hcHAvZmVhdHVyZXMvbGVhZHMvcGFnZXMvbGVhZC1uZXctcGFnZS50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBDaGFuZ2VEZXRlY3Rpb25TdHJhdGVneSwgQ29tcG9uZW50LCBjb21wdXRlZCwgaW5qZWN0LCB2aWV3Q2hpbGQgfSBmcm9tICdAYW5ndWxhci9jb3JlJztcbmltcG9ydCB7IE1hdERpYWxvZyB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL2RpYWxvZyc7XG5pbXBvcnQgeyBNYXRJY29uTW9kdWxlIH0gZnJvbSAnQGFuZ3VsYXIvbWF0ZXJpYWwvaWNvbic7XG5pbXBvcnQgeyBNYXRTbmFja0JhciB9IGZyb20gJ0Bhbmd1bGFyL21hdGVyaWFsL3NuYWNrLWJhcic7XG5pbXBvcnQgeyBDYW5EZWFjdGl2YXRlRm4sIFJvdXRlciwgUm91dGVyTGluayB9IGZyb20gJ0Bhbmd1bGFyL3JvdXRlcic7XG5pbXBvcnQgeyBPYnNlcnZhYmxlLCBtYXAgfSBmcm9tICdyeGpzJztcbmltcG9ydCB7IEF1dGhTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vY29yZS9hdXRoL2F1dGguc2VydmljZSc7XG5pbXBvcnQgeyBSb2xlIH0gZnJvbSAnLi4vLi4vLi4vY29yZS9tb2RlbHMnO1xuaW1wb3J0IHsgQ29uZmlybURpYWxvZywgQ29uZmlybURpYWxvZ0RhdGEgfSBmcm9tICcuLi8uLi8uLi9zaGFyZWQvY29uZmlybS1kaWFsb2cvY29uZmlybS1kaWFsb2cnO1xuaW1wb3J0IHsgTGVhZEZvcm0sIExlYWRGb3JtU2F2ZWQgfSBmcm9tICcuLi9jb21wb25lbnRzL2xlYWQtZm9ybSc7XG5cbmV4cG9ydCBpbnRlcmZhY2UgTGVhdmVzV2l0aENoYW5nZXMge1xuICBoYXNVbnNhdmVkQ2hhbmdlcygpOiBib29sZWFuO1xufVxuXG4vKiogQXNrIGJlZm9yZSBsZWF2aW5nIGEgZm9ybSB3aXRoIHVuc2F2ZWQgY2hhbmdlcy4gKi9cbmV4cG9ydCBjb25zdCB1bnNhdmVkQ2hhbmdlc0d1YXJkOiBDYW5EZWFjdGl2YXRlRm48TGVhdmVzV2l0aENoYW5nZXM+ID0gKGNvbXBvbmVudCk6IE9ic2VydmFibGU8Ym9vbGVhbj4gfCBib29sZWFuID0+IHtcbiAgaWYgKCFjb21wb25lbnQuaGFzVW5zYXZlZENoYW5nZXMoKSkge1xuICAgIHJldHVybiB0cnVlO1xuICB9XG4gIHJldHVybiBpbmplY3QoTWF0RGlhbG9nKVxuICAgIC5vcGVuPENvbmZpcm1EaWFsb2csIENvbmZpcm1EaWFsb2dEYXRhLCBib29sZWFuPihDb25maXJtRGlhbG9nLCB7XG4gICAgICBkYXRhOiB7XG4gICAgICAgIHRpdGxlOiAnRGlzY2FyZCB0aGlzIGxlYWQ/JyxcbiAgICAgICAgbWVzc2FnZTogXCJZb3UgaGF2ZSBjaGFuZ2VzIHRoYXQgaGF2ZW4ndCBiZWVuIHNhdmVkLlwiLFxuICAgICAgICBjb25maXJtVGV4dDogJ0Rpc2NhcmQnLFxuICAgICAgICBjYW5jZWxUZXh0OiAnS2VlcCBlZGl0aW5nJyxcbiAgICAgIH0sXG4gICAgfSlcbiAgICAuYWZ0ZXJDbG9zZWQoKVxuICAgIC5waXBlKG1hcCgob2spID0+IG9rID09PSB0cnVlKSk7XG59O1xuXG5AQ29tcG9uZW50KHtcbiAgc2VsZWN0b3I6ICdhcHAtbGVhZC1uZXctcGFnZScsXG4gIGltcG9ydHM6IFtMZWFkRm9ybSwgTWF0SWNvbk1vZHVsZSwgUm91dGVyTGlua10sXG4gIGNoYW5nZURldGVjdGlvbjogQ2hhbmdlRGV0ZWN0aW9uU3RyYXRlZ3kuT25QdXNoLFxuICB0ZW1wbGF0ZTogYFxuICAgIDxhIGNsYXNzPVwiYmFja1wiIHJvdXRlckxpbms9XCIvbGVhZHMvYWxsXCI+PG1hdC1pY29uIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPmFycm93X2JhY2s8L21hdC1pY29uPkFsbCBsZWFkczwvYT5cbiAgICA8ZGl2IGNsYXNzPVwibGF5b3V0XCI+XG4gICAgICA8c2VjdGlvbiBjbGFzcz1cIm1haW4gcmlzZS1pblwiIGFyaWEtbGFiZWxsZWRieT1cIm5ldy1sZWFkLXRpdGxlXCI+XG4gICAgICAgIDxoZWFkZXIgY2xhc3M9XCJpbnRyb1wiPlxuICAgICAgICAgIDxzcGFuIGNsYXNzPVwiYmFkZ2VcIiBhcmlhLWhpZGRlbj1cInRydWVcIj48bWF0LWljb24+cGVyc29uX2FkZDwvbWF0LWljb24+PC9zcGFuPlxuICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICA8aDIgaWQ9XCJuZXctbGVhZC10aXRsZVwiPk5ldyBsZWFkPC9oMj5cbiAgICAgICAgICAgIDxwPk9ubHkgbmFtZSBhbmQgbW9iaWxlIG51bWJlciBhcmUgcmVxdWlyZWQuIFRoZSByZXN0IGNhbiB3YWl0LjwvcD5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgPC9oZWFkZXI+XG4gICAgICAgIDxkaXYgY2xhc3M9XCJjYXJkIGZvcm0tY2FyZFwiPlxuICAgICAgICAgIDxhcHAtbGVhZC1mb3JtIFtjYW5Bc3NpZ25dPVwiY2FuQXNzaWduKClcIiAoc2F2ZWQpPVwib25TYXZlZCgkZXZlbnQpXCIgLz5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L3NlY3Rpb24+XG4gICAgICA8YXNpZGUgY2xhc3M9XCJ0aXBzIGNhcmRcIiBhcmlhLWxhYmVsPVwiVGlwc1wiPlxuICAgICAgICA8aDI+R29vZCB0byBrbm93PC9oMj5cbiAgICAgICAgPHVsPlxuICAgICAgICAgIDxsaT48bWF0LWljb24gYXJpYS1oaWRkZW49XCJ0cnVlXCI+Y29udGVudF9wYXN0ZTwvbWF0LWljb24+UGFzdGUgYSBudW1iZXIgaW4gYW55IGZvcm1hdDsgd2UgdGlkeSBpdCB0byArOTEuPC9saT5cbiAgICAgICAgICA8bGk+PG1hdC1pY29uIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPndhcm5pbmc8L21hdC1pY29uPllvdSdsbCBiZSB3YXJuZWQgaWYgdGhlIG51bWJlciBhbHJlYWR5IGJlbG9uZ3MgdG8gYSBsZWFkLjwvbGk+XG4gICAgICAgICAgPGxpPjxtYXQtaWNvbiBhcmlhLWhpZGRlbj1cInRydWVcIj5wZXJzb25fYWRkPC9tYXQtaWNvbj5Bc3NpZ24gdG8gYW4gZXhlY3V0aXZlLCB0byB5b3Vyc2VsZiwgb3IgZGVjaWRlIGxhdGVyLjwvbGk+XG4gICAgICAgICAgPGxpPjxtYXQtaWNvbiBhcmlhLWhpZGRlbj1cInRydWVcIj5zY2hlZHVsZTwvbWF0LWljb24+Rm9sbG93LXVwcyBhcmUgaW4gSVNUIGFuZCBzaG93IHVwIGluIE92ZXJkdWUgb25jZSBtaXNzZWQuPC9saT5cbiAgICAgICAgPC91bD5cbiAgICAgIDwvYXNpZGU+XG4gICAgPC9kaXY+XG4gIGAsXG4gIHN0eWxlczogYFxuICAgIDpob3N0IHsgZGlzcGxheTogZmxleDsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgZ2FwOiB2YXIoLS1zcGFjZS0zKTsgfVxuICAgIC5iYWNrIHtcbiAgICAgIGRpc3BsYXk6IGlubGluZS1mbGV4OyBhbGlnbi1pdGVtczogY2VudGVyOyBhbGlnbi1zZWxmOiBmbGV4LXN0YXJ0OyBnYXA6IDZweDsgbWluLWhlaWdodDogNDRweDsgbWFyZ2luLWxlZnQ6IC04cHg7XG4gICAgICBwYWRkaW5nOiAwIDEycHggMCA4cHg7IGJvcmRlci1yYWRpdXM6IHZhcigtLXJhZGl1cy1waWxsKTsgY29sb3I6IHZhcigtLWluay0yKTsgZm9udC1zaXplOiB2YXIoLS10ZXh0LXNtKTtcbiAgICAgIGZvbnQtd2VpZ2h0OiA1MDA7IHRleHQtZGVjb3JhdGlvbjogbm9uZTtcbiAgICB9XG4gICAgLmJhY2s6aG92ZXIgeyBiYWNrZ3JvdW5kOiB2YXIoLS1zdWJ0bGUpOyBjb2xvcjogdmFyKC0taW5rKTsgfVxuICAgIC5iYWNrIG1hdC1pY29uIHsgd2lkdGg6IDIwcHg7IGhlaWdodDogMjBweDsgZm9udC1zaXplOiAyMHB4OyB9XG4gICAgOmhvc3QgeyBkaXNwbGF5OiBibG9jazsgY29udGFpbmVyLXR5cGU6IGlubGluZS1zaXplOyBtYXgtd2lkdGg6IDExODBweDsgfVxuICAgIC5sYXlvdXQgeyBkaXNwbGF5OiBncmlkOyBnYXA6IHZhcigtLXNwYWNlLTUpOyBhbGlnbi1pdGVtczogc3RhcnQ7IH1cbiAgICAuaW50cm8ge1xuICAgICAgcG9zaXRpb246IHJlbGF0aXZlOyBkaXNwbGF5OiBmbGV4OyBhbGlnbi1pdGVtczogY2VudGVyOyBnYXA6IDE2cHg7IG92ZXJmbG93OiBoaWRkZW47XG4gICAgICBtYXJnaW4tYm90dG9tOiB2YXIoLS1zcGFjZS00KTsgcGFkZGluZzogdmFyKC0tc3BhY2UtNSk7IGJvcmRlci1yYWRpdXM6IHZhcigtLXJhZGl1cy1jYXJkKTtcbiAgICAgIGJhY2tncm91bmQ6IHJhZGlhbC1ncmFkaWVudCg2MCUgMTIwJSBhdCAxMDAlIDAlLCBjb2xvci1taXgoaW4gc3JnYiwgdmFyKC0tZGF0YS1jeWFuKSAzMCUsIHRyYW5zcGFyZW50KSwgdHJhbnNwYXJlbnQgNzAlKSwgdmFyKC0tZ3JhZC1pbmspO1xuICAgICAgY29sb3I6IHZhcigtLW9uLWluayk7XG4gICAgfVxuICAgIC5iYWRnZSB7IGRpc3BsYXk6IGdyaWQ7IHdpZHRoOiA0OHB4OyBoZWlnaHQ6IDQ4cHg7IGZsZXg6IG5vbmU7IHBsYWNlLWl0ZW1zOiBjZW50ZXI7IGJvcmRlci1yYWRpdXM6IDE0cHg7IGJhY2tncm91bmQ6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xMik7IH1cbiAgICAuYmFkZ2UgbWF0LWljb24geyB3aWR0aDogMjZweDsgaGVpZ2h0OiAyNnB4OyBmb250LXNpemU6IDI2cHg7IH1cbiAgICAuaW50cm8gaDIgeyBtYXJnaW46IDA7IGNvbG9yOiB2YXIoLS1vbi1pbmspOyBmb250LXNpemU6IHZhcigtLXRleHQtbGcpOyB9XG4gICAgLmludHJvIHAgeyBtYXJnaW46IDJweCAwIDA7IGNvbG9yOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuOCk7IGZvbnQtc2l6ZTogdmFyKC0tdGV4dC1zbSk7IH1cbiAgICAuZm9ybS1jYXJkIHsgcGFkZGluZzogdmFyKC0tc3BhY2UtNSk7IH1cbiAgICAudGlwcyB7IGRpc3BsYXk6IG5vbmU7IHBhZGRpbmc6IHZhcigtLXNwYWNlLTUpOyB9XG4gICAgLnRpcHMgaDIgeyBtYXJnaW46IDAgMCB2YXIoLS1zcGFjZS0zKTsgZm9udC1zaXplOiB2YXIoLS10ZXh0LW1kKTsgfVxuICAgIC50aXBzIHVsIHsgZGlzcGxheTogZmxleDsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgZ2FwOiAxNHB4OyBtYXJnaW46IDA7IHBhZGRpbmc6IDA7IGxpc3Qtc3R5bGU6IG5vbmU7IH1cbiAgICAudGlwcyBsaSB7IGRpc3BsYXk6IGZsZXg7IGdhcDogMTBweDsgY29sb3I6IHZhcigtLWluay0yKTsgZm9udC1zaXplOiB2YXIoLS10ZXh0LXNtKTsgbGluZS1oZWlnaHQ6IDEuNDU7IH1cbiAgICAudGlwcyBtYXQtaWNvbiB7IGZsZXg6IG5vbmU7IHdpZHRoOiAyMHB4OyBoZWlnaHQ6IDIwcHg7IGZvbnQtc2l6ZTogMjBweDsgY29sb3I6IHZhcigtLWJyYW5kLWRlZXApOyB9XG4gICAgQGNvbnRhaW5lciAobWluLXdpZHRoOiA5MDBweCkge1xuICAgICAgLmxheW91dCB7IGdyaWQtdGVtcGxhdGUtY29sdW1uczogbWlubWF4KDAsIDFmcikgMjgwcHg7IH1cbiAgICAgIC50aXBzIHsgZGlzcGxheTogYmxvY2s7IH1cbiAgICAgIC5mb3JtLWNhcmQgeyBwYWRkaW5nOiB2YXIoLS1zcGFjZS02KTsgfVxuICAgIH1cbiAgYCxcbn0pXG5leHBvcnQgY2xhc3MgTGVhZE5ld1BhZ2UgaW1wbGVtZW50cyBMZWF2ZXNXaXRoQ2hhbmdlcyB7XG4gIHByaXZhdGUgcmVhZG9ubHkgcm91dGVyID0gaW5qZWN0KFJvdXRlcik7XG4gIHByaXZhdGUgcmVhZG9ubHkgc25hY2sgPSBpbmplY3QoTWF0U25hY2tCYXIpO1xuICBwcml2YXRlIHJlYWRvbmx5IGF1dGggPSBpbmplY3QoQXV0aFNlcnZpY2UpO1xuICBwcml2YXRlIHJlYWRvbmx5IGZvcm0gPSB2aWV3Q2hpbGQucmVxdWlyZWQoTGVhZEZvcm0pO1xuICBwcm90ZWN0ZWQgcmVhZG9ubHkgY2FuQXNzaWduID0gY29tcHV0ZWQoKCkgPT4gW1JvbGUuQWRtaW4sIFJvbGUuU2FsZXNNYW5hZ2VyXS5pbmNsdWRlcyh0aGlzLmF1dGgucm9sZSgpIGFzIFJvbGUpKTtcblxuICBoYXNVbnNhdmVkQ2hhbmdlcygpOiBib29sZWFuIHtcbiAgICByZXR1cm4gdGhpcy5mb3JtKCkuZGlydHk7XG4gIH1cblxuICBwcm90ZWN0ZWQgb25TYXZlZCh7IGxlYWQsIGFkZEFub3RoZXIgfTogTGVhZEZvcm1TYXZlZCk6IHZvaWQge1xuICAgIGNvbnN0IHJlZiA9IHRoaXMuc25hY2sub3BlbihgJHtsZWFkLm5hbWV9IHNhdmVkLmAsICdWaWV3IGxlYWQnLCB7IGR1cmF0aW9uOiA2MDAwIH0pO1xuICAgIHJlZi5vbkFjdGlvbigpLnN1YnNjcmliZSgoKSA9PiB2b2lkIHRoaXMucm91dGVyLm5hdmlnYXRlKFsnL2xlYWRzJywgbGVhZC5pZF0pKTtcbiAgICBpZiAoIWFkZEFub3RoZXIpIHtcbiAgICAgIHZvaWQgdGhpcy5yb3V0ZXIubmF2aWdhdGUoWycvbGVhZHMnLCBsZWFkLmlkXSk7XG4gICAgfVxuICB9XG59XG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7O0FBQUEsU0FBUyx5QkFBeUIsV0FBVyxVQUFVLFFBQVEsaUJBQWlCO0FBQ2hGLFNBQVMsaUJBQWlCO0FBQzFCLFNBQVMscUJBQXFCO0FBQzlCLFNBQVMsbUJBQW1CO0FBQzVCLFNBQTBCLFFBQVEsa0JBQWtCO0FBQ3BELFNBQXFCLFdBQVc7Ozs7QUFXekIsSUFBTSxzQkFBMEQsQ0FBQyxjQUE0QztBQUNsSCxNQUFJLENBQUMsVUFBVSxrQkFBaUIsR0FBSTtBQUNsQyxXQUFPO0VBQ1Q7QUFDQSxTQUFPLE9BQU8sU0FBUyxFQUNwQixLQUFnRCxlQUFlO0lBQzlELE1BQU07TUFDSixPQUFPO01BQ1AsU0FBUztNQUNULGFBQWE7TUFDYixZQUFZOztHQUVmLEVBQ0EsWUFBVyxFQUNYLEtBQUssSUFBSSxDQUFDLE9BQU8sT0FBTyxJQUFJLENBQUM7QUFDbEM7QUFrRU0sSUFBTyxjQUFQLE1BQU8s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

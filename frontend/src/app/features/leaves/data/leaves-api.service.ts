@@ -10,9 +10,11 @@ const BASE = '/leaves';
 export class LeavesApi {
   private readonly api = inject(ApiService);
 
-  /** Admin sees every request; everyone else only their own. */
-  list(page = 1): Observable<PaginatedResponse<LeaveRequestItem>> {
-    return this.api.list<LeaveRequestItem>(BASE, { page });
+  /** Admin sees every request; everyone else only their own. Pass userId to filter by a specific employee. */
+  list(page = 1, userId?: number): Observable<PaginatedResponse<LeaveRequestItem>> {
+    const params: Record<string, string | number> = { page };
+    if (userId) params['user_id'] = userId;
+    return this.api.list<LeaveRequestItem>(BASE, params);
   }
 
   /** Leave days taken this month/year. Pass `userId` (admin only) to check someone else's history. */

@@ -22,7 +22,13 @@
     <dl class="facts">
       <div>
         <dt>Client</dt>
-        <dd>{{ p.client_name }}</dd>
+        <dd>
+          @if (p.lead_id) {
+            <a class="client" [routerLink]="['/leads', p.lead_id]" [attr.aria-label]="'Open the lead ' + p.client_name">{{ p.client_name }}</a>
+          } @else {
+            {{ p.client_name }}
+          }
+        </dd>
       </div>
       <div>
         <dt>Project manager</dt>
@@ -98,7 +104,7 @@
     <div class="main">
       <!-- Budget: the deal total, admin only (never rendered for a project manager) -->
       @if (isAdmin()) {
-        <app-budget-panel [project]="p" [exporting]="exporting()" (exportExcel)="exportExcel(p)" />
+        <app-budget-panel [project]="p" />
       }
 
       <!-- Expenses -->
@@ -121,6 +127,17 @@
               }
             </select>
           </label>
+          @if (isAdmin()) {
+            <button
+              matButton="outlined"
+              type="button"
+              [disabled]="exporting()"
+              [attr.aria-label]="'Download the expenses of ' + p.name + ' as an Excel file'"
+              (click)="exportExcel(p)"
+            >
+              <mat-icon aria-hidden="true">table_view</mat-icon>{{ exporting() ? 'Preparing…' : 'Export to Excel' }}
+            </button>
+          }
           @if (can('add_expense') && layout.isDesktop()) {
             <button
               matButton="filled"
@@ -157,6 +174,7 @@
               [rows]="expenses()"
               [layout]="wide() ? 'table' : 'cards'"
               [skeleton]="!expensesLoaded()"
+              [showAmount]="!isSalesManager()"
               (action)="onExpenseAction($event)"
             />
           </div>
@@ -198,6 +216,10 @@
             </dl>
             @if (!f.finalized) {
               <p class="small">The deal is not finalized yet.</p>
+            } @else if (f.ledger_id) {
+              <button matButton="outlined" class="revise" type="button" (click)="reviseTotal(p)">
+                <mat-icon>edit</mat-icon>Revise total
+              </button>
             }
           } @else {
             <p class="small">Awaiting accounts data</p>

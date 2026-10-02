@@ -29,7 +29,6 @@ export interface ProjectOption {
 }
 
 const ORDERINGS = [
-  { value: '-spent_on', label: 'Newest first' },
   { value: 'spent_on', label: 'Oldest first' },
   { value: '-amount', label: 'Highest amount' },
   { value: 'amount', label: 'Lowest amount' },

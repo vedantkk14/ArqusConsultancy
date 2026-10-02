@@ -15,11 +15,11 @@ from .conftest import LEDGERS, PAYMENTS
 
 
 @pytest.fixture
-def book(admin, make_lead, make_ledger, make_payment):
+def book(admin, make_opportunity, make_ledger, make_payment):
     """Awaiting, unpaid, partial (recent), partial (overdue), paid; totals of 100,000 each."""
 
     def ledger(name, **kw):
-        return make_ledger(lead=make_lead(name=name), **kw)
+        return make_ledger(opportunity=make_opportunity(name=name), **kw)
 
     awaiting = ledger("Aa awaiting", finalize=False)
     unpaid = ledger("Bb unpaid", days_ago=5)
@@ -61,7 +61,7 @@ def test_state_filter_and_row_shape(client_for, admin, book):
     ]
     row = next(r for r in c.get(f"{LEDGERS}?state=PARTIAL&ordering=client").json()["results"])
     assert set(row) == {
-        "id", "lead", "client", "phone", "exec_name", "state", "state_label", "finalized", "is_overdue",
+        "id", "lead", "opportunity", "sequence_no", "client", "client_no", "phone", "exec_name", "state", "state_label", "finalized", "is_overdue",
         "total", "received", "outstanding", "collected_pct", "days_since", "last_payment_on", "created_at",
     }  # fmt: skip
     assert (
@@ -82,7 +82,7 @@ def test_other_filters(client_for, admin, book):
         "Dd stale",
     ]
     assert clients(c.get(f"{LEDGERS}?q=stale")) == ["Dd stale"]
-    phone = Ledger.objects.get(pk=book["paid"].pk).lead.phone
+    phone = Ledger.objects.get(pk=book["paid"].pk).opportunity.lead.phone
     assert clients(c.get(f"{LEDGERS}?q={phone[-6:]}")) == ["Ee paid"]
     assert clients(c.get(f"{LEDGERS}?aging=61-90")) == ["Dd stale"]
     assert c.get(f"{LEDGERS}?state=BOGUS").json()["count"] == 5  # ignored
@@ -108,9 +108,9 @@ def test_orderings(client_for, admin, book):
         assert c.get(f"{LEDGERS}?ordering={ordering}").status_code == 200
 
 
-def test_pagination_is_twenty_per_page(client_for, admin, make_ledger, make_lead):
+def test_pagination_is_twenty_per_page(client_for, admin, make_ledger, make_opportunity):
     for i in range(23):
-        make_ledger(lead=make_lead(name=f"L{i:02d}"), total="1000")
+        make_ledger(opportunity=make_opportunity(name=f"L{i:02d}"), total="1000")
     body = client_for(admin).get(LEDGERS).json()
     assert body["count"] == 23 and len(body["results"]) == 20 and body["next"]
 
@@ -154,14 +154,14 @@ def test_options_lists_finalized_ledgers_with_a_balance(client_for, admin, book)
     assert names == ["Bb unpaid", "Cc partial", "Dd stale"]
     assert [o["client"] for o in c.get(f"{LEDGERS}/options?q=stale").json()] == ["Dd stale"]
     assert c.get(f"{LEDGERS}/options").json()[1] == {
-        "id": book["partial"].pk, "client": "Cc partial", "phone": book["partial"].lead.phone,
+        "id": book["partial"].pk, "client": "Cc partial", "phone": book["partial"].opportunity.lead.phone,
         "total": "100000.00", "outstanding": "60000.00",
     }  # fmt: skip
 
 
-def test_options_is_capped_at_ten(client_for, admin, make_ledger, make_lead):
+def test_options_is_capped_at_ten(client_for, admin, make_ledger, make_opportunity):
     for i in range(12):
-        make_ledger(lead=make_lead(name=f"O{i:02d}"))
+        make_ledger(opportunity=make_opportunity(name=f"O{i:02d}"))
     assert len(client_for(admin).get(f"{LEDGERS}/options").json()) == 10
 
 
@@ -181,7 +181,7 @@ def test_ledger_detail_shape_and_actions(client_for, admin, book):
 def test_project_block_uses_the_real_projects_numbers(client_for, admin, ledger, make_payment):
     from apps.projects.models import Expense, Project
 
-    project = Project.objects.create(name="Turf", client_name="C", lead=ledger.lead)
+    project = Project.objects.create(name="Turf", client_name="C", opportunity=ledger.opportunity)
     Expense.objects.create(
         project=project,
         amount=Decimal("15000.00"),
@@ -239,8 +239,8 @@ def test_reminder_renders_text_and_a_wa_me_link_and_logs_an_event(
     res = client_for(admin).post(f"{LEDGERS}/{ledger.pk}/reminder")
     assert res.status_code == 200
     body = res.json()
-    assert "₹60,000.00" in body["text"] and ledger.lead.name in body["text"]
-    digits = ledger.lead.phone.lstrip("+")
+    assert "₹60,000.00" in body["text"] and ledger.opportunity.lead.name in body["text"]
+    digits = ledger.opportunity.lead.phone.lstrip("+")
     assert (
         body["url"].startswith(f"https://wa.me/{digits}?text=")
         and "%E2%82%B960%2C000.00" in body["url"]
@@ -250,9 +250,9 @@ def test_reminder_renders_text_and_a_wa_me_link_and_logs_an_event(
 
 
 def test_reminder_with_an_unusable_phone_is_invalid_phone(
-    client_for, admin, make_ledger, make_lead
+    client_for, admin, make_ledger, make_opportunity
 ):
-    ledger = make_ledger(lead=make_lead(phone="12"))
+    ledger = make_ledger(opportunity=make_opportunity(phone="12"))
     res = client_for(admin).post(f"{LEDGERS}/{ledger.pk}/reminder")
     assert res.status_code == 400 and res.json()["error"]["code"] == "invalid_phone"
 
@@ -287,10 +287,10 @@ def test_ledger_csv_export(client_for, admin, book):
 
 
 def test_csv_neutralises_formulas_and_is_capped(
-    client_for, admin, make_ledger, make_lead, make_payment, monkeypatch
+    client_for, admin, make_ledger, make_opportunity, make_payment, monkeypatch
 ):
-    lead = make_lead(name='=HYPERLINK("http://evil")')
-    ledger = make_ledger(lead=lead)
+    lead = make_opportunity(name='=HYPERLINK("http://evil")')
+    ledger = make_ledger(opportunity=lead)
     make_payment(ledger, "5.00", reference="+cmd|calc", note="-2+3")
     ledger_cells = [c for row in read_csv(client_for(admin).get(f"{LEDGERS}/export")) for c in row]
     pay_cells = [c for row in read_csv(client_for(admin).get(f"{PAYMENTS}/export")) for c in row]
@@ -305,7 +305,7 @@ def test_csv_neutralises_formulas_and_is_capped(
 
     monkeypatch.setattr(rules, "EXPORT_MAX_ROWS", 2)
     for i in range(4):
-        make_ledger(lead=make_lead(name=f"Cap{i}"))
+        make_ledger(opportunity=make_opportunity(name=f"Cap{i}"))
     assert len(read_csv(client_for(admin).get(f"{LEDGERS}/export"))) == 3  # header + 2
 
 
@@ -321,8 +321,8 @@ def test_payment_csv_export(client_for, admin, book):
 # ---- Query budgets ---------------------------------------------------------------------------------
 
 
-def test_query_budgets(client_for, admin, make_ledger, make_lead, make_payment):
-    ledgers = [make_ledger(lead=make_lead(name=f"Q{i:02d}")) for i in range(20)]
+def test_query_budgets(client_for, admin, make_ledger, make_opportunity, make_payment):
+    ledgers = [make_ledger(opportunity=make_opportunity(name=f"Q{i:02d}")) for i in range(20)]
     for ledger in ledgers[:5]:
         make_payment(ledger, "10.00")
     c = client_for(admin)

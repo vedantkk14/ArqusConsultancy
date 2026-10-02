@@ -68,6 +68,14 @@ describe('ConvertPage', () => {
     expect(text(field('cv-pm'))).toContain('Paul Project · 3 running');
   });
 
+  it('?opportunity=<id> opens the panel for that deal', async () => {
+    const { overlayText } = await setup('/projects/convert?opportunity=90').then(async (s) => {
+      await settle(s.harness);
+      return { overlayText: text(overlay()) };
+    });
+    expect(overlayText).toContain('Convert to project');
+  });
+
   it('?lead=<id> opens the panel directly', async () => {
     const { overlayText } = await setup('/projects/convert?lead=9').then(async (s) => {
       await settle(s.harness);
@@ -80,7 +88,7 @@ describe('ConvertPage', () => {
     const api = new FakeProjectsApi();
     api.convertible$ = of({
       count: 1,
-      results: [{ ...CONVERTIBLE, lead: 5, ineligible_reason: 'project_exists', project_id: 77 }],
+      results: [{ ...CONVERTIBLE, opportunity: 50, lead: 5, ineligible_reason: 'project_exists', project_id: 77 }],
     });
     TestBed.configureTestingModule({
       providers: [
@@ -137,7 +145,8 @@ describe('ConvertPage', () => {
     (overlay().querySelector('button[type=submit]') as HTMLButtonElement).click();
     await settle(harness);
     expect(api.converts[0]).not.toHaveProperty('sanctioned_budget');
-    expect(api.converts[0]).toMatchObject({ lead: 9, pm: null });
+    expect(api.converts[0]).toMatchObject({ opportunity: 90, pm: null });
+    expect(api.converts[0]).not.toHaveProperty('lead');
     expect(
       el.querySelector('button[aria-label^="Assign a project manager for Kolhapur"]'),
     ).toBeNull();

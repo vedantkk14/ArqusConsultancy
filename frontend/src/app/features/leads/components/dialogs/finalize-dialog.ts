@@ -11,9 +11,11 @@ import { DialogHead } from './dialog-head';
 
 export interface FinalizeDialogData {
   lead: { id: number; name: string; proposed_amount: string | null };
+  /** An earlier deal of this client; omitted = the lead's current deal. */
+  opportunityId?: number;
 }
 
-/** Admin: confirm the final Total Amount for a won lead (stored on the accounts ledger). */
+/** Admin or Sales Manager: confirm the final Total Amount for a won deal (stored on the accounts ledger). */
 @Component({
   selector: 'app-finalize-dialog',
   imports: [DialogHead, FormsModule, InrPipe, MatButtonModule, MatDialogModule, MoneyInput],
@@ -74,7 +76,7 @@ export class FinalizeDialog {
     this.saving.set(true);
     this.notReady.set(false);
     this.error.set('');
-    this.api.finalize(this.data.lead.id, this.amount, this.note).subscribe({
+    this.api.finalize(this.data.lead.id, this.amount, this.note, this.data.opportunityId).subscribe({
       next: (lead) => this.ref.close(lead),
       error: (err: ApiError) => {
         this.saving.set(false);

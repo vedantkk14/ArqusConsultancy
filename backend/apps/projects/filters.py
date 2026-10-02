@@ -11,13 +11,15 @@ from .models import ExpenseCategory, ProjectStatus
 TRUE = {"1", "true", "yes"}
 
 PROJECT_ORDERINGS = {
+    # Most recent first, a client's projects kept together (needs with_client_numbers).
+    "recent": [F("client_latest").desc(), F("created_at").desc()],
     "name": [F("name").asc()],
     "-usage_pct": [F("usage").desc()],
     "-spent": [F("spent").desc()],
     "-created_at": [F("created_at").desc()],
     "expected_end_date": [F("expected_end_date").asc(nulls_last=True)],
 }
-DEFAULT_PROJECT_ORDERING = "-created_at"
+DEFAULT_PROJECT_ORDERING = "recent"
 
 EXPENSE_ORDERINGS = {
     "-spent_on": [F("spent_on").desc(), F("id").desc()],

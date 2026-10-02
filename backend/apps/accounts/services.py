@@ -2,10 +2,12 @@
 """Accounts business logic. Every write is transactional.
 
 Adapter functions called by other apps (do not rename or change their signatures):
-* create_ledger(lead) -> Ledger                      (leads, on Won, inside its transaction; idempotent)
-* finalize_ledger(lead, amount, by) -> Ledger        (leads, admin finalizes the deal amount)
-* get_project_finance(lead) -> dict | None           (projects: total, received, outstanding, finalized)
-* cancel_ledger(lead) -> None                        (leads, when a won deal is marked lost before payment)
+* create_ledger(opportunity) -> Ledger               (leads, on Won, inside its transaction; idempotent)
+* finalize_ledger(opportunity, amount, by) -> Ledger (leads, the deal amount is finalized)
+* get_project_finance(opportunity) -> dict | None    (projects: total, received, outstanding, finalized)
+* cancel_ledger(opportunity) -> None                 (leads, when a won deal is marked lost before payment)
+
+`opportunity` is a leads.Opportunity (one deal); the client's contact details are `opportunity.lead`.
 """
 
 import logging
@@ -47,8 +49,8 @@ def _event(ledger, type_, actor, **data) -> LedgerEvent:
     return LedgerEvent.objects.create(ledger=ledger, type=type_, actor=actor, data=data)
 
 
-def _require_admin(user) -> None:
-    if user is None or user.role not in rules.ACCOUNTS_ROLES:
+def _require_admin(user, roles=None) -> None:
+    if user is None or user.role not in (roles or rules.ACCOUNTS_ROLES):
         raise PermissionDenied()
 
 
@@ -75,27 +77,28 @@ def _check_amount(amount, field="amount") -> Decimal:
 def _locked(ledger_id) -> Ledger:
     return (
         Ledger.objects.select_for_update()
-        .select_related("lead", "lead__assigned_to")
+        .select_related("opportunity", "opportunity__lead", "opportunity__assigned_to")
         .get(pk=ledger_id)
     )
 
 
-def project_for(lead):
+def project_for(opportunity):
     """The linked project (read only), or None. Projects is another app: read it through the registry."""
     try:
         model = apps.get_model("projects", "Project")
     except LookupError:
         return None
-    return model.objects.filter(lead=lead).first()
+    return model.objects.filter(opportunity=opportunity).first()
 
 
 # ---- Adapters (called by leads and projects) ----------
 
 
-def create_ledger(lead) -> Ledger:
-    """Create the ledger for a lead that has just been marked Won. Idempotent (get_or_create)."""
+def create_ledger(opportunity) -> Ledger:
+    """Create the ledger for a deal that has just been marked Won. Idempotent (get_or_create)."""
     ledger, created = Ledger.objects.get_or_create(
-        lead=lead, defaults={"total_amount": lead.proposed_amount or Decimal("0.00")}
+        opportunity=opportunity,
+        defaults={"total_amount": opportunity.proposed_amount or Decimal("0.00")},
     )
     if created:
         _event(
@@ -105,11 +108,11 @@ def create_ledger(lead) -> Ledger:
 
 
 @transaction.atomic
-def finalize_ledger(lead, amount, by, note: str = "") -> Ledger:
-    """Admin confirms the final Total Amount. Finalizing twice is a 409 `already_finalized`."""
-    _require_admin(by)
-    create_ledger(lead)
-    ledger = _locked(Ledger.objects.get(lead=lead).pk)
+def finalize_ledger(opportunity, amount, by, note: str = "") -> Ledger:
+    """Admin or Sales Manager confirms the final Total Amount. Twice is a 409 `already_finalized`."""
+    _require_admin(by, rules.FINALIZE_ROLES)
+    create_ledger(opportunity)
+    ledger = _locked(Ledger.objects.get(opportunity=opportunity).pk)
     if ledger.finalized_at:
         raise AlreadyFinalized()
     amount = _check_amount(amount)
@@ -128,20 +131,24 @@ def finalize_ledger(lead, amount, by, note: str = "") -> Ledger:
         amount=selectors.money_str(amount),
         note=ledger.finalize_note,
     )
-    if ledger.lead.assigned_to:  # the exec is told the deal is final, never the amount
+    deal = ledger.opportunity
+    if deal.assigned_to:  # the exec is told the deal is final, never the amount
         notify(
-            ledger.lead.assigned_to, "deal_finalized", {"lead_id": lead.pk, "lead_name": lead.name}
+            deal.assigned_to,
+            "deal_finalized",
+            {"lead_id": deal.lead_id, "lead_name": deal.lead.name, "opportunity_id": deal.pk},
         )
     return ledger
 
 
-def get_project_finance(lead) -> dict | None:
-    """{total_amount, received, outstanding, finalized} for the lead's ledger, or None without one."""
-    ledger = Ledger.objects.filter(lead=lead).first()
+def get_project_finance(opportunity) -> dict | None:
+    """{ledger_id, total_amount, received, outstanding, finalized} for the deal's ledger, or None."""
+    ledger = Ledger.objects.filter(opportunity=opportunity).first()
     if ledger is None:
         return None
     received = selectors.received_for(ledger)
     return {
+        "ledger_id": ledger.pk,
         "total_amount": ledger.total_amount,
         "received": received,
         "outstanding": ledger.total_amount - received,
@@ -149,9 +156,9 @@ def get_project_finance(lead) -> dict | None:
     }
 
 
-def cancel_ledger(lead) -> None:
+def cancel_ledger(opportunity) -> None:
     """A won deal went back to Lost before any payment: the ledger goes with it (leads checks payments first)."""
-    ledger = Ledger.objects.filter(lead=lead).first()
+    ledger = Ledger.objects.filter(opportunity=opportunity).first()
     if ledger is not None and not ledger.payments.exists():
         ledger.delete()
 
@@ -161,7 +168,7 @@ def cancel_ledger(lead) -> None:
 
 @transaction.atomic
 def finalize(ledger_id, amount, by, note: str = "") -> Ledger:
-    return finalize_ledger(Ledger.objects.get(pk=ledger_id).lead, amount, by, note)
+    return finalize_ledger(Ledger.objects.get(pk=ledger_id).opportunity, amount, by, note)
 
 
 @transaction.atomic
@@ -271,7 +278,7 @@ def add_payment(ledger_id, by, data: dict, upload=None) -> Payment:
             )
             payload = {
                 "ledger_id": ledger.pk,
-                "lead_name": ledger.lead.name,
+                "lead_name": ledger.opportunity.lead.name,
                 "amount": selectors.money_str(amount),
             }
             for admin in _other_admins(by):
@@ -318,7 +325,7 @@ def void_payment(payment_id, by, reason: str) -> Payment:
     )
     payload = {
         "ledger_id": ledger.pk,
-        "lead_name": ledger.lead.name,
+        "lead_name": ledger.opportunity.lead.name,
         "amount": selectors.money_str(payment.amount),
     }
     for admin in _other_admins(by):
@@ -347,9 +354,10 @@ def send_reminder(ledger_id, by) -> dict:
         raise ValidationError(
             {"non_field_errors": ["There is nothing outstanding on this ledger."]}
         )
-    digits = _phone_digits(ledger.lead.phone)
+    client = ledger.opportunity.lead
+    digits = _phone_digits(client.phone)
     text = (
-        f"Hello {ledger.lead.name}, this is a gentle reminder from {rules.COMPANY_NAME}. "
+        f"Hello {client.name}, this is a gentle reminder from {rules.COMPANY_NAME}. "
         f"{format_inr(outstanding)} is pending against your project "
         f"({format_inr(ledger.total_amount)} agreed, {format_inr(received)} received). "
         "Please arrange the payment at your earliest convenience. Thank you."
@@ -392,11 +400,13 @@ def build_statement(ledger, date_from=None, date_to=None) -> dict:
                 "balance": selectors.money_str(balance),
             }
         )
+    client = ledger.opportunity.lead
     return {
         "client": {
-            "name": ledger.lead.name,
-            "phone": ledger.lead.phone,
-            "email": ledger.lead.email,
+            "name": client.name,
+            "no": selectors.ledger_no(ledger),
+            "phone": client.phone,
+            "email": client.email,
         },
         "ledger": ledger.pk,
         "finalized": ledger.finalized_at is not None,

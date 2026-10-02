@@ -113,6 +113,9 @@
 
       <!-- Recent team activity -->
       <app-activity-card class="b-activity rise-in" style="--i: 8" [rows]="activityRows()" [now]="now()" />
+
+      <!-- Team holidays -->
+      <app-holiday-card class="b-holidays rise-in" style="--i: 9" />
     } @else {
       @for (k of ['b-kpis', 'b-unassigned', 'b-overdue', 'b-today', 'b-exec', 'b-activity']; track k) {
         <div class="card skeleton-card" [class]="k" aria-hidden="true">

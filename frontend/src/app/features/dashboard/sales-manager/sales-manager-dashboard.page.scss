@@ -111,7 +111,8 @@
   }
 
   .b-kpis,
-  .b-today {
+  .b-today,
+  .b-exec {
     grid-column: 1 / -1;
   }
 }
@@ -136,9 +137,14 @@
 
   .b-exec {
     grid-column: span 8;
+    grid-row: span 2;
   }
 
   .b-activity {
+    grid-column: span 4;
+  }
+
+  .b-holidays {
     grid-column: span 4;
   }
 }

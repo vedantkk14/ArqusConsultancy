@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -22,13 +23,16 @@ import { CallDialog, CallDialogData } from '../components/dialogs/call-dialog';
 import { EditLeadDialog, EditLeadDialogData } from '../components/dialogs/edit-lead-dialog';
 import { EmailDialog, EmailDialogData } from '../components/dialogs/email-dialog';
 import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finalize-dialog';
+import { NewDealDialog, NewDealDialogData } from '../components/dialogs/new-deal-dialog';
 import { StatusDialog, StatusDialogData } from '../components/dialogs/status-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../components/dialogs/whatsapp-dialog';
 import { FollowupPill, LeadAvatar, LeadStatusChip, STATUS_TINT } from '../components/lead-bits';
+import { DEAL_OPEN_TOOLTIP } from '../components/lead-rows';
 import { LeadTimeline } from '../components/lead-timeline';
+import { OpportunitiesPanel } from '../components/opportunities-panel';
 import { MoneyInput, isPositiveMoney } from '../components/money-input';
 import { StageStepper } from '../components/stage-stepper';
-import { LOST_REASONS, LeadDetail, LeadStatus } from '../data/lead.models';
+import { LOST_REASONS, LeadDetail, LeadStatus, Opportunity, isOpenStatus } from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
 import { atBusinessTime, formatBusinessFull, nextMonday, relativeLabel } from '../utils/business-time';
 import { formatPhone, toTelHref } from '../utils/phone';
@@ -50,14 +54,16 @@ const MANAGERS: Role[] = [Role.Admin, Role.SalesManager];
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    MatTooltipModule,
     MoneyInput,
+    OpportunitiesPanel,
     PanelHead,
     RouterLink,
     StageStepper,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lead-detail-page.html',
-  styleUrls: ['./lead-detail-page.scss', './lead-detail-cards.scss', '../components/leads-menu.scss'],
+  styleUrls: ['./lead-detail-page.scss', './lead-detail-cards.scss', '../components/leads-menu.scss', './lead-detail-deals.scss'],
 })
 export class LeadDetailPage {
   private readonly route = inject(ActivatedRoute);
@@ -79,6 +85,14 @@ export class LeadDetailPage {
     return fresh && base && fresh.id === base.id ? fresh : base;
   });
   protected readonly timelineTick = signal(0);
+  /** `?deal=<id>`: the deal to point at in the Opportunities panel (e.g. just started). */
+  private readonly queryMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
+  protected readonly focusDeal = computed(() => Number(this.queryMap().get('deal')) || null);
+  protected readonly current = computed(() => this.lead()?.opportunities?.find((d) => d.is_current) ?? null);
+  /** A new deal can start only once the current one is won or lost. */
+  protected readonly dealOpen = computed(() => isOpenStatus(this.lead()?.status));
+  protected readonly dealOpenTip = DEAL_OPEN_TOOLTIP;
+  protected readonly starting = signal(false);
 
   /** Back goes to the list the lead belongs to: All leads, or Won / Lost leads once it is closed. */
   protected readonly back = computed(() => {
@@ -244,8 +258,60 @@ export class LeadDetailPage {
           this.snack
             .open('Amount finalized.', 'Convert to project', { duration: 8000 })
             .onAction()
-            .subscribe(() => void this.router.navigate(['/projects/convert'], { queryParams: { lead: lead.id } }));
+            .subscribe(
+              () =>
+                void this.router.navigate(['/projects/convert'], {
+                  queryParams: { opportunity: lead.current_opportunity_id ?? undefined },
+                }),
+            );
         }
+      });
+  }
+
+  // ---- Deals ----------------------------------------------------------------------------------------
+
+  /** An earlier won deal of this client that is still waiting to be finalized. */
+  protected finalizeDeal(lead: LeadDetail, deal: Opportunity): void {
+    this.dialog
+      .open<FinalizeDialog, FinalizeDialogData, LeadDetail>(FinalizeDialog, {
+        data: {
+          lead: { id: lead.id, name: `${lead.name} · Deal #${deal.sequence_no}`, proposed_amount: deal.proposed_amount },
+          opportunityId: deal.id,
+        },
+      })
+      .afterClosed()
+      .subscribe((fresh) => {
+        if (fresh) {
+          this.apply(fresh);
+          this.snack.open(`Deal #${deal.sequence_no} finalized.`, undefined, { duration: 3000 });
+        }
+      });
+  }
+
+  /** A deal's own requirements; Deal #1 falls back to what was written on the lead itself. */
+  protected dealRequirements(deal: Opportunity, lead: LeadDetail): string {
+    return deal.requirements || (deal.sequence_no === 1 ? lead.requirements : '');
+  }
+
+  /** "New project": the next deal with this client. While one is open this just shows it. */
+  protected newDeal(lead: LeadDetail): void {
+    if (this.dealOpen()) {
+      document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.snack.open(`${DEAL_OPEN_TOOLTIP}: Deal #${this.current()?.sequence_no ?? ''}.`, undefined, { duration: 3000 });
+      return;
+    }
+    this.dialog
+      .open<NewDealDialog, NewDealDialogData, Opportunity>(NewDealDialog, {
+        data: { leadId: lead.id, name: lead.name, assignedToId: lead.assigned_to?.id ?? null },
+      })
+      .afterClosed()
+      .subscribe((deal) => {
+        if (!deal) {
+          return;
+        }
+        this.snack.open(`Deal #${deal.sequence_no} started.`, undefined, { duration: 3000 });
+        void this.router.navigate([], { relativeTo: this.route, queryParams: { deal: deal.id }, replaceUrl: true });
+        this.refresh();
       });
   }
 

@@ -88,7 +88,7 @@ describe('Shell and sidebar', () => {
     press('b');
     fixture.detectChanges();
     const items = fixture.debugElement.queryAll(By.css('.rail-item'));
-    expect(items.length).toBe(9);
+    expect(items.length).toBe(10);
     for (const item of items) {
       const label = item.nativeElement.getAttribute('aria-label');
       expect(label).toBeTruthy();

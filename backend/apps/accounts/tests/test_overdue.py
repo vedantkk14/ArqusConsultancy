@@ -118,12 +118,12 @@ def test_the_business_time_zone_midnight_edge(make_ledger, clock):
 
 
 def test_summary_top_overdue_and_collection_rate(
-    client_for, admin, make_ledger, make_payment, make_lead
+    client_for, admin, make_ledger, make_payment, make_opportunity
 ):
-    a = base_days(make_ledger(lead=make_lead(name="Alpha")), 45)
-    b = base_days(make_ledger(lead=make_lead(name="Bravo")), 120)
-    c = base_days(make_ledger(lead=make_lead(name="Charlie")), 33)
-    d = base_days(make_ledger(lead=make_lead(name="Delta")), 500)
+    a = base_days(make_ledger(opportunity=make_opportunity(name="Alpha")), 45)
+    b = base_days(make_ledger(opportunity=make_opportunity(name="Bravo")), 120)
+    c = base_days(make_ledger(opportunity=make_opportunity(name="Charlie")), 33)
+    d = base_days(make_ledger(opportunity=make_opportunity(name="Delta")), 500)
     make_payment(d, "100000.00", days_ago=1)  # paid: not in the list
     make_payment(c, "50000.00", days_ago=40)
     summary = client_for(admin).get(f"{LEDGERS}/summary").json()

@@ -42,7 +42,11 @@ def test_finalize_happy_path_notifies_the_exec_without_amounts(
     assert event.data["amount"] == "85000.00" and event.actor_id == admin.pk
     (uid, kind, payload), = [n for n in notes if n[1] == "deal_finalized"]  # fmt: skip
     assert uid == sales_exec.pk
-    assert payload == {"lead_id": ledger.lead_id, "lead_name": ledger.lead.name}
+    assert payload == {
+        "lead_id": ledger.opportunity.lead_id,
+        "lead_name": ledger.opportunity.lead.name,
+        "opportunity_id": ledger.opportunity_id,
+    }
     assert "85000" not in str(payload) and "amount" not in payload
 
 
@@ -133,7 +137,7 @@ def test_revise_total_cannot_go_below_received(client_for, admin, ledger, make_p
 
 def test_revise_total_is_not_limited_by_the_project(client_for, admin, ledger):
     """There is no project budget any more: only what was received limits a revision."""
-    Project.objects.create(name="P", client_name="C", lead=ledger.lead)
+    Project.objects.create(name="P", client_name="C", opportunity=ledger.opportunity)
     assert revise(client_for(admin), ledger, "1000.00").status_code == 200
 
 

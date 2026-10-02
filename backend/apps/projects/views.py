@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.pagination import StandardPagination
-from apps.core.permissions import ADMIN, PROJECT_MANAGER, HasRole
+from apps.core.permissions import ADMIN, PROJECT_MANAGER, SALES_MANAGER, HasRole
 
 from . import integrations, rules, selectors, services
 from .filters import (
@@ -36,8 +36,12 @@ from .serializers import (
     project_serializer,
 )
 
-ROLES = (ADMIN, PROJECT_MANAGER)
+ROLES = (ADMIN, PROJECT_MANAGER, SALES_MANAGER)
+#: Read-only roles: every write (convert, edit, PM, complete/reopen, expenses) is 403 for them.
+READ_ONLY_ROLES = (SALES_MANAGER,)
 INELIGIBLE_MAX = 200
+#: Orderings that would reveal money through the order itself.
+MONEY_ORDERINGS = ("-usage_pct", "-spent")
 
 
 class _Echo:
@@ -49,6 +53,27 @@ def csv_safe(value) -> str:
     """Neutralise spreadsheet formulas: prefix cells starting with = + - @ with an apostrophe."""
     text = "" if value is None else str(value)
     return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
+
+
+#: A narrowing filter hides the past projects: they would not match it anyway.
+HISTORY_BLOCKERS = (
+    "state",
+    "over_budget",
+    "near_limit",
+    "no_pm",
+    "pm",
+    "created_from",
+    "created_to",
+)
+
+
+def _wants_history(params) -> bool:
+    """`?status=RUNNING&history=1`: also list the completed projects of the same clients."""
+    return (
+        (params.get("history") or "").lower() in ("1", "true", "yes")
+        and (params.get("status") or "").upper() == "RUNNING"
+        and not any(params.get(key) for key in HISTORY_BLOCKERS)
+    )
 
 
 def _expense_input(request, partial=False):
@@ -64,7 +89,9 @@ class ProjectViewSet(GenericViewSet):
     lookup_value_regex = r"\d+"
 
     def get_queryset(self):
-        return selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+        return selectors.with_client_numbers(
+            selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+        )
 
     def _is_admin(self) -> bool:
         return self.request.user.role == ADMIN
@@ -75,12 +102,27 @@ class ProjectViewSet(GenericViewSet):
             skip = (*skip, "state")
         return apply_project_filters(self.get_queryset(), request.query_params, skip=skip)
 
+    def _with_history(self, running):
+        """Running projects plus the completed projects of the same clients, so a returning
+        client's earlier work sits right under their current project (#1, #2, ...)."""
+        clients = running.exclude(opportunity__isnull=True).values("opportunity__lead")
+        past = self.get_queryset().filter(
+            status=ProjectStatus.COMPLETED, opportunity__lead__in=clients
+        )
+        return self.get_queryset().filter(
+            Q(pk__in=running.values("pk")) | Q(pk__in=past.values("pk"))
+        )
+
     def _require_admin(self):
         if self.request.user.role != ADMIN:
             raise PermissionDenied()
 
+    def _require_writer(self):
+        if self.request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()
+
     def _project(self, pk):
-        return get_object_or_404(self.get_queryset().select_related("lead"), pk=pk)
+        return get_object_or_404(self.get_queryset().select_related("opportunity"), pk=pk)
 
     def _detail(self, pk) -> dict:
         project = self._project(pk)
@@ -93,7 +135,12 @@ class ProjectViewSet(GenericViewSet):
         ordering = request.query_params.get("ordering")
         if not self._is_admin() and ordering == "-usage_pct":
             ordering = None  # budget usage is Admin-only
-        qs = apply_project_ordering(self._filtered(request), ordering)
+        if request.user.role in READ_ONLY_ROLES and ordering in MONEY_ORDERINGS:
+            ordering = None
+        qs = self._filtered(request)
+        if _wants_history(request.query_params):
+            qs = self._with_history(qs)
+        qs = apply_project_ordering(qs, ordering)
         page = self.paginate_queryset(qs)
         cls = project_serializer(request.user)
         return self.get_paginated_response(cls(page, many=True, context={"request": request}).data)
@@ -104,7 +151,7 @@ class ProjectViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         project = services.convert(
-            data["lead"],
+            data["opportunity"],
             name=data["name"],
             pm_id=data.get("pm"),
             start_date=data.get("start_date"),
@@ -135,52 +182,68 @@ class ProjectViewSet(GenericViewSet):
         if not self._is_admin():
             for key in ("no_pm", "ok", "warn", "over", "budget_total"):
                 data.pop(key)
+        if request.user.role in READ_ONLY_ROLES:
+            data.pop("spent_total")
         return Response(data)
 
     @action(detail=False, methods=["get"])
     def convertible(self, request):
-        """Won deals that can become projects. `?lead=<id>` looks one up and says why not."""
+        """Won deals (opportunities) that can become projects, with the client's name.
+
+        `?opportunity=<id>` looks one deal up and says why not; `?lead=<id>` does the same for the
+        lead's current deal.
+        """
         self._require_admin()
-        lead_model = integrations.lead_model()
-        wanted = request.query_params.get("lead", "")
+        deals_qs = (
+            integrations.opportunity_model()
+            .objects.filter(lead__is_deleted=False)
+            .select_related("lead", "assigned_to")
+        )
+        wanted = request.query_params.get("opportunity", "")
+        lead_wanted = request.query_params.get("lead", "")
         if wanted.isdigit():
-            leads = list(lead_model.objects.filter(pk=int(wanted)).select_related("assigned_to"))
+            deals = list(deals_qs.filter(pk=int(wanted)))
+        elif lead_wanted.isdigit():
+            wanted = lead_wanted
+            deals = list(deals_qs.filter(lead_id=int(lead_wanted)).order_by("-sequence_no")[:1])
         else:
-            leads = list(
-                lead_model.objects.filter(status="WON", project__isnull=True)
-                .select_related("assigned_to")
-                .order_by("won_at", "id")[:INELIGIBLE_MAX]
+            deals = list(
+                deals_qs.filter(status="WON", project__isnull=True).order_by("won_at", "id")[
+                    :INELIGIBLE_MAX
+                ]
             )
         from .models import Project
 
         existing = dict(
-            Project.objects.filter(lead_id__in=[lead.pk for lead in leads]).values_list(
-                "lead_id", "id"
+            Project.objects.filter(opportunity_id__in=[d.pk for d in deals]).values_list(
+                "opportunity_id", "id"
             )
         )
         rows = []
-        for lead in leads:
-            if lead.pk in existing:
+        for deal in deals:
+            if deal.pk in existing:
                 reason = "project_exists"
-            elif lead.status != "WON":
+            elif deal.status != "WON":
                 reason = "not_won"
             else:
-                reason = integrations.finalization_problem(lead)
+                reason = integrations.finalization_problem(deal)
             if reason and not wanted:
                 continue
-            total = integrations.deal_total(lead)
+            total = integrations.deal_total(deal)
             rows.append(
                 {
-                    "lead": lead.pk,
-                    "name": lead.name,
-                    "exec_name": lead.assigned_to.display_name if lead.assigned_to else None,
-                    "won_at": lead.won_at,
-                    "proposed_amount": selectors.money_str(lead.proposed_amount)
-                    if lead.proposed_amount is not None
+                    "opportunity": deal.pk,
+                    "sequence_no": deal.sequence_no,
+                    "lead": deal.lead_id,
+                    "name": deal.lead.name,
+                    "exec_name": deal.assigned_to.display_name if deal.assigned_to else None,
+                    "won_at": deal.won_at,
+                    "proposed_amount": selectors.money_str(deal.proposed_amount)
+                    if deal.proposed_amount is not None
                     else None,
                     "total_amount": None if total is None else selectors.money_str(total),
                     "ineligible_reason": reason,
-                    "project_id": existing.get(lead.pk),
+                    "project_id": existing.get(deal.pk),
                 }
             )
         return Response({"count": len(rows), "results": rows})
@@ -214,6 +277,7 @@ class ProjectViewSet(GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
+        self._require_writer()
         project = self._project(pk)
         services.complete(project.pk, request.user)
         return Response(self._detail(project.pk))
@@ -232,13 +296,16 @@ class ProjectViewSet(GenericViewSet):
         project = self._project(pk)
         qs = ProjectEvent.objects.filter(project=project).select_related("actor")
         page = self.paginate_queryset(qs)
-        return self.get_paginated_response(EventSerializer(page, many=True).data)
+        return self.get_paginated_response(
+            EventSerializer(page, many=True, context={"request": request}).data
+        )
 
     @action(detail=True, methods=["get", "post"])
     def expenses(self, request, pk=None):
         project = self._project(pk)
         user = request.user
         if request.method == "POST":
+            self._require_writer()
             data, upload = _expense_input(request)
             expense = services.add_expense(project.pk, user, data, upload)
             expense = selectors.expenses_for(user).get(pk=expense.pk)
@@ -285,6 +352,8 @@ class ExpenseViewSet(GenericViewSet):
         return Response(self._one(pk))
 
     def partial_update(self, request, pk=None):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         data, upload = _expense_input(request, partial=True)
         services.edit_expense(expense.pk, request.user, data, upload)
@@ -292,6 +361,8 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def void(self, request, pk=None):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = ReasonSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -300,6 +371,8 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=True, methods=["get"])
     def receipt(self, request, pk=None):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()  # the receipt shows the amount; the list shows only the icon
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         if not expense.receipt:
             raise NotFound("This expense has no receipt.")
@@ -315,6 +388,8 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"])
     def summary(self, request):
+        if request.user.role in READ_ONLY_ROLES:
+            raise PermissionDenied()  # totals are money
         qs = self._filtered(request)
         active = qs.filter(is_void=False)
         totals = active.aggregate(total=Sum("amount"), count=Count("id"))

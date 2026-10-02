@@ -9,7 +9,12 @@
       <app-lead-avatar [name]="lead.name" [size]="64" />
       <div class="id-t">
         <p class="nm" aria-hidden="true">{{ lead.name }}</p>
-        <app-lead-status [status]="lead.status" />
+        <span class="id-s">
+          <app-lead-status [status]="lead.status" />
+          @if (lead.opportunities.length > 1 && current(); as d) {
+            <span class="deal-no">Deal #{{ d.sequence_no }} of {{ lead.opportunities.length }}</span>
+          }
+        </span>
       </div>
     </div>
 
@@ -75,6 +80,20 @@
       }
       <button matButton="filled" type="button" (click)="logActivity()"><mat-icon>edit_note</mat-icon>Log activity</button>
       <button matButton="outlined" type="button" (click)="edit(lead)" [attr.aria-label]="'Edit ' + lead.name"><mat-icon>edit</mat-icon>Edit</button>
+      @if (isManager()) {
+        <button
+          matButton="outlined"
+          type="button"
+          class="new-deal"
+          [class.is-off]="dealOpen()"
+          [disabled]="starting()"
+          [matTooltip]="dealOpen() ? dealOpenTip : ''"
+          [attr.aria-description]="dealOpen() ? dealOpenTip : null"
+          (click)="newDeal(lead)"
+        >
+          <mat-icon>add_business</mat-icon>New project
+        </button>
+      }
       @if (isAdmin()) {
         <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + lead.name">
           <mat-icon aria-hidden="true">more_vert</mat-icon>
@@ -87,7 +106,7 @@
   </section>
 
   <!-- Stage -->
-  <section class="card stage rise-in" style="--i: 1" aria-label="Stage">
+  <section class="card stage rise-in" style="--i: 1" id="stage" aria-label="Stage">
     <app-stage-stepper [status]="lead.status" [allowed]="lead.allowed_transitions" (pick)="changeStatus(lead, $event)" />
     @if (lead.status === 'LOST' && lostReason()) {
       <p class="lost">Lost: {{ lostReason() }}{{ lead.lost_note ? ' · ' + lead.lost_note : '' }}</p>
@@ -103,8 +122,20 @@
         </section>
       }
       <section class="card panel rise-in" style="--i: 3" aria-labelledby="tl-title">
-        <app-panel-head title="Timeline" [subtitle]="lead.interactions_count + ' entries, newest first'" headingId="tl-title" />
+        <app-panel-head
+          title="Timeline"
+          [subtitle]="(current() ? 'Deal #' + current()!.sequence_no + ', ' : '') + 'newest first'"
+          headingId="tl-title"
+        />
         <app-lead-timeline [leadId]="lead.id" [refresh]="timelineTick()" />
+      </section>
+      <section class="card panel rise-in" style="--i: 4" aria-labelledby="deals-title">
+        <app-panel-head
+          title="Opportunities"
+          [subtitle]="lead.opportunities.length + (lead.opportunities.length === 1 ? ' deal' : ' deals') + ' with this client'"
+          headingId="deals-title"
+        />
+        <app-opportunities-panel [leadId]="lead.id" [deals]="lead.opportunities" [focusId]="focusDeal()" />
       </section>
     </div>
 
@@ -122,12 +153,21 @@
             } @else {
               <p class="chip wait">Awaiting finalization</p>
             }
-            @if (isAdmin()) {
+            @if (current()?.project_id; as projectId) {
+              <p class="row">
+                <span>Project</span>
+                <a class="proj-link" [routerLink]="['/projects', projectId]">{{ current()!.project_name }}</a>
+              </p>
+            }
+            @if (isManager()) {
               <div class="deal-acts">
                 @if (!f.finalized) {
                   <button matButton="filled" type="button" (click)="finalize(lead)">Finalize amount</button>
+                } @else if (current()?.project_id; as projectId) {
+                  <a matButton="outlined" [routerLink]="['/projects', projectId]">Open project</a>
+                } @else if (isAdmin()) {
+                  <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: lead.current_opportunity_id }">Convert to project</a>
                 }
-                <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ lead: lead.id }">Convert to project</a>
               </div>
             }
           }
@@ -135,33 +175,72 @@
       }
 
       <section class="card panel rise-in" style="--i: 3" aria-labelledby="details-title">
-        <app-panel-head title="Details" headingId="details-title" />
+        <app-panel-head
+          title="Details"
+          [subtitle]="lead.opportunities.length > 1 ? lead.opportunities.length + ' deals, newest first' : ''"
+          headingId="details-title"
+        />
         <dl class="kv">
-          <dt>Requirements</dt>
-          <dd class="pre">{{ lead.requirements || 'Not written yet.' }}</dd>
           <dt>Source</dt>
           <dd>{{ lead.source_other || lead.source_label }}</dd>
           <dt>Created by</dt>
           <dd>{{ lead.created_by?.name ?? '—' }}</dd>
-          <dt>Proposed value</dt>
-          <dd>
-            @if (editingAmount()) {
-              <app-money-input inputId="dp-amount" [(ngModel)]="amountDraft" [invalid]="!!amountError()" />
-              @if (amountError()) {
-                <span class="err">{{ amountError() }}</span>
-              }
-              <span class="inline-acts">
-                <button matButton type="button" (click)="editingAmount.set(false)">Cancel</button>
-                <button matButton="filled" type="button" (click)="saveAmount(lead)">Save</button>
-              </span>
-            } @else {
-              <span class="num">{{ lead.proposed_amount ? (lead.proposed_amount | inr) : 'Not set' }}</span>
-              @if (!closed()) {
-                <button type="button" class="link" (click)="startAmountEdit(lead)" aria-label="Edit proposed value">Edit</button>
-              }
-            }
-          </dd>
         </dl>
+        @for (d of lead.opportunities; track d.id) {
+          <div class="deal-d" [class.cur]="d.is_current">
+            <p class="deal-h">
+              <strong>Deal #{{ d.sequence_no }}</strong>
+              <app-lead-status [status]="d.status" />
+            </p>
+            <dl class="kv">
+              <dt>Requirements</dt>
+              <dd class="pre">{{ dealRequirements(d, lead) || 'Not written yet.' }}</dd>
+              <dt>Proposed value</dt>
+              <dd>
+                @if (d.is_current && editingAmount()) {
+                  <app-money-input inputId="dp-amount" [(ngModel)]="amountDraft" [invalid]="!!amountError()" />
+                  @if (amountError()) {
+                    <span class="err">{{ amountError() }}</span>
+                  }
+                  <span class="inline-acts">
+                    <button matButton type="button" (click)="editingAmount.set(false)">Cancel</button>
+                    <button matButton="filled" type="button" (click)="saveAmount(lead)">Save</button>
+                  </span>
+                } @else {
+                  <span class="num">{{ d.proposed_amount ? (d.proposed_amount | inr) : 'Not set' }}</span>
+                  @if (d.is_current && !closed()) {
+                    <button type="button" class="link" (click)="startAmountEdit(lead)" aria-label="Edit proposed value">Edit</button>
+                  }
+                }
+              </dd>
+              @if (d.finance?.finalized) {
+                <dt>Final amount</dt>
+                <dd class="num">{{ d.finance!.total_amount | inr }}</dd>
+              }
+              @if (!d.is_current && d.status === 'WON' && isManager() && !d.project_id) {
+                <dt>Next step</dt>
+                <dd class="deal-next">
+                  @if (!d.finance?.finalized) {
+                    <button matButton="outlined" type="button" (click)="finalizeDeal(lead, d)">Finalize amount</button>
+                  } @else if (isAdmin()) {
+                    <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: d.id }">Convert to project</a>
+                  } @else {
+                    <span class="muted">Finalized, waiting for the Admin to convert it.</span>
+                  }
+                </dd>
+              }
+              @if (d.project_id) {
+                <dt>Project</dt>
+                <dd>
+                  <a class="proj-link" [routerLink]="['/projects', d.project_id]">{{ d.project_name }}</a>
+                  <span class="muted">
+                    · {{ d.project_status === 'COMPLETED' ? 'Completed' : 'Running' }} · {{ d.project_pm_name ?? 'No PM' }}
+                  </span>
+                </dd>
+              }
+            </dl>
+          </div>
+        }
       </section>
 
       @if (!closed()) {

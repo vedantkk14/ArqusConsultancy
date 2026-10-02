@@ -32,7 +32,9 @@ class LeaveRequest(TimeStampedModel):
     start_date = models.DateField()
     end_date = models.DateField()
     reason = models.TextField()
-    status = models.CharField(max_length=10, choices=LeaveStatus.choices, default=LeaveStatus.PENDING)
+    status = models.CharField(
+        max_length=10, choices=LeaveStatus.choices, default=LeaveStatus.PENDING
+    )
     decided_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )

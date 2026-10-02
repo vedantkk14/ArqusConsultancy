@@ -24,6 +24,7 @@ backend/staticfiles/
 node_modules/
 frontend/dist/
 frontend/.angular/
+.angular/
 frontend/coverage/
 frontend/out-tsc/
 frontend/tmp/

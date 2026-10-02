@@ -54,7 +54,7 @@ describe('LedgersListPage', () => {
 
   it('lands the dashboard link ?overdue=true on the filtered list and shows the toggle pressed', async () => {
     const { api, el } = await setup('/accounts/pending?overdue=true');
-    expect(api.ledgerCalls[0]).toMatchObject({ overdue: 'true', has_balance: 'true', ordering: '-days_since' });
+    expect(api.ledgerCalls[0]).toMatchObject({ overdue: 'true', has_balance: 'true', ordering: '-created_at' });
     expect(text(el.querySelector('.chips [aria-pressed=true]'))).toContain('Overdue only');
   });
 
@@ -151,7 +151,7 @@ describe('LedgersListPage', () => {
 describe('ledger list helpers', () => {
   it('maps filters to the API query and back', () => {
     expect(toQuery('all', { ...EMPTY_FILTERS, state: 'PAID' })).toEqual({ state: 'PAID', ordering: '-created_at' });
-    expect(toQuery('pending', { ...EMPTY_FILTERS })).toEqual({ has_balance: 'true', ordering: '-days_since' });
+    expect(toQuery('pending', { ...EMPTY_FILTERS })).toEqual({ has_balance: 'true', ordering: '-created_at' });
     expect(filtersFromQuery((k) => (k === 'aging' ? '90 ' : null)).aging).toBe('90+');
   });
 });

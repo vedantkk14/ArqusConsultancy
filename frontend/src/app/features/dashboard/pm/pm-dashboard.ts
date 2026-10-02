@@ -27,6 +27,7 @@ import { Skeleton } from '../../../shared/skeleton/skeleton';
 import { AddExpenseForm, ExpenseProject } from '../../projects/components/add-expense-form';
 import { DialogHead } from '../../projects/ui/dialog-head';
 import { PanelHead } from '../../projects/ui/panel-head';
+import { HolidayCard } from '../components/holiday-card';
 import { PmActivityList } from './activity-list';
 import { PmExpenseRow } from './expense-row';
 import { PmDashboard, PmProject } from './pm-dashboard.models';
@@ -53,6 +54,7 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
     DialogHead,
     EmptyState,
     ErrorState,
+    HolidayCard,
     InrPipe,
     MatBottomSheetModule,
     MatButtonModule,

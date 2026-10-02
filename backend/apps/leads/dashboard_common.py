@@ -1,8 +1,9 @@
 """Shared building blocks for the leads-owned dashboards (Sales Exec's own, Sales Manager's team).
 
-Both dashboards scope everything through a `leads_qs`; only the queryset differs (one Exec's own
-leads vs. the whole team's). Business-day/open/overdue/due-today/untouched definitions live in
-`selectors`; period math and money formatting come from `apps.reports.services` (read-only import).
+Both dashboards scope everything through a `leads_qs` of deals (leads.Opportunity, with the
+lead joined for contact fields); only the queryset differs (one Exec's own deals vs. the team's).
+Business-day/open/overdue/due-today/untouched definitions live in `selectors`; period math and
+money formatting come from `apps.reports.services` (read-only import).
 This is the one place their shared aggregates and queue-building live, so neither dashboard
 restates the other's logic - each layers its own role-specific pieces (by-executive, unassigned,
 upcoming, ...) on top of what's here.
@@ -25,14 +26,16 @@ MONEY_FIELD = DecimalField(max_digits=14, decimal_places=2)
 
 def with_last_note(qs: QuerySet) -> QuerySet:
     latest_notes = (
-        Interaction.objects.filter(lead=OuterRef("pk")).order_by("-created_at").values("notes")[:1]
+        Interaction.objects.filter(opportunity=OuterRef("pk"))
+        .order_by("-created_at")
+        .values("notes")[:1]
     )
     return qs.annotate(last_note=Subquery(latest_notes))
 
 
 def with_last_interaction_at(qs: QuerySet) -> QuerySet:
     latest = (
-        Interaction.objects.filter(lead=OuterRef("pk"))
+        Interaction.objects.filter(opportunity=OuterRef("pk"))
         .order_by("-created_at")
         .values("created_at")[:1]
     )
@@ -51,7 +54,7 @@ def base_kpis(leads_qs: QuerySet, period: str, today=None) -> tuple[dict, Period
     rng = period_range(period, today)
 
     won_q = Q(status=LeadStatus.WON)
-    # Lead has no `lost_at`; `updated_at` is the closest proxy for "decided within the period"
+    # A deal has no `lost_at`; `updated_at` is the closest proxy for "decided within the period"
     # (set exactly when change_status() saves the LOST transition). See docs/OPEN_DECISIONS.md.
     lost_q = Q(status=LeadStatus.LOST)
     if rng.start:

@@ -13,13 +13,25 @@ import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { ImportDialog } from '../components/dialogs/import-dialog';
 import { AssignDialog, AssignDialogData } from '../components/dialogs/assign-dialog';
+import { NewDealDialog, NewDealDialogData } from '../components/dialogs/new-deal-dialog';
+import { ExportDialog, ExportDialogData } from '../components/dialogs/export-dialog';
 import { FinalizeDialog, FinalizeDialogData } from '../components/dialogs/finalize-dialog';
 import { SnoozeDialog } from '../components/dialogs/snooze-dialog';
 import { StatusDialog, StatusDialogData } from '../components/dialogs/status-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../components/dialogs/whatsapp-dialog';
 import { LeadFiltersBar } from '../components/lead-filters';
 import { LeadRows, RowAction } from '../components/lead-rows';
-import { Assignee, EMPTY_FILTERS, LeadDetail, LeadFilters, LeadListItem, ListMode } from '../data/lead.models';
+import {
+  Assignee,
+  EMPTY_FILTERS,
+  ExportChoice,
+  LeadDetail,
+  LeadFilters,
+  LeadListItem,
+  ListMode,
+  Opportunity,
+  isOpenStatus,
+} from '../data/lead.models';
 import { LeadsApi } from '../data/leads-api.service';
 import { LeadsListStore, filtersFromQuery, toQuery } from '../data/leads-list.store';
 
@@ -64,6 +76,8 @@ export class LeadsListPage {
   protected readonly mode: ListMode = this.route.snapshot.data['mode'] ?? 'all';
   protected readonly isManager = computed(() => MANAGERS.includes(this.auth.role() as Role));
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  /** Admin and Sales Manager finalize won deals (revising a finalized total stays Admin-only). */
+  protected readonly canFinalize = this.isManager;
 
   private readonly queryMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
   protected readonly filters = computed(() => filtersFromQuery((k) => this.queryMap().get(k)));
@@ -162,7 +176,35 @@ export class LeadsListPage {
       case 'finalize':
         this.finalize(lead);
         break;
+      case 'new-deal':
+        this.newDeal(lead);
+        break;
     }
+  }
+
+  /**
+   * "New project" = a new deal with this client. While a deal is still open the item only opens it;
+   * otherwise the new deal is created and its fresh pipeline opens on the lead page.
+   */
+  protected newDeal(lead: LeadListItem): void {
+    const open = (dealId: number | null) =>
+      void this.router.navigate(['/leads', lead.id], { queryParams: dealId ? { deal: dealId } : {} });
+    if (isOpenStatus(lead.status)) {
+      open(lead.current_opportunity_id);
+      return;
+    }
+    this.dialog
+      .open<NewDealDialog, NewDealDialogData, Opportunity>(NewDealDialog, {
+        data: { leadId: lead.id, name: lead.name, assignedToId: lead.assigned_to?.id ?? null },
+      })
+      .afterClosed()
+      .subscribe((deal) => {
+        if (!deal) {
+          return;
+        }
+        this.snack.open(`Deal #${deal.sequence_no} started for ${lead.name}.`, undefined, { duration: 3500 });
+        open(deal.id);
+      });
   }
 
   protected bulkAssign(): void {
@@ -182,13 +224,21 @@ export class LeadsListPage {
       });
   }
 
-  protected exportCsv(): void {
-    this.api.exportCsv(this.query()).subscribe({
+  /** Export as Excel: choose all leads or one month, then download the .xlsx. */
+  protected exportExcel(): void {
+    this.dialog
+      .open<ExportDialog, ExportDialogData, ExportChoice>(ExportDialog, { data: { filtered: this.hasFilters() } })
+      .afterClosed()
+      .subscribe((choice) => choice && this.download(choice));
+  }
+
+  private download(choice: ExportChoice): void {
+    this.api.exportExcel(this.query(), choice).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'leads.csv';
+        a.download = `leads-${choice.scope === 'month' ? choice.month : 'all'}.xlsx`;
         a.click();
         URL.revokeObjectURL(url);
       },
@@ -231,7 +281,7 @@ export class LeadsListPage {
           return;
         }
         if (this.mode === 'won') {
-          this.store.patchRow(lead.id, { finalized: true });
+          this.store.patchRow(lead.id, { finalized: true, final_amount: done.finance?.total_amount ?? null });
         } else {
           this.store.removeRow(lead.id);
         }
@@ -239,7 +289,12 @@ export class LeadsListPage {
         this.snack
           .open(`${lead.name} finalized.`, 'Convert to project', { duration: 8000 })
           .onAction()
-          .subscribe(() => void this.router.navigate(['/projects/convert'], { queryParams: { lead: lead.id } }));
+          .subscribe(
+            () =>
+              void this.router.navigate(['/projects/convert'], {
+                queryParams: { opportunity: lead.current_opportunity_id ?? undefined },
+              }),
+          );
       });
   }
 }

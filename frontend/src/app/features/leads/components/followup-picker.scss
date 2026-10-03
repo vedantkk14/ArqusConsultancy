@@ -39,7 +39,8 @@
   // The selected chip keeps its white text while hovered (hover would otherwise darken the label).
   &[aria-pressed='true'],
   &[aria-pressed='true']:hover:not(:disabled),
-  &.on {
+  &.on,
+  &.on:hover:not(:disabled) {
     border-color: var(--ink);
     background: var(--ink);
     color: var(--on-ink);

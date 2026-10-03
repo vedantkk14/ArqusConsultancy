@@ -473,6 +473,17 @@ def test_whatsapp_renders_logs_and_contacts(client_for, exec_a, make_lead):
     assert deal_of(lead).messages.get().status == "OPENED"
 
 
+def test_whatsapp_sends_and_logs_the_senders_edited_message(client_for, exec_a, make_lead):
+    lead = make_lead(assigned_to=exec_a, name="Rahul Sharma", phone="+919876543210")
+    template = WhatsAppTemplate.objects.get(name="Welcome / Intro")
+    r = client_for(exec_a).post(
+        f"{BASE}/{lead.id}/whatsapp", {"template_id": template.id, "message": "Hi Rahul, call me"}
+    )
+    assert r.status_code == 200 and r.json()["text"] == "Hi Rahul, call me"
+    assert r.json()["url"].endswith("?text=Hi%20Rahul%2C%20call%20me")
+    assert deal_of(fresh(lead)).messages.get().rendered_text == "Hi Rahul, call me"
+
+
 def test_email_renders_logs_and_contacts(client_for, exec_a, make_lead):
     lead = make_lead(assigned_to=exec_a, name="Rahul Sharma", email="rahul@example.com")
     template = EmailTemplate.objects.get(name="Welcome / Intro")

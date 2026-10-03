@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Subject, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
-import { PaginatedResponse } from '../../../core/models';
+import { AuthService } from '../../../core/auth/auth.service';
+import { PaginatedResponse, Role } from '../../../core/models';
+import {
+  EditedTemplate,
+  EditTemplateData,
+  EditTemplateDialog,
+  TemplateKind,
+} from '../components/edit-template-dialog';
 import { CallDialog, CallDialogData } from '../../leads/components/dialogs/call-dialog';
 import { EmailDialog, EmailDialogData } from '../../leads/components/dialogs/email-dialog';
 import { WhatsAppDialog, WhatsAppDialogData } from '../../leads/components/dialogs/whatsapp-dialog';
@@ -97,7 +104,15 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
       @if (tab() === 'whatsapp') {
         <div class="tpls">
           @for (t of waTemplates(); track t.id) {
-            <div class="tpl"><div class="h"><strong>{{ t.name }}</strong></div><p>{{ t.body }}</p></div>
+            <div class="tpl">
+              <div class="h">
+                <strong>{{ t.name }}</strong>
+                @if (canEdit()) {
+                  <button matButton type="button" (click)="edit('whatsapp-templates', t)" [attr.aria-label]="'Edit ' + t.name"><mat-icon>edit</mat-icon>Edit</button>
+                }
+              </div>
+              <p>{{ t.body }}</p>
+            </div>
           } @empty {
             <app-empty-state icon="chat" title="No WhatsApp templates yet" message="Add one from the admin site." [bordered]="false" />
           }
@@ -105,7 +120,15 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
       } @else if (tab() === 'email') {
         <div class="tpls">
           @for (t of emailTemplates(); track t.id) {
-            <div class="tpl"><div class="h"><strong>{{ t.name }}</strong><span>{{ t.subject }}</span></div><p>{{ t.body }}</p></div>
+            <div class="tpl">
+              <div class="h">
+                <strong>{{ t.name }}</strong><span>{{ t.subject }}</span>
+                @if (canEdit()) {
+                  <button matButton type="button" (click)="edit('email-templates', t)" [attr.aria-label]="'Edit ' + t.name"><mat-icon>edit</mat-icon>Edit</button>
+                }
+              </div>
+              <p>{{ t.body }}</p>
+            </div>
           } @empty {
             <app-empty-state icon="mail" title="No email templates yet" message="Add one from the admin site." [bordered]="false" />
           }
@@ -113,7 +136,15 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
       } @else {
         <div class="tpls">
           @for (s of callScripts(); track s.id) {
-            <div class="tpl"><div class="h"><strong>{{ s.name }}</strong></div><p>{{ s.body }}</p></div>
+            <div class="tpl">
+              <div class="h">
+                <strong>{{ s.name }}</strong>
+                @if (canEdit()) {
+                  <button matButton type="button" (click)="edit('call-scripts', s)" [attr.aria-label]="'Edit ' + s.name"><mat-icon>edit</mat-icon>Edit</button>
+                }
+              </div>
+              <p>{{ s.body }}</p>
+            </div>
           } @empty {
             <app-empty-state icon="call" title="No call scripts yet" message="Add one from the admin site." [bordered]="false" />
           }
@@ -125,6 +156,10 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
 export class TemplatesPage {
   private readonly api = inject(LeadsApi);
   private readonly dialog = inject(MatDialog);
+  private readonly auth = inject(AuthService);
+
+  /** Admins and sales managers reword templates; sales executives only use them. */
+  protected readonly canEdit = computed(() => [Role.Admin, Role.SalesManager].includes(this.auth.role() as Role));
 
   protected readonly tab = signal<'whatsapp' | 'email' | 'call'>('whatsapp');
   protected readonly waTemplates = signal<WhatsAppTemplate[]>([]);
@@ -156,6 +191,25 @@ export class TemplatesPage {
     if (value.trim().length <= 1) {
       this.results.set([]);
     }
+  }
+
+  protected edit(kind: TemplateKind, template: EditedTemplate): void {
+    this.dialog
+      .open<EditTemplateDialog, EditTemplateData, EditedTemplate>(EditTemplateDialog, { data: { kind, template } })
+      .afterClosed()
+      .subscribe((saved) => {
+        if (!saved) {
+          return;
+        }
+        const swap = <T extends { id: number }>(list: T[]) => list.map((t) => (t.id === saved.id ? ({ ...t, ...saved } as T) : t));
+        if (kind === 'whatsapp-templates') {
+          this.waTemplates.update(swap);
+        } else if (kind === 'email-templates') {
+          this.emailTemplates.update(swap);
+        } else {
+          this.callScripts.update(swap);
+        }
+      });
   }
 
   protected call(lead: LeadListItem): void {

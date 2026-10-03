@@ -42,6 +42,22 @@ describe('FollowupPicker', () => {
     expect(text(el.querySelector('.pv'))).toContain('2:00 pm');
   });
 
+  it('keeps a 10 am chip when another time is picked, and labels typed times with am/pm', () => {
+    const { fixture, el, click } = setup();
+    click('.quick .chip', 'Tomorrow');
+    const labels = () => [...el.querySelectorAll('.times .chip')].map((b) => text(b));
+    expect(labels()).toContain('10 am');
+    expect(el.querySelector('.times .chip[aria-pressed="true"]')!.textContent!.trim()).toBe('10 am');
+
+    click('.times .chip', '2 pm');
+    expect(labels()).toContain('10 am');
+    expect(el.querySelector('.times .chip[aria-pressed="true"]')!.textContent!.trim()).toBe('2 pm');
+
+    fixture.componentInstance.writeValue('2099-01-15T15:30');
+    fixture.detectChanges();
+    expect(text(el.querySelector('.times .chip.on'))).toBe('3:30 pm');
+  });
+
   it('a typed date takes the default time, and Clear empties the value', () => {
     const { fixture, el, changes, click } = setup();
     const date = el.querySelector<HTMLInputElement>('input[type=date]')!;

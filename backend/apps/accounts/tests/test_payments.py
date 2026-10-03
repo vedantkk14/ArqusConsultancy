@@ -107,10 +107,17 @@ def test_amount_rejects_json_floats_but_takes_strings(client_for, admin, ledger)
     )
     assert (
         client.post(
-            f"{LEDGERS}/{ledger.pk}/payments", {**body, "amount": "12.50"}, format="json"
+            f"{LEDGERS}/{ledger.pk}/payments",
+            {**body, "amount": "12.50", "proof": proof_file()},
+            format="multipart",
         ).status_code
         == 201
     )
+
+
+def test_payment_without_proof_is_rejected(client_for, admin, ledger):
+    res = add(client_for(admin), ledger, proof=None)
+    assert res.status_code == 400 and "proof" in res.json()["error"]["details"]
 
 
 @pytest.mark.parametrize("mode", ["BANK_TRANSFER", "UPI", "CHEQUE", "CARD", "OTHER"])

@@ -100,6 +100,8 @@ export interface OverdueClient {
 export interface ProjectBurn {
   id: number;
   name: string;
+  /** The project manager, shown only to tell apart projects that share a name. */
+  pm?: string;
   /** The finalized deal total, or null before the deal is finalized. */
   total_budget: string | null;
   spent: string;

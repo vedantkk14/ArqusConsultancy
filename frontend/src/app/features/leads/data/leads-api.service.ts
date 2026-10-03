@@ -107,8 +107,9 @@ export class LeadsApi {
     return this.api.get(`${BASE}/${id}/whatsapp`, { template_id: templateId });
   }
 
-  whatsapp(id: number, templateId: number): Observable<{ text: string; url: string }> {
-    return this.api.post(`${BASE}/${id}/whatsapp`, { template_id: templateId });
+  /** `message` is the final wording when the sender edited the template text. */
+  whatsapp(id: number, templateId: number, message?: string): Observable<{ text: string; url: string }> {
+    return this.api.post(`${BASE}/${id}/whatsapp`, { template_id: templateId, ...(message ? { message } : {}) });
   }
 
   emailTemplates(): Observable<EmailTemplate[]> {
@@ -122,6 +123,15 @@ export class LeadsApi {
 
   email(id: number, templateId: number): Observable<{ subject: string; text: string; url: string }> {
     return this.api.post(`${BASE}/${id}/email`, { template_id: templateId });
+  }
+
+  /** Managers reword a template/script; the same shape comes back. */
+  updateTemplate<T extends WhatsAppTemplate | EmailTemplate | CallScript>(
+    kind: 'whatsapp-templates' | 'email-templates' | 'call-scripts',
+    id: number,
+    body: Partial<T>,
+  ): Observable<T> {
+    return this.api.patch<T>(`${BASE}/${kind}/${id}`, body);
   }
 
   callScripts(): Observable<CallScript[]> {

@@ -325,6 +325,7 @@ class FinalizeSerializer(serializers.Serializer):
 
 class WhatsAppSerializer(serializers.Serializer):
     template_id = serializers.IntegerField()
+    message = serializers.CharField(required=False, allow_blank=True, max_length=4000)
 
 
 class WhatsAppTemplateSerializer(serializers.ModelSerializer):

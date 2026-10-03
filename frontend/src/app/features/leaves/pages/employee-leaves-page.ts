@@ -413,7 +413,7 @@ export class EmployeeLeavesPage {
 
     this.api.summary(userId).subscribe({
       next: (s) => this.summary.set(s),
-      error: () => {},
+      error: () => this.summary.set(null),
     });
 
     this.api.list(1, userId).subscribe({

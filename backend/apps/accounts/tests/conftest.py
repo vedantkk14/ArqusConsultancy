@@ -206,6 +206,7 @@ def payment_form(**over) -> dict:
         "reference": "UTR123456",
         "received_on": selectors.business_today().isoformat(),
         "note": "Advance",
+        "proof": proof_file(),  # proof of payment is compulsory
     }
     form.update(over)
     return {k: v for k, v in form.items() if v is not None}

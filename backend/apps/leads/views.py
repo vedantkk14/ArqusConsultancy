@@ -60,6 +60,11 @@ from .serializers import (
 )
 from .utils import InvalidPhone, csv_safe, normalize_phone
 
+TEMPLATE_KINDS = {
+    "whatsapp-templates": (WhatsAppTemplate, WhatsAppTemplateSerializer),
+    "email-templates": (EmailTemplate, EmailTemplateSerializer),
+    "call-scripts": (CallScript, CallScriptSerializer),
+}
 EXPORT_MAX_ROWS = 5000
 EXPORT_COLUMNS = [
     ("name", "Name"),
@@ -297,6 +302,21 @@ class LeadViewSet(viewsets.GenericViewSet):
         scripts = CallScript.objects.filter(is_active=True)
         return Response(CallScriptSerializer(scripts, many=True).data)
 
+    @action(
+        detail=False,
+        methods=["patch"],
+        url_path=r"(?P<kind>whatsapp-templates|email-templates|call-scripts)/(?P<template_id>\d+)",
+    )
+    def edit_template(self, request, kind=None, template_id=None):
+        """Admins and sales managers can reword a template or script at any time."""
+        self._require_manager()
+        model, serializer_class = TEMPLATE_KINDS[kind]
+        template = get_object_or_404(model, pk=template_id)
+        serializer = serializer_class(template, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
     @action(detail=False, methods=["get"])
     def messages(self, request):
         """Cross-lead chat history (WhatsApp + Email), newest first."""
@@ -454,7 +474,9 @@ class LeadViewSet(viewsets.GenericViewSet):
         )
         if request.method == "GET":
             return Response(services.whatsapp_preview(deal, template, request.user))
-        return Response(services.whatsapp(deal, template, request.user))
+        return Response(
+            services.whatsapp(deal, template, request.user, serializer.validated_data.get("message"))
+        )
 
     def _email(self, request, deal):
         """GET ?template_id= previews the email; POST logs it and returns the mailto: link."""

@@ -17,7 +17,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from .models import LeadSource
 from .serializers import LeadWriteSerializer
-from .services import ASSIGNEE_ROLES, can_create, create_lead, find_duplicate
+from .services import ASSIGNEE_ROLES, can_create, create_lead, find_duplicate, notify_import
 
 MAX_FILE_BYTES = 2 * 1024 * 1024
 MAX_ROWS = 1000
@@ -235,6 +235,8 @@ def import_leads(upload, by, dry_run: bool, skip_duplicates: bool = True) -> Imp
             problem("errors", row, _first_message(exc.detail))
             continue
         report.ready += 1
+    if not dry_run:
+        notify_import(by, report.ready)
     return report
 
 

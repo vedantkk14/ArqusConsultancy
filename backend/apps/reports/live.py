@@ -206,12 +206,15 @@ def project_figures(rng, months: list[str]) -> dict:
         {
             "id": p.id,
             "name": p.name,
+            "pm": p.pm.display_name if p.pm else "",
             "total_budget": None if p.total_budget is None else money(p.total_budget),
             "spent": money(p.spent),
             "pct": selectors.usage_pct(p.spent, p.total_budget),
             "state": selectors.budget_state(p.spent, p.total_budget),
         }
-        for p in annotated.order_by(F("usage").desc(nulls_last=True), "-id")[:TOP_PROJECTS]
+        for p in annotated.select_related("pm").order_by(F("usage").desc(nulls_last=True), "-id")[
+            :TOP_PROJECTS
+        ]
     ]
     expenses = selectors.active_expenses()
     monthly = {

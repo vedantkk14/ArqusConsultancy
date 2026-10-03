@@ -209,7 +209,13 @@ class PaymentWriteSerializer(serializers.Serializer):
     reference = serializers.CharField(required=False, allow_blank=True, max_length=100)
     received_on = serializers.DateField()
     note = serializers.CharField(required=False, allow_blank=True, max_length=rules.NOTE_MAX)
-    proof = serializers.FileField(required=False, allow_empty_file=False)
+    proof = serializers.FileField(
+        allow_empty_file=False,
+        error_messages={
+            "required": "Add the proof of payment: take a photo or choose a file.",
+            "empty": "Add the proof of payment: take a photo or choose a file.",
+        },
+    )
     confirm_duplicate = serializers.BooleanField(required=False)
 
 

@@ -33,6 +33,7 @@ def test_admin_dashboard_reflects_what_the_pm_logs(client_for, admin, pm1, make_
     assert burn["spent"] == row["spent"] == "80000.00"
     assert burn["total_budget"] == "100000.00" and burn["state"] == "warn"
     assert float(burn["pct"]) == 80.0
+    assert burn["pm"] == pm1.display_name  # tells apart projects that share a name
     assert "state" not in row and "total_budget" not in row  # the PM never sees a budget
     assert admin_body["attention"] == []  # budget alerts no longer exist
     assert admin_body["recent"]["expenses"][0]["project"] == "Sharma Farmhouse Turf"

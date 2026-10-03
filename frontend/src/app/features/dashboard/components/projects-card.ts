@@ -36,7 +36,7 @@ const STATE_TEXT: Record<ProjectBurn['state'], string> = {
         <li>
           <a [routerLink]="['/projects', p.id]" [class]="p.state">
             <span class="top"
-              ><span class="nm">{{ p.name }}</span
+              ><span class="nm">{{ p.name }}{{ sharesName(p) ? ' · ' + p.pm : '' }}</span
               ><span class="num">{{ p.pct }}%</span></span
             >
             <span class="track" aria-hidden="true"
@@ -146,6 +146,11 @@ export class ProjectsCard {
   readonly completed = input(0);
   readonly burn = input.required<ProjectBurn[]>();
   protected readonly stateText = STATE_TEXT;
+
+  /** True when another listed project has the same name, so the manager's name tells them apart. */
+  protected sharesName(p: ProjectBurn): boolean {
+    return !!p.pm && this.burn().slice(0, 5).filter((q) => q.name === p.name).length > 1;
+  }
 
   /** Bar geometry only. */
   protected width(pct: string): number {

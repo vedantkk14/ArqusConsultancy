@@ -259,6 +259,19 @@ def start_opportunity(
     return opportunity
 
 
+def notify_import(by, count: int) -> None:
+    """One summary notification per admin and sales manager once a bulk import has finished."""
+    if count <= 0:
+        return
+    payload = {
+        "summary": f"{count} new {'lead' if count == 1 else 'leads'}",
+        "imported_by": _name(by),
+        "count": count,
+    }
+    for user in get_user_model().objects.filter(role__in=(ADMIN, SALES_MANAGER), is_active=True):
+        integrations.notify(user, "lead_imported", payload)
+
+
 # ---- Create / update ----------
 
 
@@ -538,19 +551,23 @@ def render_template(template: WhatsAppTemplate, opportunity: Opportunity, by) ->
     return render_text(template.body, opportunity, by)
 
 
-def whatsapp_preview(opportunity: Opportunity, template: WhatsAppTemplate, by) -> dict:
-    """Render only; nothing is logged."""
+def whatsapp_preview(
+    opportunity: Opportunity, template: WhatsAppTemplate, by, text: str | None = None
+) -> dict:
+    """Render only; nothing is logged. `text` is the sender's own last-minute wording, if any."""
     _require_own_or_manager(opportunity.lead, by)
     digits = phone_digits(opportunity.lead.phone)
     if not 8 <= len(digits) <= 15:
         raise PhoneUnusable()
-    text = render_template(template, opportunity, by)
+    text = (text or "").strip() or render_template(template, opportunity, by)
     return {"text": text, "url": integrations.whatsapp_provider.open_url(digits, text)}
 
 
 @transaction.atomic
-def whatsapp(opportunity: Opportunity, template: WhatsAppTemplate, by) -> dict:
-    result = whatsapp_preview(opportunity, template, by)
+def whatsapp(
+    opportunity: Opportunity, template: WhatsAppTemplate, by, text: str | None = None
+) -> dict:
+    result = whatsapp_preview(opportunity, template, by, text)
     text = result["text"]
     MessageLog.objects.create(
         opportunity=opportunity, template=template, rendered_text=text, created_by=by

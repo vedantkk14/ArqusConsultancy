@@ -138,7 +138,8 @@ a.nm:hover strong { color: var(--brand-deep); text-decoration: underline; }
 
 .search {
   display: flex;
-  flex: 1 1 240px;
+  flex: 0 1 260px;
+  min-width: 180px;
   align-items: center;
   gap: 8px;
   height: 44px;
@@ -162,8 +163,9 @@ a.nm:hover strong { color: var(--brand-deep); text-decoration: underline; }
   }
 }
 
-.dds { display: flex; flex-wrap: wrap; gap: 8px; }
-.dd { display: flex; flex: 1 1 160px; flex-direction: column; gap: 4px; }
+.dds { display: flex; flex: 1 1 auto; flex-wrap: nowrap; gap: 8px; min-width: 0; }
+.dd { display: flex; flex: 1 1 130px; min-width: 0; flex-direction: column; gap: 4px; }
+.dd .ctl { width: 100%; min-width: 0; }
 .lbl { color: var(--ink-3); font-size: var(--text-xs); }
 
 .ctl {

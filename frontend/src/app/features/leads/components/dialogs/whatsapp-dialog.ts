@@ -25,9 +25,12 @@ export interface WhatsAppDialogData {
     }
     .tpl[aria-pressed='true'] { border-color: var(--brand-deep); background: var(--brand-tint); color: var(--ink); font-weight: 600; }
     .preview {
-      min-height: 96px; margin: 0; padding: 12px 14px; border-radius: 12px 12px 12px 4px;
-      background: var(--tint-teal); color: var(--tint-teal-ink); white-space: pre-wrap; font-size: var(--text-sm);
+      display: block; box-sizing: border-box; width: 100%; min-height: 120px; margin: 0; padding: 12px 14px;
+      border: 1px solid transparent; border-radius: 12px 12px 12px 4px; resize: vertical;
+      background: var(--tint-teal); color: var(--tint-teal-ink); font: inherit; font-size: var(--text-sm); line-height: 1.5;
     }
+    .preview:focus { border-color: var(--brand-deep); outline: none; }
+    .hint { margin: 6px 2px 0; color: var(--ink-3); font-size: var(--text-xs); }
   `,
   template: `
     <app-dialog-head [title]="'WhatsApp ' + data.lead.name" subtitle="Pick a message. It opens in WhatsApp for you to send." />
@@ -36,7 +39,14 @@ export interface WhatsAppDialogData {
         <button type="button" class="tpl" [attr.aria-pressed]="choice() === t.id" (click)="pick(t.id)">{{ t.name }}</button>
       }
     </div>
-    <p class="preview" aria-live="polite">{{ preview() || 'Choose a template to preview the message.' }}</p>
+    <textarea
+      class="preview"
+      aria-label="Message to send"
+      placeholder="Choose a template to preview the message."
+      [value]="preview()"
+      (input)="edit($event)"
+    ></textarea>
+    <p class="hint">You can change the message here before opening WhatsApp.</p>
     @if (!usable) {
       <p class="error">This phone number can't be used for WhatsApp. Fix it on the lead first.</p>
     }
@@ -48,7 +58,7 @@ export interface WhatsAppDialogData {
       <button
         matButton="filled"
         type="button"
-        [disabled]="!usable || !choice() || sending()"
+        [disabled]="!usable || !choice() || !preview().trim() || sending()"
         [attr.aria-label]="usable ? 'Open WhatsApp for ' + data.lead.name : 'Open WhatsApp (phone number unusable)'"
         (click)="open()"
       >
@@ -68,6 +78,7 @@ export class WhatsAppDialog {
   protected readonly preview = signal('');
   protected readonly sending = signal(false);
   protected readonly error = signal('');
+  private original = '';
 
   constructor() {
     this.api.templates().subscribe((list) => {
@@ -81,9 +92,16 @@ export class WhatsAppDialog {
   protected pick(id: number): void {
     this.choice.set(id);
     this.api.whatsappPreview(this.data.lead.id, id).subscribe({
-      next: (res) => this.preview.set(res.text),
+      next: (res) => {
+        this.preview.set(res.text);
+        this.original = res.text;
+      },
       error: (err: ApiError) => this.error.set(err.message),
     });
+  }
+
+  protected edit(event: Event): void {
+    this.preview.set((event.target as HTMLTextAreaElement).value);
   }
 
   protected open(): void {
@@ -94,7 +112,10 @@ export class WhatsAppDialog {
     // Open the tab synchronously (popup blockers), then point it at the server's wa.me link.
     const tab = window.open('', '_blank');
     this.sending.set(true);
-    this.api.whatsapp(this.data.lead.id, id).subscribe({
+    const text = this.preview().trim();
+    // Only send the sender's wording when it differs from the rendered template.
+    const edited = text && text !== this.original.trim() ? text : undefined;
+    this.api.whatsapp(this.data.lead.id, id, edited).subscribe({
       next: (res) => {
         if (tab) {
           tab.opener = null;

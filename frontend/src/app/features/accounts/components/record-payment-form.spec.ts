@@ -41,6 +41,13 @@ async function type(fixture: ComponentFixture<unknown>, sel: string, value: stri
   await flush(fixture);
 }
 
+async function attachProof(fixture: ComponentFixture<unknown>) {
+  const chooser = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLInputElement>('input[type=file]')[1];
+  Object.defineProperty(chooser, 'files', { value: [new File(['x'], 'slip.pdf', { type: 'application/pdf' })], configurable: true });
+  chooser.dispatchEvent(new Event('change'));
+  await flush(fixture);
+}
+
 async function submit(fixture: ComponentFixture<unknown>) {
   $<HTMLButtonElement>(fixture.nativeElement, 'button[type=submit]').click();
   await flush(fixture);
@@ -69,6 +76,7 @@ describe('RecordPaymentForm', () => {
     await flush(fixture);
     expect(el.querySelector('#rp-reference')).toBeNull();
     await type(fixture, '#rp-amount', '500');
+    await attachProof(fixture);
     await submit(fixture);
     expect(api.actions[0].name).toBe('addPayment');
     expect(api.actions[0].args[1]).toMatchObject({ amount: '500', mode: 'CASH', reference: '' });
@@ -121,6 +129,7 @@ describe('RecordPaymentForm', () => {
     }));
     await type(fixture, '#rp-amount', '70000');
     await type(fixture, '#rp-reference', 'UTR9');
+    await attachProof(fixture);
     await submit(fixture);
     expect(text(el)).toContain('This is more than the outstanding balance of ₹60,000.');
   });
@@ -135,6 +144,7 @@ describe('RecordPaymentForm', () => {
     }));
     await type(fixture, '#rp-amount', '10');
     await type(fixture, '#rp-reference', 'UTR9');
+    await attachProof(fixture);
     await submit(fixture);
     expect(text(el)).toContain('Finalize the deal amount before recording payments.');
   });
@@ -149,6 +159,7 @@ describe('RecordPaymentForm', () => {
     }));
     await type(fixture, '#rp-amount', '10');
     await type(fixture, '#rp-reference', 'UTR9');
+    await attachProof(fixture);
     await submit(fixture);
     expect(text(el)).toContain('The same payment was just recorded.');
     api.uploadResult = of({ kind: 'done', payment: makePayment(7) } as UploadEvent);
@@ -158,12 +169,22 @@ describe('RecordPaymentForm', () => {
     expect(saved.length).toBe(1);
   });
 
+  it('will not save a payment without its proof', async () => {
+    const { api, fixture, el } = await setup();
+    await type(fixture, '#rp-amount', '10');
+    await type(fixture, '#rp-reference', 'UTR9');
+    await submit(fixture);
+    expect(text(el)).toContain('Add the proof of payment: take a photo or choose a file.');
+    expect(api.actions.filter((a) => a.name === 'addPayment').length).toBe(0);
+  });
+
   it('ignores a second submit while uploading and shows progress', async () => {
     const { api, fixture, el, saved } = await setup();
     const upload = new Subject<UploadEvent>();
     api.uploadResult = upload;
     await type(fixture, '#rp-amount', '10');
     await type(fixture, '#rp-reference', 'UTR9');
+    await attachProof(fixture);
     const button = $<HTMLButtonElement>(el, 'button[type=submit]');
     button.click();
     button.click();
@@ -189,6 +210,7 @@ describe('RecordPaymentForm', () => {
     }));
     await type(fixture, '#rp-amount', '10');
     await type(fixture, '#rp-reference', 'UTR9');
+    await attachProof(fixture);
     await submit(fixture);
     expect(text(el)).toContain('The date cannot be in the future.');
     expect(document.activeElement?.id).toBe('rp-date');

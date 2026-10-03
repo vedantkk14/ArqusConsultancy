@@ -13,8 +13,6 @@
   }
 </ng-template>
 
-<header class="head"><p class="count" aria-live="polite">{{ countText() }}</p></header>
-
 <app-filter-shell [compact]="!wide()" [active]="anyFilter()" [activeCount]="dropdownCount()" (cleared)="clear()">
   <label search class="search">
     <span class="sr-only">Search by object</span>
@@ -66,6 +64,7 @@
   </app-empty-state>
 } @else {
   <section class="card list" [class.busy]="list.loading() && list.loaded()" [attr.aria-busy]="list.loading()" aria-label="Audit log">
+    <p class="count tally" aria-live="polite">{{ countText() }}</p>
     @if (wide()) {
       <div class="table-scroll">
         <table>

@@ -1,4 +1,4 @@
-<button type="button" class="bell" [matMenuTriggerFor]="panel" (menuOpened)="opened()" [attr.aria-label]="label()">
+<button type="button" class="bell" #trigger="matMenuTrigger" [matMenuTriggerFor]="panel" (menuOpened)="opened()" [attr.aria-label]="label()">
   <mat-icon aria-hidden="true">notifications</mat-icon>
   @if (service.unread()) {
     <span class="dot" aria-hidden="true"></span>
@@ -6,11 +6,16 @@
 </button>
 
 <mat-menu #panel="matMenu" xPosition="before" class="np-menu">
-  <div class="np-head" (click)="$event.stopPropagation()">
+  <div class="np-head" role="presentation" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
     <strong>Notifications</strong>
-    @if (service.unread()) {
-      <button type="button" class="np-all-read" (click)="service.markAllRead(); $event.stopPropagation()">Mark all read</button>
-    }
+    <span class="np-actions">
+      @if (service.unread()) {
+        <button type="button" class="np-all-read" (click)="service.markAllRead(); $event.stopPropagation()">Mark all read</button>
+      }
+      <button type="button" class="np-close" aria-label="Close notifications" (click)="trigger.closeMenu()">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </span>
   </div>
   @for (n of service.recent(); track n.id) {
     <a mat-menu-item class="np-item" [class.unread]="!n.is_read" [routerLink]="link(n)" (click)="service.markRead(n)">

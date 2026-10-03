@@ -9,6 +9,7 @@ export interface TypeMeta {
 export const TYPE_META: Record<string, TypeMeta> = {
   lead_assigned: { icon: 'person_add', tone: 'cyan' },
   lead_reassigned_away: { icon: 'swap_horiz', tone: 'slate' },
+  lead_imported: { icon: 'upload_file', tone: 'cyan' },
   lead_won: { icon: 'emoji_events', tone: 'teal' },
   lead_won_reversed: { icon: 'undo', tone: 'rose' },
   payment_received: { icon: 'payments', tone: 'teal' },

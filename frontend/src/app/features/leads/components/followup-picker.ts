@@ -8,6 +8,7 @@ export const DEFAULT_TIME = '10:00';
 /** Time buttons: the hour is fixed with one tap, and any other time can be typed. */
 export const TIME_CHOICES = [
   { value: '09:00', label: '9 am' },
+  { value: DEFAULT_TIME, label: '10 am' },
   { value: '11:00', label: '11 am' },
   { value: '14:00', label: '2 pm' },
   { value: '16:00', label: '4 pm' },
@@ -57,6 +58,14 @@ export class FollowupPicker implements ControlValueAccessor {
     return iso ? formatBusiness(iso) : '';
   });
   protected readonly customTime = computed(() => !!this.time() && !TIME_CHOICES.some((t) => t.value === this.time()));
+  /** "15:30" -> "3:30 pm", so a typed time reads like the other chips. */
+  protected readonly customLabel = computed(() => {
+    const [h, m] = this.time().split(':').map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) {
+      return this.time();
+    }
+    return `${h % 12 || 12}${m ? `:${String(m).padStart(2, '0')}` : ''} ${h < 12 ? 'am' : 'pm'}`;
+  });
 
   private onChange: (value: string) => void = () => undefined;
   protected touched: () => void = () => undefined;

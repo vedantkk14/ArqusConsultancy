@@ -482,6 +482,8 @@ export class RecordPaymentForm implements OnInit {
     }
     if (this.errors().proof) {
       errors.proof = this.errors().proof;
+    } else if (!this.file()) {
+      errors.proof = 'Add the proof of payment: take a photo or choose a file.';
     }
     return errors;
   }

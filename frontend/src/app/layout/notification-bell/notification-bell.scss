@@ -47,6 +47,24 @@
     font-size: var(--text-md);
   }
 
+  .np-actions { display: inline-flex; align-items: center; gap: 4px; }
+
+  .np-close {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+
+    &:hover { background: var(--subtle); color: var(--ink); }
+    mat-icon { width: 20px; height: 20px; margin: 0; font-size: 20px; }
+  }
+
   .np-all-read {
     min-height: 32px;
     padding: 0 6px;

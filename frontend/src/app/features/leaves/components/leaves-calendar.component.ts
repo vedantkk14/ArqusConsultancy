@@ -253,7 +253,12 @@ interface CalCell {
           [class.today]="cell.isToday"
           [class.other-month]="cell.otherMonth"
           [class.weekend]="cell.isWeekend"
+          role="button"
+          [tabindex]="canAddHoliday() && !cell.otherMonth ? 0 : -1"
+          [attr.aria-disabled]="canAddHoliday() && !cell.otherMonth ? null : true"
           (click)="onCellClick(cell)"
+          (keydown.enter)="onCellClick(cell)"
+          (keydown.space)="onCellClick(cell); $event.preventDefault()"
           [title]="cell.holidayName || (canAddHoliday() && !cell.otherMonth ? 'Click to add holiday' : '')"
         >
           <span class="num">{{ cell.day }}</span>

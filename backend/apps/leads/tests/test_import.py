@@ -129,3 +129,23 @@ def test_template_downloads_and_roundtrips(client_for, manager):
     # The example row imports as a real lead (it is meant to be deleted, but must be valid).
     upload = SimpleUploadedFile("t.xlsx", res.content)
     assert post(client_for(manager), upload, dry_run=1).json()["ready"] == 1
+
+
+def test_real_import_notifies_admins_and_managers_once(client_for, manager, admin, exec_a):
+    from apps.notifications.models import Notification
+
+    rows = [HEAD, ["Rahul Sharma", "98765 43210"], ["Meera Iyer", "98765 43211"]]
+    assert post(client_for(manager), xlsx(rows)).json()["created"] == 2
+    for user in (manager, admin):
+        note = Notification.objects.get(recipient=user, type="lead_imported")
+        assert "2 new leads" in note.body and manager.display_name in note.body
+    assert not Notification.objects.filter(recipient=exec_a, type="lead_imported").exists()
+
+
+def test_preview_and_empty_imports_notify_nobody(client_for, manager):
+    from apps.notifications.models import Notification
+
+    rows = [HEAD, ["Rahul Sharma", "98765 43210"]]
+    post(client_for(manager), xlsx(rows), dry_run=1)
+    post(client_for(manager), xlsx([HEAD]))
+    assert not Notification.objects.filter(type="lead_imported").exists()

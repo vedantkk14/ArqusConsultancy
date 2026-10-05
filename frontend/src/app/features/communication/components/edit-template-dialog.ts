@@ -10,7 +10,8 @@ export type TemplateKind = 'whatsapp-templates' | 'email-templates' | 'call-scri
 
 export interface EditTemplateData {
   kind: TemplateKind;
-  template: { id: number; name: string; body: string; subject?: string };
+  /** Omitted when adding a new one. */
+  template?: { id: number; name: string; body: string; subject?: string };
 }
 
 export interface EditedTemplate {
@@ -20,18 +21,18 @@ export interface EditedTemplate {
   subject?: string;
 }
 
-/** Reword a template or call script. Placeholders {{lead_name}}, {{exec_name}}, {{company}} are filled in when sent. */
+/** Add or reword a template or call script. Placeholders {{lead_name}}, {{exec_name}}, {{company}} are filled in when sent. */
 @Component({
   selector: 'app-edit-template-dialog',
   imports: [DialogHead, FormsModule, MatButtonModule, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: '../../leads/components/dialogs/dialog.scss',
   template: `
-    <app-dialog-head title="Edit template" subtitle="Use {{ '{{lead_name}}' }}, {{ '{{exec_name}}' }} and {{ '{{company}}' }} as placeholders." />
+    <app-dialog-head [title]="title" subtitle="Use {{ '{{lead_name}}' }}, {{ '{{exec_name}}' }} and {{ '{{company}}' }} as placeholders." />
     <form (ngSubmit)="save()" novalidate>
       <div class="field">
         <label for="et-name">Name</label>
-        <input id="et-name" type="text" name="name" [(ngModel)]="name" />
+        <input id="et-name" type="text" name="name" maxlength="100" [(ngModel)]="name" />
       </div>
       @if (data.kind === 'email-templates') {
         <div class="field">
@@ -58,9 +59,14 @@ export class EditTemplateDialog {
   private readonly ref = inject(MatDialogRef<EditTemplateDialog, EditedTemplate>);
   private readonly api = inject(LeadsApi);
 
-  protected name = this.data.template.name;
-  protected subject = this.data.template.subject ?? '';
-  protected body = this.data.template.body;
+  protected readonly title = this.data.template
+    ? 'Edit template'
+    : this.data.kind === 'call-scripts'
+      ? 'New call script'
+      : 'New template';
+  protected name = this.data.template?.name ?? '';
+  protected subject = this.data.template?.subject ?? '';
+  protected body = this.data.template?.body ?? '';
   protected readonly saving = signal(false);
   protected readonly error = signal('');
 
@@ -75,7 +81,10 @@ export class EditTemplateDialog {
     }
     this.saving.set(true);
     this.error.set('');
-    this.api.updateTemplate<EditedTemplate>(this.data.kind, this.data.template.id, payload).subscribe({
+    const request = this.data.template
+      ? this.api.updateTemplate<EditedTemplate>(this.data.kind, this.data.template.id, payload)
+      : this.api.createTemplate<EditedTemplate>(this.data.kind, payload);
+    request.subscribe({
       next: (saved) => this.ref.close(saved),
       error: (err: ApiError) => {
         this.saving.set(false);

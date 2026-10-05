@@ -287,20 +287,28 @@ class LeadViewSet(viewsets.GenericViewSet):
         )
         return Response({"assigned": count})
 
-    @action(detail=False, methods=["get"], url_path="whatsapp-templates")
+    def _templates(self, request, kind):
+        """GET lists the active ones; POST adds a new one (admins and sales managers only)."""
+        model, serializer_class = TEMPLATE_KINDS[kind]
+        if request.method == "POST":
+            self._require_manager()
+            serializer = serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer_class(model.objects.filter(is_active=True), many=True).data)
+
+    @action(detail=False, methods=["get", "post"], url_path="whatsapp-templates")
     def whatsapp_templates(self, request):
-        templates = WhatsAppTemplate.objects.filter(is_active=True)
-        return Response(WhatsAppTemplateSerializer(templates, many=True).data)
+        return self._templates(request, "whatsapp-templates")
 
-    @action(detail=False, methods=["get"], url_path="email-templates")
+    @action(detail=False, methods=["get", "post"], url_path="email-templates")
     def email_templates(self, request):
-        templates = EmailTemplate.objects.filter(is_active=True)
-        return Response(EmailTemplateSerializer(templates, many=True).data)
+        return self._templates(request, "email-templates")
 
-    @action(detail=False, methods=["get"], url_path="call-scripts")
+    @action(detail=False, methods=["get", "post"], url_path="call-scripts")
     def call_scripts(self, request):
-        scripts = CallScript.objects.filter(is_active=True)
-        return Response(CallScriptSerializer(scripts, many=True).data)
+        return self._templates(request, "call-scripts")
 
     @action(
         detail=False,

@@ -24,5 +24,6 @@ export type AuthErrorCode =
   | 'too_many_requests'
   | 'token_invalid'
   | 'reset_link_invalid'
+  | 'otp_invalid'
   | 'validation_error'
   | 'network_error';

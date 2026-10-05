@@ -18,9 +18,9 @@ from django.core.mail import get_connection
 from django.db.models import BooleanField as _Bool
 from django.db.models import DecimalField, Exists, OuterRef, Subquery, Value
 
+from apps.core.email_html import build_message
 from apps.core.services import notify as _notify
 
-from .email_html import build_message
 from .exceptions import AccountsNotReady
 
 

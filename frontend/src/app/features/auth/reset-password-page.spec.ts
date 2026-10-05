@@ -64,7 +64,7 @@ describe('ResetPasswordPage', () => {
     expect(TestBed.inject(Router).url).toBe('/login?reason=reset');
   });
 
-  it('explains an invalid link and offers a new one', async () => {
+  it('explains an invalid session and offers a new code', async () => {
     const { type, submit, http, harness, el } = await setup();
     type('#new-password', 'Blue-Harbour-42');
     type('#confirm-password', 'Blue-Harbour-42');
@@ -73,8 +73,8 @@ describe('ResetPasswordPage', () => {
       .expectOne('/api/v1/auth/password/reset')
       .flush({ error: { code: 'reset_link_invalid', message: 'x', details: {} } }, { status: 400, statusText: 'Bad' });
     harness.detectChanges();
-    expect(el.textContent).toContain('This reset link is invalid or has expired.');
-    expect(el.querySelector('a[href="/forgot-password"]')?.textContent).toContain('Request a new link');
+    expect(el.textContent).toContain('This reset session is invalid or has expired.');
+    expect(el.querySelector('a[href="/forgot-password"]')?.textContent).toContain('Request a new code');
   });
 
   it('shows server validator messages under the field', async () => {

@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 import { TokenStorage } from './token-storage';
 
 /** Endpoints that must never carry the access token or trigger a refresh. */
-const PUBLIC_AUTH_ENDPOINT = /\/auth\/(login|refresh|logout|password\/forgot|password\/reset)$/;
+const PUBLIC_AUTH_ENDPOINT = /\/auth\/(login|refresh|logout|password\/forgot|password\/verify|password\/reset)$/;
 
 /** Marks a request that has already been retried after a refresh, so a second 401 never loops. */
 const RETRIED = new HttpContextToken<boolean>(() => false);

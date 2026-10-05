@@ -28,6 +28,7 @@ from .serializers import (
     PasswordChangeSerializer,
     PasswordForgotSerializer,
     PasswordResetSerializer,
+    PasswordVerifySerializer,
     ProfileSerializer,
     ProfileUpdateSerializer,
     RefreshSerializer,
@@ -233,6 +234,24 @@ class PasswordForgotView(_PublicAuthView):
         data.is_valid(raise_exception=True)
         services.send_password_reset(data.validated_data["email"])
         return Response({"message": services.FORGOT_PASSWORD_MESSAGE})
+
+
+class PasswordVerifyView(_PublicAuthView):
+    """Step 2 of "forgot password": the emailed 6-digit code, in exchange for a reset token."""
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_verify"
+
+    @extend_schema(
+        request=PasswordVerifySerializer,
+        responses={200: OpenApiResponse(description="uid + token"), 400: OpenApiResponse()},
+    )
+    def post(self, request):
+        data = PasswordVerifySerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        email, otp = data.validated_data["email"], data.validated_data["otp"]
+        user = services.verify_password_otp(email, otp)
+        return Response(services.reset_credentials(user))
 
 
 class PasswordResetView(_PublicAuthView):

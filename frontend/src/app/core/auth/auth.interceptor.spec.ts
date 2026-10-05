@@ -46,7 +46,7 @@ describe('authInterceptor', () => {
     expect(ctrl.expectOne('/api/v10/other').request.headers.has('Authorization')).toBe(false);
   });
 
-  it.each(['login', 'refresh', 'logout', 'password/forgot', 'password/reset'])(
+  it.each(['login', 'refresh', 'logout', 'password/forgot', 'password/verify', 'password/reset'])(
     'never adds a token to /auth/%s',
     (path) => {
       storage.set({ access: 'A1', refresh: 'R1' });

@@ -87,15 +87,15 @@ with the username **or** the email. Every role lands on `/dashboard`.
 `newuser.demo` has a temporary password: after signing in it can only open "Change password" until it sets a new
 one. Re-run `python manage.py seed_demo_data` to reset all demo passwords and the flag.
 
-### Password reset emails in development
+### Password reset codes in development
 
-In dev, `EMAIL_BACKEND` is the console backend: emails are **printed in the backend terminal** (where
-`python manage.py runserver` runs) instead of being sent. To test "Forgot password":
+"Forgot password" emails a **6-digit code** (valid 10 minutes, one use, 5 wrong guesses allowed). In dev,
+`EMAIL_BACKEND` is the console backend: emails are **printed in the backend terminal** (where
+`python manage.py runserver` runs) instead of being sent. To test it:
 
 1. Open http://localhost:4200/forgot-password and enter a demo email, e.g. `sales.manager@crm.local`.
-2. In the backend terminal, find the email and copy the link `http://localhost:4200/reset-password/<uid>/<token>`.
-   Long lines may be wrapped with a trailing `=` (quoted-printable): join them and turn `=3D` back into `=`.
-3. Open it, set a new password, sign in. The link works once and expires after an hour.
+2. In the backend terminal, find the line `Your verification code is: 123456` in the email.
+3. Type the code on the next screen, then set a new password and sign in.
 
 For real email set the SMTP variables in `.env` (see `.env.example`).
 

@@ -31,9 +31,9 @@ import { matchValidator } from './password-rules';
       @if (linkInvalid()) {
         <p class="banner error" role="alert">
           <mat-icon aria-hidden="true">link_off</mat-icon>
-          <span>{{ messages.reset_link_invalid }} Reset links work once and expire after an hour.</span>
+          <span>{{ messages.reset_link_invalid }} Start again to get a new code.</span>
         </p>
-        <p class="center"><a class="link" routerLink="/forgot-password">Request a new link</a></p>
+        <p class="center"><a class="link" routerLink="/forgot-password">Request a new code</a></p>
       } @else {
         <p class="lede">Choose a password you don't use anywhere else.</p>
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>

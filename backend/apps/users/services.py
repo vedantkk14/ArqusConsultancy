@@ -8,20 +8,25 @@ from __future__ import annotations
 import hashlib
 import logging
 import math
+import secrets
 import time
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import update_last_login
 from django.contrib.auth.tokens import default_token_generator
 from django.core.cache import cache
-from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import F
+from django.utils import timezone
+from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.encoding import force_bytes, force_str
-from django.utils.html import escape
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from apps.core.email_html import build_message
 
 from .exceptions import (
     AccountDisabled,
@@ -30,13 +35,18 @@ from .exceptions import (
     CannotSelfDeactivate,
     InvalidCredentials,
     LastAdmin,
+    OtpInvalid,
     ResetLinkInvalid,
 )
+from .models import PasswordResetOtp
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-FORGOT_PASSWORD_MESSAGE = "If that email is registered, we've sent a reset link."
+OTP_LENGTH = 6
+OTP_MINUTES = 10
+OTP_MAX_ATTEMPTS = 5
+FORGOT_PASSWORD_MESSAGE = "If that email is registered, we've sent a 6-digit code."
 
 
 # ---- Lockout -------------------------------------------------------------------------------------
@@ -152,6 +162,7 @@ def change_password(user, new_password: str) -> dict:
     user.set_password(new_password)
     user.must_change_password = False
     user.save(update_fields=["password", "must_change_password"])
+    user.reset_otps.all().delete()
     blacklist_all_tokens(user)
     return issue_tokens(user)
 
@@ -198,45 +209,74 @@ def create_user(data: dict):
     return user
 
 
-def reset_link(user) -> str:
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = default_token_generator.make_token(user)
-    return f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+def _otp_hash(user, code: str) -> str:
+    return salted_hmac("password-reset-otp", f"{user.pk}:{code}").hexdigest()
 
 
 def send_password_reset(email: str) -> None:
-    """Email a reset link to every active account with this address. Silent when there is none.
+    """Email a 6-digit code to every active account with this address. Silent when there is none.
 
-    Failures are logged (without the link) and never reach the client.
+    A new code replaces any earlier one. Failures are logged (without the code) and never reach
+    the client.
     """
-    minutes = max(settings.PASSWORD_RESET_TIMEOUT // 60, 1)
     for user in User.objects.filter(email__iexact=email.strip(), is_active=True):
-        link = reset_link(user)
-        name = user.display_name
+        code = f"{secrets.randbelow(10**OTP_LENGTH):0{OTP_LENGTH}d}"
+        user.reset_otps.all().delete()
+        PasswordResetOtp.objects.create(
+            user=user,
+            code_hash=_otp_hash(user, code),
+            expires_at=timezone.now() + timedelta(minutes=OTP_MINUTES),
+        )
         text = (
-            f"Hi {name},\n\n"
+            f"Hi {user.display_name},\n\n"
             "Someone asked to reset the password for your ARQUS CRM account.\n"
-            f"Set a new password here (the link works once and expires in {minutes} minutes):\n\n"
-            f"{link}\n\n"
+            f"Your verification code is: {code}\n\n"
+            f"The code expires in {OTP_MINUTES} minutes and works once. "
             "If you didn't ask for this, you can ignore this email; your password won't change.\n"
         )
-        html = (
-            f"<p>Hi {escape(name)},</p>"
-            "<p>Someone asked to reset the password for your ARQUS CRM account.</p>"
-            f'<p><a href="{escape(link)}">Set a new password</a></p>'
-            f"<p>The link works once and expires in {minutes} minutes. If you didn't ask for this, "
-            "you can ignore this email; your password won't change.</p>"
-        )
         try:
-            send_mail(
-                "Reset your ARQUS CRM password",
-                text,
+            build_message(
+                "Your ARQUS CRM verification code",
+                f"Hi {user.display_name},\n\n"
+                "Someone asked to reset the password for your ARQUS CRM account. "
+                "Enter this code to continue:",
                 settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                html_message=html,
-            )
+                user.email,
+                None,
+                {},
+                code=code,
+                text_after=(
+                    f"The code expires in {OTP_MINUTES} minutes and works once. If you didn't ask "
+                    "for this, you can ignore this email; your password won't change."
+                ),
+                plain_text=text,
+            ).send(fail_silently=False)
         except Exception:  # noqa: BLE001 - never leak delivery problems to the client
-            logger.exception("Could not send the password reset email (user id %s)", user.pk)
+            logger.exception("Could not send the password reset code (user id %s)", user.pk)
+
+
+def verify_password_otp(email: str, code: str):
+    """The user whose emailed code this is, or raise OtpInvalid. A code works once and dies after
+    too many wrong guesses; unknown emails look exactly like wrong codes."""
+    now = timezone.now()
+    for user in User.objects.filter(email__iexact=email.strip(), is_active=True):
+        otp = user.reset_otps.filter(used_at__isnull=True, expires_at__gt=now).first()
+        if otp is None or otp.attempts >= OTP_MAX_ATTEMPTS:
+            continue
+        if constant_time_compare(otp.code_hash, _otp_hash(user, code)):
+            otp.used_at = now
+            otp.save(update_fields=["used_at"])
+            return user
+        PasswordResetOtp.objects.filter(pk=otp.pk).update(attempts=F("attempts") + 1)
+    raise OtpInvalid()
+
+
+def reset_credentials(user) -> dict:
+    """The one-use uid + token the reset step needs, handed out after the code checked out."""
+    return {
+        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": default_token_generator.make_token(user),
+    }
 
 
 def user_from_reset_link(uid: str, token: str):

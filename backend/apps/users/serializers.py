@@ -141,6 +141,11 @@ class PasswordForgotSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 
+class PasswordVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.RegexField(r"^\d{6}$", error_messages={"invalid": "Enter the 6-digit code."})
+
+
 class PasswordResetSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()

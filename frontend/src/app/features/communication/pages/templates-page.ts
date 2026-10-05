@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PaginatedResponse, Role } from '../../../core/models';
@@ -51,7 +52,8 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
     .tpl .h strong { font-size: var(--text-sm); }
     .tpl .h span { color: var(--ink-3); font-size: var(--text-xs); }
     .tpl p { margin: 0; color: var(--ink-2); font-size: var(--text-sm); white-space: pre-wrap; }
-    .tabs { display: flex; gap: 8px; margin-bottom: var(--space-4); }
+    .tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: var(--space-4); }
+    .tabs .add { margin-left: auto; }
     .tab {
       min-height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--radius-pill);
       background: var(--surface); color: var(--ink-2); font: inherit; font-size: var(--text-sm); cursor: pointer;
@@ -100,6 +102,11 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
         <button type="button" class="tab" [attr.aria-pressed]="tab() === 'whatsapp'" (click)="tab.set('whatsapp')">WhatsApp</button>
         <button type="button" class="tab" [attr.aria-pressed]="tab() === 'email'" (click)="tab.set('email')">Email</button>
         <button type="button" class="tab" [attr.aria-pressed]="tab() === 'call'" (click)="tab.set('call')">Call scripts</button>
+        @if (canEdit()) {
+          <button matButton="filled" type="button" class="add" (click)="add()" [attr.aria-label]="addLabel()">
+            <mat-icon>add</mat-icon>{{ addLabel() }}
+          </button>
+        }
       </div>
       @if (tab() === 'whatsapp') {
         <div class="tpls">
@@ -114,7 +121,7 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
               <p>{{ t.body }}</p>
             </div>
           } @empty {
-            <app-empty-state icon="chat" title="No WhatsApp templates yet" message="Add one from the admin site." [bordered]="false" />
+            <app-empty-state icon="chat" title="No WhatsApp templates yet" [message]="emptyHint()" [bordered]="false" />
           }
         </div>
       } @else if (tab() === 'email') {
@@ -130,7 +137,7 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
               <p>{{ t.body }}</p>
             </div>
           } @empty {
-            <app-empty-state icon="mail" title="No email templates yet" message="Add one from the admin site." [bordered]="false" />
+            <app-empty-state icon="mail" title="No email templates yet" [message]="emptyHint()" [bordered]="false" />
           }
         </div>
       } @else {
@@ -146,7 +153,7 @@ const EMPTY_PAGE: PaginatedResponse<LeadListItem> = { count: 0, next: null, prev
               <p>{{ s.body }}</p>
             </div>
           } @empty {
-            <app-empty-state icon="call" title="No call scripts yet" message="Add one from the admin site." [bordered]="false" />
+            <app-empty-state icon="call" title="No call scripts yet" [message]="emptyHint()" [bordered]="false" />
           }
         </div>
       }
@@ -157,6 +164,7 @@ export class TemplatesPage {
   private readonly api = inject(LeadsApi);
   private readonly dialog = inject(MatDialog);
   private readonly auth = inject(AuthService);
+  private readonly snack = inject(MatSnackBar);
 
   /** Admins and sales managers reword templates; sales executives only use them. */
   protected readonly canEdit = computed(() => [Role.Admin, Role.SalesManager].includes(this.auth.role() as Role));
@@ -191,6 +199,36 @@ export class TemplatesPage {
     if (value.trim().length <= 1) {
       this.results.set([]);
     }
+  }
+
+  protected readonly kindOfTab = computed<TemplateKind>(() =>
+    this.tab() === 'whatsapp' ? 'whatsapp-templates' : this.tab() === 'email' ? 'email-templates' : 'call-scripts',
+  );
+  protected readonly addLabel = computed(() =>
+    this.tab() === 'call' ? 'Add call script' : this.tab() === 'email' ? 'Add email template' : 'Add WhatsApp template',
+  );
+  protected readonly emptyHint = computed(() => (this.canEdit() ? 'Use the Add button to create one.' : 'Ask a manager to add one.'));
+
+  protected add(): void {
+    const kind = this.kindOfTab();
+    this.dialog
+      .open<EditTemplateDialog, EditTemplateData, EditedTemplate>(EditTemplateDialog, { data: { kind } })
+      .afterClosed()
+      .subscribe((saved) => {
+        if (!saved) {
+          return;
+        }
+        const added = <T extends { name: string }>(list: T[]) =>
+          [...list, saved as unknown as T].sort((a, b) => a.name.localeCompare(b.name));
+        if (kind === 'whatsapp-templates') {
+          this.waTemplates.update(added);
+        } else if (kind === 'email-templates') {
+          this.emailTemplates.update(added);
+        } else {
+          this.callScripts.update(added);
+        }
+        this.snack.open(`${saved.name} added.`, undefined, { duration: 3000 });
+      });
   }
 
   protected edit(kind: TemplateKind, template: EditedTemplate): void {

@@ -146,6 +146,11 @@ export class AuthService {
     return this.api.post<{ message: string }>('/auth/password/forgot', { email });
   }
 
+  /** Step 2 of "forgot password": swap the emailed 6-digit code for the one-use reset token. */
+  verifyPasswordOtp(email: string, otp: string): Observable<{ uid: string; token: string }> {
+    return this.api.post<{ uid: string; token: string }>('/auth/password/verify', { email, otp });
+  }
+
   resetPassword(uid: string, token: string, newPassword: string): Observable<{ message: string }> {
     return this.api.post<{ message: string }>('/auth/password/reset', {
       uid,

@@ -19,6 +19,7 @@ ME = "/api/v1/me"
 CHANGE = "/api/v1/auth/password/change"
 FORGOT = "/api/v1/auth/password/forgot"
 RESET = "/api/v1/auth/password/reset"
+VERIFY = "/api/v1/auth/password/verify"
 
 ROLES = ["ADMIN", "SALES_MANAGER", "SALES_EXEC", "PROJECT_MANAGER"]
 
@@ -249,13 +250,24 @@ def test_change_requires_authentication(client):
     )
 
 
-# ---- Forgot and reset ----------------------------------------------------------------------------
+# ---- Forgot, verify (6-digit code) and reset -----------------------------------------------------
 
 
-def _link_parts(message) -> tuple[str, str]:
-    match = re.search(r"/reset-password/([^/\s]+)/([^/\s]+)", message.body)
+def _code(message) -> str:
+    match = re.search(r"verification code is: (\d{6})", message.body)
     assert match, message.body
-    return match.group(1), match.group(2)
+    return match.group(1)
+
+
+def _verify(client, email, otp):
+    return client.post(VERIFY, {"email": email, "otp": otp})
+
+
+def _reset_parts(client, email="pat@example.com") -> tuple[str, str]:
+    """Run forgot + verify; the uid and token the reset step needs."""
+    client.post(FORGOT, {"email": email})
+    body = _verify(client, email, _code(mail.outbox[-1])).json()
+    return body["uid"], body["token"]
 
 
 def test_forgot_is_identical_for_known_and_unknown_emails(client):
@@ -266,13 +278,18 @@ def test_forgot_is_identical_for_known_and_unknown_emails(client):
     assert (
         known.json()
         == unknown.json()
-        == {"message": "If that email is registered, we've sent a reset link."}
+        == {"message": "If that email is registered, we've sent a 6-digit code."}
     )
     assert len(mail.outbox) == 1
     message = mail.outbox[0]
     assert message.to == ["pat@example.com"]
-    assert "http://localhost:4200/reset-password/" in message.body
-    assert message.alternatives and "text/html" in message.alternatives[0][1]
+    assert message.subject == "Your ARQUS CRM verification code"
+    code = _code(message)
+    assert "reset-password" not in message.body  # a code, not a link
+    html, mimetype = message.alternatives[0]
+    assert mimetype == "text/html" and code in html
+    assert "cid:arqus-logo" in html and "#2FC1FF" in html  # the same ARQUS design as lead emails
+    assert "Visit our website" not in html
 
 
 def test_forgot_sends_nothing_for_inactive_accounts(client):
@@ -282,36 +299,87 @@ def test_forgot_sends_nothing_for_inactive_accounts(client):
 
 
 def test_forgot_hides_email_failures(client, monkeypatch):
+    from django.core.mail import EmailMultiAlternatives
+
     make_user(email="pat@example.com")
 
     def boom(*args, **kwargs):
         raise OSError("smtp down")
 
-    monkeypatch.setattr("apps.users.services.send_mail", boom)
+    monkeypatch.setattr(EmailMultiAlternatives, "send", boom)
     assert client.post(FORGOT, {"email": "pat@example.com"}).status_code == 200
 
 
-def test_reset_works_exactly_once_and_clears_the_flag(client):
+def test_the_code_is_stored_hashed_and_a_new_code_replaces_the_old(client):
+    from apps.users.models import PasswordResetOtp
+
+    user = make_user(email="pat@example.com")
+    client.post(FORGOT, {"email": "pat@example.com"})
+    first = _code(mail.outbox[0])
+    assert first not in PasswordResetOtp.objects.get().code_hash
+    client.post(FORGOT, {"email": "pat@example.com"})
+    assert PasswordResetOtp.objects.filter(user=user).count() == 1
+    if _code(mail.outbox[1]) != first:  # a one in a million repeat is still a valid code
+        assert_error(_verify(client, "pat@example.com", first), 400, "otp_invalid")
+
+
+def test_verify_accepts_the_code_once_and_the_token_resets_the_password(client):
     user = make_user(email="pat@example.com")
     set_temporary_password(user, "Temp-Pass-99")
     old_refresh = login(client, "pm1", "Temp-Pass-99").json()["refresh"]
     client.post(FORGOT, {"email": "pat@example.com"})
-    uid, token = _link_parts(mail.outbox[0])
+    code = _code(mail.outbox[0])
 
+    ok = _verify(client, "PAT@example.com", code)
+    assert ok.status_code == 200 and set(ok.json()) == {"uid", "token"}
+    assert_error(_verify(client, "pat@example.com", code), 400, "otp_invalid")  # works once
+
+    uid, token = ok.json()["uid"], ok.json()["token"]
     res = client.post(RESET, {"uid": uid, "token": token, "new_password": "Reset-Pass-2024x"})
     assert res.status_code == 200
     user.refresh_from_db()
     assert user.check_password("Reset-Pass-2024x") and user.must_change_password is False
     assert_error(client.post(REFRESH, {"refresh": old_refresh}), 401, "token_invalid")
-
     again = client.post(RESET, {"uid": uid, "token": token, "new_password": "Another-Pass-2024y"})
-    assert_error(again, 400, "reset_link_invalid")
+    assert_error(again, 400, "reset_link_invalid")  # the token is single-use too
 
 
-def test_reset_rejects_tampered_links_but_not_simple_passwords(client):
+def test_wrong_code_is_rejected_and_five_misses_kill_the_real_one(client):
     make_user(email="pat@example.com")
     client.post(FORGOT, {"email": "pat@example.com"})
-    uid, token = _link_parts(mail.outbox[0])
+    real = _code(mail.outbox[0])
+    wrong = "000000" if real != "000000" else "111111"
+    for _ in range(5):
+        assert_error(_verify(client, "pat@example.com", wrong), 400, "otp_invalid")
+    assert_error(_verify(client, "pat@example.com", real), 400, "otp_invalid")  # locked out
+
+
+def test_expired_code_unknown_email_and_bad_format_are_rejected(client):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.users.models import PasswordResetOtp
+
+    make_user(email="pat@example.com")
+    client.post(FORGOT, {"email": "pat@example.com"})
+    code = _code(mail.outbox[0])
+    PasswordResetOtp.objects.update(expires_at=timezone.now() - timedelta(seconds=1))
+    assert_error(_verify(client, "pat@example.com", code), 400, "otp_invalid")
+    assert_error(_verify(client, "ghost@example.com", "123456"), 400, "otp_invalid")
+    bad = _verify(client, "pat@example.com", "12ab")
+    assert bad.status_code == 400 and "otp" in bad.json()["error"]["details"]
+
+
+def test_verify_is_throttled_per_ip(client):
+    for _ in range(20):
+        assert _verify(client, "x@example.com", "123456").status_code == 400
+    assert_error(_verify(client, "x@example.com", "123456"), 429, "too_many_requests")
+
+
+def test_reset_rejects_tampered_tokens_but_not_simple_passwords(client):
+    make_user(email="pat@example.com")
+    uid, token = _reset_parts(client)
     assert_error(
         client.post(
             RESET, {"uid": uid, "token": token[:-2] + "zz", "new_password": "Reset-Pass-2024x"}
@@ -331,23 +399,25 @@ def test_reset_rejects_tampered_links_but_not_simple_passwords(client):
 # ---- Logs ----------------------------------------------------------------------------------------
 
 
-def test_no_passwords_or_tokens_in_logs(client, caplog, monkeypatch):
+def test_no_passwords_tokens_or_codes_in_logs(client, caplog, monkeypatch):
+    from django.core.mail import EmailMultiAlternatives
+
     caplog.set_level(logging.DEBUG)
     make_user(email="pat@example.com")
     body = login(client, "pm1").json()
     login(client, "pm1", "Wrong-Secret-123")
     client.post(REFRESH, {"refresh": body["refresh"]})
     client.post(LOGOUT, {"refresh": body["refresh"]})
-    client.post(FORGOT, {"email": "pat@example.com"})
-    uid, token = _link_parts(mail.outbox[0])
+    uid, token = _reset_parts(client)
+    code = _code(mail.outbox[0])
 
     def boom(*args, **kwargs):
         raise OSError("smtp down")
 
-    monkeypatch.setattr("apps.users.services.send_mail", boom)
+    monkeypatch.setattr(EmailMultiAlternatives, "send", boom)
     client.post(FORGOT, {"email": "pat@example.com"})  # the failure is logged
 
     logged = caplog.text
-    for secret in (PASSWORD, "Wrong-Secret-123", body["access"], body["refresh"], token):
+    for secret in (PASSWORD, "Wrong-Secret-123", body["access"], body["refresh"], token, code):
         assert secret not in logged
-    assert "Could not send the password reset email" in logged
+    assert "Could not send the password reset code" in logged

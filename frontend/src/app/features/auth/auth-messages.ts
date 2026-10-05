@@ -7,7 +7,8 @@ export const AUTH_MESSAGES = {
   account_locked: 'Too many failed attempts.',
   too_many_requests: 'Too many attempts from this device.',
   network_error: "Can't reach the server. Check your connection and try again.",
-  reset_link_invalid: 'This reset link is invalid or has expired.',
+  reset_link_invalid: 'This reset session is invalid or has expired.',
+  otp_invalid: 'That code is incorrect or has expired. Check it or request a new one.',
   fallback: 'Something went wrong. Please try again.',
 } as const;
 

@@ -126,6 +126,14 @@ export class LeadsApi {
     return this.api.post(`${BASE}/${id}/email`, { template_id: templateId, ...(message ? { message } : {}) });
   }
 
+  /** Managers add a template or script; the saved one comes back. */
+  createTemplate<T extends WhatsAppTemplate | EmailTemplate | CallScript>(
+    kind: 'whatsapp-templates' | 'email-templates' | 'call-scripts',
+    body: Partial<T>,
+  ): Observable<T> {
+    return this.api.post<T>(`${BASE}/${kind}`, body);
+  }
+
   /** Managers reword a template/script; the same shape comes back. */
   updateTemplate<T extends WhatsAppTemplate | EmailTemplate | CallScript>(
     kind: 'whatsapp-templates' | 'email-templates' | 'call-scripts',

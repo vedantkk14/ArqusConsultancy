@@ -1,5 +1,5 @@
 # ruff: noqa: E501  (inline-styled email HTML has long lines by nature)
-"""The branded HTML version of a lead email: ARQUS colours and logo, table layout, inline styles.
+"""The branded HTML version of an ARQUS email (lead emails, sign-in codes): ARQUS colours and logo, table layout, inline styles.
 
 Email clients ignore most modern CSS, so this is a table layout with every style inline. The logo is
 embedded in the message (Content-ID) rather than linked, so it shows even when remote images are blocked.
@@ -27,6 +27,15 @@ INSTAGRAM = "https://www.instagram.com/arqussportsconsultancy/"
 
 FONT = "'Lato','Segoe UI',Helvetica,Arial,sans-serif"
 
+_BUTTON = f"""    <tr><td style="padding:8px 40px 30px 40px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td bgcolor="{GOLD}" style="border-radius:6px;background-color:{GOLD};">
+          <a href="{SITE}" style="display:inline-block;padding:12px 26px;font-family:{FONT};font-size:14px;
+             font-weight:bold;color:{INK};text-decoration:none;border-radius:6px;">Visit our website</a>
+        </td>
+      </tr></table>
+    </td></tr>"""
+
 
 def _paragraphs(text: str) -> str:
     """Plain text to HTML: blank lines split paragraphs, single newlines become <br>."""
@@ -38,7 +47,25 @@ def _paragraphs(text: str) -> str:
     )
 
 
-def render_html(subject: str, text: str) -> str:
+def _code_box(code: str) -> str:
+    """A one-time code, large and spaced, for the sign-in / password reset emails."""
+    return (
+        f'<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" '
+        f'style="margin:6px auto 22px auto;"><tr><td align="center" bgcolor="#F0F9FF" '
+        f'style="padding:16px 34px;background-color:#F0F9FF;border:2px dashed {CYAN};border-radius:10px;'
+        f"font-family:'Courier New',Courier,monospace;font-size:34px;font-weight:bold;"
+        f'letter-spacing:10px;color:{INK};">{escape(code)}</td></tr></table>'
+    )
+
+
+def render_html(
+    subject: str, text: str, *, code: str | None = None, text_after: str = ""
+) -> str:
+    """`code` shows a one-time code box between `text` and `text_after`, with no website button."""
+    body = _paragraphs(text)
+    if code:
+        body += _code_box(code) + _paragraphs(text_after)
+    button = "" if code else _BUTTON
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,16 +93,9 @@ def render_html(subject: str, text: str) -> str:
     <tr><td style="padding:30px 40px 12px 40px;font-family:{FONT};">
       <h1 style="margin:0 0 20px 0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.3;
                  font-weight:normal;color:{INK};">{escape(subject)}</h1>
-      {_paragraphs(text)}
+      {body}
     </td></tr>
-    <tr><td style="padding:8px 40px 30px 40px;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td bgcolor="{GOLD}" style="border-radius:6px;background-color:{GOLD};">
-          <a href="{SITE}" style="display:inline-block;padding:12px 26px;font-family:{FONT};font-size:14px;
-             font-weight:bold;color:{INK};text-decoration:none;border-radius:6px;">Visit our website</a>
-        </td>
-      </tr></table>
-    </td></tr>
+    {button}
     <tr><td align="center" bgcolor="#F8FAFC" style="padding:22px 24px;background-color:#F8FAFC;
             border-top:1px solid #E5E7EB;font-family:{FONT};">
       <p style="margin:0 0 6px 0;font-size:13px;font-weight:bold;color:{INK};">ARQUS Sports Consultancy</p>
@@ -103,18 +123,22 @@ def build_message(
     reply_to: str | None,
     headers: dict,
     connection=None,
+    *,
+    code: str | None = None,
+    text_after: str = "",
+    plain_text: str | None = None,
 ) -> EmailMultiAlternatives:
     """The plain text plus the branded HTML (with the embedded logo) as one message."""
     message = EmailMultiAlternatives(
         subject=subject,
-        body=text,
+        body=plain_text or text,
         from_email=from_email,
         to=[to],
         reply_to=[reply_to] if reply_to else None,
         headers=headers,
         connection=connection,
     )
-    message.attach_alternative(render_html(subject, text), "text/html")
+    message.attach_alternative(render_html(subject, text, code=code, text_after=text_after), "text/html")
     message.mixed_subtype = "related"  # the logo belongs to the HTML part
     if LOGO_PATH.exists():
         logo = MIMEImage(LOGO_PATH.read_bytes(), _subtype="png")

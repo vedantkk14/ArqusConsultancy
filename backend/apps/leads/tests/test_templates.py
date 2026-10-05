@@ -40,3 +40,33 @@ def test_sales_exec_cannot_edit_and_blank_or_duplicate_is_rejected(client_for, m
     assert client_for(manager).patch(url, {"name": "Two"}, format="json").status_code == 400
     first.refresh_from_db()
     assert first.body == "a" and first.name == "One"
+
+
+def test_manager_and_admin_add_each_kind_and_it_shows_in_the_list(client_for, manager, admin):
+    cases = [
+        ("whatsapp-templates", {"name": "Offer", "body": "Hi {{lead_name}}"}),
+        ("email-templates", {"name": "Offer mail", "subject": "Hello", "body": "Body"}),
+        ("call-scripts", {"name": "Closing", "body": "Thank them"}),
+    ]
+    for who, (kind, payload) in zip((manager, admin, manager), cases, strict=True):
+        client = client_for(who)
+        res = client.post(f"{BASE}/{kind}", payload, format="json")
+        assert res.status_code == 201 and res.json()["name"] == payload["name"], kind
+        assert payload["name"] in [t["name"] for t in client.get(f"{BASE}/{kind}").json()]
+
+
+def test_sales_exec_cannot_add_and_bad_input_is_rejected(client_for, manager, exec_a):
+    WhatsAppTemplate.objects.create(name="Taken", body="a")
+    url = f"{BASE}/whatsapp-templates"
+    res = client_for(exec_a).post(url, {"name": "New", "body": "t"}, format="json")
+    assert res.status_code == 403
+    assert not WhatsAppTemplate.objects.filter(name="New").exists()
+    c = client_for(manager)
+    bad = [
+        (url, {"name": "Taken", "body": "b"}),  # duplicate name
+        (url, {"name": "Empty", "body": " "}),
+        (f"{BASE}/email-templates", {"name": "No subject", "body": "b"}),
+    ]
+    for target, payload in bad:
+        assert c.post(target, payload, format="json").status_code == 400, payload
+    assert client_for(exec_a).get(url).status_code == 200  # reading stays open

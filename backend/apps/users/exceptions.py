@@ -40,6 +40,12 @@ class ResetLinkInvalid(APIException):
     default_detail = "This reset link is invalid or has expired. Request a new one."
 
 
+class OtpInvalid(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "otp_invalid"
+    default_detail = "That code is incorrect or has expired. Request a new one."
+
+
 class CannotSelfDeactivate(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "cannot_self_deactivate"

@@ -62,6 +62,13 @@ const ORDER: FieldKey[] = ['name', 'pm', 'start_date', 'expected_end_date', 'sco
         </p>
       }
 
+      @if (lead().requirements) {
+        <div class="field">
+          <span class="req-label">Client requirements</span>
+          <p class="req">{{ lead().requirements }}</p>
+        </div>
+      }
+
       <div class="field">
         <label for="cv-pm">Project manager</label>
         <select id="cv-pm" name="pm" [(ngModel)]="pm">
@@ -120,6 +127,12 @@ const ORDER: FieldKey[] = ['name', 'pm', 'start_date', 'expected_end_date', 'sco
     </form>
   `,
   styles: `
+    .req-label { color: var(--ink-2); font-size: var(--text-sm); font-weight: 500; }
+    .req {
+      max-height: 120px; margin: 0; padding: 10px 12px; overflow-y: auto; border: 1px solid var(--line);
+      border-radius: var(--radius-control); background: var(--subtle); color: var(--ink);
+      font-size: var(--text-sm); white-space: pre-wrap; overflow-wrap: anywhere;
+    }
     .row2 {
       display: grid;
       grid-template-columns: 1fr 1fr;

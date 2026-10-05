@@ -201,6 +201,10 @@ def test_convertible_lists_only_eligible_deals(client_for, admin, make_opportuni
         and row["ineligible_reason"] is None
     )
     assert row["total_amount"] == "1000000.00" and "suggested_budget" not in row
+    ready.lead.requirements = "Floodlit turf for a 5-a-side ground."
+    ready.lead.save()
+    row = client_for(admin).get(f"{BASE}/convertible").json()["results"][0]
+    assert row["requirements"] == "Floodlit turf for a 5-a-side ground."
 
 
 def test_convertible_lookup_explains_why_a_lead_is_not_ready(client_for, admin, make_opportunity):

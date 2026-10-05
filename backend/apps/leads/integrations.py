@@ -8,15 +8,19 @@ Contract expected from accounts (Dev C), see docs/API_CONTRACT.md "Leads -> Acco
 Every function here takes a leads.Opportunity (one deal) unless it says otherwise.
 """
 
+from email.utils import make_msgid
 from urllib.parse import quote
 
 from django.apps import apps
+from django.conf import settings
 from django.core.exceptions import FieldError
+from django.core.mail import get_connection
 from django.db.models import BooleanField as _Bool
 from django.db.models import DecimalField, Exists, OuterRef, Subquery, Value
 
 from apps.core.services import notify as _notify
 
+from .email_html import build_message
 from .exceptions import AccountsNotReady
 
 
@@ -194,15 +198,53 @@ whatsapp_provider: WhatsAppProvider = WaMeProvider()
 
 
 class EmailProvider:
-    """Turns a rendered email into something the user can act on. Swap for real sending later."""
+    """Hands a rendered email for a lead to a mail system."""
 
-    def open_url(self, address: str, subject: str, text: str) -> str:
+    def queue(self, address: str, subject: str, text: str, reply_to: str | None = None) -> str:
+        """Accept the email for sending; returns its Message-ID."""
+        raise NotImplementedError
+
+    def flush(self) -> None:
+        """Deliver whatever is waiting. Safe to call at any time."""
+        raise NotImplementedError
+
+    def delivery(self, refs: list[str]) -> dict[str, str]:
+        """{Message-ID: "sent" | "failed"} for the refs that have been tried."""
         raise NotImplementedError
 
 
-class MailtoProvider(EmailProvider):
-    def open_url(self, address: str, subject: str, text: str) -> str:
-        return f"mailto:{address}?subject={quote(subject, safe='')}&body={quote(text, safe='')}"
+class MailerProvider(EmailProvider):
+    """django-mailer: emails wait in the database queue and are sent (and retried) through
+    MAILER_EMAIL_BACKEND, which is the real SMTP backend configured in .env."""
+
+    def queue(self, address: str, subject: str, text: str, reply_to: str | None = None) -> str:
+        message_id = make_msgid(domain=(settings.DEFAULT_FROM_EMAIL.rsplit("@", 1)[-1].strip("> ")))
+        build_message(
+            subject,
+            text,
+            settings.DEFAULT_FROM_EMAIL,
+            address,
+            reply_to,
+            {"Message-ID": message_id},
+            connection=get_connection("mailer.backend.DbBackend"),
+        ).send(fail_silently=False)
+        return message_id
+
+    def flush(self) -> None:
+        from mailer.engine import send_all
+
+        send_all()
+
+    def delivery(self, refs: list[str]) -> dict[str, str]:
+        from mailer.models import RESULT_SUCCESS, MessageLog
+
+        out: dict[str, str] = {}
+        for row in MessageLog.objects.filter(message_id__in=refs):
+            if row.result == RESULT_SUCCESS:
+                out[row.message_id] = "sent"  # a success always wins over earlier failures
+            else:
+                out.setdefault(row.message_id, "failed")
+        return out
 
 
-email_provider: EmailProvider = MailtoProvider()
+email_provider: EmailProvider = MailerProvider()

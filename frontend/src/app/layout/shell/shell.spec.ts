@@ -167,6 +167,7 @@ describe('Personal header', () => {
     const { el } = render();
     expect(el.querySelector('.topbar .avatar-btn')!.getAttribute('aria-label')).toContain('Alice');
     expect(el.querySelector('app-sidebar-user app-role-badge')).not.toBeNull();
+    expect(el.querySelector('app-sidebar-user a.profile')?.getAttribute('href')).toBe('/settings/profile');
   });
 
   it('welcomes the user once per sign-in', () => {

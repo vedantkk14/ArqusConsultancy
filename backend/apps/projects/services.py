@@ -6,7 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
-from apps.core.permissions import ADMIN, PROJECT_MANAGER
+from apps.core.permissions import ADMIN, PROJECT_MANAGER, SALES_MANAGER
 
 from . import integrations, receipts, rules, selectors
 from .exceptions import (
@@ -89,6 +89,9 @@ def convert(opportunity_id, *, name, pm_id, start_date, expected_end_date, scope
     _event(project, EventType.CREATED, by, pm=_name(pm))
     if pm:
         integrations.notify(pm, "project_assigned", _payload(project))
+    started = _payload(project, lead_id=deal.lead_id, lead_name=deal.lead.name)
+    for manager in get_user_model().objects.filter(role=SALES_MANAGER, is_active=True):
+        integrations.notify(manager, "lead_project_started", started)
     return project
 
 

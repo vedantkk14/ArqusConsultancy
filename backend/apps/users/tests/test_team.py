@@ -214,6 +214,6 @@ def test_assignments_overview_counts_leads_and_projects(admin, exec_):
     make_deal(name="C", phone="+919000000003", assigned_to=exec_, status="WON", proposed_amount=1)
     body = client(admin).get(f"{URL}/assignments-overview").json()
     assert body["data_sources"]["leads"] is True
-    assert body["execs"] == [{"id": exec_.id, "name": "Eva", "open_leads": 2, "overdue": 1}]
+    assert body["execs"] == [{"id": exec_.id, "name": "Eva", "open_leads": 2, "overdue": 1, "won_leads": 1}]
     assert body["data_sources"]["projects"] is True  # projects is merged: real (zero) counts
-    assert body["pms"] == [{"id": pm.id, "name": "Paul", "running_projects": 0}]
+    assert body["pms"] == [{"id": pm.id, "name": "Paul", "running_projects": 0, "completed_projects": 0}]

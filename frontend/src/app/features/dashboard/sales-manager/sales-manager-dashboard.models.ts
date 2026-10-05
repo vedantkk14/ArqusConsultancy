@@ -11,6 +11,7 @@ export interface QueueLeadItem {
   id: number;
   name: string;
   phone: string;
+  email?: string;
   status: LeadStatus;
   source_label: string;
   next_followup_at: string | null;

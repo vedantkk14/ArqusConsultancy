@@ -20,6 +20,8 @@ export function describe(item: Interaction): string {
     }
     case 'ASSIGNMENT':
       return m['from_name'] ? `Reassigned from ${m['from_name']} to ${m['to_name']}` : `Assigned to ${m['to_name']}`;
+    case 'FINALIZED':
+      return `Final amount confirmed by ${m['by_name'] ?? 'an admin'}`;
     case 'AMOUNT_CHANGE':
       return `Proposed value ${m['from'] ? formatInr(String(m['from'])) : 'not set'} → ${m['to'] ? formatInr(String(m['to'])) : 'cleared'}`;
     default:
@@ -27,7 +29,7 @@ export function describe(item: Interaction): string {
   }
 }
 
-const SYSTEM = new Set(['STATUS_CHANGE', 'ASSIGNMENT', 'AMOUNT_CHANGE']);
+const SYSTEM = new Set(['STATUS_CHANGE', 'ASSIGNMENT', 'AMOUNT_CHANGE', 'FINALIZED']);
 
 @Component({
   selector: 'app-lead-timeline',

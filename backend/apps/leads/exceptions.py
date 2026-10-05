@@ -70,3 +70,9 @@ class PhoneUnusable(LeadError):
 class EmailUnusable(LeadError):
     default_code = "email_unusable"
     default_detail = "This lead has no email address on file."
+
+
+class EmailSendFailed(LeadError):
+    status_code = status.HTTP_502_BAD_GATEWAY
+    default_code = "email_send_failed"
+    default_detail = "The email could not be sent. Please try again in a moment."

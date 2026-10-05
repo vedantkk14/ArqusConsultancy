@@ -237,6 +237,7 @@ class ProjectViewSet(GenericViewSet):
                     "lead": deal.lead_id,
                     "name": deal.lead.name,
                     "exec_name": deal.assigned_to.display_name if deal.assigned_to else None,
+                    "requirements": (deal.requirements or deal.lead.requirements or "").strip(),
                     "won_at": deal.won_at,
                     "proposed_amount": selectors.money_str(deal.proposed_amount)
                     if deal.proposed_amount is not None
@@ -305,7 +306,7 @@ class ProjectViewSet(GenericViewSet):
         project = self._project(pk)
         user = request.user
         if request.method == "POST":
-            self._require_writer()
+            # A Sales Manager may log an expense on a running project (amounts stay hidden).
             data, upload = _expense_input(request)
             expense = services.add_expense(project.pk, user, data, upload)
             expense = selectors.expenses_for(user).get(pk=expense.pk)

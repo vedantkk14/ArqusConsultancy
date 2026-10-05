@@ -55,6 +55,8 @@
           <th>Details</th>
           @if (showProject()) {
             <th>Project</th>
+          }
+          @if (byShown()) {
             <th class="c-by">Logged by</th>
           }
           @if (showAmount()) {
@@ -67,7 +69,7 @@
         @if (skeleton()) {
           @for (i of placeholders; track i) {
             <tr class="sk" aria-hidden="true">
-              <td [attr.colspan]="showProject() ? 7 : 5">
+              <td [attr.colspan]="5 + (showProject() ? 1 : 0) + (byShown() ? 1 : 0)">
                 <span class="sk-row">
                   <app-skeleton width="12%" height="14px" />
                   <app-skeleton width="10%" height="22px" radius="999px" />
@@ -100,6 +102,8 @@
                 <td>
                   <a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a>
                 </td>
+              }
+              @if (byShown()) {
                 <td class="c-by">
                   @if (e.logged_by) {
                     <span class="who"
@@ -154,9 +158,9 @@
             <span>{{ day(e.spent_on) }}</span>
             @if (showProject()) {
               <a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a>
-              @if (e.logged_by) {
-                <span>{{ e.logged_by.name }}</span>
-              }
+            }
+            @if (byShown() && e.logged_by) {
+              <span>{{ e.logged_by.name }}</span>
             }
           </span>
           @if (e.has_receipt || e.can_edit) {

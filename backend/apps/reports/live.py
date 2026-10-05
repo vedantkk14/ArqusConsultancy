@@ -164,6 +164,7 @@ def lead_figures(rng, months: list[str]) -> dict:
         InteractionType.NOTE: "added a note on",
         InteractionType.ASSIGNMENT: "assigned",
         InteractionType.AMOUNT_CHANGE: "changed the value of",
+        InteractionType.FINALIZED: "finalized the amount of",
     }
     activity = []
     for i in Interaction.objects.select_related("opportunity__lead", "created_by").order_by(

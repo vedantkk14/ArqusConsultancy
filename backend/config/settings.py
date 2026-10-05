@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
+    "mailer",
     "drf_spectacular",
     # project apps
     "apps.core",
@@ -161,6 +162,9 @@ PASSWORD_RESET_TIMEOUT = env("PASSWORD_RESET_TIMEOUT")  # seconds; used by defau
 FRONTEND_URL = env("FRONTEND_URL").rstrip("/")
 
 EMAIL_BACKEND = env("EMAIL_BACKEND")
+# django-mailer queues lead emails in the database and sends them through this real backend.
+MAILER_EMAIL_BACKEND = EMAIL_BACKEND
+MAILER_EMAIL_MAX_RETRIES = 5
 EMAIL_HOST = env("EMAIL_HOST")
 EMAIL_PORT = env("EMAIL_PORT")
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")

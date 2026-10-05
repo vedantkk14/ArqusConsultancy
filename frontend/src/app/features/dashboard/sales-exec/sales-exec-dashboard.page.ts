@@ -36,6 +36,7 @@ const ACTION_VERB: Record<string, string> = {
   STATUS_CHANGE: 'updated the status of',
   ASSIGNMENT: 'reassigned',
   AMOUNT_CHANGE: 'updated the value on',
+  FINALIZED: 'finalized the amount of',
 };
 
 @Component({

@@ -5,11 +5,13 @@ interactions, WhatsApp and the won-deal hand-off to accounts all work on one Opp
 supplies the contact details. A lead has at most one open (not WON/LOST) deal at a time.
 """
 
+import logging
+import threading
 from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Max
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -19,6 +21,7 @@ from apps.core.permissions import ADMIN, SALES_EXEC, SALES_MANAGER
 from . import integrations
 from .exceptions import (
     DuplicateLead,
+    EmailSendFailed,
     EmailUnusable,
     FollowupInPast,
     FollowupOnClosed,
@@ -42,6 +45,8 @@ from .models import (
 )
 from .selectors import CLOSED_STATUSES
 from .utils import phone_digits
+
+logger = logging.getLogger(__name__)
 
 # ---- Business rules (named so they are easy to change; see docs/OPEN_DECISIONS.md) ----------
 
@@ -256,7 +261,15 @@ def start_opportunity(
         )
         if assignee.pk != by.pk:
             integrations.notify(assignee, "lead_assigned", _payload(opportunity))
+    _notify_managers("lead_repeat_deal", _payload(opportunity, started_by=_name(by)), by)
     return opportunity
+
+
+def _notify_managers(type_: str, payload: dict, by=None) -> None:
+    """Sales managers follow the team's deals; the person who did it is not told about their own act."""
+    for manager in get_user_model().objects.filter(role=SALES_MANAGER, is_active=True):
+        if by is None or manager.pk != by.pk:
+            integrations.notify(manager, type_, payload)
 
 
 def notify_import(by, count: int) -> None:
@@ -415,11 +428,13 @@ def change_status(
         payload = _payload(deal, reversed_by=_name(by))
         for admin in get_user_model().objects.filter(role=ADMIN, is_active=True):
             integrations.notify(admin, "lead_won_reversed", payload)
+        _notify_managers("lead_won_reversed", payload, by)
     if new_status == LeadStatus.WON:
         integrations.create_ledger(deal)
         payload = _payload(deal, proposed_amount=f"{deal.proposed_amount:.2f}", won_by=_name(by))
         for admin in get_user_model().objects.filter(role=ADMIN, is_active=True):
             integrations.notify(admin, "lead_won", payload)
+        _notify_managers("lead_won", payload, by)
     return deal
 
 
@@ -581,36 +596,75 @@ def whatsapp(
 # ---- Email ----------
 
 
-def email_preview(opportunity: Opportunity, template: EmailTemplate, by) -> dict:
-    """Render only; nothing is logged."""
+def email_preview(
+    opportunity: Opportunity, template: EmailTemplate, by, text: str | None = None
+) -> dict:
+    """Render only; nothing is logged. `text` is the sender's own last-minute wording, if any."""
     lead = opportunity.lead
     _require_own_or_manager(lead, by)
     if not lead.email:
         raise EmailUnusable()
     subject = render_text(template.subject, opportunity, by)
-    text = render_text(template.body, opportunity, by)
-    return {
-        "subject": subject,
-        "text": text,
-        "url": integrations.email_provider.open_url(lead.email, subject, text),
-    }
+    text = (text or "").strip() or render_text(template.body, opportunity, by)
+    return {"subject": subject, "text": text}
 
 
-@transaction.atomic
-def email(opportunity: Opportunity, template: EmailTemplate, by) -> dict:
-    result = email_preview(opportunity, template, by)
-    MessageLog.objects.create(
-        opportunity=opportunity,
-        email_template=template,
+def _flush_mail_in_background() -> None:
+    """Deliver the queue right after the request, without making the user wait for SMTP."""
+
+    def run():
+        try:
+            integrations.email_provider.flush()
+            sync_email_statuses()
+        except Exception:  # noqa: BLE001 - the queue keeps the email; `runmailer` retries it
+            logger.exception("Could not deliver the queued emails")
+        finally:
+            connection.close()
+
+    threading.Thread(target=run, name="mailer-flush", daemon=True).start()
+
+
+def sync_email_statuses() -> None:
+    """Turn Queued emails into Sent / Failed once django-mailer has tried them."""
+    pending = MessageLog.objects.filter(
         channel=MessageLog.Channel.EMAIL,
-        subject=result["subject"],
-        rendered_text=result["text"],
-        created_by=by,
-    )
-    log_interaction(
-        opportunity, by, type_=InteractionType.EMAIL, notes=f"Sent “{template.name}”"
-    )
-    return result
+        status__in=[MessageLog.Status.QUEUED, MessageLog.Status.FAILED],
+    ).exclude(mail_ref="")
+    by_ref = {m.mail_ref: m for m in pending}
+    if not by_ref:
+        return
+    for ref, result in integrations.email_provider.delivery(list(by_ref)).items():
+        wanted = MessageLog.Status.SENT if result == "sent" else MessageLog.Status.FAILED
+        if by_ref[ref].status != wanted:
+            MessageLog.objects.filter(pk=by_ref[ref].pk).update(status=wanted)
+
+
+def email(opportunity: Opportunity, template: EmailTemplate, by, text: str | None = None) -> dict:
+    """Queue the email for the lead in django-mailer, log it, and start delivering it."""
+    result = email_preview(opportunity, template, by, text)
+    try:
+        ref = integrations.email_provider.queue(
+            opportunity.lead.email, result["subject"], result["text"], reply_to=by.email or None
+        )
+    except Exception:  # noqa: BLE001 - never leak mail-system details to the client
+        logger.exception("Could not queue the email for lead %s", opportunity.lead_id)
+        raise EmailSendFailed() from None
+    with transaction.atomic():
+        MessageLog.objects.create(
+            opportunity=opportunity,
+            email_template=template,
+            channel=MessageLog.Channel.EMAIL,
+            subject=result["subject"],
+            rendered_text=result["text"],
+            created_by=by,
+            status=MessageLog.Status.QUEUED,
+            mail_ref=ref,
+        )
+        log_interaction(
+            opportunity, by, type_=InteractionType.EMAIL, notes=f"Emailed “{template.name}”"
+        )
+        transaction.on_commit(_flush_mail_in_background)
+    return {**result, "queued": True}
 
 
 # ---- Call ----------
@@ -636,7 +690,10 @@ def finalize(opportunity: Opportunity, amount: Decimal, by, note: str = ""):
         raise PermissionDenied()
     if opportunity.status != LeadStatus.WON:
         raise NotWon()
-    return integrations.finalize(opportunity, amount, by, note)
+    ledger = integrations.finalize(opportunity, amount, by, note)
+    # Who confirmed the price goes on the timeline; the amount never does (execs see this feed).
+    _log(opportunity, InteractionType.FINALIZED, by, meta={"by_name": _name(by)})
+    return ledger
 
 
 @transaction.atomic

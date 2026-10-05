@@ -218,8 +218,8 @@ describe('ResetPasswordDialog', () => {
 describe('AssignmentsPage', () => {
   const overview = {
     data_sources: { leads: true, projects: false },
-    execs: [{ id: 5, name: 'Eva Exec', open_leads: 8, overdue: 3 }],
-    pms: [{ id: 6, name: 'Paul Project', running_projects: 0, over_budget: 0 }],
+    execs: [{ id: 5, name: 'Eva Exec', open_leads: 8, overdue: 3, won_leads: 2 }],
+    pms: [{ id: 6, name: 'Paul Project', running_projects: 0, completed_projects: 1, over_budget: 0 }],
   };
 
   it('links each row into the filtered list and explains missing project data', async () => {

@@ -243,3 +243,12 @@ def test_duplicate_check_stays_on_the_lead(client_for, manager, make_lead, make_
     make_opportunity(lead)
     res = client_for(manager).get(f"{BASE}/check-duplicate?phone=9811100000").json()
     assert res["existing"]["id"] == lead.id and res["existing"]["status"] == "NEW"
+
+
+def test_a_returning_client_notifies_the_sales_managers(client_for, manager, admin, make_lead):
+    from apps.notifications.models import Notification
+
+    lead = make_lead(status=LeadStatus.WON)
+    assert start(client_for(admin), lead).status_code == 201
+    note = Notification.objects.get(recipient=manager, type="lead_repeat_deal")
+    assert lead.name in note.body

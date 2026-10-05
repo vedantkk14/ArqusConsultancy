@@ -29,6 +29,11 @@ def inr(value) -> str:
 TEMPLATES: dict[str, tuple[str, str]] = {
     "lead_assigned": ("New lead assigned", "{lead_name} was assigned to you."),
     "lead_reassigned_away": ("Lead reassigned", "{lead_name} was reassigned to a colleague."),
+    "lead_repeat_deal": (
+        "Returning client",
+        "{lead_name} is back for a new deal, started by {started_by}.",
+    ),
+    "lead_project_started": ("Project started", "{project_name} was started for {lead_name}."),
     "lead_imported": ("Leads imported", "{summary} imported by {imported_by}."),
     "lead_won": ("Deal won", "{lead_name} was won for {proposed_amount} by {won_by}."),
     "lead_won_reversed": ("Won deal reversed", "{lead_name} was marked lost by {reversed_by}."),

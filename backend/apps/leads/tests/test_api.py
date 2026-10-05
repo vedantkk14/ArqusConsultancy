@@ -226,7 +226,7 @@ def test_lost_needs_reason_and_clears_followup(client_for, manager, make_lead, f
     assert lead.lost_reason == "COMPETITOR" and lead.lost_note == "Cheaper"
 
 
-def test_won_creates_ledger_once_and_notifies_admins(client_for, admin, exec_a, make_lead):
+def test_won_creates_ledger_once_and_notifies_admins(client_for, admin, manager, exec_a, make_lead):
     lead = make_lead(status=LeadStatus.CONTACTED, assigned_to=exec_a, proposed_amount=900)
     c = client_for(exec_a)
     with (
@@ -237,7 +237,7 @@ def test_won_creates_ledger_once_and_notifies_admins(client_for, admin, exec_a, 
             assert c.post(f"{BASE}/{lead.id}/status", {"status": "WON"}).status_code == 200
     create_ledger.assert_called_once()
     won_calls = [call for call in notify.call_args_list if call.args[1] == "lead_won"]
-    assert [call.args[0] for call in won_calls] == [admin]
+    assert [call.args[0] for call in won_calls] == [admin, manager]  # admins and sales managers
 
 
 def test_status_changes_are_logged(client_for, manager, make_lead):
@@ -441,6 +441,10 @@ def test_finalize_creates_a_finalized_ledger(client_for, admin, make_lead):
     from apps.accounts.models import Ledger
 
     assert Ledger.objects.get(opportunity__lead=lead).finalized_at is not None
+    # The timeline says who finalized it, and never the amount (executives read this feed).
+    entry = deal_of(lead).interactions.get(type="FINALIZED")
+    assert entry.created_by == admin and entry.meta == {"by_name": admin.display_name}
+    assert "100" not in str(entry.meta) + entry.notes
 
 
 def test_finalize_needs_a_won_lead(client_for, admin, make_lead):
@@ -484,19 +488,104 @@ def test_whatsapp_sends_and_logs_the_senders_edited_message(client_for, exec_a, 
     assert deal_of(fresh(lead)).messages.get().rendered_text == "Hi Rahul, call me"
 
 
-def test_email_renders_logs_and_contacts(client_for, exec_a, make_lead):
+def test_email_is_queued_in_django_mailer_then_delivered(
+    client_for, exec_a, make_lead, settings, django_capture_on_commit_callbacks
+):
+    from django.core import mail
+    from mailer.engine import send_all
+    from mailer.models import Message
+
+    settings.MAILER_EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    exec_a.email = "exec.a@crm.local"
+    exec_a.save(update_fields=["email"])
     lead = make_lead(assigned_to=exec_a, name="Rahul Sharma", email="rahul@example.com")
     template = EmailTemplate.objects.get(name="Welcome / Intro")
     c = client_for(exec_a)
     assert template.id in [t["id"] for t in c.get(f"{BASE}/email-templates").json()]
-    r = c.post(f"{BASE}/{lead.id}/email", {"template_id": template.id})
+    with django_capture_on_commit_callbacks() as callbacks:
+        r = c.post(f"{BASE}/{lead.id}/email", {"template_id": template.id})
     assert r.status_code == 200
     data = r.json()
     assert data["subject"].startswith("Thanks for your interest")
     assert data["text"].startswith("Hi Rahul Sharma,")
     assert "ARQUS Sports Consultancy" in data["text"]
-    assert data["url"].startswith("mailto:rahul@example.com")
-    assert deal_of(lead).messages.get().channel == "EMAIL"
+    assert data["queued"] is True and "url" not in data
+    assert len(callbacks) == 1  # delivery starts right after the request commits
+    # Queued, not yet sent: it waits in django-mailer's table.
+    assert Message.objects.count() == 1 and not mail.outbox
+    log = deal_of(lead).messages.get()
+    assert log.channel == "EMAIL" and log.status == "QUEUED" and log.mail_ref
+    send_all()  # what the background flush / `runmailer` does
+    (msg,) = mail.outbox
+    assert msg.to == ["rahul@example.com"] and msg.subject == data["subject"]
+    assert msg.body == data["text"] and msg.reply_to == ["exec.a@crm.local"]
+    assert msg.from_email.startswith(settings.DEFAULT_FROM_EMAIL.split("<")[0].strip())
+    assert Message.objects.count() == 0
+    assert c.get(f"{BASE}/messages").json()["results"][0]["status"] == "SENT"
+    emails = Interaction.objects.filter(opportunity=deal_of(lead), type=InteractionType.EMAIL)
+    assert emails.count() == 1
+
+
+def test_email_message_can_be_edited_before_sending(
+    client_for, exec_a, make_lead, settings
+):
+    from mailer.models import Message
+
+    lead = make_lead(assigned_to=exec_a, name="Asha", email="asha@example.com")
+    template = EmailTemplate.objects.get(name="Follow-up")
+    r = client_for(exec_a).post(
+        f"{BASE}/{lead.id}/email", {"template_id": template.id, "message": "Custom wording"}
+    )
+    assert r.status_code == 200 and r.json()["text"] == "Custom wording"
+    assert Message.objects.get().email.body == "Custom wording"
+
+
+def test_failed_delivery_shows_failed_and_a_retry_marks_it_sent(
+    client_for, exec_a, make_lead, settings, monkeypatch
+):
+    import smtplib
+
+    from django.core import mail
+    from mailer.engine import send_all
+    from mailer.models import Message
+
+    settings.MAILER_EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    lead = make_lead(assigned_to=exec_a, name="Rahul", email="rahul@example.com")
+    template = EmailTemplate.objects.get(name="Welcome / Intro")
+    c = client_for(exec_a)
+    c.post(f"{BASE}/{lead.id}/email", {"template_id": template.id})
+
+    def refuse(self, *a, **k):
+        raise smtplib.SMTPAuthenticationError(535, b"bad credentials")
+
+    monkeypatch.setattr(mail.backends.locmem.EmailBackend, "send_messages", refuse)
+    send_all()
+    assert Message.objects.count() == 1  # deferred, kept for a retry
+    assert c.get(f"{BASE}/messages").json()["results"][0]["status"] == "FAILED"
+    monkeypatch.undo()
+    Message.objects.update(priority=2, retry_count=0)  # what `retry_deferred` does
+    send_all()
+    assert len(mail.outbox) == 1
+    assert c.get(f"{BASE}/messages").json()["results"][0]["status"] == "SENT"
+
+
+def test_email_without_an_address_is_refused(client_for, exec_a, make_lead):
+    lead = make_lead(assigned_to=exec_a, name="NoMail", email="")
+    template = EmailTemplate.objects.get(name="Welcome / Intro")
+    r = client_for(exec_a).post(f"{BASE}/{lead.id}/email", {"template_id": template.id})
+    assert r.status_code == 400 and not deal_of(lead).messages.exists()
+
+
+def test_queue_failure_is_reported_without_details(client_for, exec_a, make_lead, monkeypatch):
+    def boom(*args, **kwargs):
+        raise OSError("db down")
+
+    monkeypatch.setattr("apps.leads.integrations.email_provider.queue", boom)
+    lead = make_lead(assigned_to=exec_a, name="Rahul", email="rahul@example.com")
+    template = EmailTemplate.objects.get(name="Welcome / Intro")
+    r = client_for(exec_a).post(f"{BASE}/{lead.id}/email", {"template_id": template.id})
+    assert r.status_code == 502 and "db down" not in r.content.decode()
+    assert not deal_of(lead).messages.exists()
 
 
 def test_email_preview_logs_nothing(client_for, exec_a, make_lead):
@@ -716,3 +805,24 @@ def test_won_rows_carry_the_finalized_value_for_managers_only(
     )
     exec_row = client_for(exec_a).get(f"{BASE}?status=WON").json()["results"][0]
     assert "final_amount" not in exec_row and "finalized" not in exec_row
+
+
+def test_lead_email_has_a_branded_html_part_with_the_embedded_logo(
+    client_for, exec_a, make_lead, settings
+):
+    from django.core import mail
+    from mailer.engine import send_all
+
+    settings.MAILER_EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    lead = make_lead(assigned_to=exec_a, name="Asha <b>Rao</b>", email="asha@example.com")
+    template = EmailTemplate.objects.get(name="Welcome / Intro")
+    client_for(exec_a).post(f"{BASE}/{lead.id}/email", {"template_id": template.id})
+    send_all()
+    (msg,) = mail.outbox
+    assert msg.body.startswith("Hi ")  # the plain-text version is still there
+    html, mimetype = msg.alternatives[0]
+    assert mimetype == "text/html" and "cid:arqus-logo" in html
+    assert "#2FC1FF" in html and "arqussportsconsultancy.com" in html
+    assert "<b>Rao</b>" not in html and "&lt;b&gt;Rao&lt;/b&gt;" in html  # user text is escaped
+    (logo,) = [a for a in msg.attachments if getattr(a, "get", None) and a.get("Content-ID")]
+    assert logo["Content-ID"] == "<arqus-logo>" and logo.get_content_type() == "image/png"

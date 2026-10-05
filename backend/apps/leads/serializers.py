@@ -336,6 +336,7 @@ class WhatsAppTemplateSerializer(serializers.ModelSerializer):
 
 class EmailSerializer(serializers.Serializer):
     template_id = serializers.IntegerField()
+    message = serializers.CharField(required=False, allow_blank=True, max_length=10000)
 
 
 class EmailTemplateSerializer(serializers.ModelSerializer):

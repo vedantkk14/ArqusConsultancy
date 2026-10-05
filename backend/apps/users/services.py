@@ -405,16 +405,32 @@ def assignments_overview(include_pms: bool = True) -> dict:
         except FieldError:  # pragma: no cover - the leads model changed shape
             pass
 
+    won_counts: dict = {}
+    if lead_model is not None:
+        try:
+            won_counts = dict(
+                lead_model.objects.filter(
+                    status="WON", assigned_to__in=[u.pk for u in execs], lead__is_deleted=False
+                )
+                .order_by()
+                .values_list("assigned_to")
+                .annotate(n=Count("id"))
+            )
+        except FieldError:  # pragma: no cover
+            pass
+
     project_counts: dict = {}
     projects_ok = False
     project_model = _model("projects", "Project")
     if project_model is not None and include_pms:
         try:
             rows = (
-                project_model.objects.exclude(status="COMPLETED")
-                .order_by()
+                project_model.objects.order_by()
                 .values("pm")
-                .annotate(running=Count("id"))
+                .annotate(
+                    running=Count("id", filter=~Q(status="COMPLETED")),
+                    completed=Count("id", filter=Q(status="COMPLETED")),
+                )
             )
             project_counts = {r["pm"]: r for r in rows}
             projects_ok = True
@@ -429,6 +445,7 @@ def assignments_overview(include_pms: bool = True) -> dict:
                 "name": u.display_name,
                 "open_leads": lead_counts.get(u.pk, {}).get("open", 0),
                 "overdue": lead_counts.get(u.pk, {}).get("overdue", 0),
+                "won_leads": won_counts.get(u.pk, 0),
             }
             for u in execs
         ],
@@ -437,6 +454,7 @@ def assignments_overview(include_pms: bool = True) -> dict:
                 "id": u.pk,
                 "name": u.display_name,
                 "running_projects": project_counts.get(u.pk, {}).get("running", 0),
+                "completed_projects": project_counts.get(u.pk, {}).get("completed", 0),
             }
             for u in pms
         ],

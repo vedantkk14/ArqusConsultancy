@@ -88,7 +88,7 @@ describe('ProjectDetailPage for a Sales Manager', () => {
     expect(table.querySelector('[aria-label="Receipt attached"]')).toBeTruthy();
     expect(table.querySelector('button[aria-label^="View receipt"]')).toBeNull();
     expect(el.querySelector('a.client')!.getAttribute('href')).toBe('/leads/9');
-    expect(buttonByText(el, 'Add expense')).toBeUndefined();
+    expect(byLabel(el, 'Add expense to')).toBeTruthy(); // the one write a Sales Manager has
     expect(buttonByText(el, 'Mark complete')).toBeUndefined();
   });
 });

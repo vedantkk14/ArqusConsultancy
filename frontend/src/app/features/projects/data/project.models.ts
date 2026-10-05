@@ -93,6 +93,8 @@ export interface ConvertibleLead {
   lead: number;
   name: string;
   exec_name: string | null;
+  /** What the client asked for, so the admin can pick the right project manager. */
+  requirements: string;
   won_at: string | null;
   proposed_amount: string | null;
   total_amount: string | null;

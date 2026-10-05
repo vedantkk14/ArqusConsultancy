@@ -36,7 +36,7 @@ export type LostReason = (typeof LOST_REASONS)[number][0];
 
 export const USER_INTERACTION_TYPES = ['CALL', 'WHATSAPP', 'EMAIL', 'MEETING', 'NOTE'] as const;
 export type UserInteractionType = (typeof USER_INTERACTION_TYPES)[number];
-export type InteractionType = UserInteractionType | 'STATUS_CHANGE' | 'ASSIGNMENT' | 'AMOUNT_CHANGE';
+export type InteractionType = UserInteractionType | 'STATUS_CHANGE' | 'ASSIGNMENT' | 'AMOUNT_CHANGE' | 'FINALIZED';
 
 export interface Person {
   id: number;

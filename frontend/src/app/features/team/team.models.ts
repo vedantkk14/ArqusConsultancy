@@ -20,12 +20,14 @@ export interface ExecLoad {
   name: string;
   open_leads: number;
   overdue: number;
+  won_leads: number;
 }
 
 export interface PmLoad {
   id: number;
   name: string;
   running_projects: number;
+  completed_projects: number;
 }
 
 export interface AssignmentsOverview {

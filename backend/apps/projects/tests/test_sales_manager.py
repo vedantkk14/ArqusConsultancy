@@ -74,7 +74,7 @@ def test_sales_manager_detail_shape(client_for, sales_manager, pm1, project, mak
     body = client_for(sales_manager).get(f"{BASE}/{project.pk}").json()
     assert body["client_name"] and body["pm_name"] == pm1.display_name
     assert body["lead_id"] == project.opportunity.lead_id  # links back to the lead profile
-    assert body["allowed_actions"] == []
+    assert body["allowed_actions"] == ["add_expense"]  # the only action: log an expense
     (expense,) = body["expenses"]
     assert expense["vendor"] == "Shree Traders" and expense["category"] == "MATERIALS"
     assert expense["has_receipt"] is True and "spent_on" in expense

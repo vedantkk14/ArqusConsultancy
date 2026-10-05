@@ -56,6 +56,7 @@ def _lead_item(deal, *, with_assignee: bool) -> dict:
         "id": lead.id,
         "name": lead.name,
         "phone": lead.phone,
+        "email": lead.email,
         "status": deal.status,
         "source_label": lead.source_other or lead.get_source_display(),
         "next_followup_at": deal.next_followup_at,

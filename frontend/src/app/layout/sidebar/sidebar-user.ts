@@ -43,11 +43,13 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
           </div>
         </ng-template>
       } @else {
-        <app-user-avatar [name]="user.name" [size]="32" />
-        <div class="who">
-          <strong>{{ user.name }}</strong>
-          <app-role-badge [role]="user.role" />
-        </div>
+        <a class="profile" routerLink="/settings/profile" [attr.aria-label]="'Open the profile of ' + user.name" matTooltip="View profile">
+          <app-user-avatar [name]="user.name" [size]="32" />
+          <span class="who">
+            <strong>{{ user.name }}</strong>
+            <app-role-badge [role]="user.role" />
+          </span>
+        </a>
         <button type="button" class="icon-btn" aria-label="Log out" matTooltip="Log out" (click)="auth.logout()">
           <mat-icon aria-hidden="true">logout</mat-icon>
         </button>
@@ -56,6 +58,9 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
   `,
   styles: `
     :host {
+      position: relative;
+      z-index: 1;
+      flex: none;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -73,6 +78,25 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
       border: 0;
       background: none;
       box-shadow: none;
+    }
+    .profile {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      align-items: center;
+      gap: 10px;
+      padding: 2px;
+      border-radius: 10px;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .profile:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .profile:focus-visible {
+      outline: 2px solid var(--sb-accent, #6fe3cb);
+      outline-offset: 2px;
     }
     .who {
       display: flex;

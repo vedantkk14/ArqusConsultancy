@@ -265,7 +265,8 @@ class SalesManagerProjectDetailSerializer(SalesManagerProjectSerializer):
         )
 
     def get_allowed_actions(self, obj):
-        return []  # read-only: no convert, budget, PM, complete/reopen or expense actions
+        # No convert, budget, PM or complete/reopen: only logging an expense on a running project.
+        return selectors.allowed_actions(self.context["request"].user, obj)
 
     def get_expenses(self, obj):
         rows = obj.expenses.select_related("logged_by").order_by("-spent_on", "-id")

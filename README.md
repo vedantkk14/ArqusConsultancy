@@ -99,6 +99,19 @@ In dev, `EMAIL_BACKEND` is the console backend: emails are **printed in the back
 
 For real email set the SMTP variables in `.env` (see `.env.example`).
 
+### Emails to leads (django-mailer)
+
+The "Message <client>" dialog's Email tab queues the email in [django-mailer](https://github.com/pinax/django-mailer)
+and sends it through the `EMAIL_BACKEND` above, from `DEFAULT_FROM_EMAIL`, with the sender's address as Reply-To.
+The email is delivered in the background right after the request; the Message Log shows **Queued**, then **Sent**
+(or **Failed**). Failed emails stay in the queue. After running `python manage.py migrate`:
+
+```bash
+python manage.py runmailer          # long-running: sends and retries the queue (run it beside the server)
+python manage.py retry_deferred     # or: put failed emails back in the queue once (cron)
+python manage.py purge_mail_log 30  # optional housekeeping: drop mailer logs older than 30 days
+```
+
 ## Project structure
 
 ```

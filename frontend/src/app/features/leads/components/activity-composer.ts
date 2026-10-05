@@ -28,6 +28,7 @@ export const TYPE_META: Record<string, { label: string; icon: string; tint: stri
   STATUS_CHANGE: { label: 'Status', icon: 'swap_horiz', tint: 'plain' },
   ASSIGNMENT: { label: 'Assignment', icon: 'person_add', tint: 'plain' },
   AMOUNT_CHANGE: { label: 'Amount', icon: 'currency_rupee', tint: 'plain' },
+  FINALIZED: { label: 'Finalized', icon: 'verified', tint: 'plain' },
 };
 
 /** Log a call / WhatsApp / email / meeting / note, optionally moving the stage and setting a follow-up. */

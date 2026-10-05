@@ -19,6 +19,7 @@ interface CalCell {
   isHoliday: boolean;
   holidayName: string;
   isWeekend: boolean;
+  isLeave?: boolean;
 }
 
 @Component({
@@ -175,6 +176,21 @@ interface CalCell {
       font-weight: 700;
     }
 
+    /* Approved personal leave: a soft grey day */
+    .cell.leave:not(.holiday) { background: rgba(120, 130, 140, 0.14); }
+    .cell.leave:not(.holiday) .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #8a949e;
+      color: #fff;
+      font-weight: 600;
+    }
+    .dot.leave-dot { background: #8a949e; }
+
     /* Holiday tooltip label */
     .hol-label {
       display: block;
@@ -250,6 +266,7 @@ interface CalCell {
           class="cell"
           [class.clickable]="canAddHoliday() && !cell.otherMonth"
           [class.holiday]="cell.isHoliday"
+          [class.leave]="cell.isLeave"
           [class.today]="cell.isToday"
           [class.other-month]="cell.otherMonth"
           [class.weekend]="cell.isWeekend"
@@ -259,7 +276,7 @@ interface CalCell {
           (click)="onCellClick(cell)"
           (keydown.enter)="onCellClick(cell)"
           (keydown.space)="onCellClick(cell); $event.preventDefault()"
-          [title]="cell.holidayName || (canAddHoliday() && !cell.otherMonth ? 'Click to add holiday' : '')"
+          [title]="cell.holidayName || (cell.isLeave ? 'On leave' : '') || (canAddHoliday() && !cell.otherMonth ? 'Click to add holiday' : '')"
         >
           <span class="num">{{ cell.day }}</span>
           @if (cell.holidayName) {
@@ -270,9 +287,12 @@ interface CalCell {
     </div>
 
     <!-- Footer legend -->
-    @if (holidays().length > 0 || canAddHoliday()) {
+    @if (holidays().length > 0 || canAddHoliday() || leaveDates().size > 0) {
       <div class="footer">
         <span class="legend-item"><span class="dot"></span>Holiday</span>
+        @if (leaveDates().size > 0) {
+          <span class="legend-item"><span class="dot leave-dot"></span>On leave</span>
+        }
         @if (canAddHoliday()) {
           <span class="legend-item" style="color: var(--ink-3); font-size: 12px;">
             Click any date to mark as holiday
@@ -285,6 +305,21 @@ interface CalCell {
 export class LeavesCalendar {
   readonly holidays = input<Holiday[]>([]);
   readonly canAddHoliday = input(false);
+  /** Approved leave ranges (inclusive) to shade grey; pending and rejected ones are not passed in. */
+  readonly leaves = input<{ start_date: string; end_date: string }[]>([]);
+  protected readonly leaveDates = computed(() => {
+    const days = new Set<string>();
+    const parse = (iso: string) => {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    };
+    for (const l of this.leaves()) {
+      for (const d = parse(l.start_date), end = parse(l.end_date); d <= end; d.setDate(d.getDate() + 1)) {
+        days.add(fmt(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+      }
+    }
+    return days;
+  });
   @Output() dateSelected = new EventEmitter<string>();
 
   protected readonly DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -308,6 +343,7 @@ export class LeavesCalendar {
     const todayStr = fmt(today.getFullYear(), today.getMonth() + 1, today.getDate());
 
     const holidayMap = new Map(this.holidays().map((h) => [h.date, h.name]));
+    const leaveDays = this.leaveDates();
     const cells: CalCell[] = [];
 
     for (let i = firstDay - 1; i >= 0; i--) {
@@ -328,6 +364,7 @@ export class LeavesCalendar {
         isHoliday: !!hName,
         holidayName: hName,
         isWeekend: dow === 0 || dow === 6,
+        isLeave: leaveDays.has(dateStr),
       });
     }
 

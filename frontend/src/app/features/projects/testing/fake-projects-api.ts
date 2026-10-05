@@ -74,7 +74,7 @@ export function makeSmProject(id: number, patch: Partial<ProjectListItem> = {}):
 }
 
 export function makeSmDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
-  const detail = makePmDetail(id, { allowed_actions: [], ...patch });
+  const detail = makePmDetail(id, { allowed_actions: ['add_expense'], ...patch });
   delete detail.spent;
   return { ...detail, lead_id: 9 };
 }
@@ -138,6 +138,7 @@ export const CONVERTIBLE: ConvertibleLead = {
   lead: 9,
   name: 'Kolhapur Kabaddi League',
   exec_name: 'Eva Exec',
+  requirements: 'New synthetic turf with floodlights.',
   won_at: '2026-09-01T06:30:00Z',
   proposed_amount: '300000.00',
   total_amount: '300000.00',

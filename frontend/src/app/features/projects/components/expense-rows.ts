@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterLink } from '@angular/router';
@@ -46,6 +46,9 @@ export class ExpenseRows {
   readonly layout = input<'table' | 'cards'>('table');
   /** The all-expenses page shows the project (as a link) and who logged it. */
   readonly showProject = input(false);
+  /** "Logged by" without the Project column (a project's own expense list, for the admin). */
+  readonly showLoggedBy = input(false);
+  protected readonly byShown = computed(() => this.showProject() || this.showLoggedBy());
   readonly skeleton = input(false);
   /** The all-expenses page can void but not edit (editing happens on the project page). */
   readonly allowEdit = input(true);

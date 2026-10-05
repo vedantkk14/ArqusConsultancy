@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ApiError } from '../../../../core/models';
 import { EmailTemplate } from '../../data/lead.models';
 import { LeadsApi } from '../../data/leads-api.service';
@@ -10,7 +11,7 @@ export interface EmailDialogData {
   lead: { id: number; name: string; email: string };
 }
 
-/** Choose a template, see the message the server renders, then open the mail client (logged on the timeline). */
+/** Choose a template, see the message the server renders, then send it by SMTP (logged on the timeline). */
 @Component({
   selector: 'app-email-dialog',
   imports: [DialogHead, MatButtonModule, MatDialogModule],
@@ -30,7 +31,7 @@ export interface EmailDialogData {
     }
   `,
   template: `
-    <app-dialog-head [title]="'Email ' + data.lead.name" subtitle="Pick a template. It opens in your mail app for you to send." />
+    <app-dialog-head [title]="'Email ' + data.lead.name" subtitle="Pick a template. It is sent to the lead from ARQUS, and replies come to you." />
     <div class="tpls" role="group" aria-label="Templates">
       @for (t of templates(); track t.id) {
         <button type="button" class="tpl" [attr.aria-pressed]="choice() === t.id" (click)="pick(t.id)">{{ t.name }}</button>
@@ -64,6 +65,7 @@ export class EmailDialog {
   protected readonly data = inject<EmailDialogData>(MAT_DIALOG_DATA);
   private readonly ref = inject(MatDialogRef<EmailDialog, boolean>);
   private readonly api = inject(LeadsApi);
+  private readonly snack = inject(MatSnackBar);
 
   protected readonly usable = !!this.data.lead.email;
   protected readonly templates = signal<EmailTemplate[]>([]);
@@ -103,8 +105,8 @@ export class EmailDialog {
     }
     this.sending.set(true);
     this.api.email(this.data.lead.id, id).subscribe({
-      next: (res) => {
-        window.location.href = res.url;
+      next: () => {
+        this.snack.open(`Email sent to ${this.data.lead.name}.`, undefined, { duration: 4000 });
         this.ref.close(true);
       },
       error: (err: ApiError) => {

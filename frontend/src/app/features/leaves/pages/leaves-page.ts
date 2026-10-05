@@ -45,6 +45,12 @@ const STATUS_TINT: Record<LeaveStatus, string> = { PENDING: 't-amber', APPROVED:
       .layout { grid-template-columns: 1fr; }
     }
 
+    .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4); }
+    .stat { display: flex; flex-direction: column; gap: 4px; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); }
+    .stat .k { color: var(--ink-3); font-size: var(--text-xs); font-weight: 500; }
+    .stat .v { color: var(--ink); font-size: var(--text-xl); font-weight: 700; line-height: 1.2; }
+    .stat .v small { color: var(--ink-2); font-size: var(--text-sm); font-weight: 500; }
+
     .card { padding: var(--space-4); margin-bottom: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); }
     .card.no-pad { padding: 0; }
 
@@ -175,6 +181,19 @@ const STATUS_TINT: Record<LeaveStatus, string> = { PENDING: 't-amber', APPROVED:
     }
   `,
   template: `
+    @if (!isAdmin()) {
+      <div class="stats" role="group" aria-label="Leaves taken">
+        <div class="stat">
+          <span class="k">Leaves this month</span>
+          <span class="v">{{ summary()?.this_month ?? 0 }} <small>day(s)</small></span>
+        </div>
+        <div class="stat">
+          <span class="k">Leaves this year</span>
+          <span class="v">{{ summary()?.this_year ?? 0 }} <small>day(s)</small></span>
+        </div>
+      </div>
+    }
+
     <div class="layout">
       <!-- Requests column -->
       <section class="card no-pad">
@@ -271,6 +290,7 @@ const STATUS_TINT: Record<LeaveStatus, string> = { PENDING: 't-amber', APPROVED:
           <app-leaves-calendar
             [holidays]="holidays()"
             [canAddHoliday]="isAdmin()"
+            [leaves]="approvedLeaves()"
             (dateSelected)="addHoliday($event)">
           </app-leaves-calendar>
         </section>
@@ -317,6 +337,10 @@ export class LeavesPage {
   protected readonly requests = signal<LeaveRequestItem[]>([]);
   protected readonly holidays = signal<Holiday[]>([]);
   protected readonly summary = signal<{ this_month: number; this_year: number } | null>(null);
+  /** Only the signed-in employee's own approved leave is shaded on the calendar. */
+  protected readonly approvedLeaves = computed(() =>
+    this.isAdmin() ? [] : this.requests().filter((r) => r.status === 'APPROVED'),
+  );
   protected readonly tint = (status: LeaveStatus) => STATUS_TINT[status];
 
   protected readonly employeeGroups = computed<EmployeeLeaveGroup[]>(() => {

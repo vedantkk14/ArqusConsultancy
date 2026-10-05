@@ -209,6 +209,8 @@ def allowed_actions(user, project) -> list[str]:
     is_admin = user.role == ADMIN
     is_pm = user.role == PROJECT_MANAGER and project.pm_id == user.pk
     actions = []
+    if running and user.role == SALES_MANAGER:
+        return ["add_expense"]
     if running and (is_admin or is_pm):
         actions += ["add_expense", "complete"]
     if running and is_admin:

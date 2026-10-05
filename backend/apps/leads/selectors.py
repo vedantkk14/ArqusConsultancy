@@ -43,6 +43,7 @@ SYSTEM_INTERACTION_TYPES = (
     InteractionType.STATUS_CHANGE,
     InteractionType.ASSIGNMENT,
     InteractionType.AMOUNT_CHANGE,
+    InteractionType.FINALIZED,
 )
 OPEN_STATUSES = (LeadStatus.NEW, LeadStatus.CONTACTED, LeadStatus.INTERESTED)
 LIST_ROLES = (ADMIN, SALES_MANAGER, SALES_EXEC)

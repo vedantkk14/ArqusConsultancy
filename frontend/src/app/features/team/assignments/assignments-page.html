@@ -39,6 +39,14 @@
                 >
                   <b class="num">{{ e.open_leads }}</b> open
                 </a>
+                <a
+                  class="chip"
+                  [routerLink]="['/leads/won']"
+                  [queryParams]="{ assigned_to: e.id }"
+                  [attr.aria-label]="e.won_leads + ' won leads for ' + e.name"
+                >
+                  <b class="num">{{ e.won_leads }}</b> won
+                </a>
                 @if (e.overdue) {
                   <a
                     class="pill bad"
@@ -92,6 +100,12 @@
                     [routerLink]="['/projects/running']"
                     [queryParams]="{ pm: p.id }"
                     ><b class="num">{{ p.running_projects }}</b> running</a
+                  >
+                  <a
+                    class="chip"
+                    [routerLink]="['/projects/completed']"
+                    [queryParams]="{ pm: p.id }"
+                    ><b class="num">{{ p.completed_projects }}</b> completed</a
                   >
                 </span>
               </li>

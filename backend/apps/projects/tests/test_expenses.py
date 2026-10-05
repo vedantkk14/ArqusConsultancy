@@ -158,8 +158,9 @@ def test_pm_can_only_add_to_their_own_projects_and_sales_roles_never(
     client_for, pm2, sales_manager, sales_exec, project
 ):
     assert add(client_for(pm2), project).status_code == 404
-    for user in (sales_manager, sales_exec):
-        assert add(client_for(user), project).status_code == 403
+    assert add(client_for(sales_exec), project).status_code == 403
+    res = add(client_for(sales_manager), project)
+    assert res.status_code == 201 and "amount" not in res.json()  # logged, amount never echoed
     assert add(client_for(), project).status_code == 401
 
 

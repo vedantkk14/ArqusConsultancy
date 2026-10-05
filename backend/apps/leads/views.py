@@ -320,6 +320,7 @@ class LeadViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["get"])
     def messages(self, request):
         """Cross-lead chat history (WhatsApp + Email), newest first."""
+        services.sync_email_statuses()
         qs = MessageLog.objects.select_related(
             "opportunity__lead", "created_by", "template", "email_template"
         )
@@ -479,7 +480,7 @@ class LeadViewSet(viewsets.GenericViewSet):
         )
 
     def _email(self, request, deal):
-        """GET ?template_id= previews the email; POST logs it and returns the mailto: link."""
+        """GET ?template_id= previews the email; POST queues it in django-mailer and logs it."""
         source = request.query_params if request.method == "GET" else request.data
         serializer = EmailSerializer(data=source)
         serializer.is_valid(raise_exception=True)
@@ -488,7 +489,9 @@ class LeadViewSet(viewsets.GenericViewSet):
         )
         if request.method == "GET":
             return Response(services.email_preview(deal, template, request.user))
-        return Response(services.email(deal, template, request.user))
+        return Response(
+            services.email(deal, template, request.user, serializer.validated_data.get("message"))
+        )
 
     def _call(self, request, deal):
         """Log a call, optionally noting which script was used as a reference."""

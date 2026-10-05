@@ -117,12 +117,13 @@ export class LeadsApi {
   }
 
   /** Rendered subject/body only; nothing is logged. */
-  emailPreview(id: number, templateId: number): Observable<{ subject: string; text: string; url: string }> {
+  emailPreview(id: number, templateId: number): Observable<{ subject: string; text: string }> {
     return this.api.get(`${BASE}/${id}/email`, { template_id: templateId });
   }
 
-  email(id: number, templateId: number): Observable<{ subject: string; text: string; url: string }> {
-    return this.api.post(`${BASE}/${id}/email`, { template_id: templateId });
+  /** Queues the email in django-mailer; `message` is the final body when the sender edited it. */
+  email(id: number, templateId: number, message?: string): Observable<{ subject: string; text: string; queued: boolean }> {
+    return this.api.post(`${BASE}/${id}/email`, { template_id: templateId, ...(message ? { message } : {}) });
   }
 
   /** Managers reword a template/script; the same shape comes back. */

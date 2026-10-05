@@ -47,6 +47,7 @@ class InteractionType(models.TextChoices):
     STATUS_CHANGE = "STATUS_CHANGE", "Status change"
     ASSIGNMENT = "ASSIGNMENT", "Assignment"
     AMOUNT_CHANGE = "AMOUNT_CHANGE", "Amount change"
+    FINALIZED = "FINALIZED", "Amount finalized"
 
 
 class Lead(TimeStampedModel, SoftDeleteModel):
@@ -203,6 +204,7 @@ class MessageLog(models.Model):
 
     class Status(models.TextChoices):
         OPENED = "OPENED", "Opened"  # wa.me/mailto link handed to the user; delivery unconfirmed
+        QUEUED = "QUEUED", "Queued"  # email handed to django-mailer, not delivered yet
         SENT = "SENT", "Sent"
         FAILED = "FAILED", "Failed"
 
@@ -218,6 +220,7 @@ class MessageLog(models.Model):
     )
     channel = models.CharField(max_length=20, choices=Channel.choices, default=Channel.WHATSAPP)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.OPENED)
+    mail_ref = models.CharField(max_length=255, blank=True, db_index=True)  # email Message-ID
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

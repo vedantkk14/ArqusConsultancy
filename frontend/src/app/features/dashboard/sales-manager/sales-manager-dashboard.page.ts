@@ -41,6 +41,7 @@ const ACTION_VERB: Record<string, string> = {
   STATUS_CHANGE: 'updated the status of',
   ASSIGNMENT: 'reassigned',
   AMOUNT_CHANGE: 'updated the value on',
+  FINALIZED: 'finalized the amount of',
 };
 
 @Component({
@@ -169,7 +170,7 @@ export class SalesManagerDashboardPage {
       width: '480px',
       maxWidth: 'calc(100vw - 32px)',
       autoFocus: 'first-tabbable',
-      data: { lead: { id: row.id, name: row.name, phone: row.phone } },
+      data: { lead: { id: row.id, name: row.name, phone: row.phone, email: row.email ?? '' } },
     });
   }
 }

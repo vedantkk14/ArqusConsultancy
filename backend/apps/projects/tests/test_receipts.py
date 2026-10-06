@@ -144,8 +144,20 @@ def test_the_receipt_endpoint_is_authorized(
     assert (
         client_for(pm2).get(url).status_code == 404
     )  # another PM's receipt does not exist for them
-    assert client_for(sales_manager).get(url).status_code == 403
+    assert client_for(sales_manager).get(url).status_code == 200  # a PM's expense: visible
     assert client_for(sales_exec).get(url).status_code == 403
+
+
+def test_a_sales_manager_can_open_their_own_and_the_pms_receipts_but_not_the_admins(
+    client_for, admin, sales_manager, project
+):
+    own = add(client_for(sales_manager), project)
+    theirs = add(client_for(admin), project)
+    assert own.status_code == 201 and theirs.status_code == 201
+    sm = client_for(sales_manager)
+    served = sm.get(f"{EXPENSES}/{own.json()['id']}/receipt")
+    assert served.status_code == 200 and served["Cache-Control"] == "private, no-store"
+    assert sm.get(f"{EXPENSES}/{theirs.json()['id']}/receipt").status_code == 404
 
 
 def test_an_expense_without_a_receipt_answers_404(client_for, admin, make_expense):

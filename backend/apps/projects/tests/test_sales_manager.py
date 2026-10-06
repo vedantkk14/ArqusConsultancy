@@ -37,12 +37,16 @@ def test_money_keys_finds_nested_keys():
     ]
 
 
-def test_sales_manager_project_responses_carry_no_money(
+def _project_money(payload) -> list[str]:
+    """Money keys other than an expense's own `amount` (the sales manager sees those)."""
+    return [k for k in money_keys(payload) if not k.endswith(".amount")]
+
+
+def test_sales_manager_project_responses_carry_no_project_money(
     client_for, sales_manager, pm1, make_project, make_expense
 ):
     running = make_project(pm=pm1, budget="777000.00")
     make_expense(pm1, "4321.00", proj=running)
-    make_expense(pm1, "1234.00", proj=running, category="LABOUR")
     done = make_project(pm=pm1)
     make_expense(pm1, "999.00", proj=done)
     client_for(pm1).post(f"{BASE}/{done.pk}/complete")
@@ -64,24 +68,56 @@ def test_sales_manager_project_responses_carry_no_money(
     for url in urls:
         res = c.get(url)
         assert res.status_code == 200, url
-        assert money_keys(res.json()) == [], (url, money_keys(res.json()))
-        for needle in ("777000", "4321", "1234.00", "999.00"):
-            assert needle not in res.content.decode(), (url, needle)
+        assert _project_money(res.json()) == [], (url, _project_money(res.json()))
+        assert "777000" not in res.content.decode(), url  # the deal total / budget never shows
 
 
-def test_sales_manager_detail_shape(client_for, sales_manager, pm1, project, make_expense):
-    make_expense(pm1, "50.00", vendor="Shree Traders")
-    body = client_for(sales_manager).get(f"{BASE}/{project.pk}").json()
+def test_sales_manager_sees_the_pms_and_their_own_expenses_but_never_the_admins(
+    client_for, sales_manager, admin, pm1, project, make_expense
+):
+    pm_exp = make_expense(pm1, "50.00", vendor="Shree Traders")  # the PM's: visible
+    admin_exp = make_expense(admin, "70.00")  # the admin's: hidden
+    c = client_for(sales_manager)
+    mine = c.post(
+        f"{BASE}/{project.pk}/expenses",
+        expense_form(amount="123.45", vendor="My vendor"),
+        format="multipart",
+    )
+    assert mine.status_code == 201
+    body = c.get(f"{BASE}/{project.pk}").json()
     assert body["client_name"] and body["pm_name"] == pm1.display_name
     assert body["lead_id"] == project.opportunity.lead_id  # links back to the lead profile
     assert body["allowed_actions"] == ["add_expense"]  # the only action: log an expense
-    (expense,) = body["expenses"]
-    assert expense["vendor"] == "Shree Traders" and expense["category"] == "MATERIALS"
-    assert expense["has_receipt"] is True and "spent_on" in expense
-    assert "amount" not in expense
-    # The receipt image itself shows the amount: the Sales Manager sees only the icon.
-    receipt = client_for(sales_manager).get(f"{EXPENSES}/{expense['id']}/receipt")
-    assert receipt.status_code == 403
+    seen = {e["id"]: e for e in body["expenses"]}
+    assert set(seen) == {pm_exp.pk, mine.json()["id"]}
+    assert seen[pm_exp.pk]["amount"] == "50.00" and seen[pm_exp.pk]["vendor"] == "Shree Traders"
+    assert seen[mine.json()["id"]]["amount"] == "123.45"
+    assert all(e["has_receipt"] and "spent_on" in e for e in seen.values())
+    for exp_id in seen:
+        assert c.get(f"{EXPENSES}/{exp_id}/receipt").status_code == 200
+    # The list endpoints agree, and the admin's expense does not exist for them.
+    assert {r["id"] for r in c.get(EXPENSES).json()["results"]} == set(seen)
+    assert {r["id"] for r in c.get(f"{BASE}/{project.pk}/expenses").json()["results"]} == set(seen)
+    assert c.get(f"{EXPENSES}/{admin_exp.pk}").status_code == 404
+    assert c.get(f"{EXPENSES}/{admin_exp.pk}/receipt").status_code == 404
+
+
+def test_sales_manager_timeline_shows_the_pms_and_their_own_expenses_not_the_admins(
+    client_for, sales_manager, admin, pm1, project, make_expense
+):
+    pm_exp = make_expense(pm1, "50.00")
+    admin_exp = make_expense(admin, "70.00")
+    c = client_for(sales_manager)
+    own = c.post(
+        f"{BASE}/{project.pk}/expenses", expense_form(amount="9.00"), format="multipart"
+    ).json()["id"]
+    events = c.get(f"{BASE}/{project.pk}/events").json()["results"]
+    added = {e["data"]["expense_id"]: e for e in events if e["type"] == "EXPENSE_ADDED"}
+    assert set(added) == {pm_exp.pk, own} and admin_exp.pk not in added
+    assert added[pm_exp.pk]["data"]["amount"] == "50.00"  # amounts show for what they may see
+    assert added[own]["data"]["amount"] == "9.00"
+    assert "spent" not in str(events)  # project spend stays hidden
+    assert any(e["type"] == "CREATED" for e in events)
 
 
 def test_sales_manager_list_rows_have_the_basics(client_for, sales_manager, pm1, project):

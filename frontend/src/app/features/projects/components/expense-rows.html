@@ -107,9 +107,11 @@
                 <td class="c-by">
                   @if (e.logged_by) {
                     <span class="who"
-                      ><app-person-avatar [name]="e.logged_by.name" [size]="24" />{{
-                        e.logged_by.name
-                      }}</span
+                      ><app-person-avatar [name]="e.logged_by.name" [size]="24" /><span class="who-t"
+                        >{{ e.logged_by.name }}@if (e.logged_by.role) {<small class="role">{{
+                          e.logged_by.role
+                        }}</small>}</span
+                      ></span
                     >
                   }
                 </td>
@@ -160,7 +162,7 @@
               <a class="pl" [routerLink]="['/projects', e.project]">{{ e.project_name }}</a>
             }
             @if (byShown() && e.logged_by) {
-              <span>{{ e.logged_by.name }}</span>
+              <span>{{ e.logged_by.name }}@if (e.logged_by.role) { · {{ e.logged_by.role }} }</span>
             }
           </span>
           @if (e.has_receipt || e.can_edit) {

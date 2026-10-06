@@ -26,13 +26,10 @@
   <div class="bento" [class.busy]="refreshing()" [attr.aria-busy]="state().status === 'loading'">
     @if (data(); as d) {
       <div class="col b-left">
-        <!-- Follow up now: overdue then today, one card -->
-        <app-follow-up-now-card class="rise-in" style="--i: 0" [overdue]="d.queues.overdue" [today]="d.queues.today" />
-
         <!-- New leads -->
         <app-exec-queue-section
           class="rise-in"
-          style="--i: 1"
+          style="--i: 0"
           title="New leads"
           subtitle="Untouched"
           icon="person_add"
@@ -44,6 +41,9 @@
           [viewAllParams]="{ untouched: 'true' }"
           emptyText="No new leads waiting."
         />
+
+        <!-- Follow up now: overdue then today, one card (below the new leads) -->
+        <app-follow-up-now-card class="rise-in" style="--i: 1" [overdue]="d.queues.overdue" [today]="d.queues.today" />
 
         <!-- No next step: hidden entirely when empty -->
         @if (d.queues.no_followup.total > 0) {

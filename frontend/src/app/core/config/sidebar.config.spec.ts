@@ -10,6 +10,8 @@ describe('sidebar config', () => {
       'Leads',
       'Projects',
       'Accounts',
+      'Invoices',
+      'My Clients',
       'Expenses',
       'Reports',
       'Team',

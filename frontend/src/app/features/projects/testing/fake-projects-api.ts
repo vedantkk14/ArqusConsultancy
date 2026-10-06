@@ -79,11 +79,9 @@ export function makeSmDetail(id: number, patch: Partial<ProjectDetail> = {}): Pr
   return { ...detail, lead_id: 9 };
 }
 
-/** An expense as a Sales Manager sees it: no amount. */
+/** An expense as a Sales Manager sees it: only the ones they logged, with the amount. */
 export function makeSmExpense(id: number): Expense {
-  const expense = { ...makeExpense(id) } as Partial<Expense>;
-  delete expense.amount;
-  return expense as Expense;
+  return { ...makeExpense(id), logged_by: { id: 9, name: 'Sam Sales' } };
 }
 
 export function makePmDetail(id: number, patch: Partial<ProjectDetail> = {}): ProjectDetail {
@@ -114,7 +112,7 @@ export function makeExpense(id: number, patch: Partial<Expense> = {}): Expense {
     receipt_type: 'image/png',
     is_void: false,
     void_reason: '',
-    logged_by: { id: 4, name: 'Paul Project' },
+    logged_by: { id: 4, name: 'Paul Project', role: 'Project Manager' },
     created_at: '2026-09-20T06:30:00Z',
     can_edit: true,
     ...patch,

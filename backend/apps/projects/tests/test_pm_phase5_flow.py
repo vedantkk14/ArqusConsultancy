@@ -47,10 +47,10 @@ def test_phase5_workflow(client_for, admin, pm1, make_opportunity, notes):
     assert admin_view["remaining"] == "-9000.00" and admin_view["state"] == "over"
     assert [k for _, k, _ in notes if k.startswith("budget_")] == []
 
-    # 5. Dashboard and project detail agree on expenses so far.
+    # 5. Dashboard and project detail agree on the PM's own expenses (the admin's 32,000 is hidden).
     dash = p.get(DASH).json()
-    assert dash["kpis"]["total_spent"] == p.get(f"{BASE}/{pid}").json()["spent"] == "69000.00"
-    assert sum(Decimal(x["amount"]) for x in dash["recent_expenses"]) == Decimal("69000.00")
+    assert dash["kpis"]["total_spent"] == p.get(f"{BASE}/{pid}").json()["spent"] == "37000.00"
+    assert sum(Decimal(x["amount"]) for x in dash["recent_expenses"]) == Decimal("37000.00")
 
     # 6. The PM completes it. `complete` notifies every admin plus the PM, except the actor.
     before = dash["kpis"]["projects_completed"]

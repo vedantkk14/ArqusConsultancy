@@ -174,7 +174,6 @@
               [rows]="expenses()"
               [layout]="wide() ? 'table' : 'cards'"
               [skeleton]="!expensesLoaded()"
-              [showAmount]="!isSalesManager()"
               [showLoggedBy]="isAdmin()"
               (action)="onExpenseAction($event)"
             />

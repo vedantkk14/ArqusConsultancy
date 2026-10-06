@@ -70,7 +70,7 @@ const buttonByText = (root: ParentNode, label: string) =>
 const field = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 describe('ProjectDetailPage for a Sales Manager', () => {
-  it('shows the project with no money anywhere in the DOM, and links the client to the lead', async () => {
+  it('shows no project money, only the amounts of their own expenses, and links the client to the lead', async () => {
     const { el } = await setup({
       role: Role.SalesManager,
       project: makeSmDetail(1),
@@ -83,10 +83,10 @@ describe('ProjectDetailPage for a Sales Manager', () => {
     expect(el.querySelector('app-budget-panel')).toBeNull();
     const table = el.querySelector('app-expense-rows') as HTMLElement;
     expect(table.querySelectorAll('tbody tr').length).toBe(2);
-    expect(text(table)).not.toMatch(/₹\s?[\d,]+/);
-    expect(text(table)).not.toContain('Amount');
-    expect(table.querySelector('[aria-label="Receipt attached"]')).toBeTruthy();
-    expect(table.querySelector('button[aria-label^="View receipt"]')).toBeNull();
+    expect(text(table)).toMatch(/₹\s?[\d,]+/); // the amounts of the expenses they logged
+    expect(text(table)).toContain('Amount');
+    expect(text(table)).not.toContain('Logged by'); // that column is for the admin
+    expect(table.querySelector('button[aria-label^="View receipt"]')).toBeTruthy();
     expect(el.querySelector('a.client')!.getAttribute('href')).toBe('/leads/9');
     expect(byLabel(el, 'Add expense to')).toBeTruthy(); // the one write a Sales Manager has
     expect(buttonByText(el, 'Mark complete')).toBeUndefined();
@@ -105,6 +105,17 @@ describe('ProjectDetailPage', () => {
       for (const label of ['Add expense to', 'Complete', 'Reassign']) {
         expect(byLabel(el, label), label).toBeTruthy();
       }
+    });
+
+    it('admin sees who added each expense and their role; a project manager does not', async () => {
+      const { el } = await setup();
+      const by = el.querySelector('app-expense-rows td.c-by');
+      expect(text(by)).toContain('Paul Project');
+      expect(text(by)).toContain('Project Manager');
+      TestBed.resetTestingModule();
+      const pm = await setup({ role: Role.ProjectManager, project: makePmDetail(1) });
+      expect(pm.el.querySelector('app-expense-rows td.c-by')).toBeNull();
+      expect(text(pm.el.querySelector('app-expense-rows'))).not.toContain('Logged by');
     });
 
     it('admin sees "Awaiting accounts data" when finance is null', async () => {
@@ -214,7 +225,7 @@ describe('ProjectDetailPage', () => {
       (overlay().querySelector('button[type=submit]') as HTMLButtonElement).click();
       await settle(harness);
       expect(text(overlay())).toContain('Enter the amount.');
-      expect(text(overlay())).toContain('Attach a receipt for this expense.');
+      expect(text(overlay())).not.toContain('Attach a receipt'); // the receipt photo is optional
       expect(document.activeElement?.id).toBe('ae-amount');
       expect(api.actions.length).toBe(0);
     });
@@ -233,14 +244,14 @@ describe('ProjectDetailPage', () => {
       expect(text(overlay())).toContain('The receipt is larger than 5 MB.');
     });
 
-    it('labour needs no receipt', async () => {
+    it('needs no receipt for any category', async () => {
       const { api, harness } = await openForm();
       const amount = field<HTMLInputElement>('ae-amount');
       amount.value = '2500';
       amount.dispatchEvent(new Event('input'));
       field<HTMLInputElement>('ae-cat-LABOUR').click();
       await settle(harness);
-      expect(text(overlay())).toContain('Receipt (optional for labour)');
+      expect(text(overlay())).toContain('Receipt photo (optional)');
       (overlay().querySelector('button[type=submit]') as HTMLButtonElement).click();
       await settle(harness);
       expect(api.actions[0].name).toBe('addExpense');

@@ -49,7 +49,9 @@ def build_pm_dashboard(user, period: str) -> dict:
     rng = period_range(period, today)
 
     rows = list(
-        selectors.budget_usage_qs(selectors.projects_for(user)).order_by("status", "-created_at")
+        selectors.budget_usage_qs(selectors.projects_for(user), by=user).order_by(
+            "status", "-created_at"
+        )
     )
     rows.sort(key=lambda p: p.status != ProjectStatus.RUNNING)  # running first, stable otherwise
     projects = []
@@ -68,7 +70,9 @@ def build_pm_dashboard(user, period: str) -> dict:
         spent_total += p.spent
 
     mine = selectors.expenses_for(user)
-    in_period = selectors.active_expenses().filter(project__pm=user, spent_on__lte=rng.end)
+    in_period = selectors.active_expenses().filter(
+        project__pm=user, logged_by=user, spent_on__lte=rng.end
+    )
     if rng.start:
         in_period = in_period.filter(spent_on__gte=rng.start)
     logged = in_period.aggregate(n=Count("id"), total=Sum("amount"))

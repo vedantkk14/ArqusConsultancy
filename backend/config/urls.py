@@ -14,6 +14,7 @@ api_v1 = [
     path("", include("apps.notifications.urls")),
     path("", include("apps.reports.urls")),
     path("", include("apps.leaves.urls")),
+    path("", include("apps.invoices.urls")),
 ]
 
 urlpatterns = [

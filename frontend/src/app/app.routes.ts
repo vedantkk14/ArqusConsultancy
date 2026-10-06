@@ -48,6 +48,10 @@ export const routes: Routes = [
         import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       ),
       featureRoute('leads', () => import('./features/leads/leads.routes').then((m) => m.LEADS_ROUTES)),
+      featureRoute('invoices', () =>
+        import('./features/invoices/invoices.routes').then((m) => m.INVOICES_ROUTES),
+      ),
+      featureRoute('clients', () => import('./features/clients/clients.routes').then((m) => m.CLIENTS_ROUTES)),
       featureRoute('projects', () =>
         import('./features/projects/projects.routes').then((m) => m.PROJECTS_ROUTES),
       ),

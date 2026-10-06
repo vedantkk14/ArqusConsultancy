@@ -105,6 +105,24 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     ],
   },
   {
+    label: 'Invoices',
+    icon: 'description',
+    route: '/invoices',
+    // Admin only: make tax invoices and send them to clients as PDFs.
+    roles: [Admin],
+    children: [
+      { label: 'All Invoices', icon: 'list', route: '/invoices/all', roles: [Admin] },
+      { label: 'Create Invoice', icon: 'note_add', route: '/invoices/new', roles: [Admin] },
+    ],
+  },
+  {
+    label: 'My Clients',
+    icon: 'handshake',
+    route: '/clients',
+    // Admin only: clients with projects, and adding their next project.
+    roles: [Admin],
+  },
+  {
     label: 'Expenses',
     icon: 'request_quote',
     route: '/expenses',

@@ -116,11 +116,13 @@ def test_description_is_limited_to_500_characters(client_for, pm1, project):
     assert add(client, project, description="x" * 501).status_code == 400
 
 
-def test_receipt_is_required_except_for_labour(client_for, pm1, project):
+def test_the_receipt_photo_is_optional_for_every_category(client_for, pm1, sales_manager, project):
     client = client_for(pm1)
-    res = add(client, project, receipt=None)
-    assert res.status_code == 400 and "receipt" in res.json()["error"]["details"]
-    assert add(client, project, category="LABOUR", receipt=None, amount="10").status_code == 201
+    for category in ("MATERIALS", "LABOUR", "TRANSPORT", "OTHER"):
+        res = add(client, project, category=category, receipt=None, amount="10")
+        assert res.status_code == 201, category
+        assert res.json()["has_receipt"] is False
+    assert add(client_for(sales_manager), project, receipt=None).status_code == 201
 
 
 # ---- Budget: the deal total, Admin only; expenses are never blocked ---------------------------
@@ -160,7 +162,7 @@ def test_pm_can_only_add_to_their_own_projects_and_sales_roles_never(
     assert add(client_for(pm2), project).status_code == 404
     assert add(client_for(sales_exec), project).status_code == 403
     res = add(client_for(sales_manager), project)
-    assert res.status_code == 201 and "amount" not in res.json()  # logged, amount never echoed
+    assert res.status_code == 201 and res.json()["amount"] == "1000.00"  # their own: amount shown
     assert add(client_for(), project).status_code == 401
 
 
@@ -232,14 +234,14 @@ def test_the_window_edge(client_for, pm1, make_expense):
 def test_a_pm_cannot_change_an_expense_someone_else_logged(client_for, pm1, admin, make_expense):
     expense = make_expense(admin, "100.00")
     res = client_for(pm1).post(f"{EXPENSES}/{expense.pk}/void", {"reason": "x"}, format="json")
-    assert res.status_code == 403
+    assert res.status_code == 404  # it is not even visible to them
 
 
 def test_pm_flags_say_who_may_edit(client_for, pm1, admin, make_expense):
     mine = make_expense(pm1, "10.00")
-    theirs = make_expense(admin, "20.00")
+    make_expense(admin, "20.00")
     rows = {r["id"]: r for r in client_for(pm1).get(EXPENSES).json()["results"]}
-    assert rows[mine.pk]["can_edit"] is True and rows[theirs.pk]["can_edit"] is False
+    assert list(rows) == [mine.pk] and rows[mine.pk]["can_edit"] is True
 
 
 def test_void_needs_a_reason_and_leaves_the_row_visible(

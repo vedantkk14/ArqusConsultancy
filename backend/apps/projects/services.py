@@ -296,3 +296,31 @@ def void_expense(expense_id, by, reason: str) -> Expense:
         reason=reason,
     )
     return expense
+
+
+@transaction.atomic
+def add_project_for_client(
+    lead_id, *, name, scope, amount, pm_id, start_date, expected_end_date, by
+) -> Project:
+    """A new project for a client who already has one, in a single step (admin only).
+
+    Creates the client's next deal (#2, #3...), marks it won at `amount`, finalizes the price and
+    converts it to a project. Anything that fails rolls the whole thing back.
+    """
+    if by.role != ADMIN:
+        raise PermissionDenied()
+    if not Project.objects.filter(opportunity__lead_id=lead_id).exists():
+        raise ValidationError({"client": ["This client has no project yet."]})
+    _check_dates(start_date, expected_end_date)
+    if pm_id:
+        _check_pm(pm_id)
+    deal = integrations.start_won_deal(lead_id, by, requirements=scope or "", amount=amount)
+    return convert(
+        deal.pk,
+        name=name,
+        pm_id=pm_id,
+        start_date=start_date,
+        expected_end_date=expected_end_date,
+        scope=scope,
+        by=by,
+    )

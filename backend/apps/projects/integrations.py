@@ -101,3 +101,24 @@ def lock_opportunity(opportunity_id):
         .filter(pk=opportunity_id, lead__is_deleted=False)
         .first()
     )
+
+
+def start_won_deal(lead_id, by, *, requirements: str, amount):
+    """A new deal for an existing client, taken straight to Won at the agreed price and finalized.
+
+    Goes through the leads app's own rules (one open deal per lead, status steps, ledger).
+    """
+    from rest_framework.exceptions import ValidationError
+
+    from apps.leads import services as leads
+
+    lead = lead_model().objects.filter(pk=lead_id).first()
+    if lead is None:
+        raise ValidationError({"client": ["This client does not exist."]})
+    deal = leads.start_opportunity(lead, by, requirements=requirements)
+    deal = leads.change_status(
+        deal, "CONTACTED", by, note="New project for an existing client"
+    )
+    deal = leads.change_status(deal, "WON", by, proposed_amount=amount)
+    leads.finalize(deal, amount, by)
+    return deal

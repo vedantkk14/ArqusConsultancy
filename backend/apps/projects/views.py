@@ -24,14 +24,16 @@ from .filters import (
     apply_project_filters,
     apply_project_ordering,
 )
-from .models import Expense, ProjectEvent, ProjectStatus
+from .models import EventType, Expense, ProjectEvent, ProjectStatus
 from .serializers import (
     AssignPMSerializer,
+    ClientProjectSerializer,
     ConvertSerializer,
     EventSerializer,
     ExpenseWriteSerializer,
     ProjectUpdateSerializer,
     ReasonSerializer,
+    client_row,
     expense_serializer,
     project_serializer,
 )
@@ -40,6 +42,11 @@ ROLES = (ADMIN, PROJECT_MANAGER, SALES_MANAGER)
 #: Read-only roles: every write (convert, edit, PM, complete/reopen, expenses) is 403 for them.
 READ_ONLY_ROLES = (SALES_MANAGER,)
 INELIGIBLE_MAX = 200
+EXPENSE_EVENT_TYPES = (
+    EventType.EXPENSE_ADDED,
+    EventType.EXPENSE_EDITED,
+    EventType.EXPENSE_VOIDED,
+)
 #: Orderings that would reveal money through the order itself.
 MONEY_ORDERINGS = ("-usage_pct", "-spent")
 
@@ -89,8 +96,11 @@ class ProjectViewSet(GenericViewSet):
     lookup_value_regex = r"\d+"
 
     def get_queryset(self):
+        user = self.request.user
         return selectors.with_client_numbers(
-            selectors.budget_usage_qs(selectors.projects_for(self.request.user))
+            selectors.budget_usage_qs(
+                selectors.projects_for(user), by=user if user.role == PROJECT_MANAGER else None
+            )
         )
 
     def _is_admin(self) -> bool:
@@ -296,6 +306,16 @@ class ProjectViewSet(GenericViewSet):
     def events(self, request, pk=None):
         project = self._project(pk)
         qs = ProjectEvent.objects.filter(project=project).select_related("actor")
+        if request.user.role in (PROJECT_MANAGER, SALES_MANAGER):
+            # Expense entries only for the expenses they may see: a PM's own; a sales manager's
+            # own plus the project managers', never the admin's.
+            mine = set(selectors.visible_expense_ids(request.user, project))
+            hidden = [
+                e.pk
+                for e in qs.filter(type__in=EXPENSE_EVENT_TYPES)
+                if (e.data or {}).get("expense_id") not in mine
+            ]
+            qs = qs.exclude(pk__in=hidden)
         page = self.paginate_queryset(qs)
         return self.get_paginated_response(
             EventSerializer(page, many=True, context={"request": request}).data
@@ -372,9 +392,7 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=True, methods=["get"])
     def receipt(self, request, pk=None):
-        if request.user.role in READ_ONLY_ROLES:
-            raise PermissionDenied()  # the receipt shows the amount; the list shows only the icon
-        expense = get_object_or_404(self.get_queryset(), pk=pk)
+        expense = get_object_or_404(self.get_queryset(), pk=pk)  # a manager's own expenses only
         if not expense.receipt:
             raise NotFound("This expense has no receipt.")
         ext = expense.receipt.name.rsplit(".", 1)[-1]
@@ -499,3 +517,44 @@ def _xlsx_response(header, rows, cells) -> HttpResponse:
 
 
 __all__ = ["ExpenseViewSet", "ProjectViewSet"]
+
+
+class ClientViewSet(GenericViewSet):
+    """My Clients (admin only): clients with projects, and a one-step "add project" for each."""
+
+    permission_classes = [HasRole(ADMIN)]
+    pagination_class = StandardPagination
+    lookup_value_regex = r"\d+"
+
+    def get_queryset(self):
+        return selectors.clients_qs(self.request.query_params.get("q", ""))
+
+    def _rows(self, leads) -> list[dict]:
+        projects = selectors.client_projects([lead.pk for lead in leads])
+        return [client_row(lead, projects.get(lead.pk, [])) for lead in leads]
+
+    def list(self, request):
+        page = self.paginate_queryset(self.get_queryset())
+        return self.get_paginated_response(self._rows(page))
+
+    @action(detail=True, methods=["post"], url_path="projects")
+    def add_project(self, request, pk=None):
+        client = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = ClientProjectSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        project = services.add_project_for_client(
+            client.pk,
+            name=data["name"],
+            scope=data.get("requirements", ""),
+            amount=data["amount"],
+            pm_id=data.get("pm"),
+            start_date=data.get("start_date"),
+            expected_end_date=data.get("expected_end_date"),
+            by=request.user,
+        )
+        fresh = get_object_or_404(self.get_queryset(), pk=client.pk)
+        return Response(
+            {"project": project.pk, "client": self._rows([fresh])[0]},
+            status=http.HTTP_201_CREATED,
+        )

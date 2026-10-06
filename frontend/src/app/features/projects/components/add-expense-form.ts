@@ -229,7 +229,6 @@ export class AddExpenseForm implements OnInit {
   protected readonly saving = signal(false);
   protected readonly progress = signal<number | null>(null);
   protected readonly editing = computed(() => this.expense() !== null);
-  protected readonly receiptOptional = computed(() => this.category() === 'LABOUR');
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.clearPreview());
@@ -337,11 +336,7 @@ export class AddExpenseForm implements OnInit {
     } else if (this.spentOn < this.earliest) {
       errors.spent_on = `The date cannot be more than ${BACKDATE_DAYS} days ago.`;
     }
-    const kept = this.editing() && this.expense()?.has_receipt;
-    if (!this.file() && !kept && !this.receiptOptional()) {
-      errors.receipt = 'Attach a receipt for this expense.';
-    }
-    return errors;
+    return errors; // the receipt photo is optional for every category
   }
 
   private fail(err: ApiError): void {

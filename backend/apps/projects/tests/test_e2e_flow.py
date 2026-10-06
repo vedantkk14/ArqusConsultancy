@@ -118,7 +118,8 @@ def test_the_whole_deal_flow(client_for, admin, pm1, sales_manager, sales_exec, 
     detail = admin_api.get(f"{BASE}/{pid}").json()
     assert detail["spent"] == "805000.00" and detail["remaining"] == "195000.00"
     assert detail["state"] == "warn" and detail["usage_pct"] == "80.50"
-    assert pm_api.get(f"{BASE}/{pid}").json()["spent"] == "805000.00"
+    # The PM only counts what they logged themselves; the admin's 5,000 is not theirs to see.
+    assert pm_api.get(f"{BASE}/{pid}").json()["spent"] == "800000.00"
     pm_scan(pid)
 
     # 8. The PM completes: expenses are locked for everyone.

@@ -16,6 +16,8 @@ env = environ.Env(
     JWT_ACCESS_MINUTES=(int, 15),
     JWT_REFRESH_DAYS=(int, 7),
     FRONTEND_URL=(str, "http://localhost:4200"),
+    # Public base URL of this API, used in invoice WhatsApp links (blank = the request's own host).
+    PUBLIC_API_URL=(str, ""),
     EMAIL_BACKEND=(str, "django.core.mail.backends.console.EmailBackend"),
     EMAIL_HOST=(str, "localhost"),
     EMAIL_PORT=(int, 587),
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
     "apps.notifications",
     "apps.reports",
     "apps.leaves",
+    "apps.invoices",
 ]
 
 MIDDLEWARE = [
@@ -143,6 +146,7 @@ REST_FRAMEWORK = {
         "login": "20/min",
         "password_forgot": "5/hour",
         "password_verify": "20/hour",
+        "invoice_share": "60/hour",
         "password_reset": "10/hour",
     },
 }
@@ -161,6 +165,7 @@ LOGIN_MAX_ATTEMPTS = env("LOGIN_MAX_ATTEMPTS")
 LOGIN_LOCKOUT_MINUTES = env("LOGIN_LOCKOUT_MINUTES")
 PASSWORD_RESET_TIMEOUT = env("PASSWORD_RESET_TIMEOUT")  # seconds; used by default_token_generator
 FRONTEND_URL = env("FRONTEND_URL").rstrip("/")
+PUBLIC_API_URL = env("PUBLIC_API_URL").rstrip("/")
 
 EMAIL_BACKEND = env("EMAIL_BACKEND")
 # django-mailer queues lead emails in the database and sends them through this real backend.

@@ -137,6 +137,16 @@ tr.is-void td {
   align-items: center;
   gap: 8px;
 }
+.who-t {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.role {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
 
 .acts {
   display: inline-flex;

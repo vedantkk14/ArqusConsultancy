@@ -63,7 +63,7 @@ def _sm_read(method, url, w) -> bool:
     reads = {
         ("get", BASE), ("get", f"{BASE}/summary"), ("get", f"{BASE}/{p}"),
         ("get", f"{BASE}/{p}/events"), ("get", f"{BASE}/{p}/expenses"), ("get", EXPENSES),
-        ("get", f"{EXPENSES}/{e}"),
+        ("get", f"{EXPENSES}/{e}"), ("get", f"{EXPENSES}/{e}/receipt"),  # the PM's expense
     }  # fmt: skip
     return (method, url) in reads
 

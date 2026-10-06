@@ -60,6 +60,16 @@ describe('SalesExecDashboardPage', () => {
     expect(el.querySelectorAll('app-exec-queue-section').length).toBe(2);
   });
 
+  it('puts the New leads card above the Follow up now card', async () => {
+    const { el, resolve } = await setup();
+    resolve(mockSalesExecDashboard('month'));
+    const newLeads = el.querySelector('app-exec-queue-section') as Element;
+    const followUp = el.querySelector('app-follow-up-now-card') as Element;
+    expect(text(newLeads)).toContain('New leads');
+    // DOCUMENT_POSITION_FOLLOWING: the follow-up card comes after the new leads card.
+    expect(newLeads.compareDocumentPosition(followUp) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('shows the empty state for an exec with no leads at all', async () => {
     const { el, resolve } = await setup();
     resolve({ ...mockSalesExecDashboard('month'), pipeline: ZERO_PIPELINE });

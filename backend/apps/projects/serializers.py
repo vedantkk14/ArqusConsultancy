@@ -186,9 +186,10 @@ SALES_MANAGER_HIDDEN = (
 
 
 class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
-    """An expense for the Sales Manager: date, category, vendor and receipt - never the amount."""
+    """An expense a Sales Manager may see (never the admin's): date, category, vendor, amount."""
 
     category_label = serializers.CharField(source="get_category_display", read_only=True)
+    amount = serializers.SerializerMethodField()
     has_receipt = serializers.SerializerMethodField()
     logged_by = serializers.SerializerMethodField()
 
@@ -199,6 +200,7 @@ class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
             "project",
             "category",
             "category_label",
+            "amount",
             "spent_on",
             "vendor",
             "description",
@@ -208,6 +210,9 @@ class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
             "logged_by",
             "created_at",
         )
+
+    def get_amount(self, obj):
+        return selectors.money_str(obj.amount)
 
     def get_has_receipt(self, obj):
         return bool(obj.receipt)
@@ -269,7 +274,11 @@ class SalesManagerProjectDetailSerializer(SalesManagerProjectSerializer):
         return selectors.allowed_actions(self.context["request"].user, obj)
 
     def get_expenses(self, obj):
-        rows = obj.expenses.select_related("logged_by").order_by("-spent_on", "-id")
+        rows = (
+            obj.expenses.exclude(logged_by__role=ADMIN)  # never the admin's expenses
+            .select_related("logged_by")
+            .order_by("-spent_on", "-id")
+        )
         return ExpenseSalesManagerSerializer(rows[: self.RECENT_EXPENSES], many=True).data
 
 
@@ -282,10 +291,11 @@ def project_serializer(user, detail: bool = False):
 
 
 def event_data_for(user, data: dict) -> dict:
-    """Timeline event payloads carry amounts (expense, spent): stripped for the Sales Manager."""
+    """The Sales Manager sees the amount of the expenses they may see (the timeline only lists
+    those), but never project spend or budget changes."""
     if user.role != SALES_MANAGER:
         return data
-    return {k: v for k, v in (data or {}).items() if k not in ("amount", "spent", "old", "new")}
+    return {k: v for k, v in (data or {}).items() if k not in ("spent", "old", "new")}
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -344,7 +354,9 @@ class ExpenseSerializer(serializers.ModelSerializer):
         return bool(obj.receipt)
 
     def get_logged_by(self, obj):
-        return _user_ref(obj.logged_by)
+        """Who added it, with their role (Admin, Sales Manager, Project Manager)."""
+        ref = _user_ref(obj.logged_by)
+        return {**ref, "role": obj.logged_by.get_role_display()} if ref else None
 
     def get_can_edit(self, obj):
         return selectors.can_change_expense(self.context["request"].user, obj)
@@ -400,3 +412,31 @@ class ExpenseWriteSerializer(serializers.Serializer):
                 f"The date cannot be more than {rules.BACKDATE_DAYS} days ago."
             )
         return value
+
+
+class ClientProjectSerializer(serializers.Serializer):
+    """Add a project for an existing client (admin): won, priced and converted in one go."""
+
+    name = serializers.CharField(max_length=200)
+    requirements = serializers.CharField(required=False, allow_blank=True, max_length=2000)
+    amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=Decimal("0.01"),
+        error_messages={"min_value": "Enter the project price."},
+    )
+    pm = serializers.IntegerField(required=False, allow_null=True)
+    start_date = serializers.DateField(required=False, allow_null=True)
+    expected_end_date = serializers.DateField(required=False, allow_null=True)
+
+
+def client_row(lead, projects: list[dict]) -> dict:
+    """One My Clients row. No money here: the price lives in the project's finance panel."""
+    return {
+        "id": lead.pk,
+        "name": lead.name,
+        "phone": lead.phone,
+        "email": lead.email,
+        "total_projects": lead.total_projects,
+        "running_projects": lead.running_projects,
+        "completed_projects": lead.total_projects - lead.running_projects,
+        "projects": projects,
+    }

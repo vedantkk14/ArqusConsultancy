@@ -184,7 +184,8 @@ export interface Expense {
   receipt_type: string;
   is_void: boolean;
   void_reason: string;
-  logged_by: Person | null;
+  /** Who added it; `role` (Admin, Sales Manager, Project Manager) comes with it for the admin. */
+  logged_by: (Person & { role?: string }) | null;
   created_at: string;
   can_edit: boolean;
 }

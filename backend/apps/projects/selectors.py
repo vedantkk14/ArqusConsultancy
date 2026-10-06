@@ -18,6 +18,7 @@ from django.db.models import (
     ExpressionWrapper,
     F,
     IntegerField,
+    Max,
     OuterRef,
     Q,
     QuerySet,
@@ -30,7 +31,7 @@ from django.utils import timezone
 
 from apps.core.permissions import ADMIN, PROJECT_MANAGER, SALES_MANAGER
 
-from . import rules
+from . import integrations, rules
 from .models import Expense, Project, ProjectStatus
 
 MONEY = DecimalField(max_digits=14, decimal_places=2)
@@ -118,13 +119,17 @@ def _ledger_model():
         return None
 
 
-def budget_usage_qs(qs: QuerySet | None = None) -> QuerySet:
+def budget_usage_qs(qs: QuerySet | None = None, *, by=None) -> QuerySet:
     """Annotate projects with `spent` (non-void expenses), `total_budget` (the finalized deal total,
     or NULL) and `usage` (spent / total x 100, NULL without a total).
+
+    `by` limits `spent` to the expenses that user logged: a PM only ever sees their own.
     """
+    counted = active_expenses()
+    if by is not None:
+        counted = counted.filter(logged_by=by)
     total = (
-        active_expenses()
-        .filter(project=OuterRef("pk"))
+        counted.filter(project=OuterRef("pk"))
         .order_by()
         .values("project")
         .annotate(total=Sum("amount"))
@@ -169,11 +174,20 @@ def projects_for(user) -> QuerySet:
 
 def expenses_for(user) -> QuerySet:
     qs = Expense.objects.select_related("project", "logged_by")
-    if user.role in (ADMIN, SALES_MANAGER):
+    if user.role == ADMIN:
         return qs
+    if user.role == SALES_MANAGER:
+        # The project managers' and sales managers' expenses, never the admin's.
+        return qs.exclude(logged_by__role=ADMIN)
     if user.role == PROJECT_MANAGER:
-        return qs.filter(project__pm=user)
+        # Only what they logged themselves: the admin's and the sales manager's stay hidden.
+        return qs.filter(project__pm=user, logged_by=user)
     return qs.none()
+
+
+def visible_expense_ids(user, project) -> list[int]:
+    """The expenses of this project the user may see (their timeline shows only those)."""
+    return list(expenses_for(user).filter(project=project).values_list("pk", flat=True))
 
 
 def spent_for(project) -> Decimal:
@@ -287,3 +301,52 @@ def project_no(obj) -> int | None:
     if (getattr(obj, "client_projects", None) or 1) <= 1:
         return None
     return getattr(obj, "project_no", None)
+
+
+# ---- My Clients ----------
+
+
+def clients_qs(search: str = "") -> QuerySet:
+    """Clients (leads) with at least one project, the one with the newest project first."""
+    qs = (
+        integrations.lead_model()
+        .objects.filter(opportunities__project__isnull=False)
+        .annotate(
+            total_projects=Count("opportunities__project", distinct=True),
+            running_projects=Count(
+                "opportunities__project",
+                filter=Q(opportunities__project__status=ProjectStatus.RUNNING),
+                distinct=True,
+            ),
+            last_project_at=Max("opportunities__project__created_at"),
+        )
+    )
+    search = (search or "").strip()
+    if search:
+        qs = qs.filter(
+            Q(name__icontains=search) | Q(phone__icontains=search) | Q(email__icontains=search)
+        )
+    return qs.order_by("-last_project_at", "-id")
+
+
+def client_projects(lead_ids) -> dict[int, list[dict]]:
+    """{lead id: [project rows, oldest first]}. `no` is the client's #1, #2... project number."""
+    rows = (
+        Project.objects.filter(opportunity__lead_id__in=list(lead_ids))
+        .select_related("pm", "opportunity")
+        .order_by("created_at", "id")
+    )
+    grouped: dict[int, list[dict]] = {}
+    for project in rows:
+        bucket = grouped.setdefault(project.opportunity.lead_id, [])
+        bucket.append(
+            {
+                "id": project.pk,
+                "no": len(bucket) + 1,
+                "name": project.name,
+                "status": project.status,
+                "pm_name": project.pm.display_name if project.pm else None,
+                "start_date": project.start_date,
+            }
+        )
+    return grouped

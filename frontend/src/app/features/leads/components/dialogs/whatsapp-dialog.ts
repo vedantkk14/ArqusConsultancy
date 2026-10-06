@@ -31,6 +31,7 @@ export interface WhatsAppDialogData {
     }
     .ch[aria-pressed='true'] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
     .ch:disabled { opacity: 0.45; cursor: not-allowed; }
+    .ch.muted { opacity: 0.6; }
     .subject { margin: 0 0 6px; color: var(--ink); font-size: var(--text-sm); font-weight: 600; }
     .tpls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-4); }
     .tpl {
@@ -57,7 +58,14 @@ export interface WhatsAppDialogData {
     />
     <div class="channels" role="group" aria-label="Send by">
       <button type="button" class="ch" [attr.aria-pressed]="channel() === 'whatsapp'" [disabled]="!phoneOk" (click)="setChannel('whatsapp')">WhatsApp</button>
-      <button type="button" class="ch" [attr.aria-pressed]="channel() === 'email'" [disabled]="!emailOk" (click)="setChannel('email')">Email</button>
+      <button
+        type="button"
+        class="ch"
+        [class.muted]="!emailOk"
+        [attr.aria-pressed]="channel() === 'email'"
+        [attr.title]="emailOk ? null : 'This lead has no email address yet'"
+        (click)="setChannel('email')"
+      >Email</button>
     </div>
     <div class="tpls" role="group" aria-label="Templates">
       @for (t of list(); track t.id) {

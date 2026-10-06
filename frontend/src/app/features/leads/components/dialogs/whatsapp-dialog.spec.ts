@@ -68,9 +68,14 @@ describe('WhatsAppDialog (Message <client>)', () => {
     expect(api.email).toHaveBeenCalledWith(3, 7, 'My own words');
   });
 
-  it('disables Email and says so when the lead has no address, and starts on Email without a phone', () => {
+  it('keeps the Email tab clickable, explains a missing address, and never enables Send', () => {
     const noMail = setup({ id: 1, name: 'A', phone: '9876543210', email: '' });
-    expect(noMail.button('Email').disabled).toBe(true);
+    expect(noMail.button('Email').disabled).toBe(false);
+    expect(noMail.button('Email').title).toBe('This lead has no email address yet');
+    noMail.button('Email').click();
+    noMail.fixture.detectChanges();
+    expect(noMail.el.textContent).toContain('This lead has no email address. Add one on the lead first.');
+    expect(noMail.button('Send Email').disabled).toBe(true);
     TestBed.resetTestingModule();
     const noPhone = setup({ id: 2, name: 'B', phone: '', email: 'b@x.com' });
     expect(noPhone.button('WhatsApp').disabled).toBe(true);

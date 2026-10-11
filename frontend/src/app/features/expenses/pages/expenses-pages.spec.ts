@@ -166,12 +166,12 @@ describe('ExpensesListPage', () => {
 });
 
 describe('expenses routes', () => {
-  it('the list is for admin and PM', () => {
+  it('the list is for admin, PM and sales manager', () => {
     const roles = (path: string) => EXPENSES_ROUTES.find((r) => r.path === path)?.data?.['roles'];
     expect(roles('all')).toEqual(findNavItem('/expenses/all')?.roles);
     expect(roles('all')).toContain(Role.ProjectManager);
+    expect(roles('all')).toContain(Role.SalesManager);
     expect(roles('alerts')).toBeUndefined();
-    expect(roles('all')).not.toContain(Role.SalesManager);
     expect(roles('all')).not.toContain(Role.SalesExec);
   });
 });

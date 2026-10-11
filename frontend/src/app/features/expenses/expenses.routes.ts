@@ -5,9 +5,13 @@ import { roleGuard } from '../../core/auth/role.guard';
 import { findNavItem } from '../../core/config/route-helpers';
 import { Role } from '../../core/models';
 
-/** A PM only ever sees expenses on their own projects, so their list is "My expenses". */
-const allTitle: ResolveFn<string> = () =>
-  inject(AuthService).role() === Role.ProjectManager ? 'My expenses' : 'All expenses';
+/** Title varies by role: Admin sees "All expenses", SM sees "My project expenses", PM sees "My expenses". */
+const allTitle: ResolveFn<string> = () => {
+  const role = inject(AuthService).role();
+  if (role === Role.ProjectManager) return 'My expenses';
+  if (role === Role.SalesManager) return 'My project expenses';
+  return 'All expenses';
+};
 
 // /expenses redirects to the list and keeps the query string.
 export const EXPENSES_ROUTES: Routes = [

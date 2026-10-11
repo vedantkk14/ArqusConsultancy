@@ -22,7 +22,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from apps.core.pagination import StandardPagination
-from apps.core.permissions import HasRole
+from apps.core.permissions import ADMIN, SALES_EXEC, SALES_MANAGER, HasRole
 
 from . import importer, integrations, selectors, services
 from .filters import SUMMARY_SKIP, apply_filters, apply_ordering
@@ -261,9 +261,12 @@ class LeadViewSet(viewsets.GenericViewSet):
     def assignees(self, request):
         self._require_manager()
         rel = "assigned_opportunities"
+        roles = services.ASSIGNEE_ROLES
+        if request.user.role == SALES_MANAGER:
+            roles = (SALES_EXEC, SALES_MANAGER)
         users = (
             get_user_model()
-            .objects.filter(role__in=services.ASSIGNEE_ROLES, is_active=True)
+            .objects.filter(role__in=roles, is_active=True)
             .annotate(
                 open_count=Count(
                     rel,

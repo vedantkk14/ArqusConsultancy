@@ -41,6 +41,7 @@ export class ExpensesListPage {
   protected readonly store = inject(ExpensesListStore);
 
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  protected readonly isSalesManager = computed(() => this.auth.role() === Role.SalesManager);
 
   private readonly queryMap = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
   protected readonly filters = computed(() => filtersFromQuery((k) => this.queryMap().get(k)));
@@ -77,6 +78,7 @@ export class ExpensesListPage {
       next: (res) => this.projects.set(res.results.map((p) => ({ id: p.id, name: p.name }))),
       error: () => undefined,
     });
+    // Admin loads the manager filter; SM and PM only need the project list.
     if (this.isAdmin()) {
       this.api.managers().subscribe({ next: (list) => this.managers.set(list), error: () => undefined });
     }

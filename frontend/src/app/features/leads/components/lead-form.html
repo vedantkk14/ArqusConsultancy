@@ -136,25 +136,119 @@
         </div>
       </div>
       <div class="body">
-        <div class="people" role="radiogroup" aria-labelledby="lf-h-assign">
-          <label class="person">
-            <input type="radio" formControlName="assigned_to" value="" />
-            <span class="pc">
-              <span class="later" aria-hidden="true"><mat-icon>schedule</mat-icon></span>
-              <span class="nm">Assign later<small>Decide when it's ready</small></span>
-            </span>
-          </label>
-          @for (a of assignees(); track a.id) {
-            <label class="person">
-              <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
-              <span class="pc">
-                <app-lead-avatar [name]="a.name" [size]="36" />
-                <span class="nm">
-                  {{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}
-                  <small>{{ a.role === 'ADMIN' ? 'Admin · ' : '' }}{{ a.open_count }} open</small>
-                </span>
-              </span>
-            </label>
+        <div class="assign-groups" role="radiogroup" aria-labelledby="lf-h-assign">
+          @if (isAdmin()) {
+            <!-- Admin View: 3 subsections -->
+            <div class="sub-sec">
+              <h4 class="sub-title">Admins</h4>
+              <div class="people">
+                <label class="person">
+                  <input type="radio" formControlName="assigned_to" value="" />
+                  <span class="pc">
+                    <span class="later" aria-hidden="true"><mat-icon>schedule</mat-icon></span>
+                    <span class="nm">Assign later<small>Decide when it's ready</small></span>
+                  </span>
+                </label>
+                @for (a of adminAssignees(); track a.id) {
+                  <label class="person">
+                    <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+                    <span class="pc">
+                      <app-lead-avatar [name]="a.name" [size]="36" />
+                      <span class="nm">
+                        {{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}
+                        <small>Admin · {{ a.open_count }} open</small>
+                      </span>
+                    </span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            @if (smAssignees().length) {
+              <div class="sub-sec">
+                <h4 class="sub-title">Sales Managers</h4>
+                <div class="people">
+                  @for (a of smAssignees(); track a.id) {
+                    <label class="person">
+                      <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+                      <span class="pc">
+                        <app-lead-avatar [name]="a.name" [size]="36" />
+                        <span class="nm">
+                          {{ a.name }}
+                          <small>Sales Manager · {{ a.open_count }} open</small>
+                        </span>
+                      </span>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (execAssignees().length) {
+              <div class="sub-sec">
+                <h4 class="sub-title">Sales Executives</h4>
+                <div class="people">
+                  @for (a of execAssignees(); track a.id) {
+                    <label class="person">
+                      <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+                      <span class="pc">
+                        <app-lead-avatar [name]="a.name" [size]="36" />
+                        <span class="nm">
+                          {{ a.name }}
+                          <small>{{ a.open_count }} open</small>
+                        </span>
+                      </span>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          } @else {
+            <!-- Sales Manager View: 2 subsections (No admins) -->
+            <div class="sub-sec">
+              <h4 class="sub-title">Sales Managers</h4>
+              <div class="people">
+                <label class="person">
+                  <input type="radio" formControlName="assigned_to" value="" />
+                  <span class="pc">
+                    <span class="later" aria-hidden="true"><mat-icon>schedule</mat-icon></span>
+                    <span class="nm">Assign later<small>Decide when it's ready</small></span>
+                  </span>
+                </label>
+                @for (a of smAssignees(); track a.id) {
+                  <label class="person">
+                    <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+                    <span class="pc">
+                      <app-lead-avatar [name]="a.name" [size]="36" />
+                      <span class="nm">
+                        {{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}
+                        <small>Sales Manager · {{ a.open_count }} open</small>
+                      </span>
+                    </span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            @if (execAssignees().length) {
+              <div class="sub-sec">
+                <h4 class="sub-title">Sales Executives</h4>
+                <div class="people">
+                  @for (a of execAssignees(); track a.id) {
+                    <label class="person">
+                      <input type="radio" formControlName="assigned_to" [value]="'' + a.id" />
+                      <span class="pc">
+                        <app-lead-avatar [name]="a.name" [size]="36" />
+                        <span class="nm">
+                          {{ a.name }}
+                          <small>{{ a.open_count }} open</small>
+                        </span>
+                      </span>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
           }
         </div>
         <div class="tools">

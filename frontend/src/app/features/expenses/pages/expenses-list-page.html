@@ -3,6 +3,8 @@
     <p class="insight">
       @if (isAdmin()) {
         Every expense across all projects. Voided entries stay visible but are not counted.
+      } @else if (isSalesManager()) {
+        Expenses on your projects, logged by you or the project manager. Voided entries stay visible but are not counted.
       } @else {
         Expenses on the projects assigned to you. Voided entries stay visible but are not counted.
       }

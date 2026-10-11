@@ -1,4 +1,4 @@
-﻿import { Role } from '../models';
+import { Role } from '../models';
 
 export interface NavItem {
   label: string;
@@ -126,13 +126,13 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     label: 'Expenses',
     icon: 'request_quote',
     route: '/expenses',
-    roles: [Admin, ProjectManager],
+    roles: [Admin, ProjectManager, SalesManager],
     children: [
       {
         label: 'All Expenses',
         icon: 'receipt',
         route: '/expenses/all',
-        roles: [Admin, ProjectManager],
+        roles: [Admin, ProjectManager, SalesManager],
       },
     ],
   },

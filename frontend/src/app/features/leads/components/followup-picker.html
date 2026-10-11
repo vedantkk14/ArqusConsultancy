@@ -34,11 +34,15 @@
   </div>
 
   <div class="foot">
+    <p class="pv" [class.muted]="!preview()">
+      @if (preview()) {
+        <mat-icon aria-hidden="true">event_available</mat-icon>{{ preview() }} <span class="tz">IST</span>
+      } @else {
+        No follow-up set
+      }
+    </p>
     @if (preview()) {
-      <p class="pv"><mat-icon aria-hidden="true">event_available</mat-icon>{{ preview() }} <span class="tz">IST</span></p>
       <button type="button" class="clear" [disabled]="disabled()" (click)="clear()">Clear</button>
-    } @else {
-      <p class="pv muted">No follow-up set</p>
     }
   </div>
 </div>

@@ -188,6 +188,7 @@ SALES_MANAGER_HIDDEN = (
 class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
     """An expense a Sales Manager may see (never the admin's): date, category, vendor, amount."""
 
+    project_name = serializers.CharField(source="project.name", read_only=True)
     category_label = serializers.CharField(source="get_category_display", read_only=True)
     amount = serializers.SerializerMethodField()
     has_receipt = serializers.SerializerMethodField()
@@ -198,6 +199,7 @@ class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "project",
+            "project_name",
             "category",
             "category_label",
             "amount",

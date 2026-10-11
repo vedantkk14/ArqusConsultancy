@@ -52,6 +52,8 @@ export interface AssignDialogData {
                 <span class="nm">{{ a.name }}{{ a.id === meId() ? ' (you)' : '' }}</span>
                 @if (a.role === 'ADMIN') {
                   <span class="tag">Admin</span>
+                } @else if (a.role === 'SALES_MANAGER') {
+                  <span class="tag">Sales Manager</span>
                 }
                 <span class="ct">{{ a.open_count }} open</span>
               </label>
@@ -88,7 +90,7 @@ export class AssignDialog {
   private readonly auth = inject(AuthService);
   protected readonly meId = computed(() => this.auth.user()?.id ?? null);
   protected readonly canTakeIt = computed(
-    () => !!this.assignees()?.some((a) => a.id === this.meId() && a.role === 'ADMIN'),
+    () => !!this.assignees()?.some((a) => a.id === this.meId()),
   );
 
   constructor() {

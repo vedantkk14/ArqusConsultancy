@@ -363,9 +363,12 @@ def test_create_with_assignee_notifies_and_logs(client_for, manager, exec_a):
 def test_only_active_execs_can_be_assigned(client_for, manager, make_user, make_lead):
     lead = make_lead()
     c = client_for(manager)
-    for bad in (make_user("SALES_EXEC", is_active=False), make_user("PROJECT_MANAGER"), manager):
+    for bad in (make_user("SALES_EXEC", is_active=False), make_user("PROJECT_MANAGER"), make_user("ADMIN")):
         r = c.post(f"{BASE}/{lead.id}/assign", {"assigned_to": bad.id})
         assert r.status_code == 400 and "assigned_to" in r.json()["error"]["details"]
+    # Sales manager can be assigned (self-assignment or to peer sales manager)
+    r = c.post(f"{BASE}/{lead.id}/assign", {"assigned_to": manager.id})
+    assert r.status_code == 200 and r.json()["assigned_to"]["id"] == manager.id
 
 
 def test_reassign_notifies_both(client_for, manager, exec_a, exec_b, make_lead):

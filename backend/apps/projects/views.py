@@ -407,8 +407,6 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"])
     def summary(self, request):
-        if request.user.role in READ_ONLY_ROLES:
-            raise PermissionDenied()  # totals are money
         qs = self._filtered(request)
         active = qs.filter(is_void=False)
         totals = active.aggregate(total=Sum("amount"), count=Count("id"))

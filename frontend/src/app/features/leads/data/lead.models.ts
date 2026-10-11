@@ -164,7 +164,7 @@ export interface LeadSummary {
 export interface Assignee {
   id: number;
   name: string;
-  role: 'SALES_EXEC' | 'ADMIN';
+  role: 'SALES_EXEC' | 'SALES_MANAGER' | 'ADMIN';
   open_count: number;
 }
 

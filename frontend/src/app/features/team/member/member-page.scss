@@ -7,9 +7,9 @@
 .who-main h2 { margin: 0; padding: 0; font-size: var(--text-lg); }
 .who-main h2::before { display: none; }
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.kv { display: grid; flex: 1 1 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin: 0; }
-.kv dt { color: var(--ink-3); font-size: var(--text-xs); }
-.kv dd { margin: 2px 0 0; color: var(--ink); font-size: var(--text-sm); overflow-wrap: anywhere; }
+.kv { display: grid; flex: 1 1 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; padding: 0; }
+.kv dt { color: var(--ink-3); font-size: var(--text-xs); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
+.kv dd { margin: 3px 0 0; color: var(--ink); font-size: var(--text-sm); overflow-wrap: anywhere; font-weight: 400; }
 
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-4); border-radius: var(--radius-control); background: var(--surface-2); }
@@ -36,5 +36,6 @@ h3 { margin: 0 0 6px; font-size: var(--text-sm); }
 @media (min-width: 768px) {
   .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kv { flex: 1 1 auto; grid-template-columns: repeat(3, minmax(0, auto)); }
+  /* Two pairs per row: label | value  label | value */
+  .kv { flex: 1 1 auto; grid-template-columns: max-content 1fr max-content 1fr; gap: 14px 28px; }
 }

@@ -15,7 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ApiError } from '../../../core/models';
+import { ApiError, Role } from '../../../core/models';
 import {
   Assignee,
   DuplicateInfo,
@@ -164,7 +164,31 @@ export class LeadForm implements OnInit {
 
   private readonly auth = inject(AuthService);
   protected readonly meId = computed(() => this.auth.user()?.id ?? null);
-  protected readonly amAssignee = computed(() => this.assignees().some((a) => a.id === this.meId()));
+  protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
+  protected readonly isSalesManager = computed(() => this.auth.role() === Role.SalesManager);
+
+  protected readonly adminAssignees = computed(() => {
+    if (!this.isAdmin()) return [];
+    return this.assignees()
+      .filter((a) => a.role === 'ADMIN')
+      .sort((a, b) => (a.id === this.meId() ? -1 : b.id === this.meId() ? 1 : a.name.localeCompare(b.name)));
+  });
+
+  protected readonly smAssignees = computed(() => {
+    return this.assignees()
+      .filter((a) => a.role === 'SALES_MANAGER')
+      .sort((a, b) => (a.id === this.meId() ? -1 : b.id === this.meId() ? 1 : a.name.localeCompare(b.name)));
+  });
+
+  protected readonly execAssignees = computed(() => {
+    return this.assignees()
+      .filter((a) => a.role === 'SALES_EXEC')
+      .sort((a, b) => a.open_count - b.open_count || a.name.localeCompare(b.name));
+  });
+
+  protected readonly amAssignee = computed(() =>
+    this.assignees().some((a) => a.id === this.meId() && (this.isAdmin() || a.role !== 'ADMIN')),
+  );
 
   protected assignToMe(): void {
     this.form.controls.assigned_to.setValue(String(this.meId()));
@@ -172,9 +196,9 @@ export class LeadForm implements OnInit {
   }
 
   protected autoPick(): void {
-    const least = this.assignees()
-      .filter((a) => a.role === 'SALES_EXEC')
-      .sort((a, b) => a.open_count - b.open_count || a.name.localeCompare(b.name))[0];
+    const execs = this.execAssignees();
+    const pool = execs.length ? execs : this.smAssignees();
+    const least = pool[0];
     if (least) {
       this.form.controls.assigned_to.setValue(String(least.id));
       this.form.controls.assigned_to.markAsDirty();

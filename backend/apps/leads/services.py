@@ -61,8 +61,8 @@ REOPEN_ROLES = {ADMIN, SALES_MANAGER}
 WON_TO_LOST_ROLES = {ADMIN, SALES_MANAGER}
 FOLLOWUP_TOLERANCE = timedelta(minutes=5)
 BULK_ASSIGN_LIMIT = 100
-# Who can own a lead: sales execs, and admins who work a lead themselves.
-ASSIGNEE_ROLES = (SALES_EXEC, ADMIN)
+# Who can own a lead: sales execs, sales managers (can self-assign or assign peers), and admins.
+ASSIGNEE_ROLES = (SALES_EXEC, SALES_MANAGER, ADMIN)
 COMPANY_NAME = "ARQUS Sports Consultancy"
 #: Fields of a create/update payload that belong to the deal, not the client record.
 DEAL_FIELDS = ("next_followup_at", "proposed_amount")
@@ -170,11 +170,13 @@ def duplicate_summary(lead: Lead) -> dict:
     }
 
 
-def _check_assignee(user_id):
+def _check_assignee(user_id, by=None):
     User = get_user_model()
     user = User.objects.filter(pk=user_id, role__in=ASSIGNEE_ROLES, is_active=True).first()
     if user is None:
-        raise ValidationError({"assigned_to": ["Choose an active sales executive or admin."]})
+        raise ValidationError({"assigned_to": ["Choose an active sales executive, sales manager, or admin."]})
+    if by is not None and getattr(by, "role", None) == SALES_MANAGER and user.role == ADMIN:
+        raise ValidationError({"assigned_to": ["Sales managers cannot assign leads to admins."]})
     return user
 
 
@@ -241,7 +243,7 @@ def start_opportunity(
         raise OpportunityOpen(opportunity_id=open_deal.pk)
     if next_followup_at is not None:
         validate_followup(LeadStatus.NEW, next_followup_at)
-    assignee = _check_assignee(assigned_to) if assigned_to else lead.assigned_to
+    assignee = _check_assignee(assigned_to, by=by) if assigned_to else lead.assigned_to
     opportunity = add_opportunity(
         lead,
         by=by,
@@ -296,7 +298,7 @@ def create_lead(data: dict, by, force: bool = False) -> Lead:
     if duplicate and not force:
         raise DuplicateLead(existing=duplicate_summary(duplicate))
     assignee_id = data.pop("assigned_to", None)
-    assignee = _check_assignee(assignee_id) if assignee_id else None
+    assignee = _check_assignee(assignee_id, by=by) if assignee_id else None
     deal = {f: data.pop(f) for f in DEAL_FIELDS if f in data}
     validate_followup(LeadStatus.NEW, deal.get("next_followup_at"))
     lead = Lead.objects.create(**data, assigned_to=assignee, created_by=by)
@@ -513,7 +515,7 @@ def _locked_lead(pk) -> Lead:
 @transaction.atomic
 def assign(lead: Lead, assignee_id: int, by) -> Lead:
     """Assign the lead and its current deal."""
-    assignee = _check_assignee(assignee_id)
+    assignee = _check_assignee(assignee_id, by=by)
     lead = _locked_lead(lead.pk)
     deal = current_opportunity(lead)
     _assign_one(lead, _lock_deal(deal) if deal else None, assignee, by)
@@ -523,7 +525,7 @@ def assign(lead: Lead, assignee_id: int, by) -> Lead:
 @transaction.atomic
 def assign_opportunity(opportunity: Opportunity, assignee_id: int, by) -> Opportunity:
     """Reassign one deal; the lead follows when it is the lead's current deal."""
-    assignee = _check_assignee(assignee_id)
+    assignee = _check_assignee(assignee_id, by=by)
     lead = _locked_lead(opportunity.lead_id)
     deal = _lock_deal(opportunity)
     _assign_one(lead, deal, assignee, by)
@@ -536,7 +538,7 @@ def bulk_assign(leads_qs, ids: list[int], assignee_id: int, by) -> int:
         raise ValidationError({"ids": ["Select at least one lead."]})
     if len(ids) > BULK_ASSIGN_LIMIT:
         raise ValidationError({"ids": [f"Assign at most {BULK_ASSIGN_LIMIT} leads at a time."]})
-    assignee = _check_assignee(assignee_id)
+    assignee = _check_assignee(assignee_id, by=by)
     visible = set(leads_qs.filter(pk__in=set(ids)).values_list("pk", flat=True))
     if len(visible) != len(set(ids)):
         raise ValidationError({"ids": ["Some leads were not found."]})

@@ -177,8 +177,8 @@ def expenses_for(user) -> QuerySet:
     if user.role == ADMIN:
         return qs
     if user.role == SALES_MANAGER:
-        # The project managers' and sales managers' expenses, never the admin's.
-        return qs.exclude(logged_by__role=ADMIN)
+        # Expenses added by that particular sales manager and the project manager of that project.
+        return qs.filter(Q(logged_by=user) | (Q(project__pm__isnull=False) & Q(project__pm=F("logged_by"))))
     if user.role == PROJECT_MANAGER:
         # Only what they logged themselves: the admin's and the sales manager's stay hidden.
         return qs.filter(project__pm=user, logged_by=user)

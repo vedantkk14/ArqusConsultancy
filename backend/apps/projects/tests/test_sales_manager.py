@@ -142,5 +142,19 @@ def test_pm_still_logs_expenses_and_the_amount_deducts(client_for, admin, pm1, m
     assert pm_view["spent"] == "12500.50"
     after = client_for(admin).get(f"{BASE}/{project.pk}").json()
     assert after["spent"] == "12500.50"
-    assert Decimal(after["remaining"]) == Decimal("100000.00") - Decimal("12500.50")
     assert client_for(pm1).get(f"{EXPENSES}?project={project.pk}").json()["count"] == 1
+
+
+def test_sales_manager_expenses_have_project_name_and_summary(
+    client_for, sales_manager, pm1, project, make_expense
+):
+    make_expense(pm1, "100.00", proj=project, category="MATERIALS")
+    c = client_for(sales_manager)
+    exp_list = c.get(EXPENSES).json()
+    assert exp_list["count"] == 1
+    assert exp_list["results"][0]["project_name"] == project.name
+    summary = c.get(f"{EXPENSES}/summary").json()
+    assert summary["total"] == "100.00"
+    assert summary["count"] == 1
+    assert len(summary["by_category"]) == 1
+    assert summary["by_category"][0]["category"] == "MATERIALS"

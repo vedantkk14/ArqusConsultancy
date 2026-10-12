@@ -11,6 +11,11 @@ export interface InvoiceItem {
   amount?: string;
 }
 
+export interface CreatedBy {
+  id: number;
+  name: string;
+}
+
 /** One row of the invoices list. */
 export interface InvoiceRow {
   id: number;
@@ -25,6 +30,8 @@ export interface InvoiceRow {
   emailed_at: string | null;
   whatsapp_at: string | null;
   created_at: string;
+  created_by?: CreatedBy | null;
+  include_signature?: boolean;
 }
 
 export interface Company {
@@ -51,9 +58,10 @@ export interface Invoice extends InvoiceRow {
   amount_in_words: string;
   /** "Bill from": ARQUS's own details, as printed on the PDF. */
   company: Company;
+  include_signature: boolean;
 }
 
-/** What the admin types; every figure is calculated by the server. */
+/** What the admin or sales manager types; every figure is calculated by the server. */
 export interface InvoiceInput {
   invoice_no: string;
   title: string;
@@ -66,6 +74,7 @@ export interface InvoiceInput {
   tax_type: TaxType;
   gst_percent: string | null;
   items: InvoiceItem[];
+  include_signature?: boolean;
 }
 
 export interface WhatsAppResult {

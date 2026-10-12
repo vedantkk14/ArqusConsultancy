@@ -64,8 +64,8 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 8px 12px 12px;
-      padding: 10px 8px 10px 10px;
+      margin: 6px 12px 10px;
+      padding: 8px 8px 8px 10px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 14px;
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
@@ -73,7 +73,7 @@ import { UserAvatar } from '../../shared/user-avatar/user-avatar';
     }
     :host(.rail) {
       justify-content: center;
-      margin: 8px 0 12px;
+      margin: 6px 0 10px;
       padding: 0;
       border: 0;
       background: none;

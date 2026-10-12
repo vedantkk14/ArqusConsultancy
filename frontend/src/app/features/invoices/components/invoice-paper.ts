@@ -135,7 +135,9 @@ interface TotalRow {
             Certified that the particulars given above are true and correct. For - "{{ invoice().company.short_name }}."
             (Authorized Signatory)
           </p>
-          <img class="stamp" src="invoice/arqus-stamp.png" alt="Authorized signature and company stamp" />
+          @if (invoice().include_signature !== false) {
+            <img class="stamp" src="invoice/arqus-stamp.png" alt="Authorized signature and company stamp" />
+          }
         </article>
       </div>
     </div>

@@ -41,6 +41,7 @@ class InvoiceInputSerializer(serializers.Serializer):
         max_digits=5, decimal_places=2, min_value=Decimal("0"), max_value=Decimal("100"),
         required=False, allow_null=True, default=None,
     )  # fmt: skip
+    include_signature = serializers.BooleanField(required=False, default=True)
     items = ItemInputSerializer(many=True, allow_empty=False, max_length=50)
 
     def validate_invoice_no(self, value):
@@ -64,7 +65,14 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
         fields = ("id", "particulars", "hsn", "quantity", "rate", "unit", "amount")
 
 
+class CreatedBySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField(source="display_name")
+
+
 class InvoiceListSerializer(serializers.ModelSerializer):
+    created_by = CreatedBySerializer(read_only=True, allow_null=True)
+
     class Meta:
         model = Invoice
         fields = (
@@ -79,6 +87,8 @@ class InvoiceListSerializer(serializers.ModelSerializer):
             "emailed_at",
             "whatsapp_at",
             "created_at",
+            "created_by",
+            "include_signature",
         )
 
 

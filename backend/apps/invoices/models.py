@@ -38,6 +38,7 @@ class Invoice(TimeStampedModel):
 
     emailed_at = models.DateTimeField(null=True, blank=True)
     whatsapp_at = models.DateTimeField(null=True, blank=True)
+    include_signature = models.BooleanField(default=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )

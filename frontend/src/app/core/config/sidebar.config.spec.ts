@@ -26,6 +26,10 @@ describe('sidebar config', () => {
     expect(visible).toEqual(['Dashboard', 'Projects', 'Expenses', 'Communication', 'Leaves', 'Settings']);
   });
 
+  it('shows Invoices to sales manager', () => {
+    expect(labels(Role.SalesManager)).toContain('Invoices');
+  });
+
   it('filters children by role', () => {
     const projects = filterNavByRole(SIDEBAR_CONFIG, Role.ProjectManager).find(
       (i) => i.label === 'Projects',

@@ -69,10 +69,35 @@ const today = (): string => {
     .summary dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
     .summary .total { padding-top: 8px; border-top: 1px solid var(--line-strong); font-size: var(--text-md, 1rem); font-weight: 700; color: var(--ink); }
     .words { margin: var(--space-4) 0 0; color: var(--ink-2); font-size: var(--text-sm); font-style: italic; }
+    .stamp-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+    .stamp-header h2 { margin: 0 0 4px; }
+    .toggle-group {
+      display: inline-flex; padding: 3px; border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control); background: var(--surface);
+    }
+    .toggle-group button {
+      min-width: 52px; height: 34px; padding: 0 16px; border: 0;
+      border-radius: calc(var(--radius-control) - 2px); background: transparent;
+      color: var(--ink-3); font: inherit; font-size: var(--text-sm); font-weight: 500;
+      cursor: pointer; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+    }
+    .toggle-group button:hover { color: var(--ink); }
+    .toggle-group button.on {
+      background: var(--brand-tint); color: var(--brand-deep); font-weight: 600;
+      box-shadow: inset 0 0 0 1px rgba(8, 111, 146, 0.25);
+    }
+    .stamp-preview {
+      display: flex; align-items: center; gap: 12px; margin-top: var(--space-3); padding: 10px 14px;
+      border-radius: var(--radius-control); background: var(--subtle); color: var(--ink-2); font-size: var(--text-xs);
+    }
+    .stamp-preview img { height: 28px; width: auto; object-fit: contain; }
+    .stamp-preview.off { color: var(--ink-3); }
+    .stamp-preview.off mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end; }
     @media (max-width: 640px) {
       .grid { grid-template-columns: 1fr; }
       .item-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stamp-header { flex-direction: column; align-items: flex-start; }
     }
   `,
   template: `
@@ -216,6 +241,46 @@ const today = (): string => {
           <p class="words">In words: {{ totals().words }}</p>
         </section>
 
+        <section class="card">
+          <div class="stamp-header">
+            <div>
+              <h2>Signature & Company Stamp</h2>
+              <p class="hint" style="margin: 0">
+                Include the authorized sign and company stamp ("ARQUS SPORTS CONSULTANCY") on the invoice.
+              </p>
+            </div>
+            <div class="toggle-group" role="group" aria-label="Include signature and company stamp">
+              <button
+                type="button"
+                [class.on]="includeSignature"
+                [attr.aria-pressed]="includeSignature"
+                (click)="includeSignature = true"
+              >
+                ON
+              </button>
+              <button
+                type="button"
+                [class.on]="!includeSignature"
+                [attr.aria-pressed]="!includeSignature"
+                (click)="includeSignature = false"
+              >
+                OFF
+              </button>
+            </div>
+          </div>
+          @if (includeSignature) {
+            <div class="stamp-preview">
+              <img src="invoice/arqus-stamp.png" alt="Stamp preview" />
+              <span>Stamp with sign and "ARQUS SPORTS CONSULTANCY" will be displayed on the client invoice & PDF.</span>
+            </div>
+          } @else {
+            <div class="stamp-preview off">
+              <mat-icon aria-hidden="true">visibility_off</mat-icon>
+              <span>Stamp is turned OFF — invoice will be generated without the sign and stamp.</span>
+            </div>
+          }
+        </section>
+
         @if (error()) { <p class="err" role="alert" style="margin-bottom: 12px">{{ error() }}</p> }
         <div class="actions">
           <a matButton [routerLink]="editingId() ? ['/invoices', editingId()] : ['/invoices/all']">Cancel</a>
@@ -251,6 +316,7 @@ export class InvoiceFormPage {
   protected clientEmail = '';
   protected gstPercent = '';
   protected taxType: TaxType = 'IGST';
+  protected includeSignature = true;
   protected readonly rows = signal<Row[]>([blankRow()]);
   private readonly version = signal(0);
 
@@ -307,6 +373,7 @@ export class InvoiceFormPage {
         this.clientEmail = inv.client_email;
         this.gstPercent = inv.gst_percent ? String(Number(inv.gst_percent)) : '';
         this.taxType = inv.tax_type;
+        this.includeSignature = inv.include_signature !== false;
         this.rows.set(
           inv.items.map((i) => ({
             particulars: i.particulars,
@@ -379,6 +446,7 @@ export class InvoiceFormPage {
       client_email: this.clientEmail.trim(),
       tax_type: this.taxType,
       gst_percent: this.gstPercent.trim() ? this.gstPercent.trim() : null,
+      include_signature: this.includeSignature,
       items: this.rows().map((r) => ({
         particulars: r.particulars.trim(),
         hsn: r.hsn.trim(),

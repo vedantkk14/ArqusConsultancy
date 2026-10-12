@@ -1,8 +1,11 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
+import { Role } from '../../core/models';
 import { Invoice, InvoiceRow } from './data/invoice.models';
 import { InvoicesApi } from './data/invoices-api.service';
 import { EmailInvoiceDialog, WhatsAppInvoiceDialog } from './components/send-invoice-dialogs';
@@ -22,6 +25,8 @@ const ROW: InvoiceRow = {
   emailed_at: null,
   whatsapp_at: null,
   created_at: '2026-08-24T10:00:00Z',
+  created_by: { id: 1, name: 'Alice Admin' },
+  include_signature: true,
 };
 
 const INVOICE: Invoice = {
@@ -46,6 +51,7 @@ const INVOICE: Invoice = {
     pan: 'CPEPD8900B',
     gstin: '27CPEPD8900B1ZC',
   },
+  include_signature: true,
 };
 
 function baseApi() {
@@ -68,13 +74,15 @@ function fakeApi(over: Partial<ReturnType<typeof baseApi>> = {}) {
   return { ...baseApi(), ...over };
 }
 
-function setup<T>(component: new () => T, api: ReturnType<typeof fakeApi>, id?: number) {
+function setup<T>(component: new () => T, api: ReturnType<typeof fakeApi>, id?: number, role: Role = Role.Admin) {
+  TestBed.resetTestingModule();
   const snack = { open: vi.fn() };
   const dialog = { open: vi.fn(() => ({ afterClosed: () => of(undefined) })) };
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
       { provide: InvoicesApi, useValue: api },
+      { provide: AuthService, useValue: { role: signal(role), user: signal({ id: 1, name: 'Alice Admin', role }) } },
       { provide: MatSnackBar, useValue: snack },
       { provide: MatDialog, useValue: dialog },
       { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(id ? { id: String(id) } : {}) } } },
@@ -134,6 +142,15 @@ describe('InvoicesListPage', () => {
     const { el } = setup(InvoicesListPage, api);
     expect(el.textContent).toContain('No invoices yet');
   });
+
+  it('shows Created by for admin and hides it for sales manager', () => {
+    const adminView = setup(InvoicesListPage, fakeApi(), undefined, Role.Admin);
+    expect(adminView.el.textContent).toContain('Created by');
+    expect(adminView.el.textContent).toContain('Alice Admin');
+
+    const smView = setup(InvoicesListPage, fakeApi(), undefined, Role.SalesManager);
+    expect(smView.el.textContent).not.toContain('Created by');
+  });
 });
 
 describe('InvoiceFormPage', () => {
@@ -189,6 +206,7 @@ describe('InvoiceFormPage', () => {
     expect(body['invoice_no']).toBe('2026-27/201');
     expect(body['title']).toBe('Cycle track');
     expect(body['gst_percent']).toBe('18');
+    expect(body['include_signature']).toBe(true);
     expect(body['items']).toEqual([{ particulars: 'Acrylic track', hsn: '', quantity: '100', rate: '381', unit: 'Sq.ft' }]);
     expect(navigate).toHaveBeenCalledWith(['/invoices', 9]);
   });
@@ -202,6 +220,23 @@ describe('InvoiceFormPage', () => {
     (el.querySelector('button[aria-label="Remove item 2"]') as HTMLButtonElement).click();
     await flush(fixture);
     expect(el.querySelectorAll('.item').length).toBe(1);
+  });
+
+  it('allows toggling signature stamp off', async () => {
+    const api = fakeApi();
+    const { fixture, el } = setup(InvoiceFormPage, api);
+    await fill(fixture, el, 'inv-no', '2026-27/202');
+    await fill(fixture, el, 'inv-client', 'Acme Corp');
+    await fill(fixture, el, 'it-part-0', 'Consultancy');
+    await fill(fixture, el, 'it-qty-0', '1');
+    await fill(fixture, el, 'it-rate-0', '1000');
+    const offBtn = Array.from(el.querySelectorAll('.toggle-group button')).find((b) => b.textContent?.trim() === 'OFF') as HTMLButtonElement;
+    offBtn.click();
+    await flush(fixture);
+    await submit(fixture, el);
+    expect(api.create).toHaveBeenCalledTimes(1);
+    const body = (api.create.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
+    expect(body['include_signature']).toBe(false);
   });
 
   it('shows the server message when the invoice number is taken', async () => {
@@ -251,6 +286,14 @@ describe('InvoiceDetailPage', () => {
       expect(el.querySelector(`[aria-label="${label}"]`), label).toBeTruthy();
     }
     expect(el.querySelector('a[aria-label="Edit invoice"]')?.getAttribute('href')).toBe('/invoices/5/edit');
+  });
+
+  it('hides the stamp when include_signature is false', async () => {
+    const api = fakeApi({ get: vi.fn(() => of({ ...INVOICE, include_signature: false })) });
+    const { fixture, el } = setup(InvoiceDetailPage, api, 5);
+    await flush(fixture);
+    const paper = el.querySelector('app-invoice-paper') as HTMLElement;
+    expect(paper.querySelector('img[src$="arqus-stamp.png"]')).toBeNull();
   });
 
   it('opens the email and WhatsApp dialogs with the invoice', async () => {

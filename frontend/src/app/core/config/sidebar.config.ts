@@ -108,11 +108,11 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     label: 'Invoices',
     icon: 'description',
     route: '/invoices',
-    // Admin only: make tax invoices and send them to clients as PDFs.
-    roles: [Admin],
+    // Admin and Sales Manager: make tax invoices and send them to clients as PDFs.
+    roles: [Admin, SalesManager],
     children: [
-      { label: 'All Invoices', icon: 'list', route: '/invoices/all', roles: [Admin] },
-      { label: 'Create Invoice', icon: 'note_add', route: '/invoices/new', roles: [Admin] },
+      { label: 'All Invoices', icon: 'list', route: '/invoices/all', roles: [Admin, SalesManager] },
+      { label: 'Create Invoice', icon: 'note_add', route: '/invoices/new', roles: [Admin, SalesManager] },
     ],
   },
   {

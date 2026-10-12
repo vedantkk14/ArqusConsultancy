@@ -233,7 +233,7 @@ def _items_table(invoice, figures: dict) -> Table:
     return table
 
 
-def _footer(figures: dict) -> list:
+def _footer(invoice, figures: dict) -> list:
     words = f"IN WORDS: {calc.in_words(figures['total'])}"
     cert = (
         "Certified that the particulars given above are true and correct. "
@@ -245,7 +245,7 @@ def _footer(figures: dict) -> list:
         Spacer(1, 7 * mm),
         Paragraph(escape(cert), S_CERT),
     ]
-    if STAMP.exists():
+    if getattr(invoice, "include_signature", True) and STAMP.exists():
         width = 58 * mm
         stamp = Image(str(STAMP), width=width, height=width * 282 / 1000)
         stamp.hAlign = "RIGHT"
@@ -280,7 +280,7 @@ def render_invoice_pdf(invoice) -> bytes:
         _parties(invoice),
         Spacer(1, 9 * mm),
         _items_table(invoice, figures),
-        *_footer(figures),
+        *_footer(invoice, figures),
     ]
     doc.build(story)
     return buffer.getvalue()

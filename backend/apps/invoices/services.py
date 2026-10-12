@@ -62,9 +62,14 @@ def _apply(invoice: Invoice, data: dict) -> None:
         "tax_type",
         "gst_percent",
     ):
-        setattr(invoice, field, data[field])
-    invoice.client_name = invoice.client_name.strip()
-    invoice.title = (data.get("title") or "").strip() or invoice.client_name
+        if field in data:
+            setattr(invoice, field, data[field])
+    if "include_signature" in data:
+        invoice.include_signature = data["include_signature"]
+    if invoice.client_name:
+        invoice.client_name = invoice.client_name.strip()
+    if "title" in data:
+        invoice.title = (data.get("title") or "").strip() or invoice.client_name
 
 
 @transaction.atomic
@@ -80,7 +85,8 @@ def create_invoice(data: dict, by) -> Invoice:
 def update_invoice(invoice: Invoice, data: dict) -> Invoice:
     _apply(invoice, data)
     invoice.save()
-    _save_items(invoice, data["items"])
+    if "items" in data:
+        _save_items(invoice, data["items"])
     return invoice
 
 

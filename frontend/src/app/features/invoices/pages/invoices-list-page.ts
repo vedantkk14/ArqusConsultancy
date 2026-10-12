@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { AuthService } from '../../../core/auth/auth.service';
+import { Role } from '../../../core/models';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { InrPipe } from '../../../shared/money/inr.pipe';
@@ -111,6 +113,9 @@ import { InvoicesApi } from '../data/invoices-api.service';
               <th>Invoice no.</th>
               <th>Name</th>
               <th>Client</th>
+              @if (isAdmin()) {
+                <th>Created by</th>
+              }
               <th>Date</th>
               <th class="r">Amount</th>
               <th>Sent</th>
@@ -122,6 +127,9 @@ import { InvoicesApi } from '../data/invoices-api.service';
                 <td><a class="no" [routerLink]="['/invoices', row.id]" (click)="$event.stopPropagation()">{{ row.invoice_no }}</a></td>
                 <td class="name">{{ row.title }}</td>
                 <td>{{ row.client_name }}</td>
+                @if (isAdmin()) {
+                  <td>{{ row.created_by?.name || '—' }}</td>
+                }
                 <td>{{ day(row.invoice_date) }}</td>
                 <td class="r">{{ row.total | inr: 'paise' }}</td>
                 <td>
@@ -142,6 +150,9 @@ import { InvoicesApi } from '../data/invoices-api.service';
                 <span class="top"><strong>{{ row.invoice_no }}</strong><strong>{{ row.total | inr: 'paise' }}</strong></span>
                 <span class="name">{{ row.title }}</span>
                 <span class="muted">{{ row.client_name }} · {{ day(row.invoice_date) }}</span>
+                @if (isAdmin() && row.created_by) {
+                  <span class="muted">Created by: {{ row.created_by.name }}</span>
+                }
                 <span class="chips">
                   @if (row.emailed_at) { <span class="chip">Emailed</span> }
                   @if (row.whatsapp_at) { <span class="chip">WhatsApp</span> }
@@ -160,8 +171,10 @@ import { InvoicesApi } from '../data/invoices-api.service';
 })
 export class InvoicesListPage {
   private readonly api = inject(InvoicesApi);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
   protected readonly rows = signal<InvoiceRow[]>([]);
   protected readonly total = signal(0);
   protected readonly query = signal('');

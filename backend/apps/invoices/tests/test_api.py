@@ -19,13 +19,63 @@ def _make(client, **over):
     return res.json()
 
 
-def test_only_the_admin_can_use_invoices(client_for, make_user):
-    for role in ("SALES_MANAGER", "SALES_EXEC", "PROJECT_MANAGER"):
+def test_who_can_use_invoices(client_for, make_user):
+    for role in ("SALES_EXEC", "PROJECT_MANAGER"):
         c = client_for(make_user(role))
         assert c.get(BASE).status_code == 403
         assert c.post(BASE, payload(), format="json").status_code == 403
     assert client_for().get(BASE).status_code == 401
     assert Invoice.objects.count() == 0
+
+
+def test_sales_manager_only_sees_own_invoices_and_admin_sees_all(client_for, make_user, admin):
+    sm1 = make_user("SALES_MANAGER")
+    sm2 = make_user("SALES_MANAGER")
+    c1 = client_for(sm1)
+    c2 = client_for(sm2)
+    c_admin = client_for(admin)
+
+    inv1 = _make(c1, invoice_no="SM1-INV")
+    inv2 = _make(c2, invoice_no="SM2-INV")
+    inv_admin = _make(c_admin, invoice_no="ADM-INV")
+
+    # SM1 only sees SM1-INV
+    res1 = c1.get(BASE).json()
+    assert [r["invoice_no"] for r in res1["results"]] == ["SM1-INV"]
+    assert c1.get(f"{BASE}/{inv2['id']}").status_code == 404
+    assert c1.get(f"{BASE}/{inv_admin['id']}").status_code == 404
+
+    # SM2 only sees SM2-INV
+    res2 = c2.get(BASE).json()
+    assert [r["invoice_no"] for r in res2["results"]] == ["SM2-INV"]
+    assert c2.get(f"{BASE}/{inv1['id']}").status_code == 404
+
+    # Admin sees all three, with created_by populated
+    res_admin = c_admin.get(BASE).json()
+    nos = [r["invoice_no"] for r in res_admin["results"]]
+    assert set(nos) == {"SM1-INV", "SM2-INV", "ADM-INV"}
+
+    row_sm1 = next(r for r in res_admin["results"] if r["invoice_no"] == "SM1-INV")
+    assert row_sm1["created_by"] == {"id": sm1.id, "name": sm1.display_name}
+
+
+def test_include_signature_toggle(client_for, admin):
+    c = client_for(admin)
+    with_sig = _make(c, invoice_no="WITH-SIG", include_signature=True)
+    assert with_sig["include_signature"] is True
+
+    pdf_with = c.get(f"{BASE}/{with_sig['id']}/pdf").content
+    assert len(pdf_with) > 0
+
+    no_sig = _make(c, invoice_no="NO-SIG", include_signature=False)
+    assert no_sig["include_signature"] is False
+    pdf_without = c.get(f"{BASE}/{no_sig['id']}/pdf").content
+    assert len(pdf_without) > 0
+
+    # Toggling via patch
+    patched = c.patch(f"{BASE}/{no_sig['id']}", {"include_signature": True}, format="json")
+    assert patched.status_code == 200
+    assert patched.json()["include_signature"] is True
 
 
 def test_creating_calculates_every_figure(client_for, admin):

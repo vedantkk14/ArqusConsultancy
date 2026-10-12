@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.pagination import StandardPagination
-from apps.core.permissions import ADMIN, HasRole
+from apps.core.permissions import ADMIN, SALES_MANAGER, HasRole
 
 from . import services
 from .models import Invoice
@@ -35,14 +35,17 @@ def _pdf_response(invoice: Invoice, inline: bool) -> HttpResponse:
 
 
 class InvoiceViewSet(GenericViewSet):
-    """Invoices (admin only): list with search, make, edit, PDF, email and WhatsApp."""
+    """Invoices (admin and sales manager): list with search, make, edit, PDF, email and WhatsApp."""
 
-    permission_classes = [HasRole(ADMIN)]
+    permission_classes = [HasRole(ADMIN, SALES_MANAGER)]
     pagination_class = StandardPagination
     lookup_value_regex = r"\d+"
 
     def get_queryset(self):
-        qs = Invoice.objects.prefetch_related("items")
+        qs = Invoice.objects.prefetch_related("items").select_related("created_by")
+        user = self.request.user
+        if getattr(user, "role", None) != ADMIN:
+            qs = qs.filter(created_by=user)
         search = (self.request.query_params.get("q") or "").strip()
         if search:
             qs = qs.filter(
@@ -70,7 +73,7 @@ class InvoiceViewSet(GenericViewSet):
 
     def partial_update(self, request, pk=None):
         invoice = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = InvoiceInputSerializer(invoice, data=request.data)
+        serializer = InvoiceInputSerializer(invoice, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         services.update_invoice(invoice, serializer.validated_data)
         return Response(self._detail(get_object_or_404(self.get_queryset(), pk=pk)))

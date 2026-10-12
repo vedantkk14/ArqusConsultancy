@@ -99,4 +99,68 @@ describe('EditTemplateDialog in create mode', () => {
     expect(api.updateTemplate).not.toHaveBeenCalled();
     expect(ref.close).toHaveBeenCalledWith(created);
   });
+
+  it('inserts placeholder tags into message when clicked', async () => {
+    const api = { createTemplate: vi.fn(), updateTemplate: vi.fn() };
+    const ref = { close: vi.fn() };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: LeadsApi, useValue: api },
+        { provide: MatDialogRef, useValue: ref },
+        { provide: MAT_DIALOG_DATA, useValue: { kind: 'whatsapp-templates' } },
+      ],
+    });
+    const fixture = TestBed.createComponent(EditTemplateDialog);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+
+    const leadBtn = el.querySelector('.tag-lead') as HTMLButtonElement;
+    const execBtn = el.querySelector('.tag-exec') as HTMLButtonElement;
+    const companyBtn = el.querySelector('.tag-company') as HTMLButtonElement;
+
+    expect(leadBtn).toBeTruthy();
+    expect(execBtn).toBeTruthy();
+    expect(companyBtn).toBeTruthy();
+
+    leadBtn.click();
+    execBtn.click();
+    companyBtn.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const textarea = el.querySelector('#et-body') as HTMLTextAreaElement;
+    expect(fixture.componentInstance['body']).toContain('{{lead_name}}');
+    expect(fixture.componentInstance['body']).toContain('{{exec_name}}');
+    expect(fixture.componentInstance['body']).toContain('{{company}}');
+    expect(el.textContent).toContain('Client View Preview');
+  });
+
+  it('populates message when a starter template is clicked', async () => {
+    const api = { createTemplate: vi.fn(), updateTemplate: vi.fn() };
+    const ref = { close: vi.fn() };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: LeadsApi, useValue: api },
+        { provide: MatDialogRef, useValue: ref },
+        { provide: MAT_DIALOG_DATA, useValue: { kind: 'whatsapp-templates' } },
+      ],
+    });
+    const fixture = TestBed.createComponent(EditTemplateDialog);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+
+    const starters = Array.from(el.querySelectorAll('.starter-chip')) as HTMLButtonElement[];
+    expect(starters.length).toBeGreaterThan(0);
+    starters[0].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance['body']).toContain('{{lead_name}}');
+    expect(fixture.componentInstance['body']).toContain('{{company}}');
+    expect(el.textContent).toContain('Client View Preview');
+  });
 });

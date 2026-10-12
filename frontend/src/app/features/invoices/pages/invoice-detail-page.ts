@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
+import { Role } from '../../../core/models';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { InrPipe } from '../../../shared/money/inr.pipe';
 import { Skeleton } from '../../../shared/skeleton/skeleton';
@@ -30,7 +32,7 @@ import { InvoicesApi } from '../data/invoices-api.service';
     .sub { margin: 4px 0 0; color: var(--ink-3); font-size: var(--text-sm); }
     .amount { text-align: right; }
     .amount b { display: block; font-size: var(--text-xl, 1.4rem); font-variant-numeric: tabular-nums; }
-    .amount span { color: var(--ink-3); font-size: var(--text-xs); }
+    span { color: var(--ink-3); font-size: var(--text-xs); }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
     .chip { display: inline-flex; align-items: center; gap: 4px; padding: 0 10px; border-radius: var(--radius-pill); background: var(--tint-teal); color: var(--tint-teal-ink); font-size: var(--text-xs); line-height: 24px; font-weight: 600; }
     .chip.none { background: var(--subtle); color: var(--ink-3); font-weight: 500; }
@@ -52,7 +54,7 @@ import { InvoicesApi } from '../data/invoices-api.service';
         <div class="top">
           <div>
             <h1>Invoice {{ inv.invoice_no }}</h1>
-            <p class="sub">{{ inv.title }} · {{ inv.client_name }} · {{ day(inv.invoice_date) }}</p>
+            <p class="sub">{{ inv.title }} · {{ inv.client_name }} · {{ day(inv.invoice_date) }}@if (isAdmin() && inv.created_by) { · Created by {{ inv.created_by.name }} }</p>
           </div>
           <div class="amount">
             <b>{{ inv.total | inr: 'paise' }}</b>
@@ -102,10 +104,12 @@ import { InvoicesApi } from '../data/invoices-api.service';
 })
 export class InvoiceDetailPage {
   private readonly api = inject(InvoicesApi);
+  private readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   private readonly id = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
 
+  protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
   protected readonly invoice = signal<Invoice | null>(null);
   protected readonly loadError = signal(false);
   protected readonly pdfError = signal(false);

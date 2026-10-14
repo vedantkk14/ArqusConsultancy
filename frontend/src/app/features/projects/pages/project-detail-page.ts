@@ -32,6 +32,7 @@ import { BudgetPanel } from '../components/budget-panel';
 import { AmountDialogData, ReviseTotalDialog } from '../../accounts/components/dialogs/amount-dialogs';
 import { LedgerDetail } from '../../accounts/data/account.models';
 import { CompleteDialog, CompleteDialogData } from '../components/dialogs/complete-dialog';
+import { EditDatesDialog, EditDatesDialogData } from '../components/dialogs/edit-dates-dialog';
 import { ReasonDialog, ReasonDialogData } from '../components/dialogs/reason-dialog';
 import { ReassignDialog, ReassignDialogData } from '../components/dialogs/reassign-dialog';
 import { ReceiptViewer, ReceiptViewerData } from '../components/dialogs/receipt-viewer';
@@ -120,6 +121,7 @@ export class ProjectDetailPage {
     () => STATE_TINT[(this.isAdmin() && this.project()?.state) || 'ok'],
   );
   protected readonly running = computed(() => this.project()?.status === 'RUNNING');
+  protected readonly canEditDates = computed(() => this.running());
   protected readonly back = computed(() =>
     this.project()?.status === 'COMPLETED'
       ? { link: '/projects/completed', label: 'Completed projects' }
@@ -350,6 +352,28 @@ export class ProjectDetailPage {
             undefined,
             { duration: 3000 },
           );
+          this.apply(done);
+        }
+      });
+  }
+
+  protected editDates(project: ProjectDetail): void {
+    this.dialog
+      .open<EditDatesDialog, EditDatesDialogData, ProjectDetail>(
+        EditDatesDialog,
+        dialogConfig({
+          project: {
+            id: project.id,
+            name: project.name,
+            start_date: project.start_date,
+            expected_end_date: project.expected_end_date,
+          },
+        }),
+      )
+      .afterClosed()
+      .subscribe((done) => {
+        if (done) {
+          this.snack.open('Project dates updated.', undefined, { duration: 3000 });
           this.apply(done);
         }
       });

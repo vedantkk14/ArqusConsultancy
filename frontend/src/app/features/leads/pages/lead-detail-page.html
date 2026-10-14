@@ -165,7 +165,7 @@
                   <button matButton="filled" type="button" (click)="finalize(lead)">Finalize amount</button>
                 } @else if (current()?.project_id; as projectId) {
                   <a matButton="outlined" [routerLink]="['/projects', projectId]">Open project</a>
-                } @else if (isAdmin()) {
+                } @else if (isManager()) {
                   <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: lead.current_opportunity_id }">Convert to project</a>
                 }
               </div>
@@ -222,10 +222,8 @@
                 <dd class="deal-next">
                   @if (!d.finance?.finalized) {
                     <button matButton="outlined" type="button" (click)="finalizeDeal(lead, d)">Finalize amount</button>
-                  } @else if (isAdmin()) {
-                    <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: d.id }">Convert to project</a>
                   } @else {
-                    <span class="muted">Finalized, waiting for the Admin to convert it.</span>
+                    <a matButton="outlined" routerLink="/projects/convert" [queryParams]="{ opportunity: d.id }">Convert to project</a>
                   }
                 </dd>
               }

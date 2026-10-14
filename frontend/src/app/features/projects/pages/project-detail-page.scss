@@ -106,6 +106,31 @@
   &:hover { text-decoration: underline; }
 }
 
+.edit-date-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--subtle);
+  color: var(--ink-2);
+  min-height: 24px;
+  line-height: 1;
+
+  .sm-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    background: var(--plate);
+    color: var(--ink);
+    text-decoration: none;
+  }
+}
+
 .acts {
   display: none;
   flex-wrap: wrap;

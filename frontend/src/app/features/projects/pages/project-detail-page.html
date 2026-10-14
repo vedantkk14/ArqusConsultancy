@@ -52,16 +52,40 @@
       </div>
       <div>
         <dt>Start</dt>
-        <dd>{{ day(p.start_date) || '—' }}</dd>
+        <dd>
+          <span>{{ day(p.start_date) || '—' }}</span>
+          @if (canEditDates()) {
+            <button
+              type="button"
+              class="link edit-date-btn"
+              (click)="editDates(p)"
+              [attr.aria-label]="'Edit dates for ' + p.name"
+            >
+              <mat-icon class="sm-icon" aria-hidden="true">edit</mat-icon>
+              <span>Edit</span>
+            </button>
+          }
+        </dd>
       </div>
       <div>
         <dt>{{ p.status === 'COMPLETED' ? 'Completed' : 'Expected end' }}</dt>
         <dd [attr.title]="p.completed_at ? full(p.completed_at) : null">
-          {{
+          <span>{{
             p.status === 'COMPLETED' && p.completed_at
               ? rel(p.completed_at)
               : day(p.expected_end_date) || '—'
-          }}
+          }}</span>
+          @if (canEditDates()) {
+            <button
+              type="button"
+              class="link edit-date-btn"
+              (click)="editDates(p)"
+              [attr.aria-label]="'Edit dates for ' + p.name"
+            >
+              <mat-icon class="sm-icon" aria-hidden="true">edit</mat-icon>
+              <span>Edit</span>
+            </button>
+          }
         </dd>
       </div>
     </dl>

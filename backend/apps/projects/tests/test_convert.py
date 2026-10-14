@@ -49,12 +49,18 @@ def test_pm_is_optional_at_creation(client_for, admin, make_opportunity, notes):
     assert notes == []
 
 
-def test_only_admin_can_convert(client_for, pm1, sales_manager, sales_exec, make_opportunity):
+def test_admin_and_sales_manager_can_convert(
+    client_for, pm1, sales_manager, sales_exec, make_opportunity
+):
     lead = make_opportunity()
-    for user in (pm1, sales_manager, sales_exec):
+    for user in (pm1, sales_exec):
         assert client_for(user).post(BASE, payload(lead), format="json").status_code == 403
     assert client_for().post(BASE, payload(lead), format="json").status_code == 401
     assert not Project.objects.exists()
+
+    res = client_for(sales_manager).post(BASE, payload(lead), format="json")
+    assert res.status_code == 201
+    assert Project.objects.filter(opportunity=lead).exists()
 
 
 @pytest.mark.parametrize(

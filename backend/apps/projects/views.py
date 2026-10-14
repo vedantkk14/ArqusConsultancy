@@ -127,6 +127,10 @@ class ProjectViewSet(GenericViewSet):
         if self.request.user.role != ADMIN:
             raise PermissionDenied()
 
+    def _require_admin_or_sales_manager(self):
+        if self.request.user.role not in (ADMIN, SALES_MANAGER):
+            raise PermissionDenied()
+
     def _require_writer(self):
         if self.request.user.role in READ_ONLY_ROLES:
             raise PermissionDenied()
@@ -156,7 +160,7 @@ class ProjectViewSet(GenericViewSet):
         return self.get_paginated_response(cls(page, many=True, context={"request": request}).data)
 
     def create(self, request):
-        self._require_admin()
+        self._require_admin_or_sales_manager()
         serializer = ConvertSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -175,8 +179,15 @@ class ProjectViewSet(GenericViewSet):
         return Response(self._detail(pk))
 
     def partial_update(self, request, pk=None):
-        self._require_admin()
         project = self._project(pk)
+        if request.user.role not in (ADMIN, SALES_MANAGER, PROJECT_MANAGER):
+            raise PermissionDenied()
+        if request.user.role != ADMIN:
+            if project.status != ProjectStatus.RUNNING:
+                raise PermissionDenied()
+            disallowed = set(request.data.keys()) - {"start_date", "expected_end_date"}
+            if disallowed:
+                raise PermissionDenied()
         serializer = ProjectUpdateSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         services.update_details(project.pk, dict(serializer.validated_data), request.user)
@@ -203,7 +214,7 @@ class ProjectViewSet(GenericViewSet):
         `?opportunity=<id>` looks one deal up and says why not; `?lead=<id>` does the same for the
         lead's current deal.
         """
-        self._require_admin()
+        self._require_admin_or_sales_manager()
         deals_qs = (
             integrations.opportunity_model()
             .objects.filter(lead__is_deleted=False)
@@ -262,7 +273,7 @@ class ProjectViewSet(GenericViewSet):
     @action(detail=False, methods=["get"])
     def managers(self, request):
         """Active project managers with their running-project count (for the assign selects)."""
-        self._require_admin()
+        self._require_admin_or_sales_manager()
         users = (
             get_user_model()
             .objects.filter(role=PROJECT_MANAGER, is_active=True)

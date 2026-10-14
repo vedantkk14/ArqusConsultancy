@@ -131,6 +131,12 @@ describe('ProjectsListPage', () => {
     expect(el.querySelector('a[href="/projects/convert"]')).toBeNull();
   });
 
+  it('a sales manager has the convert link', async () => {
+    const { el, resolve } = await setup(Role.SalesManager);
+    resolve([makeProject(1)]);
+    expect(el.querySelector('a[href="/projects/convert"]')).toBeTruthy();
+  });
+
   it('admin sees the "No PM" pill with an Assign action', async () => {
     const { el, resolve } = await setup();
     resolve([makeProject(1, { pm_name: null, pm: null })]);

@@ -5,7 +5,7 @@
     }
     <p class="count" aria-live="polite">{{ countText() }}</p>
   </div>
-  @if (isAdmin()) {
+  @if (canConvert()) {
     <div class="head-a">
       <a matButton="filled" routerLink="/projects/convert"
         ><mat-icon>transform</mat-icon>Convert a won lead</a
@@ -76,6 +76,7 @@
       [now]="now()"
       [markCompleted]="mode === 'running'"
       (assign)="assign($event)"
+      (editDates)="editDates($event)"
     />
   </section>
   @if (store.hasMore()) {

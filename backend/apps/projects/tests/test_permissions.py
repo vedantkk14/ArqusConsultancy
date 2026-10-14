@@ -65,6 +65,7 @@ def _sm_read(method, url, w) -> bool:
         ("get", f"{BASE}/{p}/events"), ("get", f"{BASE}/{p}/expenses"), ("get", EXPENSES),
         ("get", f"{EXPENSES}/summary"),
         ("get", f"{EXPENSES}/{e}"), ("get", f"{EXPENSES}/{e}/receipt"),  # the PM's expense
+        ("get", f"{BASE}/convertible"), ("get", f"{BASE}/managers"),
     }  # fmt: skip
     return (method, url) in reads
 
@@ -76,6 +77,8 @@ def test_the_sales_manager_reads_but_never_writes(client_for, sales_manager, wor
         status = call(client_for(sales_manager), method, url, body).status_code
         if (method, url) == ("post", f"{BASE}/{world['project'].pk}/expenses"):
             expected = 201  # the one write a Sales Manager has: logging an expense
+        elif (method, url) == ("post", BASE):
+            expected = 400  # allowed to convert; opportunity 1 is already converted
         else:
             expected = 200 if _sm_read(method, url, world) else 403
         assert status == expected, (method, url, status)
@@ -136,3 +139,28 @@ def test_unknown_ids_are_404_for_everyone_who_may_ask(client_for, admin, pm1):
         c = client_for(user)
         assert c.get(f"{BASE}/999999").status_code == 404
         assert c.get(f"{EXPENSES}/999999").status_code == 404
+
+
+def test_pm_and_sales_manager_can_edit_dates_on_running_projects(
+    client_for, pm1, sales_manager, world
+):
+    p = world["project"].pk
+    # PM can edit dates on their own project
+    res = client_for(pm1).patch(
+        f"{BASE}/{p}",
+        {"start_date": "2026-10-18", "expected_end_date": "2026-11-20"},
+        format="json",
+    )
+    assert res.status_code == 200
+    assert res.json()["start_date"] == "2026-10-18"
+    assert res.json()["expected_end_date"] == "2026-11-20"
+
+    # Sales Manager can also edit dates
+    res2 = client_for(sales_manager).patch(
+        f"{BASE}/{p}",
+        {"start_date": "2026-10-19", "expected_end_date": "2026-11-25"},
+        format="json",
+    )
+    assert res2.status_code == 200
+    assert res2.json()["start_date"] == "2026-10-19"
+    assert res2.json()["expected_end_date"] == "2026-11-25"

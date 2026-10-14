@@ -30,6 +30,18 @@ describe('sidebar config', () => {
     expect(labels(Role.SalesManager)).toContain('Invoices');
   });
 
+  it('shows Converted Won Leads under Projects to admin and sales manager', () => {
+    const adminProjects = filterNavByRole(SIDEBAR_CONFIG, Role.Admin).find(
+      (i) => i.label === 'Projects',
+    );
+    expect(adminProjects?.children?.map((c) => c.label)).toContain('Converted Won Leads');
+
+    const smProjects = filterNavByRole(SIDEBAR_CONFIG, Role.SalesManager).find(
+      (i) => i.label === 'Projects',
+    );
+    expect(smProjects?.children?.map((c) => c.label)).toContain('Converted Won Leads');
+  });
+
   it('filters children by role', () => {
     const projects = filterNavByRole(SIDEBAR_CONFIG, Role.ProjectManager).find(
       (i) => i.label === 'Projects',

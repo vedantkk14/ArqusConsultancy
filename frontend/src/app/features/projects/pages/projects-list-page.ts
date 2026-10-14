@@ -21,6 +21,7 @@ import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { ErrorState } from '../../../shared/error-state/error-state';
 import { ProjectFiltersBar } from '../components/project-filters';
 import { ProjectRows } from '../components/project-rows';
+import { EditDatesDialog, EditDatesDialogData } from '../components/dialogs/edit-dates-dialog';
 import { ReassignDialog, ReassignDialogData } from '../components/dialogs/reassign-dialog';
 import {
   EMPTY_FILTERS,
@@ -69,6 +70,7 @@ export class ProjectsListPage {
   protected readonly isAdmin = computed(() => this.auth.role() === Role.Admin);
   /** Read-only and money-free: no spent figures, no budget, no actions. */
   protected readonly isSalesManager = computed(() => this.auth.role() === Role.SalesManager);
+  protected readonly canConvert = computed(() => this.isAdmin() || this.isSalesManager());
 
   private readonly queryMap = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
@@ -162,6 +164,28 @@ export class ProjectsListPage {
             undefined,
             { duration: 3000 },
           );
+          this.store.reload();
+        }
+      });
+  }
+
+  protected editDates(project: ProjectListItem): void {
+    this.dialog
+      .open<EditDatesDialog, EditDatesDialogData, ProjectDetail>(
+        EditDatesDialog,
+        dialogConfig({
+          project: {
+            id: project.id,
+            name: project.name,
+            start_date: project.start_date,
+            expected_end_date: project.expected_end_date,
+          },
+        }),
+      )
+      .afterClosed()
+      .subscribe((done) => {
+        if (done) {
+          this.snack.open('Project dates updated.', undefined, { duration: 3000 });
           this.store.reload();
         }
       });

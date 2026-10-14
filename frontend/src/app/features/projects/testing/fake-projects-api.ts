@@ -236,6 +236,10 @@ export class FakeProjectsApi {
     this.actions.push({ name: 'assignPm', args });
     return of(makeDetail(1));
   }
+  update(...args: unknown[]) {
+    this.actions.push({ name: 'update', args });
+    return of(this.detail);
+  }
   receipt() {
     return of(new Blob(['x'], { type: 'image/png' }));
   }

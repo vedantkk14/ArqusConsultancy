@@ -87,10 +87,22 @@
                 </td>
               }
               <td class="c-due">
-                {{ day(p.expected_end_date) || '—' }}
-                @if (due(p); as label) {
-                  <span class="ph">{{ label }}</span>
-                }
+                <span class="due-wrap">
+                  <span>{{ day(p.expected_end_date) || '—' }}</span>
+                  @if (due(p); as label) {
+                    <span class="ph">{{ label }}</span>
+                  }
+                  @if (p.status === 'RUNNING') {
+                    <button
+                      type="button"
+                      class="edit-date-btn"
+                      [attr.aria-label]="'Edit dates for ' + p.name"
+                      (click)="$event.stopPropagation(); editDates.emit(p)"
+                    >
+                      <mat-icon class="sm-icon" aria-hidden="true">edit</mat-icon>
+                    </button>
+                  }
+                </span>
               </td>
             </tr>
           }
@@ -157,6 +169,17 @@
             <ng-container *ngTemplateOutlet="pmCell; context: { $implicit: p }" />
             @if (p.expected_end_date) {
               <span>{{ day(p.expected_end_date) }}{{ due(p) ? ' · ' + due(p) : '' }}</span>
+            }
+            @if (p.status === 'RUNNING') {
+              <button
+                type="button"
+                class="edit-date-btn"
+                [attr.aria-label]="'Edit dates for ' + p.name"
+                (click)="$event.stopPropagation(); editDates.emit(p)"
+              >
+                <mat-icon class="sm-icon" aria-hidden="true">edit</mat-icon>
+                <span>Edit date</span>
+              </button>
             }
           </span>
         </li>

@@ -359,6 +359,34 @@ describe('ProjectDetailPage', () => {
       await settle(harness);
       expect(api.actions[0]).toMatchObject({ name: 'assignPm', args: [1, 8] });
     });
+
+    it('opens the edit dates dialog and saves new start and expected end dates', async () => {
+      const { api, el, harness } = await setup();
+      const editBtn = byLabel(el, 'Edit dates for')!;
+      expect(editBtn).toBeTruthy();
+      editBtn.click();
+      await settle(harness);
+      expect(text(overlay())).toContain('Edit project dates');
+      const startInput = field<HTMLInputElement>('ed-start');
+      const endInput = field<HTMLInputElement>('ed-end');
+      startInput.value = '2026-10-18';
+      startInput.dispatchEvent(new Event('input'));
+      endInput.value = '2026-11-20';
+      endInput.dispatchEvent(new Event('input'));
+      await settle(harness);
+      buttonByText(overlay(), 'Save')!.click();
+      await settle(harness);
+      expect(api.actions[0]).toMatchObject({
+        name: 'update',
+        args: [1, { start_date: '2026-10-18', expected_end_date: '2026-11-20' }],
+      });
+    });
+
+    it('a project manager can also see and click the edit dates button on a running project', async () => {
+      const { el } = await setup({ role: Role.ProjectManager, project: makeDetail(1) });
+      const editBtn = byLabel(el, 'Edit dates for')!;
+      expect(editBtn).toBeTruthy();
+    });
   });
 
   describe('expense rows', () => {

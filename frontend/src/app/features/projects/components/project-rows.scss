@@ -57,6 +57,40 @@ tbody tr {
   display: none;
 }
 
+.due-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-date-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--subtle);
+  color: var(--ink-2);
+  min-height: 22px;
+  line-height: 1;
+  cursor: pointer;
+
+  .sm-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    background: var(--plate);
+    color: var(--ink);
+  }
+}
+
 .who {
   display: flex;
   align-items: center;

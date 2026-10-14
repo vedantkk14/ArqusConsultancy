@@ -41,6 +41,7 @@ export class ProjectRows {
   /** Running page: a returning client's completed projects are listed under their current one. */
   readonly markCompleted = input(false);
   readonly assign = output<ProjectListItem>();
+  readonly editDates = output<ProjectListItem>();
 
   protected readonly placeholders = Array.from({ length: 6 }, (_, i) => i);
   protected readonly day = formatDay;

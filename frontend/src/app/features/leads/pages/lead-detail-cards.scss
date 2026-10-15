@@ -14,11 +14,14 @@
 
 .chip {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin: var(--space-3) 0 0;
   padding: 2px 10px;
   border-radius: var(--radius-pill);
   font-size: var(--text-xs);
   font-weight: 600;
+  line-height: 1.4;
 
   &.ok { background: var(--tint-teal); color: var(--tint-teal-ink); }
   &.wait { background: var(--tint-amber); color: var(--tint-amber-ink); }
@@ -90,18 +93,34 @@
   gap: 6px;
 
   .chip {
-    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
     margin: 0;
-    padding: 0 12px;
+    padding: 0 14px;
     border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
     background: var(--surface);
     color: var(--ink-2);
     font: inherit;
     font-size: var(--text-sm);
-    font-weight: 400;
+    font-weight: 500;
+    line-height: 1;
     cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
 
-    &:hover { border-color: var(--line-strong); }
-    &.clear { color: var(--negative); }
+    &:hover {
+      border-color: var(--line-strong);
+      background: var(--subtle);
+      color: var(--ink);
+    }
+    &.clear {
+      color: var(--negative);
+      &:hover {
+        border-color: var(--negative);
+        background: var(--negative-bg);
+      }
+    }
   }
 }

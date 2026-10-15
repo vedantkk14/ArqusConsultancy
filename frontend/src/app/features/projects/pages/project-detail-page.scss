@@ -167,6 +167,11 @@
 .revise { width: 100%; margin-top: 12px; }
 .pre { margin: 0; color: var(--ink-2); font-size: var(--text-sm); white-space: pre-line; overflow-wrap: anywhere; }
 
+.cat-filter {
+  display: inline-flex;
+  min-width: 0;
+}
+
 .ctl {
   height: 40px;
   padding: 0 12px;
@@ -176,6 +181,17 @@
   color: var(--ink);
   font: inherit;
   font-size: var(--text-sm);
+}
+
+@media (max-width: 640px) {
+  .cat-filter {
+    flex: 1 1 auto;
+    width: 100%;
+
+    .ctl {
+      width: 100%;
+    }
+  }
 }
 
 .busy { opacity: 0.55; }

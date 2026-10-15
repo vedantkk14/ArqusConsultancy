@@ -24,18 +24,56 @@ import { RouterLink } from '@angular/router';
   styles: `
     :host {
       display: flex;
+      flex-wrap: wrap;
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: var(--space-4);
     }
-    .t { min-width: 0; }
-    h2 { font-size: var(--text-md); }
-    p { margin: 2px 0 0; color: var(--ink-3); font-size: var(--text-sm); }
-    .r { display: flex; flex: none; align-items: center; gap: 8px; }
-    .va { display: inline-flex; align-items: center; min-height: 32px; color: var(--brand-deep); font-size: var(--text-sm); font-weight: 500; text-decoration: none; white-space: nowrap; }
+    .t {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    h2 {
+      font-size: var(--text-md);
+      overflow-wrap: break-word;
+      word-break: normal;
+    }
+    p {
+      margin: 2px 0 0;
+      color: var(--ink-3);
+      font-size: var(--text-sm);
+    }
+    .r {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .va {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      color: var(--brand-deep);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+    }
     .va:hover { text-decoration: underline; }
     .va mat-icon { width: 18px; height: 18px; font-size: 18px; }
+
+    @media (max-width: 640px) {
+      :host {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .r {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
   `,
 })
 export class PanelHead {

@@ -24,6 +24,7 @@ import { RouterLink } from '@angular/router';
   styles: `
     :host {
       display: flex;
+      flex-wrap: wrap;
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
@@ -31,9 +32,12 @@ import { RouterLink } from '@angular/router';
     }
     .t {
       min-width: 0;
+      flex: 1 1 auto;
     }
     h2 {
       font-size: var(--text-md);
+      overflow-wrap: break-word;
+      word-break: normal;
     }
     p {
       margin: 2px 0 0;
@@ -42,7 +46,7 @@ import { RouterLink } from '@angular/router';
     }
     .r {
       display: flex;
-      flex: none;
+      flex-wrap: wrap;
       align-items: center;
       gap: 8px;
     }
@@ -63,6 +67,18 @@ import { RouterLink } from '@angular/router';
       width: 18px;
       height: 18px;
       font-size: 18px;
+    }
+
+    @media (max-width: 640px) {
+      :host {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .r {
+        width: 100%;
+        justify-content: flex-start;
+      }
     }
   `,
 })

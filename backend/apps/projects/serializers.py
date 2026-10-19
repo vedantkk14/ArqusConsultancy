@@ -193,6 +193,7 @@ class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
     amount = serializers.SerializerMethodField()
     has_receipt = serializers.SerializerMethodField()
     logged_by = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = Expense
@@ -208,9 +209,12 @@ class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
             "description",
             "has_receipt",
             "receipt_kind",
+            "receipt_type",
             "is_void",
+            "void_reason",
             "logged_by",
             "created_at",
+            "can_edit",
         )
 
     def get_amount(self, obj):
@@ -221,6 +225,11 @@ class ExpenseSalesManagerSerializer(serializers.ModelSerializer):
 
     def get_logged_by(self, obj):
         return _user_ref(obj.logged_by)
+
+    def get_can_edit(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        return selectors.can_change_expense(user, obj) if user else False
 
 
 class SalesManagerProjectSerializer(serializers.ModelSerializer):

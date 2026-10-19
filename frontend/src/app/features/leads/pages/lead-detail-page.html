@@ -94,13 +94,16 @@
           <mat-icon>add_business</mat-icon>New project
         </button>
       }
-      @if (isAdmin()) {
-        <button type="button" class="ib" [matMenuTriggerFor]="over" [attr.aria-label]="'More actions for ' + lead.name">
-          <mat-icon aria-hidden="true">more_vert</mat-icon>
+      @if (isManager()) {
+        <button
+          matButton="outlined"
+          type="button"
+          class="btn-delete"
+          (click)="remove(lead)"
+          [attr.aria-label]="'Delete ' + lead.name"
+        >
+          <mat-icon>delete</mat-icon>Delete
         </button>
-        <mat-menu #over="matMenu" xPosition="before" class="leads-menu">
-          <button mat-menu-item type="button" (click)="remove(lead)"><mat-icon>delete</mat-icon>Delete lead</button>
-        </mat-menu>
       }
     </div>
   </section>

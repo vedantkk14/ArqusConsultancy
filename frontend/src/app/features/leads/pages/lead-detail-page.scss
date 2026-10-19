@@ -78,6 +78,17 @@
   color: var(--ink-3);
 }
 
+.btn-delete {
+  &:hover {
+    border-color: var(--negative);
+    color: var(--negative);
+
+    mat-icon {
+      color: var(--negative);
+    }
+  }
+}
+
 .facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

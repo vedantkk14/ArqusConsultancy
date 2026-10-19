@@ -93,10 +93,9 @@ def test_manager_only_endpoints(client_for, make_user, role, create, check_dup, 
     assert c.get(f"{BASE}/export").status_code == export
 
 
-def test_finalize_is_admin_or_manager_and_delete_admin_only(client_for, manager, exec_a, make_lead):
+def test_finalize_and_delete_permissions(client_for, manager, exec_a, make_lead):
     lead = make_lead(status=LeadStatus.WON, assigned_to=exec_a, proposed_amount=100)
-    for user in (manager, exec_a):
-        assert client_for(user).delete(f"{BASE}/{lead.id}").status_code == 403
+    assert client_for(exec_a).delete(f"{BASE}/{lead.id}").status_code == 403
     assert (
         client_for(exec_a).post(f"{BASE}/{lead.id}/finalize", {"amount": "100"}).status_code == 403
     )
@@ -459,6 +458,14 @@ def test_finalize_needs_a_won_lead(client_for, admin, make_lead):
 def test_soft_delete(client_for, admin, make_lead):
     lead = make_lead()
     c = client_for(admin)
+    assert c.delete(f"{BASE}/{lead.id}").status_code == 204
+    assert c.get(f"{BASE}/{lead.id}").status_code == 404
+    assert Lead.all_objects.get(pk=lead.id).is_deleted
+
+
+def test_sales_manager_can_soft_delete(client_for, manager, make_lead):
+    lead = make_lead()
+    c = client_for(manager)
     assert c.delete(f"{BASE}/{lead.id}").status_code == 204
     assert c.get(f"{BASE}/{lead.id}").status_code == 404
     assert Lead.all_objects.get(pk=lead.id).is_deleted

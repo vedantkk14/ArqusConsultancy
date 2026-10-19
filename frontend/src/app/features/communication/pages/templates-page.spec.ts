@@ -130,7 +130,6 @@ describe('EditTemplateDialog in create mode', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const textarea = el.querySelector('#et-body') as HTMLTextAreaElement;
     expect(fixture.componentInstance['body']).toContain('{{lead_name}}');
     expect(fixture.componentInstance['body']).toContain('{{exec_name}}');
     expect(fixture.componentInstance['body']).toContain('{{company}}');

@@ -70,21 +70,26 @@ def _sm_read(method, url, w) -> bool:
     return (method, url) in reads
 
 
-def test_the_sales_manager_reads_but_never_writes(client_for, sales_manager, world):
+def test_the_sales_manager_permissions(client_for, sales_manager, world):
     from apps.projects.models import Expense, Project
 
     for method, url, body in endpoints(world):
         status = call(client_for(sales_manager), method, url, body).status_code
         if (method, url) == ("post", f"{BASE}/{world['project'].pk}/expenses"):
-            expected = 201  # the one write a Sales Manager has: logging an expense
+            expected = 201  # logging an expense
         elif (method, url) == ("post", BASE):
             expected = 400  # allowed to convert; opportunity 1 is already converted
+        elif (method, url) in (
+            ("patch", f"{EXPENSES}/{world['expense'].pk}"),
+            ("post", f"{EXPENSES}/{world['expense'].pk}/void"),
+        ):
+            expected = 200  # Sales Manager can edit and void running project expenses
         else:
             expected = 200 if _sm_read(method, url, world) else 403
         assert status == expected, (method, url, status)
     project = Project.objects.get(pk=world["project"].pk)
     assert project.status == "RUNNING" and project.name != "x" and project.pm_id is not None
-    assert Expense.objects.count() == 2 and not Expense.objects.filter(is_void=True).exists()
+    assert Expense.objects.count() == 2 and Expense.objects.filter(is_void=True).exists()
 
 
 def test_a_pm_gets_403_on_admin_only_actions_and_404_on_projects_that_are_not_theirs(

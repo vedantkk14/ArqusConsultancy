@@ -110,7 +110,7 @@ html {
   --mat-menu-item-label-text-size: var(--text-base);
   --mat-menu-item-label-text-color: var(--ink);
   --mat-menu-item-icon-color: var(--ink-3);
-  --mat-menu-item-icon-size: 18px;
+  --mat-menu-item-icon-size: 20px;
   // Light hover/focus fill with ink text (a dark layer hid the labels).
   --mat-menu-item-hover-state-layer-color: var(--subtle);
   --mat-menu-item-focus-state-layer-color: var(--subtle);
@@ -340,14 +340,89 @@ html :is(.wrap, .pwbox, .search, .prefixed) :is(input, textarea, select):focus {
   }
 }
 
-// Menus and bottom sheets: hairline border on top of the soft shadow.
+// Menus and dropdown panels: modern, clean, structured floating card.
 .mat-mdc-menu-panel {
-  border: 1px solid var(--line);
-  min-width: 200px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  background-color: var(--surface) !important;
+  box-shadow: var(--shadow-pop) !important;
+  min-width: 180px !important;
+  padding: 4px !important;
+  overflow: hidden;
+
+  .mat-mdc-menu-content {
+    padding: 0 !important;
+  }
 }
 
 .mat-mdc-menu-item {
-  min-height: 40px !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  margin: 1px 0 !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 500 !important;
+  color: var(--ink) !important;
+  display: flex !important;
+  align-items: center !important;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+
+  // Fully display the icon without clipping, overflow, or baseline misalignment
+  .mat-icon {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    margin-right: 10px !important;
+    margin-left: 0 !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+    color: var(--ink-3);
+    transition: color var(--dur-fast) ease;
+  }
+
+  [dir='rtl'] & .mat-icon {
+    margin-right: 0 !important;
+    margin-left: 10px !important;
+  }
+
+  .mat-mdc-menu-item-text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    line-height: normal;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  &:hover:not([disabled]),
+  &.cdk-program-focused:not([disabled]),
+  &.cdk-keyboard-focused:not([disabled]),
+  &.mat-mdc-menu-item-highlighted:not([disabled]) {
+    background-color: var(--subtle) !important;
+    color: var(--ink) !important;
+
+    .mat-icon {
+      color: var(--brand-deep) !important;
+    }
+  }
+
+  &[disabled],
+  &.mat-mdc-menu-item-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    color: var(--ink-3) !important;
+
+    .mat-icon {
+      color: var(--line-strong) !important;
+    }
+  }
 }
 
 // Keyboard focus: a ring inside the row so the panel never clips it (beats the app-wide focus rule).
@@ -400,6 +475,7 @@ html .mat-mdc-menu-panel .mat-mdc-menu-item:focus-visible {
 .flyout-item {
   display: flex;
   align-items: center;
+  gap: 10px;
   width: 100%;
   min-height: 36px;
   padding: 0 10px;
@@ -413,11 +489,29 @@ html .mat-mdc-menu-panel .mat-mdc-menu-item:focus-visible {
   text-decoration: none;
   cursor: pointer;
 
+  mat-icon {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+    color: var(--ink-3);
+    transition: color var(--dur-fast) ease;
+  }
+
   &:hover,
   &:focus {
     background: var(--subtle);
     color: var(--ink);
     outline: none;
+
+    mat-icon {
+      color: var(--brand-deep);
+    }
   }
 
   &:focus-visible {
@@ -429,6 +523,10 @@ html .mat-mdc-menu-panel .mat-mdc-menu-item:focus-visible {
     background: var(--brand-tint);
     color: var(--ink);
     font-weight: 600;
+
+    mat-icon {
+      color: var(--brand-deep);
+    }
   }
 }
 

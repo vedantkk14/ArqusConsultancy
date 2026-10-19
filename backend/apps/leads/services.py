@@ -700,7 +700,7 @@ def finalize(opportunity: Opportunity, amount: Decimal, by, note: str = ""):
 
 @transaction.atomic
 def soft_delete(lead: Lead, by) -> None:
-    if by.role != ADMIN:
+    if by.role not in (ADMIN, SALES_MANAGER):
         raise PermissionDenied()
     if integrations.lead_has_ledger(lead):
         raise HasLedger()

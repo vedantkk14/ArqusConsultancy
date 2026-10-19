@@ -228,7 +228,7 @@ def _require_can_change(user, expense) -> None:
         raise ProjectCompleted()
     if expense.is_void:
         raise ExpenseVoid()
-    if user.role == ADMIN:
+    if user.role in (ADMIN, SALES_MANAGER):
         return
     if (
         user.role != PROJECT_MANAGER

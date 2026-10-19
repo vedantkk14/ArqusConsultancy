@@ -244,6 +244,27 @@ def test_pm_flags_say_who_may_edit(client_for, pm1, admin, make_expense):
     assert list(rows) == [mine.pk] and rows[mine.pk]["can_edit"] is True
 
 
+def test_sales_manager_can_edit_and_void_running_project_expense(
+    client_for, sales_manager, pm1, make_expense
+):
+    expense = make_expense(pm1, "100.00", vendor="Initial Vendor")
+    c = client_for(sales_manager)
+
+    detail = c.get(f"{EXPENSES}/{expense.pk}").json()
+    assert detail["can_edit"] is True
+
+    edited = c.patch(f"{EXPENSES}/{expense.pk}", {"vendor": "Updated Vendor"}, format="multipart")
+    assert edited.status_code == 200
+    assert edited.json()["vendor"] == "Updated Vendor"
+
+    voided = c.post(
+        f"{EXPENSES}/{expense.pk}/void", {"reason": "Duplicate entry"}, format="json"
+    )
+    assert voided.status_code == 200
+    assert voided.json()["is_void"] is True
+    assert voided.json()["void_reason"] == "Duplicate entry"
+
+
 def test_void_needs_a_reason_and_leaves_the_row_visible(
     client_for, admin, pm1, make_expense, project
 ):

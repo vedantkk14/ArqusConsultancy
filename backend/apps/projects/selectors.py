@@ -205,10 +205,10 @@ def edit_window_open(expense, now: datetime | None = None) -> bool:
 
 
 def can_change_expense(user, expense, now: datetime | None = None) -> bool:
-    """Edit or void: ADMIN always; the logging PM within the window. Never on completed projects."""
+    """Edit or void: ADMIN and SALES_MANAGER always; the logging PM within the window. Never on completed projects."""
     if expense.project.status != ProjectStatus.RUNNING or expense.is_void:
         return False
-    if user.role == ADMIN:
+    if user.role in (ADMIN, SALES_MANAGER):
         return True
     return (
         user.role == PROJECT_MANAGER

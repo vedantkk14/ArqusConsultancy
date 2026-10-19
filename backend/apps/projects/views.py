@@ -384,8 +384,6 @@ class ExpenseViewSet(GenericViewSet):
         return Response(self._one(pk))
 
     def partial_update(self, request, pk=None):
-        if request.user.role in READ_ONLY_ROLES:
-            raise PermissionDenied()
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         data, upload = _expense_input(request, partial=True)
         services.edit_expense(expense.pk, request.user, data, upload)
@@ -393,8 +391,6 @@ class ExpenseViewSet(GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def void(self, request, pk=None):
-        if request.user.role in READ_ONLY_ROLES:
-            raise PermissionDenied()
         expense = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = ReasonSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

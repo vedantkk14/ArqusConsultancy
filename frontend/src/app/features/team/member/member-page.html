@@ -181,6 +181,63 @@
       </ul>
     </section>
   }
+
+  @if (d.leaves && d.leaves.length) {
+    <section class="card panel rise-in" style="--i: 3" aria-labelledby="leaves-t">
+      <app-panel-head
+        title="Leave requests"
+        subtitle="Recent leave requests and status"
+        headingId="leaves-t"
+        link="/leaves"
+      />
+      <ul class="rows">
+        @for (lr of d.leaves; track lr.id) {
+          <li>
+            <div class="leave-info">
+              <strong>{{ lr.start_date | date: 'd MMM y' }} – {{ lr.end_date | date: 'd MMM y' }}</strong>
+              <span class="muted">({{ lr.days }} {{ lr.days === 1 ? 'day' : 'days' }})</span>
+              @if (lr.reason) {
+                <p class="leave-reason">{{ lr.reason }}</p>
+              }
+              @if (lr.decision_note) {
+                <p class="leave-note muted">Note: {{ lr.decision_note }}</p>
+              }
+            </div>
+            <span
+              class="pill"
+              [class.ok]="lr.status === 'APPROVED'"
+              [class.bad]="lr.status === 'REJECTED'"
+              [class.warn]="lr.status === 'PENDING'"
+            >{{ lr.status }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  @if (d.activity && d.activity.length) {
+    <section class="card panel rise-in" style="--i: 4" aria-labelledby="activity-t">
+      <app-panel-head
+        title="Member activity log"
+        subtitle="Recent actions and system logs"
+        headingId="activity-t"
+        link="/settings/audit-log"
+      />
+      <ol class="activity-timeline">
+        @for (a of d.activity; track $index) {
+          <li>
+            <span [class]="'dot t-' + a.tint" aria-hidden="true">
+              <mat-icon>{{ a.icon }}</mat-icon>
+            </span>
+            <span class="txt">
+              <b>{{ a.title }}</b> {{ a.description }}
+              <time [attr.datetime]="a.when">{{ ago(a.when) }}</time>
+            </span>
+          </li>
+        }
+      </ol>
+    </section>
+  }
 } @else {
   <div class="card panel" aria-hidden="true">
     <app-skeleton width="30%" height="24px" /><app-skeleton height="120px" />

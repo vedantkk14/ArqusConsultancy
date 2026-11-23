@@ -9,7 +9,10 @@
   </button>
   <mat-menu #menu="matMenu" xPosition="before">
     <a mat-menu-item [routerLink]="['/team/members', u.id]"
-      ><mat-icon>insights</mat-icon>View details</a
+      ><mat-icon>insights</mat-icon>View details & activity</a
+    >
+    <a mat-menu-item [routerLink]="['/settings/audit-log']" [queryParams]="{ actor: u.id }"
+      ><mat-icon>history</mat-icon>Audit log</a
     >
     <button mat-menu-item type="button" (click)="edit(u)"><mat-icon>edit</mat-icon>Edit</button>
     <button mat-menu-item type="button" (click)="resetPassword(u)">

@@ -25,6 +25,8 @@ DEFAULT_AUDITED = [
     "accounts.Ledger",
     "accounts.Payment",
     "users.User",
+    "leaves.LeaveRequest",
+    "leaves.Holiday",
 ]
 #: Never recorded: secrets, and columns that change on every touch without meaning.
 IGNORED_FIELDS = {"password", "updated_at", "last_login"}

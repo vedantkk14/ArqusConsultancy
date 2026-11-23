@@ -213,8 +213,6 @@ def _discard(name: str | None) -> None:
 
 
 def _check_payment_fields(data: dict) -> None:
-    if data["mode"] != PaymentMode.CASH and not (data.get("reference") or "").strip():
-        raise ValidationError({"reference": ["Enter the reference for this payment."]})
     today = selectors.business_today()
     received_on = data["received_on"]
     if received_on > today:

@@ -115,17 +115,18 @@ def test_amount_rejects_json_floats_but_takes_strings(client_for, admin, ledger)
     )
 
 
-def test_payment_without_proof_is_rejected(client_for, admin, ledger):
+def test_payment_without_proof_is_accepted(client_for, admin, ledger):
     res = add(client_for(admin), ledger, proof=None)
-    assert res.status_code == 400 and "proof" in res.json()["error"]["details"]
+    assert res.status_code == 201
+    assert res.json()["has_proof"] is False
 
 
 @pytest.mark.parametrize("mode", ["BANK_TRANSFER", "UPI", "CHEQUE", "CARD", "OTHER"])
-def test_reference_is_required_for_every_mode_except_cash(client_for, admin, ledger, mode):
+def test_reference_is_optional_for_all_modes(client_for, admin, ledger, mode):
     res = add(client_for(admin), ledger, mode=mode, reference=None)
-    assert res.status_code == 400 and "reference" in res.json()["error"]["details"]
-    blank = add(client_for(admin), ledger, mode=mode, reference="   ")
-    assert blank.status_code == 400
+    assert res.status_code == 201
+    blank = add(client_for(admin), ledger, mode=mode, reference="   ", confirm_duplicate=True)
+    assert blank.status_code == 201
     assert (
         add(client_for(admin), ledger, mode=mode, reference="REF1", amount="1").status_code == 201
     )

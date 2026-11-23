@@ -62,6 +62,19 @@ class LoginView(_PublicAuthView):
             data.validated_data["identifier"], data.validated_data["password"], _client_ip(request)
         )
         tokens = services.issue_tokens(user)
+        try:
+            from apps.core.models import AuditLog
+
+            AuditLog.objects.create(
+                actor=user,
+                action=AuditLog.Action.CREATE,
+                model_label="users.Login",
+                object_id=str(user.pk),
+                object_repr=f"User {user.display_name} signed in",
+                changes={"ip": {"old": None, "new": _client_ip(request)}},
+            )
+        except Exception:
+            pass
         return Response(
             {
                 **tokens,

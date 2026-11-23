@@ -64,11 +64,10 @@ describe('RecordPaymentForm', () => {
     expect(($(el, '#rp-amount') as HTMLInputElement).value).toBe('60,000.00');
   });
 
-  it('validates the amount, the reference (not for cash) and the date before sending', async () => {
+  it('validates the amount and the date before sending', async () => {
     const { api, fixture, el } = await setup();
     await submit(fixture);
     expect(text(el)).toContain('Enter the amount.');
-    expect(text(el)).toContain('Enter the bank reference (utr)/ transaction id.');
     expect(document.activeElement?.id).toBe('rp-amount');
     expect(api.actions.length).toBe(0);
     // cash needs no reference
@@ -76,7 +75,6 @@ describe('RecordPaymentForm', () => {
     await flush(fixture);
     expect(el.querySelector('#rp-reference')).toBeNull();
     await type(fixture, '#rp-amount', '500');
-    await attachProof(fixture);
     await submit(fixture);
     expect(api.actions[0].name).toBe('addPayment');
     expect(api.actions[0].args[1]).toMatchObject({ amount: '500', mode: 'CASH', reference: '' });
@@ -85,9 +83,9 @@ describe('RecordPaymentForm', () => {
   it('the reference label follows the mode', async () => {
     const { fixture, el } = await setup();
     for (const [mode, label] of [
-      ['UPI', 'UPI transaction ID'],
-      ['CHEQUE', 'Cheque number'],
-      ['CARD', 'Card approval code'],
+      ['UPI', 'UPI transaction ID (optional)'],
+      ['CHEQUE', 'Cheque number (optional)'],
+      ['CARD', 'Card approval code (optional)'],
     ]) {
       ($(el, `#rp-mode-${mode}`) as HTMLInputElement).click();
       await flush(fixture);
@@ -169,13 +167,13 @@ describe('RecordPaymentForm', () => {
     expect(saved.length).toBe(1);
   });
 
-  it('will not save a payment without its proof', async () => {
-    const { api, fixture, el } = await setup();
+  it('saves a payment without proof or reference', async () => {
+    const { api, fixture, el, saved } = await setup();
     await type(fixture, '#rp-amount', '10');
-    await type(fixture, '#rp-reference', 'UTR9');
     await submit(fixture);
-    expect(text(el)).toContain('Add the proof of payment: take a photo or choose a file.');
-    expect(api.actions.filter((a) => a.name === 'addPayment').length).toBe(0);
+    expect(api.actions.filter((a) => a.name === 'addPayment').length).toBe(1);
+    expect(api.actions[0].args[1]).toMatchObject({ amount: '10', reference: '', proof: null });
+    expect(saved.length).toBe(1);
   });
 
   it('ignores a second submit while uploading and shows progress', async () => {

@@ -470,9 +470,6 @@ export class RecordPaymentForm implements OnInit {
     if (!isPositiveMoney(this.amount)) {
       errors.amount = 'Enter the amount.';
     }
-    if (this.needsReference() && !this.reference.trim()) {
-      errors.reference = `Enter the ${this.referenceLabel().toLowerCase()}.`;
-    }
     if (!this.receivedOn) {
       errors.received_on = 'Choose the date.';
     } else if (this.receivedOn > this.today) {
@@ -482,8 +479,6 @@ export class RecordPaymentForm implements OnInit {
     }
     if (this.errors().proof) {
       errors.proof = this.errors().proof;
-    } else if (!this.file()) {
-      errors.proof = 'Add the proof of payment: take a photo or choose a file.';
     }
     return errors;
   }

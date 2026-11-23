@@ -165,6 +165,122 @@ def project_figures(user) -> dict | None:
     }
 
 
+def leave_records(user) -> list[dict]:
+    LeaveRequest = _model("leaves", "LeaveRequest")
+    if LeaveRequest is None:
+        return []
+    rows = LeaveRequest.objects.filter(user=user).order_by("-created_at")[:10]
+    return [
+        {
+            "id": r.id,
+            "start_date": r.start_date.isoformat(),
+            "end_date": r.end_date.isoformat(),
+            "days": r.days,
+            "reason": r.reason,
+            "status": r.status,
+            "decision_note": r.decision_note,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in rows
+    ]
+
+
+def member_activity(user) -> list[dict]:
+    items = []
+
+    # 1. Leave requests by this user
+    LeaveRequest = _model("leaves", "LeaveRequest")
+    if LeaveRequest is not None:
+        for r in LeaveRequest.objects.filter(user=user).order_by("-created_at")[:10]:
+            items.append({
+                "when": r.created_at.isoformat(),
+                "title": "Applied for leave",
+                "description": f"{r.days} {'day' if r.days == 1 else 'days'} ({r.start_date} to {r.end_date}) — {r.status}",
+                "icon": "event_busy",
+                "tint": "amber",
+                "type": "leave",
+            })
+            if r.decided_at:
+                items.append({
+                    "when": r.decided_at.isoformat(),
+                    "title": f"Leave {r.status.lower()}",
+                    "description": f"Leave from {r.start_date} to {r.end_date} was {r.status.lower()}" + (f": {r.decision_note}" if r.decision_note else ""),
+                    "icon": "check_circle" if r.status == "APPROVED" else "cancel",
+                    "tint": "teal" if r.status == "APPROVED" else "rose",
+                    "type": "leave",
+                })
+
+    # 2. Audit log entries where actor was this user
+    AuditLog = _model("core", "AuditLog")
+    if AuditLog is not None:
+        for a in AuditLog.objects.filter(actor=user).order_by("-created_at")[:20]:
+            label = a.model_label.lower()
+            if "leave" in label:
+                continue
+            if "lead" in label:
+                icon, tint = "contacts", "cyan"
+            elif "expense" in label:
+                icon, tint = "receipt", "amber"
+            elif "project" in label:
+                icon, tint = "assignment", "slate"
+            elif "payment" in label:
+                icon, tint = "payments", "teal"
+            elif "login" in label:
+                icon, tint = "login", "slate"
+            else:
+                icon, tint = "person", "slate"
+
+            action_text = a.action.capitalize()
+            if a.action == "CREATE":
+                desc = f"Created {a.object_repr}"
+            elif a.action == "UPDATE":
+                desc = f"Updated {a.object_repr}"
+            elif a.action == "DELETE":
+                desc = f"Deleted {a.object_repr}"
+            else:
+                desc = a.object_repr
+
+            items.append({
+                "when": a.created_at.isoformat(),
+                "title": f"{action_text} {a.model_label.split('.')[-1]}",
+                "description": desc,
+                "icon": icon,
+                "tint": tint,
+                "type": label.split(".")[-1].lower(),
+            })
+
+    # 3. User login
+    if user.last_login:
+        items.append({
+            "when": user.last_login.isoformat(),
+            "title": "Last sign-in",
+            "description": "User signed into ARQUS CRM",
+            "icon": "login",
+            "tint": "slate",
+            "type": "login",
+        })
+
+    # 4. Account created
+    items.append({
+        "when": user.date_joined.isoformat(),
+        "title": "Account created",
+        "description": f"Joined team as {user.role}",
+        "icon": "person_add",
+        "tint": "cyan",
+        "type": "user",
+    })
+
+    items.sort(key=lambda x: x["when"], reverse=True)
+    seen = set()
+    deduped = []
+    for it in items:
+        key = (it["title"], it["when"][:19])
+        if key not in seen:
+            seen.add(key)
+            deduped.append(it)
+    return deduped[:15]
+
+
 def member_performance(user) -> dict:
     sales = user.role in ("SALES_EXEC", "SALES_MANAGER", "ADMIN")
     return {
@@ -181,4 +297,6 @@ def member_performance(user) -> dict:
         },
         "leads": lead_figures(user) if sales else None,
         "projects": project_figures(user) if user.role in ("PROJECT_MANAGER", "ADMIN") else None,
+        "leaves": leave_records(user),
+        "activity": member_activity(user),
     }

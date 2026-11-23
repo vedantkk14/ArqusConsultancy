@@ -355,7 +355,7 @@ html :is(.wrap, .pwbox, .search, .prefixed) :is(input, textarea, select):focus {
   }
 }
 
-.mat-mdc-menu-item {
+.mat-mdc-menu-item:not(.np-item):not(.np-foot) {
   min-height: 38px !important;
   height: 38px !important;
   padding: 0 10px !important;

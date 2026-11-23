@@ -77,7 +77,7 @@
 
   @if (needsReference()) {
     <div class="field">
-      <label for="rp-reference">{{ referenceLabel() }}</label>
+      <label for="rp-reference">{{ referenceLabel() }} (optional)</label>
       <input
         id="rp-reference"
         name="reference"
@@ -118,7 +118,7 @@
   </div>
 
   <div class="field">
-    <span class="lbl" id="rp-proof-label">Proof of payment</span>
+    <span class="lbl" id="rp-proof-label">Proof of payment (optional)</span>
     @if (file(); as f) {
       <div class="picked">
         @if (preview(); as url) {

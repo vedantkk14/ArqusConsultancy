@@ -88,6 +88,26 @@ export interface ProjectPerformance {
   }[];
 }
 
+export interface MemberLeave {
+  id: number;
+  start_date: string;
+  end_date: string;
+  days: number;
+  reason: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  decision_note: string;
+  created_at: string;
+}
+
+export interface MemberActivityItem {
+  when: string;
+  title: string;
+  description: string;
+  icon: string;
+  tint: string;
+  type: string;
+}
+
 export interface MemberPerformance {
   user: {
     id: number;
@@ -102,6 +122,8 @@ export interface MemberPerformance {
   };
   leads: LeadPerformance | null;
   projects: ProjectPerformance | null;
+  leaves?: MemberLeave[];
+  activity?: MemberActivityItem[];
 }
 
 export const DELIVERY_LABELS: Record<Delivery, string> = {
